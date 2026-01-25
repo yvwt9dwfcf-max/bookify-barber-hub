@@ -11,6 +11,7 @@ import Painel from "./pages/Painel";
 import Agenda from "./pages/painel/Agenda";
 import Servicos from "./pages/painel/Servicos";
 import Horarios from "./pages/painel/Horarios";
+import Bloqueios from "./pages/painel/Bloqueios";
 import Configuracoes from "./pages/painel/Configuracoes";
 import NotFound from "./pages/NotFound";
 
@@ -31,6 +32,7 @@ const App = () => (
             <Route index element={<Agenda />} />
             <Route path="servicos" element={<Servicos />} />
             <Route path="horarios" element={<Horarios />} />
+            <Route path="bloqueios" element={<Bloqueios />} />
             <Route path="configuracoes" element={<Configuracoes />} />
           </Route>
           <Route path="*" element={<NotFound />} />

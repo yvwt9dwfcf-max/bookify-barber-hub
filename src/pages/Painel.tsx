@@ -12,7 +12,8 @@ import {
   Settings, 
   LogOut, 
   Menu,
-  X
+  X,
+  CalendarOff
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
@@ -23,6 +24,7 @@ const menuItems = [
   { icon: Calendar, label: 'Agenda', path: '/painel' },
   { icon: Scissors, label: 'Serviços', path: '/painel/servicos' },
   { icon: Clock, label: 'Horários', path: '/painel/horarios' },
+  { icon: CalendarOff, label: 'Bloqueios', path: '/painel/bloqueios' },
   { icon: Settings, label: 'Configurações', path: '/painel/configuracoes' },
 ];
 
