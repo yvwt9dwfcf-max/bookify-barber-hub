@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { supabase, Appointment, Barber, DAY_NAMES } from '@/lib/supabase';
+import { useRealtimeAppointments } from '@/hooks/useRealtimeAppointments';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar, ChevronLeft, ChevronRight, User, Clock, Phone, Loader2, Plus, Trash2 } from 'lucide-react';
+import { Calendar, ChevronLeft, ChevronRight, User, Clock, Phone, Loader2, Plus, Trash2, Bell } from 'lucide-react';
 import { format, addDays, startOfDay, isSameDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -29,6 +30,17 @@ const Agenda = () => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(startOfDay(new Date()));
+
+  // Memoize the callback to prevent unnecessary re-subscriptions
+  const handleNewAppointment = useCallback(() => {
+    fetchAppointments();
+  }, [barber, selectedDate]);
+
+  // Subscribe to realtime appointment updates
+  useRealtimeAppointments({
+    barberId: barber?.id,
+    onNewAppointment: handleNewAppointment,
+  });
 
   useEffect(() => {
     if (barber) {
