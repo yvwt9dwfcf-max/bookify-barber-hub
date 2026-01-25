@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { User, Phone, Mail, Loader2, Save } from 'lucide-react';
+import { User, Phone, Mail, Loader2, Save, Link as LinkIcon, Copy, Check, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface ContextType {
@@ -17,9 +17,42 @@ const Configuracoes = () => {
   const { barber } = useOutletContext<ContextType>();
   const { updateBarber } = useBarber();
   const [saving, setSaving] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const [name, setName] = useState(barber?.name || '');
   const [phone, setPhone] = useState(barber?.phone || '');
+
+  // Generate the public booking link
+  const publicLink = barber 
+    ? `${window.location.origin}/b/${barber.id}`
+    : '';
+
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(publicLink);
+      setCopied(true);
+      toast.success('Link copiado!');
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      toast.error('Erro ao copiar link');
+    }
+  };
+
+  const shareLink = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Agende com ${barber?.name} - Bookify`,
+          text: `Agende seu horário com ${barber?.name}`,
+          url: publicLink,
+        });
+      } catch (error) {
+        // User cancelled or error
+      }
+    } else {
+      copyLink();
+    }
+  };
 
   const formatPhone = (value: string) => {
     const numbers = value.replace(/\D/g, '');
@@ -136,6 +169,63 @@ const Configuracoes = () => {
               </>
             )}
           </Button>
+        </CardContent>
+      </Card>
+
+      {/* Public Link Card */}
+      <Card className="border-primary/20 bg-primary/5">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <LinkIcon className="h-5 w-5 text-primary" />
+            Seu link de agendamento
+          </CardTitle>
+          <CardDescription>
+            Compartilhe esse link para que clientes agendem diretamente com você
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex gap-2">
+            <Input
+              value={publicLink}
+              readOnly
+              className="font-mono text-sm bg-background"
+            />
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={copyLink}
+              className="shrink-0"
+            >
+              {copied ? (
+                <Check className="h-4 w-4 text-primary" />
+              ) : (
+                <Copy className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+          
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={copyLink}
+            >
+              <Copy className="mr-2 h-4 w-4" />
+              Copiar link
+            </Button>
+            <Button
+              className="flex-1 btn-primary-gradient"
+              onClick={shareLink}
+            >
+              <ExternalLink className="mr-2 h-4 w-4" />
+              Compartilhar
+            </Button>
+          </div>
+
+          <p className="text-xs text-muted-foreground">
+            Quando alguém acessar este link, poderá agendar diretamente com você, 
+            sem precisar escolher o profissional.
+          </p>
         </CardContent>
       </Card>
     </div>

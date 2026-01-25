@@ -20,10 +20,16 @@ interface BookingData {
   customerPhone: string;
 }
 
-export function BookingFlow() {
-  const [step, setStep] = useState<BookingStep>('barber');
+interface BookingFlowProps {
+  preselectedBarber?: Barber | null;
+}
+
+export function BookingFlow({ preselectedBarber }: BookingFlowProps) {
+  const initialStep = preselectedBarber ? 'service' : 'barber';
+  
+  const [step, setStep] = useState<BookingStep>(initialStep);
   const [bookingData, setBookingData] = useState<BookingData>({
-    barber: null,
+    barber: preselectedBarber || null,
     service: null,
     dateTime: null,
     customerName: '',
@@ -33,7 +39,10 @@ export function BookingFlow() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const steps: BookingStep[] = ['barber', 'service', 'datetime', 'info', 'confirmation'];
+  // Define steps based on whether barber is preselected
+  const steps: BookingStep[] = preselectedBarber 
+    ? ['service', 'datetime', 'info', 'confirmation']
+    : ['barber', 'service', 'datetime', 'info', 'confirmation'];
   const currentStepIndex = steps.indexOf(step);
 
   const handleBarberSelect = (barber: Barber) => {
@@ -115,14 +124,14 @@ export function BookingFlow() {
 
   const resetBooking = () => {
     setBookingData({
-      barber: null,
+      barber: preselectedBarber || null,
       service: null,
       dateTime: null,
       customerName: '',
       customerPhone: '',
     });
     setCreatedAppointment(null);
-    setStep('barber');
+    setStep(initialStep);
     setError(null);
   };
 
