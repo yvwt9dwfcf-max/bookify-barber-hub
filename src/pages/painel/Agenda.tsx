@@ -4,7 +4,7 @@ import { supabase, Appointment, Barber, DAY_NAMES } from '@/lib/supabase';
 import { useRealtimeAppointments } from '@/hooks/useRealtimeAppointments';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar, ChevronLeft, ChevronRight, User, Clock, Phone, Loader2, Plus, Trash2, Bell } from 'lucide-react';
+import { Calendar, CalendarDays, ChevronLeft, ChevronRight, User, Clock, Phone, Loader2, Plus, Trash2, Bell } from 'lucide-react';
 import { format, addDays, startOfDay, isSameDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -20,16 +20,20 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import MonthlyCalendar from '@/components/painel/MonthlyCalendar';
 
 interface ContextType {
   barber: Barber | null;
 }
+
+type ViewMode = 'daily' | 'monthly';
 
 const Agenda = () => {
   const { barber } = useOutletContext<ContextType>();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(startOfDay(new Date()));
+  const [viewMode, setViewMode] = useState<ViewMode>('daily');
 
   // Memoize the callback to prevent unnecessary re-subscriptions
   const handleNewAppointment = useCallback(() => {
@@ -152,6 +156,11 @@ const Agenda = () => {
   const confirmedCount = appointments.filter(a => a.status === 'confirmed').length;
   const completedCount = appointments.filter(a => a.status === 'completed').length;
 
+  const handleDateSelectFromCalendar = (date: Date) => {
+    setSelectedDate(date);
+    setViewMode('daily');
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -159,80 +168,112 @@ const Agenda = () => {
         <div>
           <h1 className="text-2xl font-bold">Agenda</h1>
           <p className="text-muted-foreground">
-            Gerencie seus agendamentos do dia
+            {viewMode === 'daily' ? 'Gerencie seus agendamentos do dia' : 'Visão geral do mês'}
           </p>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant={viewMode === 'daily' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setViewMode('daily')}
+          >
+            <Calendar className="h-4 w-4 mr-2" />
+            Diário
+          </Button>
+          <Button
+            variant={viewMode === 'monthly' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setViewMode('monthly')}
+          >
+            <CalendarDays className="h-4 w-4 mr-2" />
+            Mensal
+          </Button>
         </div>
       </div>
 
-      {/* Date Navigation */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between mb-4">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setSelectedDate(addDays(selectedDate, -7))}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <span className="font-medium">
-              {format(selectedDate, "MMMM 'de' yyyy", { locale: ptBR })}
-            </span>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setSelectedDate(addDays(selectedDate, 7))}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-          <div className="grid grid-cols-7 gap-2">
-            {days.map((day) => {
-              const isSelected = isSameDay(day, selectedDate);
-              const isToday = isSameDay(day, new Date());
-              
-              return (
-                <button
-                  key={day.toISOString()}
-                  onClick={() => setSelectedDate(day)}
-                  className={cn(
-                    'flex flex-col items-center p-2 rounded-lg transition-all',
-                    'hover:bg-accent',
-                    isSelected && 'bg-primary text-primary-foreground hover:bg-primary',
-                    isToday && !isSelected && 'ring-2 ring-primary'
-                  )}
-                >
-                  <span className="text-xs font-medium uppercase">
-                    {format(day, 'EEE', { locale: ptBR })}
-                  </span>
-                  <span className="text-lg font-bold">{format(day, 'd')}</span>
-                </button>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
+      {/* Monthly Calendar View */}
+      {viewMode === 'monthly' && barber && (
+        <MonthlyCalendar
+          barber={barber}
+          onDateSelect={handleDateSelectFromCalendar}
+          selectedDate={selectedDate}
+        />
+      )}
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 gap-4">
+      {/* Daily View - Date Navigation */}
+      {viewMode === 'daily' && (
         <Card>
-          <CardContent className="p-4 text-center">
-            <p className="text-2xl font-bold text-primary">{confirmedCount}</p>
-            <p className="text-sm text-muted-foreground">Confirmados</p>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-4">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setSelectedDate(addDays(selectedDate, -7))}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <span className="font-medium">
+                {format(selectedDate, "MMMM 'de' yyyy", { locale: ptBR })}
+              </span>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setSelectedDate(addDays(selectedDate, 7))}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="grid grid-cols-7 gap-2">
+              {days.map((day) => {
+                const isSelected = isSameDay(day, selectedDate);
+                const isToday = isSameDay(day, new Date());
+                
+                return (
+                  <button
+                    key={day.toISOString()}
+                    onClick={() => setSelectedDate(day)}
+                    className={cn(
+                      'flex flex-col items-center p-2 rounded-lg transition-all',
+                      'hover:bg-accent',
+                      isSelected && 'bg-primary text-primary-foreground hover:bg-primary',
+                      isToday && !isSelected && 'ring-2 ring-primary'
+                    )}
+                  >
+                    <span className="text-xs font-medium uppercase">
+                      {format(day, 'EEE', { locale: ptBR })}
+                    </span>
+                    <span className="text-lg font-bold">{format(day, 'd')}</span>
+                  </button>
+                );
+              })}
+            </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <p className="text-2xl font-bold text-success">{completedCount}</p>
-            <p className="text-sm text-muted-foreground">Concluídos</p>
-          </CardContent>
-        </Card>
-      </div>
+      )}
 
-      {/* Appointments List */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+      {/* Stats - only show in daily view */}
+      {viewMode === 'daily' && (
+        <div className="grid grid-cols-2 gap-4">
+          <Card>
+            <CardContent className="p-4 text-center">
+              <p className="text-2xl font-bold text-primary">{confirmedCount}</p>
+              <p className="text-sm text-muted-foreground">Confirmados</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 text-center">
+              <p className="text-2xl font-bold text-success">{completedCount}</p>
+              <p className="text-sm text-muted-foreground">Concluídos</p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Appointments List - only show in daily view */}
+      {viewMode === 'daily' && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5" />
             {format(selectedDate, "EEEE, d 'de' MMMM", { locale: ptBR })}
           </CardTitle>
@@ -329,9 +370,10 @@ const Agenda = () => {
                 </div>
               ))}
             </div>
-          )}
-        </CardContent>
-      </Card>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
