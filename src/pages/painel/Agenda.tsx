@@ -21,6 +21,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import MonthlyCalendar from '@/components/painel/MonthlyCalendar';
+import ManualAppointmentDialog from '@/components/painel/ManualAppointmentDialog';
 
 interface ContextType {
   barber: Barber | null;
@@ -34,6 +35,7 @@ const Agenda = () => {
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(startOfDay(new Date()));
   const [viewMode, setViewMode] = useState<ViewMode>('daily');
+  const [showManualDialog, setShowManualDialog] = useState(false);
 
   // Memoize the callback to prevent unnecessary re-subscriptions
   const handleNewAppointment = useCallback(() => {
@@ -171,7 +173,7 @@ const Agenda = () => {
             {viewMode === 'daily' ? 'Gerencie seus agendamentos do dia' : 'Visão geral do mês'}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button
             variant={viewMode === 'daily' ? 'default' : 'outline'}
             size="sm"
@@ -188,8 +190,26 @@ const Agenda = () => {
             <CalendarDays className="h-4 w-4 mr-2" />
             Mensal
           </Button>
+          <Button
+            size="sm"
+            onClick={() => setShowManualDialog(true)}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Novo
+          </Button>
         </div>
       </div>
+
+      {/* Manual Appointment Dialog */}
+      {barber && (
+        <ManualAppointmentDialog
+          open={showManualDialog}
+          onOpenChange={setShowManualDialog}
+          barber={barber}
+          selectedDate={selectedDate}
+          onSuccess={fetchAppointments}
+        />
+      )}
 
       {/* Monthly Calendar View */}
       {viewMode === 'monthly' && barber && (
