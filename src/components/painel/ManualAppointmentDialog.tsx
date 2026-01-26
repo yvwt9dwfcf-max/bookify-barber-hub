@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { format, addMinutes, parse, setHours, setMinutes } from 'date-fns';
+import { format, addMinutes, setHours, setMinutes, startOfDay, endOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -35,13 +35,20 @@ import { Textarea } from '@/components/ui/textarea';
 
 const appointmentSchema = z.object({
   customer_name: z.string().trim().min(1, 'Nome é obrigatório').max(100, 'Nome muito longo'),
-  customer_phone: z.string().trim().min(1, 'Telefone é obrigatório').max(20, 'Telefone inválido'),
+  customer_phone: z.string().trim().max(20, 'Telefone inválido').optional().or(z.literal('')),
   service_id: z.string().optional(),
   start_time: z.string().min(1, 'Horário é obrigatório'),
   notes: z.string().max(500, 'Observações muito longas').optional(),
 });
 
 type AppointmentFormData = z.infer<typeof appointmentSchema>;
+
+interface Appointment {
+  id: string;
+  start_time: string;
+  end_time: string;
+  status: string;
+}
 
 interface ManualAppointmentDialogProps {
   open: boolean;
@@ -59,6 +66,7 @@ const ManualAppointmentDialog = ({
   onSuccess,
 }: ManualAppointmentDialogProps) => {
   const [services, setServices] = useState<Service[]>([]);
+  const [existingAppointments, setExistingAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingServices, setLoadingServices] = useState(true);
 
@@ -76,9 +84,10 @@ const ManualAppointmentDialog = ({
   useEffect(() => {
     if (open) {
       fetchServices();
+      fetchExistingAppointments();
       form.reset();
     }
-  }, [open]);
+  }, [open, selectedDate]);
 
   const fetchServices = async () => {
     setLoadingServices(true);
@@ -100,6 +109,26 @@ const ManualAppointmentDialog = ({
     }
   };
 
+  const fetchExistingAppointments = async () => {
+    try {
+      const dayStart = startOfDay(selectedDate).toISOString();
+      const dayEnd = endOfDay(selectedDate).toISOString();
+
+      const { data, error } = await supabase
+        .from('appointments')
+        .select('id, start_time, end_time, status')
+        .eq('barber_id', barber.id)
+        .gte('start_time', dayStart)
+        .lte('start_time', dayEnd)
+        .in('status', ['confirmed', 'completed']);
+
+      if (error) throw error;
+      setExistingAppointments(data || []);
+    } catch (error) {
+      console.error('Erro ao buscar agendamentos existentes:', error);
+    }
+  };
+
   const generateTimeSlots = () => {
     const slots: string[] = [];
     for (let hour = 6; hour < 22; hour++) {
@@ -109,6 +138,19 @@ const ManualAppointmentDialog = ({
       }
     }
     return slots;
+  };
+
+  const isTimeSlotOccupied = (timeSlot: string, durationMinutes: number): boolean => {
+    const [hours, minutes] = timeSlot.split(':').map(Number);
+    const slotStart = setMinutes(setHours(selectedDate, hours), minutes);
+    const slotEnd = addMinutes(slotStart, durationMinutes);
+
+    return existingAppointments.some((apt) => {
+      const aptStart = new Date(apt.start_time);
+      const aptEnd = new Date(apt.end_time);
+      // Check for overlap: new slot starts before existing ends AND new slot ends after existing starts
+      return slotStart < aptEnd && slotEnd > aptStart;
+    });
   };
 
   const onSubmit = async (data: AppointmentFormData) => {
@@ -122,11 +164,18 @@ const ManualAppointmentDialog = ({
       const startTime = setMinutes(setHours(selectedDate, hours), minutes);
       const endTime = addMinutes(startTime, durationMinutes);
 
+      // Check for conflicts before submitting
+      if (isTimeSlotOccupied(data.start_time, durationMinutes)) {
+        toast.error('Este horário já está ocupado. Escolha outro horário.');
+        setLoading(false);
+        return;
+      }
+
       const { error } = await supabase.from('appointments').insert({
         barber_id: barber.id,
         service_id: data.service_id || null,
         customer_name: data.customer_name.trim(),
-        customer_phone: data.customer_phone.trim(),
+        customer_phone: data.customer_phone?.trim() || '',
         start_time: startTime.toISOString(),
         end_time: endTime.toISOString(),
         notes: data.notes?.trim() || null,
@@ -179,7 +228,7 @@ const ManualAppointmentDialog = ({
               name="customer_phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Telefone</FormLabel>
+                  <FormLabel>Telefone (opcional)</FormLabel>
                   <FormControl>
                     <Input placeholder="(11) 99999-9999" {...field} />
                   </FormControl>
@@ -226,26 +275,39 @@ const ManualAppointmentDialog = ({
             <FormField
               control={form.control}
               name="start_time"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Horário</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione o horário" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent className="max-h-[200px]">
-                      {timeSlots.map((time) => (
-                        <SelectItem key={time} value={time}>
-                          {time}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
+              render={({ field }) => {
+                const selectedService = services.find((s) => s.id === form.watch('service_id'));
+                const durationMinutes = selectedService?.duration_minutes || 30;
+                
+                return (
+                  <FormItem>
+                    <FormLabel>Horário</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o horário" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="max-h-[200px]">
+                        {timeSlots.map((time) => {
+                          const isOccupied = isTimeSlotOccupied(time, durationMinutes);
+                          return (
+                            <SelectItem 
+                              key={time} 
+                              value={time} 
+                              disabled={isOccupied}
+                              className={isOccupied ? 'text-muted-foreground line-through' : ''}
+                            >
+                              {time} {isOccupied && '(ocupado)'}
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
             />
 
             <FormField
