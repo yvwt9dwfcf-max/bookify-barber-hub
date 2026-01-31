@@ -42,6 +42,8 @@ import {
 
 interface ContextType {
   barber: Barber | null;
+  barbershop: { id: string } | null;
+  isMaster: boolean;
 }
 
 type BlockType = 'single' | 'range';
@@ -124,7 +126,7 @@ const Bloqueios = () => {
 
     setSaving(true);
     try {
-      const blocks: { barber_id: string; start_time: string; end_time: string; reason: string | null }[] = [];
+      const blocks: { barber_id: string; barbershop_id: string | null; start_time: string; end_time: string; reason: string | null }[] = [];
 
       if (blockType === 'single') {
         // Single day block
@@ -138,6 +140,7 @@ const Bloqueios = () => {
 
         blocks.push({
           barber_id: barber.id,
+          barbershop_id: barber.barbershop_id || null,
           start_time: startDateTime.toISOString(),
           end_time: endDateTime.toISOString(),
           reason: reason || null,
@@ -156,6 +159,7 @@ const Bloqueios = () => {
 
           blocks.push({
             barber_id: barber.id,
+            barbershop_id: barber.barbershop_id || null,
             start_time: startDateTime.toISOString(),
             end_time: endDateTime.toISOString(),
             reason: reason || null,

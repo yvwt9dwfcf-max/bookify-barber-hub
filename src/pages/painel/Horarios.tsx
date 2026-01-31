@@ -11,6 +11,8 @@ import { toast } from 'sonner';
 
 interface ContextType {
   barber: Barber | null;
+  barbershop: { id: string } | null;
+  isMaster: boolean;
 }
 
 interface DayHours {
@@ -100,6 +102,7 @@ const Horarios = () => {
       // Insert new hours
       const toInsert = hours.map((h) => ({
         barber_id: barber.id,
+        barbershop_id: barber.barbershop_id || null,
         day_of_week: h.day_of_week,
         start_time: h.start_time,
         end_time: h.end_time,
