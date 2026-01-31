@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { supabase, Appointment, Barber, DAY_NAMES } from '@/lib/supabase';
+import { supabase, Appointment, Barber, Barbershop, DAY_NAMES } from '@/lib/supabase';
 import { useRealtimeAppointments } from '@/hooks/useRealtimeAppointments';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -25,6 +25,8 @@ import ManualAppointmentDialog from '@/components/painel/ManualAppointmentDialog
 
 interface ContextType {
   barber: Barber | null;
+  barbershop: Barbershop | null;
+  isMaster: boolean;
 }
 
 type ViewMode = 'daily' | 'monthly';

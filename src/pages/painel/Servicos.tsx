@@ -31,6 +31,8 @@ import {
 
 interface ContextType {
   barber: Barber | null;
+  barbershop: { id: string } | null;
+  isMaster: boolean;
 }
 
 const Servicos = () => {
@@ -125,6 +127,7 @@ const Servicos = () => {
           .from('services')
           .insert({
             barber_id: barber.id,
+            barbershop_id: barber.barbershop_id || null,
             name: name.trim(),
             price: Number(price),
             duration_minutes: Number(duration),

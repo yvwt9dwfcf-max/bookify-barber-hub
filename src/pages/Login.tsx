@@ -22,6 +22,7 @@ const Login = () => {
 
   // Signup form
   const [signupName, setSignupName] = useState('');
+  const [signupBarbershopName, setSignupBarbershopName] = useState('');
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
   const [signupConfirmPassword, setSignupConfirmPassword] = useState('');
@@ -72,7 +73,7 @@ const Login = () => {
 
     setIsLoading(true);
     try {
-      const { error } = await signUp(signupEmail, signupPassword, signupName);
+      const { error } = await signUp(signupEmail, signupPassword, signupName, signupBarbershopName);
       if (error) {
         toast.error(error.message);
       } else {
@@ -175,7 +176,21 @@ const Login = () => {
               <TabsContent value="signup">
                 <form onSubmit={handleSignup} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="signup-name">Nome</Label>
+                    <Label htmlFor="signup-barbershop">Nome da Barbearia</Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="signup-barbershop"
+                        type="text"
+                        placeholder="Barbearia do João"
+                        value={signupBarbershopName}
+                        onChange={(e) => setSignupBarbershopName(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-name">Seu Nome</Label>
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
