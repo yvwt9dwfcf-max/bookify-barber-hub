@@ -173,6 +173,7 @@ const ManualAppointmentDialog = ({
 
       const { error } = await supabase.from('appointments').insert({
         barber_id: barber.id,
+        barbershop_id: barber.barbershop_id || null,
         service_id: data.service_id || null,
         customer_name: data.customer_name.trim(),
         customer_phone: data.customer_phone?.trim() || '',

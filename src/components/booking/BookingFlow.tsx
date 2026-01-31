@@ -20,11 +20,13 @@ interface BookingData {
   customerPhone: string;
 }
 
-interface BookingFlowProps {
+export interface BookingFlowProps {
   preselectedBarber?: Barber | null;
+  barbershopId?: string;
+  availableBarbers?: Barber[];
 }
 
-export function BookingFlow({ preselectedBarber }: BookingFlowProps) {
+export function BookingFlow({ preselectedBarber, barbershopId, availableBarbers }: BookingFlowProps) {
   const initialStep = preselectedBarber ? 'service' : 'barber';
   
   const [step, setStep] = useState<BookingStep>(initialStep);
@@ -90,6 +92,7 @@ export function BookingFlow({ preselectedBarber }: BookingFlowProps) {
         .from('appointments')
         .insert({
           barber_id: bookingData.barber.id,
+          barbershop_id: bookingData.barber.barbershop_id || barbershopId,
           service_id: bookingData.service.id,
           customer_name: name,
           customer_phone: phone,
@@ -169,7 +172,11 @@ export function BookingFlow({ preselectedBarber }: BookingFlowProps) {
           )}
 
           {step === 'barber' && (
-            <BarberSelection onSelect={handleBarberSelect} />
+            <BarberSelection 
+              onSelect={handleBarberSelect} 
+              barbershopId={barbershopId}
+              availableBarbers={availableBarbers}
+            />
           )}
 
           {step === 'service' && bookingData.barber && (

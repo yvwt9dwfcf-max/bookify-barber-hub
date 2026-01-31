@@ -5,23 +5,39 @@ import { cn } from '@/lib/utils';
 
 interface BarberSelectionProps {
   onSelect: (barber: Barber) => void;
+  barbershopId?: string;
+  availableBarbers?: Barber[];
 }
 
-export function BarberSelection({ onSelect }: BarberSelectionProps) {
-  const [barbers, setBarbers] = useState<Barber[]>([]);
-  const [loading, setLoading] = useState(true);
+export function BarberSelection({ onSelect, barbershopId, availableBarbers }: BarberSelectionProps) {
+  const [barbers, setBarbers] = useState<Barber[]>(availableBarbers || []);
+  const [loading, setLoading] = useState(!availableBarbers);
   const [selected, setSelected] = useState<string | null>(null);
 
   useEffect(() => {
+    // If barbers are already provided, don't fetch
+    if (availableBarbers && availableBarbers.length > 0) {
+      setBarbers(availableBarbers);
+      setLoading(false);
+      return;
+    }
     fetchBarbers();
-  }, []);
+  }, [barbershopId, availableBarbers]);
 
   const fetchBarbers = async () => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('barbers')
         .select('*')
+        .eq('is_active', true)
         .order('name');
+
+      // Filter by barbershop if provided
+      if (barbershopId) {
+        query = query.eq('barbershop_id', barbershopId);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       setBarbers(data || []);
