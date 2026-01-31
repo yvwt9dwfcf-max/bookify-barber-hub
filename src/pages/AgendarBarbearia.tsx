@@ -1,42 +1,55 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { supabase, Barber } from '@/lib/supabase';
+import { supabase, Barber, Barbershop } from '@/lib/supabase';
 import { Logo } from '@/components/ui/Logo';
 import { BookingFlow } from '@/components/booking/BookingFlow';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, UserX } from 'lucide-react';
+import { ArrowLeft, Loader2, Building2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 
-const AgendarBarbeiro = () => {
-  const { barberId } = useParams<{ barberId: string }>();
-  const [barber, setBarber] = useState<Barber | null>(null);
+const AgendarBarbearia = () => {
+  const { barbershopId } = useParams<{ barbershopId: string }>();
+  const [barbershop, setBarbershop] = useState<Barbershop | null>(null);
+  const [barbers, setBarbers] = useState<Barber[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    if (barberId) {
-      fetchBarber();
+    if (barbershopId) {
+      fetchBarbershopData();
     }
-  }, [barberId]);
+  }, [barbershopId]);
 
-  const fetchBarber = async () => {
+  const fetchBarbershopData = async () => {
     try {
-      const { data, error } = await supabase
-        .from('barbers')
+      // Fetch barbershop
+      const { data: shopData, error: shopError } = await supabase
+        .from('barbershops')
         .select('*')
-        .eq('id', barberId)
-        .eq('is_active', true)
+        .eq('id', barbershopId)
         .maybeSingle();
 
-      if (error) throw error;
+      if (shopError) throw shopError;
       
-      if (!data) {
+      if (!shopData) {
         setNotFound(true);
-      } else {
-        setBarber(data);
+        return;
       }
+
+      setBarbershop(shopData as Barbershop);
+
+      // Fetch active barbers from this barbershop
+      const { data: barbersData, error: barbersError } = await supabase
+        .from('barbers')
+        .select('*')
+        .eq('barbershop_id', barbershopId)
+        .eq('is_active', true)
+        .order('name');
+
+      if (barbersError) throw barbersError;
+      setBarbers(barbersData || []);
     } catch (error) {
-      console.error('Erro ao buscar barbeiro:', error);
+      console.error('Erro ao buscar barbearia:', error);
       setNotFound(true);
     } finally {
       setLoading(false);
@@ -71,15 +84,15 @@ const AgendarBarbeiro = () => {
             <Card>
               <CardContent className="p-8">
                 <div className="w-16 h-16 rounded-full bg-muted mx-auto flex items-center justify-center mb-4">
-                  <UserX className="h-8 w-8 text-muted-foreground" />
+                  <Building2 className="h-8 w-8 text-muted-foreground" />
                 </div>
-                <h1 className="text-xl font-bold mb-2">Profissional não encontrado</h1>
+                <h1 className="text-xl font-bold mb-2">Barbearia não encontrada</h1>
                 <p className="text-muted-foreground mb-6">
-                  O link que você acessou não é válido ou o profissional não está mais disponível.
+                  O link que você acessou não é válido ou a barbearia não está mais disponível.
                 </p>
                 <Button asChild className="btn-primary-gradient">
-                  <Link to="/agendar">
-                    Ver todos os profissionais
+                  <Link to="/">
+                    Voltar ao início
                   </Link>
                 </Button>
               </CardContent>
@@ -110,17 +123,20 @@ const AgendarBarbeiro = () => {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-8">
             <h1 className="text-2xl md:text-3xl font-bold mb-2">
-              Agende com {barber?.name}
+              {barbershop?.name}
             </h1>
             <p className="text-muted-foreground">
-              Escolha o serviço e horário para seu atendimento
+              Escolha um profissional para agendar seu horário
             </p>
           </div>
-          <BookingFlow preselectedBarber={barber} />
+          <BookingFlow 
+            barbershopId={barbershopId} 
+            availableBarbers={barbers}
+          />
         </div>
       </main>
     </div>
   );
 };
 
-export default AgendarBarbeiro;
+export default AgendarBarbearia;

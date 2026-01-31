@@ -1,10 +1,14 @@
 import { useState, useEffect } from 'react';
-import { supabase, Barber } from '@/lib/supabase';
+import { supabase, Barber, BarberPermissions } from '@/lib/supabase';
 import { useAuth } from './useAuth';
+
+interface BarberWithPermissions extends Barber {
+  permissions?: BarberPermissions;
+}
 
 export function useBarber() {
   const { user } = useAuth();
-  const [barber, setBarber] = useState<Barber | null>(null);
+  const [barber, setBarber] = useState<BarberWithPermissions | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -22,12 +26,25 @@ export function useBarber() {
     try {
       const { data, error } = await supabase
         .from('barbers')
-        .select('*')
+        .select(`
+          *,
+          permissions:barber_permissions(*)
+        `)
         .eq('auth_id', user.id)
         .maybeSingle();
 
       if (error) throw error;
-      setBarber(data);
+      
+      // Flatten permissions
+      if (data) {
+        const barberData = {
+          ...data,
+          permissions: Array.isArray(data.permissions) ? data.permissions[0] : data.permissions,
+        };
+        setBarber(barberData as BarberWithPermissions);
+      } else {
+        setBarber(null);
+      }
     } catch (error) {
       console.error('Erro ao buscar barbeiro:', error);
     } finally {
@@ -47,7 +64,7 @@ export function useBarber() {
         .single();
 
       if (error) throw error;
-      setBarber(data);
+      setBarber({ ...barber, ...data });
       return { data, error: null };
     } catch (error) {
       return { data: null, error };
