@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
-import { supabase, OpeningHours, BlockedSlot, Appointment, DAY_NAMES_SHORT } from '@/lib/supabase';
+import { useState } from 'react';
+import { DAY_NAMES_SHORT } from '@/lib/supabase';
+import { useAvailability } from '@/hooks/useAvailability';
 import { Clock, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { format, addDays, startOfDay, isSameDay, isAfter, isBefore, addMinutes, setHours, setMinutes } from 'date-fns';
+import { format, addDays, startOfDay, isSameDay, isAfter, isBefore, setHours, setMinutes } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 interface DateTimeSelectionProps {
@@ -13,40 +14,18 @@ interface DateTimeSelectionProps {
 }
 
 export function DateTimeSelection({ barberId, serviceDuration, onSelect }: DateTimeSelectionProps) {
-  const [openingHours, setOpeningHours] = useState<OpeningHours[]>([]);
-  const [blockedSlots, setBlockedSlots] = useState<BlockedSlot[]>([]);
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [weekStart, setWeekStart] = useState(startOfDay(new Date()));
 
-  useEffect(() => {
-    fetchData();
-  }, [barberId]);
-
-  const fetchData = async () => {
-    try {
-      const [hoursRes, blockedRes, appointmentsRes] = await Promise.all([
-        supabase.from('opening_hours').select('*').eq('barber_id', barberId),
-        supabase.from('blocked_slots').select('*').eq('barber_id', barberId),
-        supabase
-          .from('appointments')
-          .select('*')
-          .eq('barber_id', barberId)
-          .neq('status', 'cancelled')
-          .gte('start_time', new Date().toISOString()),
-      ]);
-
-      setOpeningHours(hoursRes.data || []);
-      setBlockedSlots(blockedRes.data || []);
-      setAppointments((appointmentsRes.data as Appointment[]) || []);
-    } catch (error) {
-      console.error('Erro ao buscar dados:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { 
+    loading, 
+    getAvailableSlotsForDate, 
+    getOpeningHoursForDay 
+  } = useAvailability({ 
+    barberId, 
+    serviceDuration 
+  });
 
   const getDaysToShow = () => {
     const days: Date[] = [];
@@ -54,70 +33,6 @@ export function DateTimeSelection({ barberId, serviceDuration, onSelect }: DateT
       days.push(addDays(weekStart, i));
     }
     return days;
-  };
-
-  const getOpeningHoursForDay = (dayOfWeek: number) => {
-    return openingHours.find(h => h.day_of_week === dayOfWeek && h.is_open);
-  };
-
-  const getAvailableSlots = (date: Date): string[] => {
-    const dayOfWeek = date.getDay();
-    const hours = getOpeningHoursForDay(dayOfWeek);
-    
-    if (!hours) return [];
-
-    const slots: string[] = [];
-    const [startHour, startMin] = hours.start_time.split(':').map(Number);
-    const [endHour, endMin] = hours.end_time.split(':').map(Number);
-
-    // Parse break times if they exist
-    let breakStart: Date | null = null;
-    let breakEnd: Date | null = null;
-    if (hours.break_start && hours.break_end) {
-      const [bsHour, bsMin] = hours.break_start.split(':').map(Number);
-      const [beHour, beMin] = hours.break_end.split(':').map(Number);
-      breakStart = setMinutes(setHours(date, bsHour), bsMin);
-      breakEnd = setMinutes(setHours(date, beHour), beMin);
-    }
-
-    let current = setMinutes(setHours(date, startHour), startMin);
-    const endTime = setMinutes(setHours(date, endHour), endMin);
-    const now = new Date();
-
-    while (isBefore(addMinutes(current, serviceDuration), endTime) || 
-           isSameDay(addMinutes(current, serviceDuration), endTime) && 
-           addMinutes(current, serviceDuration).getTime() <= endTime.getTime()) {
-      
-      if (isAfter(current, now)) {
-        const slotEnd = addMinutes(current, serviceDuration);
-        
-        // Check break time - slot overlaps with break
-        const isDuringBreak = breakStart && breakEnd && 
-          isBefore(current, breakEnd) && isAfter(slotEnd, breakStart);
-
-        // Check blocked slots
-        const isBlocked = blockedSlots.some(blocked => {
-          const blockedStart = new Date(blocked.start_time);
-          const blockedEnd = new Date(blocked.end_time);
-          return isBefore(current, blockedEnd) && isAfter(slotEnd, blockedStart);
-        });
-
-        // Check appointments
-        const hasAppointment = appointments.some(apt => {
-          const aptStart = new Date(apt.start_time);
-          const aptEnd = new Date(apt.end_time);
-          return isBefore(current, aptEnd) && isAfter(slotEnd, aptStart);
-        });
-
-        if (!isDuringBreak && !isBlocked && !hasAppointment) {
-          slots.push(format(current, 'HH:mm'));
-        }
-      }
-
-      current = addMinutes(current, 30); // 30 min intervals
-    }
-
-    return slots;
   };
 
   const handleDateSelect = (date: Date) => {
@@ -154,7 +69,7 @@ export function DateTimeSelection({ barberId, serviceDuration, onSelect }: DateT
   }
 
   const days = getDaysToShow();
-  const availableSlots = selectedDate ? getAvailableSlots(selectedDate) : [];
+  const availableSlots = selectedDate ? getAvailableSlotsForDate(selectedDate, serviceDuration) : [];
 
   return (
     <div className="space-y-6">
@@ -190,7 +105,7 @@ export function DateTimeSelection({ barberId, serviceDuration, onSelect }: DateT
           const isOpen = !!getOpeningHoursForDay(dayOfWeek);
           const isPast = isBefore(day, startOfDay(new Date()));
           const isSelected = selectedDate && isSameDay(day, selectedDate);
-          const hasSlots = !isPast && isOpen && getAvailableSlots(day).length > 0;
+          const hasSlots = !isPast && isOpen && getAvailableSlotsForDate(day, serviceDuration).length > 0;
 
           return (
             <button
