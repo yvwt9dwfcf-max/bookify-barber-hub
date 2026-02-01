@@ -20,17 +20,19 @@ interface DayHours {
   start_time: string;
   end_time: string;
   is_open: boolean;
+  break_start: string | null;
+  break_end: string | null;
   id?: string;
 }
 
 const defaultHours: DayHours[] = [
-  { day_of_week: 0, start_time: '09:00', end_time: '18:00', is_open: false },
-  { day_of_week: 1, start_time: '09:00', end_time: '18:00', is_open: true },
-  { day_of_week: 2, start_time: '09:00', end_time: '18:00', is_open: true },
-  { day_of_week: 3, start_time: '09:00', end_time: '18:00', is_open: true },
-  { day_of_week: 4, start_time: '09:00', end_time: '18:00', is_open: true },
-  { day_of_week: 5, start_time: '09:00', end_time: '18:00', is_open: true },
-  { day_of_week: 6, start_time: '09:00', end_time: '14:00', is_open: true },
+  { day_of_week: 0, start_time: '09:00', end_time: '18:00', is_open: false, break_start: null, break_end: null },
+  { day_of_week: 1, start_time: '09:00', end_time: '18:00', is_open: true, break_start: null, break_end: null },
+  { day_of_week: 2, start_time: '09:00', end_time: '18:00', is_open: true, break_start: null, break_end: null },
+  { day_of_week: 3, start_time: '09:00', end_time: '18:00', is_open: true, break_start: null, break_end: null },
+  { day_of_week: 4, start_time: '09:00', end_time: '18:00', is_open: true, break_start: null, break_end: null },
+  { day_of_week: 5, start_time: '09:00', end_time: '18:00', is_open: true, break_start: null, break_end: null },
+  { day_of_week: 6, start_time: '09:00', end_time: '14:00', is_open: true, break_start: null, break_end: null },
 ];
 
 const Horarios = () => {
@@ -65,6 +67,8 @@ const Horarios = () => {
               start_time: savedDay.start_time.slice(0, 5),
               end_time: savedDay.end_time.slice(0, 5),
               is_open: savedDay.is_open,
+              break_start: savedDay.break_start ? savedDay.break_start.slice(0, 5) : null,
+              break_end: savedDay.break_end ? savedDay.break_end.slice(0, 5) : null,
               id: savedDay.id,
             };
           }
@@ -80,7 +84,7 @@ const Horarios = () => {
     }
   };
 
-  const updateHour = (dayOfWeek: number, field: keyof DayHours, value: string | boolean) => {
+  const updateHour = (dayOfWeek: number, field: keyof DayHours, value: string | boolean | null) => {
     setHours((prev) =>
       prev.map((h) =>
         h.day_of_week === dayOfWeek ? { ...h, [field]: value } : h
@@ -107,6 +111,8 @@ const Horarios = () => {
         start_time: h.start_time,
         end_time: h.end_time,
         is_open: h.is_open,
+        break_start: h.break_start || null,
+        break_end: h.break_end || null,
       }));
 
       const { error } = await supabase
@@ -184,9 +190,9 @@ const Horarios = () => {
               </div>
 
               {day.is_open ? (
-                <div className="flex items-center gap-2 flex-1">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
                   <div className="flex items-center gap-2">
-                    <Label className="sr-only">Início</Label>
+                    <Label className="text-xs text-muted-foreground min-w-[50px]">Início</Label>
                     <Input
                       type="time"
                       value={day.start_time}
@@ -195,10 +201,7 @@ const Horarios = () => {
                       }
                       className="w-auto"
                     />
-                  </div>
-                  <span className="text-muted-foreground">até</span>
-                  <div className="flex items-center gap-2">
-                    <Label className="sr-only">Fim</Label>
+                    <span className="text-muted-foreground">-</span>
                     <Input
                       type="time"
                       value={day.end_time}
@@ -206,6 +209,29 @@ const Horarios = () => {
                         updateHour(day.day_of_week, 'end_time', e.target.value)
                       }
                       className="w-auto"
+                    />
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <Label className="text-xs text-muted-foreground min-w-[50px]">Intervalo</Label>
+                    <Input
+                      type="time"
+                      value={day.break_start || ''}
+                      onChange={(e) =>
+                        updateHour(day.day_of_week, 'break_start', e.target.value || null)
+                      }
+                      className="w-auto"
+                      placeholder="--:--"
+                    />
+                    <span className="text-muted-foreground">-</span>
+                    <Input
+                      type="time"
+                      value={day.break_end || ''}
+                      onChange={(e) =>
+                        updateHour(day.day_of_week, 'break_end', e.target.value || null)
+                      }
+                      className="w-auto"
+                      placeholder="--:--"
                     />
                   </div>
                 </div>
