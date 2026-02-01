@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase, Service } from '@/lib/supabase';
+import { supabase, Service, Barber } from '@/lib/supabase';
 import { Scissors, Clock, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -19,15 +19,54 @@ export function ServiceSelection({ barberId, onSelect }: ServiceSelectionProps) 
 
   const fetchServices = async () => {
     try {
-      const { data, error } = await supabase
-        .from('services')
-        .select('*')
-        .eq('barber_id', barberId)
-        .eq('active', true)
-        .order('name');
+      // Primeiro, buscar o barbershop_id do barbeiro
+      const { data: barberData, error: barberError } = await supabase
+        .from('barbers')
+        .select('barbershop_id')
+        .eq('id', barberId)
+        .maybeSingle();
 
-      if (error) throw error;
-      setServices(data || []);
+      if (barberError) throw barberError;
+      
+      if (!barberData?.barbershop_id) {
+        setServices([]);
+        setLoading(false);
+        return;
+      }
+
+      // Buscar serviços que o barbeiro atende através da tabela de junção
+      const { data: barberServicesData, error: bsError } = await supabase
+        .from('barber_services')
+        .select('service_id')
+        .eq('barber_id', barberId);
+
+      if (bsError) throw bsError;
+
+      const serviceIds = (barberServicesData || []).map(bs => bs.service_id);
+
+      if (serviceIds.length === 0) {
+        // Se não houver vínculos, buscar todos os serviços ativos da barbearia
+        const { data: allServices, error: allError } = await supabase
+          .from('services')
+          .select('*')
+          .eq('barbershop_id', barberData.barbershop_id)
+          .eq('active', true)
+          .order('name');
+
+        if (allError) throw allError;
+        setServices(allServices || []);
+      } else {
+        // Buscar serviços pelos IDs vinculados
+        const { data: linkedServices, error: linkedError } = await supabase
+          .from('services')
+          .select('*')
+          .in('id', serviceIds)
+          .eq('active', true)
+          .order('name');
+
+        if (linkedError) throw linkedError;
+        setServices(linkedServices || []);
+      }
     } catch (error) {
       console.error('Erro ao buscar serviços:', error);
     } finally {
@@ -61,7 +100,7 @@ export function ServiceSelection({ barberId, onSelect }: ServiceSelectionProps) 
         <Scissors className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
         <h3 className="text-lg font-medium">Nenhum serviço disponível</h3>
         <p className="text-muted-foreground mt-2">
-          Este profissional ainda não cadastrou serviços.
+          Este profissional ainda não possui serviços disponíveis.
         </p>
       </div>
     );

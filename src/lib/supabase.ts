@@ -60,6 +60,14 @@ export interface Service {
   updated_at: string;
 }
 
+// Tabela de junção entre barbeiros e serviços
+export interface BarberService {
+  id: string;
+  barber_id: string;
+  service_id: string;
+  created_at: string;
+}
+
 export interface OpeningHours {
   id: string;
   barber_id: string;

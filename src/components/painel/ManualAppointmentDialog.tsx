@@ -92,15 +92,44 @@ const ManualAppointmentDialog = ({
   const fetchServices = async () => {
     setLoadingServices(true);
     try {
-      const { data, error } = await supabase
-        .from('services')
-        .select('*')
-        .eq('barber_id', barber.id)
-        .eq('active', true)
-        .order('name');
+      if (!barber.barbershop_id) {
+        setServices([]);
+        return;
+      }
 
-      if (error) throw error;
-      setServices(data || []);
+      // Buscar serviços vinculados ao barbeiro
+      const { data: barberServicesData, error: bsError } = await supabase
+        .from('barber_services')
+        .select('service_id')
+        .eq('barber_id', barber.id);
+
+      if (bsError) throw bsError;
+
+      const serviceIds = (barberServicesData || []).map(bs => bs.service_id);
+
+      if (serviceIds.length === 0) {
+        // Se não há vínculos, buscar todos os serviços da barbearia
+        const { data: allServices, error: allError } = await supabase
+          .from('services')
+          .select('*')
+          .eq('barbershop_id', barber.barbershop_id)
+          .eq('active', true)
+          .order('name');
+
+        if (allError) throw allError;
+        setServices(allServices || []);
+      } else {
+        // Buscar serviços vinculados
+        const { data: linkedServices, error: linkedError } = await supabase
+          .from('services')
+          .select('*')
+          .in('id', serviceIds)
+          .eq('active', true)
+          .order('name');
+
+        if (linkedError) throw linkedError;
+        setServices(linkedServices || []);
+      }
     } catch (error) {
       console.error('Erro ao buscar serviços:', error);
       toast.error('Erro ao carregar serviços');
@@ -204,7 +233,7 @@ const ManualAppointmentDialog = ({
         <DialogHeader>
           <DialogTitle>Novo Agendamento</DialogTitle>
           <DialogDescription>
-            {format(selectedDate, "EEEE, d 'de' MMMM", { locale: ptBR })}
+            {format(selectedDate, "EEEE, d 'de' MMMM", { locale: ptBR })} - {barber.name}
           </DialogDescription>
         </DialogHeader>
 

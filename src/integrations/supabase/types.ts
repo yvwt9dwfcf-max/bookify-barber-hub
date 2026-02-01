@@ -119,6 +119,42 @@ export type Database = {
           },
         ]
       }
+      barber_services: {
+        Row: {
+          barber_id: string
+          created_at: string
+          id: string
+          service_id: string
+        }
+        Insert: {
+          barber_id: string
+          created_at?: string
+          id?: string
+          service_id: string
+        }
+        Update: {
+          barber_id?: string
+          created_at?: string
+          id?: string
+          service_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "barber_services_barber_id_fkey"
+            columns: ["barber_id"]
+            isOneToOne: false
+            referencedRelation: "barbers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "barber_services_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       barbers: {
         Row: {
           auth_id: string

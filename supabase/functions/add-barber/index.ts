@@ -100,6 +100,7 @@ Deno.serve(async (req) => {
 
     let userId: string;
     let isNewUser = false;
+    let barberId: string;
 
     if (existingUser) {
       // User exists - check if already in this barbershop
@@ -133,6 +134,8 @@ Deno.serve(async (req) => {
 
           if (updateError) throw updateError;
 
+          barberId = existingBarber.id;
+
           // Update permissions if provided
           if (permissions) {
             await supabaseAdmin.from("barber_permissions").upsert({
@@ -140,6 +143,9 @@ Deno.serve(async (req) => {
               ...permissions,
             }, { onConflict: "barber_id" });
           }
+
+          // Vincular aos serviços da barbearia
+          await linkBarberToServices(supabaseAdmin, existingBarber.id, barbershop_id);
 
           return new Response(
             JSON.stringify({ 
@@ -165,6 +171,8 @@ Deno.serve(async (req) => {
 
           if (updateError) throw updateError;
 
+          barberId = existingBarber.id;
+
           // Create/update user role
           await supabaseAdmin.from("user_roles").upsert({
             user_id: existingUser.id,
@@ -179,6 +187,9 @@ Deno.serve(async (req) => {
               ...permissions,
             }, { onConflict: "barber_id" });
           }
+
+          // Vincular aos serviços da barbearia
+          await linkBarberToServices(supabaseAdmin, existingBarber.id, barbershop_id);
 
           return new Response(
             JSON.stringify({ 
@@ -251,6 +262,8 @@ Deno.serve(async (req) => {
       );
     }
 
+    barberId = barberData.id;
+
     // Create user role
     const { error: roleError } = await supabaseAdmin.from("user_roles").insert({
       user_id: userId,
@@ -287,6 +300,9 @@ Deno.serve(async (req) => {
       console.error("Error creating permissions:", permError);
     }
 
+    // Vincular barbeiro a todos os serviços da barbearia
+    await linkBarberToServices(supabaseAdmin, barberData.id, barbershop_id);
+
     return new Response(
       JSON.stringify({
         success: true,
@@ -304,3 +320,40 @@ Deno.serve(async (req) => {
     );
   }
 });
+
+// Função auxiliar para vincular barbeiro a todos os serviços da barbearia
+async function linkBarberToServices(supabaseAdmin: any, barberId: string, barbershopId: string) {
+  try {
+    // Buscar todos os serviços ativos da barbearia
+    const { data: services, error: servicesError } = await supabaseAdmin
+      .from("services")
+      .select("id")
+      .eq("barbershop_id", barbershopId)
+      .eq("active", true);
+
+    if (servicesError) {
+      console.error("Error fetching services:", servicesError);
+      return;
+    }
+
+    if (!services || services.length === 0) {
+      return;
+    }
+
+    // Criar vínculos entre barbeiro e serviços
+    const associations = services.map((service: { id: string }) => ({
+      barber_id: barberId,
+      service_id: service.id,
+    }));
+
+    const { error: insertError } = await supabaseAdmin
+      .from("barber_services")
+      .upsert(associations, { onConflict: "barber_id,service_id" });
+
+    if (insertError) {
+      console.error("Error linking barber to services:", insertError);
+    }
+  } catch (error) {
+    console.error("Error in linkBarberToServices:", error);
+  }
+}
