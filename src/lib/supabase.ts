@@ -76,6 +76,8 @@ export interface OpeningHours {
   start_time: string;
   end_time: string;
   is_open: boolean;
+  break_start: string | null;
+  break_end: string | null;
   created_at: string;
 }
 

@@ -278,6 +278,8 @@ export type Database = {
         Row: {
           barber_id: string
           barbershop_id: string | null
+          break_end: string | null
+          break_start: string | null
           created_at: string
           day_of_week: number
           end_time: string
@@ -288,6 +290,8 @@ export type Database = {
         Insert: {
           barber_id: string
           barbershop_id?: string | null
+          break_end?: string | null
+          break_start?: string | null
           created_at?: string
           day_of_week: number
           end_time: string
@@ -298,6 +302,8 @@ export type Database = {
         Update: {
           barber_id?: string
           barbershop_id?: string | null
+          break_end?: string | null
+          break_start?: string | null
           created_at?: string
           day_of_week?: number
           end_time?: string

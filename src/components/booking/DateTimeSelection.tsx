@@ -70,6 +70,16 @@ export function DateTimeSelection({ barberId, serviceDuration, onSelect }: DateT
     const [startHour, startMin] = hours.start_time.split(':').map(Number);
     const [endHour, endMin] = hours.end_time.split(':').map(Number);
 
+    // Parse break times if they exist
+    let breakStart: Date | null = null;
+    let breakEnd: Date | null = null;
+    if (hours.break_start && hours.break_end) {
+      const [bsHour, bsMin] = hours.break_start.split(':').map(Number);
+      const [beHour, beMin] = hours.break_end.split(':').map(Number);
+      breakStart = setMinutes(setHours(date, bsHour), bsMin);
+      breakEnd = setMinutes(setHours(date, beHour), beMin);
+    }
+
     let current = setMinutes(setHours(date, startHour), startMin);
     const endTime = setMinutes(setHours(date, endHour), endMin);
     const now = new Date();
@@ -81,6 +91,10 @@ export function DateTimeSelection({ barberId, serviceDuration, onSelect }: DateT
       if (isAfter(current, now)) {
         const slotEnd = addMinutes(current, serviceDuration);
         
+        // Check break time - slot overlaps with break
+        const isDuringBreak = breakStart && breakEnd && 
+          isBefore(current, breakEnd) && isAfter(slotEnd, breakStart);
+
         // Check blocked slots
         const isBlocked = blockedSlots.some(blocked => {
           const blockedStart = new Date(blocked.start_time);
@@ -95,7 +109,7 @@ export function DateTimeSelection({ barberId, serviceDuration, onSelect }: DateT
           return isBefore(current, aptEnd) && isAfter(slotEnd, aptStart);
         });
 
-        if (!isBlocked && !hasAppointment) {
+        if (!isDuringBreak && !isBlocked && !hasAppointment) {
           slots.push(format(current, 'HH:mm'));
         }
       }

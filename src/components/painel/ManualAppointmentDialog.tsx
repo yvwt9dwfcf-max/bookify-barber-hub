@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import { format, addMinutes, setHours, setMinutes, startOfDay, endOfDay } from 'date-fns';
+import { format, addMinutes, setHours, setMinutes, startOfDay, endOfDay, isBefore, isAfter } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { supabase, Barber, Service } from '@/lib/supabase';
+import { supabase, Barber, Service, OpeningHours } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import {
@@ -50,6 +50,12 @@ interface Appointment {
   status: string;
 }
 
+interface BlockedSlotLocal {
+  id: string;
+  start_time: string;
+  end_time: string;
+}
+
 interface ManualAppointmentDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -67,6 +73,8 @@ const ManualAppointmentDialog = ({
 }: ManualAppointmentDialogProps) => {
   const [services, setServices] = useState<Service[]>([]);
   const [existingAppointments, setExistingAppointments] = useState<Appointment[]>([]);
+  const [blockedSlots, setBlockedSlots] = useState<BlockedSlotLocal[]>([]);
+  const [openingHours, setOpeningHours] = useState<OpeningHours | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingServices, setLoadingServices] = useState(true);
 
@@ -85,6 +93,8 @@ const ManualAppointmentDialog = ({
     if (open) {
       fetchServices();
       fetchExistingAppointments();
+      fetchBlockedSlots();
+      fetchOpeningHours();
       form.reset();
     }
   }, [open, selectedDate]);
@@ -158,6 +168,44 @@ const ManualAppointmentDialog = ({
     }
   };
 
+  const fetchBlockedSlots = async () => {
+    try {
+      const dayStart = startOfDay(selectedDate).toISOString();
+      const dayEnd = endOfDay(selectedDate).toISOString();
+
+      const { data, error } = await supabase
+        .from('blocked_slots')
+        .select('id, start_time, end_time')
+        .eq('barber_id', barber.id)
+        .or(`start_time.gte.${dayStart},end_time.lte.${dayEnd}`)
+        .or(`start_time.lte.${dayStart},end_time.gte.${dayEnd}`);
+
+      if (error) throw error;
+      setBlockedSlots(data || []);
+    } catch (error) {
+      console.error('Erro ao buscar bloqueios:', error);
+    }
+  };
+
+  const fetchOpeningHours = async () => {
+    try {
+      const dayOfWeek = selectedDate.getDay();
+
+      const { data, error } = await supabase
+        .from('opening_hours')
+        .select('*')
+        .eq('barber_id', barber.id)
+        .eq('day_of_week', dayOfWeek)
+        .eq('is_open', true)
+        .maybeSingle();
+
+      if (error) throw error;
+      setOpeningHours(data as OpeningHours | null);
+    } catch (error) {
+      console.error('Erro ao buscar horários:', error);
+    }
+  };
+
   const generateTimeSlots = () => {
     const slots: string[] = [];
     for (let hour = 6; hour < 22; hour++) {
@@ -169,17 +217,46 @@ const ManualAppointmentDialog = ({
     return slots;
   };
 
-  const isTimeSlotOccupied = (timeSlot: string, durationMinutes: number): boolean => {
+  const isTimeSlotOccupied = (timeSlot: string, durationMinutes: number): { occupied: boolean; reason?: string } => {
     const [hours, minutes] = timeSlot.split(':').map(Number);
     const slotStart = setMinutes(setHours(selectedDate, hours), minutes);
     const slotEnd = addMinutes(slotStart, durationMinutes);
 
-    return existingAppointments.some((apt) => {
+    // Check break time
+    if (openingHours?.break_start && openingHours?.break_end) {
+      const [bsHour, bsMin] = openingHours.break_start.split(':').map(Number);
+      const [beHour, beMin] = openingHours.break_end.split(':').map(Number);
+      const breakStart = setMinutes(setHours(selectedDate, bsHour), bsMin);
+      const breakEnd = setMinutes(setHours(selectedDate, beHour), beMin);
+      
+      if (isBefore(slotStart, breakEnd) && isAfter(slotEnd, breakStart)) {
+        return { occupied: true, reason: 'intervalo' };
+      }
+    }
+
+    // Check blocked slots
+    const isBlocked = blockedSlots.some((blocked) => {
+      const blockedStart = new Date(blocked.start_time);
+      const blockedEnd = new Date(blocked.end_time);
+      return isBefore(slotStart, blockedEnd) && isAfter(slotEnd, blockedStart);
+    });
+    
+    if (isBlocked) {
+      return { occupied: true, reason: 'bloqueado' };
+    }
+
+    // Check existing appointments
+    const hasAppointment = existingAppointments.some((apt) => {
       const aptStart = new Date(apt.start_time);
       const aptEnd = new Date(apt.end_time);
-      // Check for overlap: new slot starts before existing ends AND new slot ends after existing starts
       return slotStart < aptEnd && slotEnd > aptStart;
     });
+
+    if (hasAppointment) {
+      return { occupied: true, reason: 'ocupado' };
+    }
+
+    return { occupied: false };
   };
 
   const onSubmit = async (data: AppointmentFormData) => {
@@ -194,8 +271,9 @@ const ManualAppointmentDialog = ({
       const endTime = addMinutes(startTime, durationMinutes);
 
       // Check for conflicts before submitting
-      if (isTimeSlotOccupied(data.start_time, durationMinutes)) {
-        toast.error('Este horário já está ocupado. Escolha outro horário.');
+      const slotCheck = isTimeSlotOccupied(data.start_time, durationMinutes);
+      if (slotCheck.occupied) {
+        toast.error(`Este horário está ${slotCheck.reason}. Escolha outro horário.`);
         setLoading(false);
         return;
       }
@@ -320,15 +398,15 @@ const ManualAppointmentDialog = ({
                       </FormControl>
                       <SelectContent className="max-h-[200px]">
                         {timeSlots.map((time) => {
-                          const isOccupied = isTimeSlotOccupied(time, durationMinutes);
+                          const slotStatus = isTimeSlotOccupied(time, durationMinutes);
                           return (
                             <SelectItem 
                               key={time} 
                               value={time} 
-                              disabled={isOccupied}
-                              className={isOccupied ? 'text-muted-foreground line-through' : ''}
+                              disabled={slotStatus.occupied}
+                              className={slotStatus.occupied ? 'text-muted-foreground line-through' : ''}
                             >
-                              {time} {isOccupied && '(ocupado)'}
+                              {time} {slotStatus.occupied && `(${slotStatus.reason})`}
                             </SelectItem>
                           );
                         })}
