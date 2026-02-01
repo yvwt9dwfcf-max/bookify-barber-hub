@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { format, addMinutes, setHours, setMinutes, startOfDay, endOfDay, isBefore, isAfter } from 'date-fns';
+import { format, addMinutes, setHours, setMinutes } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { supabase, Barber, Service, OpeningHours } from '@/lib/supabase';
+import { supabase, Barber, Service } from '@/lib/supabase';
+import { useAvailability } from '@/hooks/useAvailability';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import {
@@ -43,19 +44,6 @@ const appointmentSchema = z.object({
 
 type AppointmentFormData = z.infer<typeof appointmentSchema>;
 
-interface Appointment {
-  id: string;
-  start_time: string;
-  end_time: string;
-  status: string;
-}
-
-interface BlockedSlotLocal {
-  id: string;
-  start_time: string;
-  end_time: string;
-}
-
 interface ManualAppointmentDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -72,11 +60,17 @@ const ManualAppointmentDialog = ({
   onSuccess,
 }: ManualAppointmentDialogProps) => {
   const [services, setServices] = useState<Service[]>([]);
-  const [existingAppointments, setExistingAppointments] = useState<Appointment[]>([]);
-  const [blockedSlots, setBlockedSlots] = useState<BlockedSlotLocal[]>([]);
-  const [openingHours, setOpeningHours] = useState<OpeningHours | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingServices, setLoadingServices] = useState(true);
+
+  // Use the unified availability hook
+  const { 
+    checkSlotAvailability, 
+    refetch: refetchAvailability 
+  } = useAvailability({ 
+    barberId: barber.id, 
+    selectedDate 
+  });
 
   const form = useForm<AppointmentFormData>({
     resolver: zodResolver(appointmentSchema),
@@ -92,9 +86,7 @@ const ManualAppointmentDialog = ({
   useEffect(() => {
     if (open) {
       fetchServices();
-      fetchExistingAppointments();
-      fetchBlockedSlots();
-      fetchOpeningHours();
+      refetchAvailability();
       form.reset();
     }
   }, [open, selectedDate]);
@@ -148,64 +140,6 @@ const ManualAppointmentDialog = ({
     }
   };
 
-  const fetchExistingAppointments = async () => {
-    try {
-      const dayStart = startOfDay(selectedDate).toISOString();
-      const dayEnd = endOfDay(selectedDate).toISOString();
-
-      const { data, error } = await supabase
-        .from('appointments')
-        .select('id, start_time, end_time, status')
-        .eq('barber_id', barber.id)
-        .gte('start_time', dayStart)
-        .lte('start_time', dayEnd)
-        .in('status', ['confirmed', 'completed']);
-
-      if (error) throw error;
-      setExistingAppointments(data || []);
-    } catch (error) {
-      console.error('Erro ao buscar agendamentos existentes:', error);
-    }
-  };
-
-  const fetchBlockedSlots = async () => {
-    try {
-      const dayStart = startOfDay(selectedDate).toISOString();
-      const dayEnd = endOfDay(selectedDate).toISOString();
-
-      const { data, error } = await supabase
-        .from('blocked_slots')
-        .select('id, start_time, end_time')
-        .eq('barber_id', barber.id)
-        .or(`start_time.gte.${dayStart},end_time.lte.${dayEnd}`)
-        .or(`start_time.lte.${dayStart},end_time.gte.${dayEnd}`);
-
-      if (error) throw error;
-      setBlockedSlots(data || []);
-    } catch (error) {
-      console.error('Erro ao buscar bloqueios:', error);
-    }
-  };
-
-  const fetchOpeningHours = async () => {
-    try {
-      const dayOfWeek = selectedDate.getDay();
-
-      const { data, error } = await supabase
-        .from('opening_hours')
-        .select('*')
-        .eq('barber_id', barber.id)
-        .eq('day_of_week', dayOfWeek)
-        .eq('is_open', true)
-        .maybeSingle();
-
-      if (error) throw error;
-      setOpeningHours(data as OpeningHours | null);
-    } catch (error) {
-      console.error('Erro ao buscar horários:', error);
-    }
-  };
-
   const generateTimeSlots = () => {
     const slots: string[] = [];
     for (let hour = 6; hour < 22; hour++) {
@@ -217,46 +151,12 @@ const ManualAppointmentDialog = ({
     return slots;
   };
 
-  const isTimeSlotOccupied = (timeSlot: string, durationMinutes: number): { occupied: boolean; reason?: string } => {
-    const [hours, minutes] = timeSlot.split(':').map(Number);
-    const slotStart = setMinutes(setHours(selectedDate, hours), minutes);
-    const slotEnd = addMinutes(slotStart, durationMinutes);
-
-    // Check break time
-    if (openingHours?.break_start && openingHours?.break_end) {
-      const [bsHour, bsMin] = openingHours.break_start.split(':').map(Number);
-      const [beHour, beMin] = openingHours.break_end.split(':').map(Number);
-      const breakStart = setMinutes(setHours(selectedDate, bsHour), bsMin);
-      const breakEnd = setMinutes(setHours(selectedDate, beHour), beMin);
-      
-      if (isBefore(slotStart, breakEnd) && isAfter(slotEnd, breakStart)) {
-        return { occupied: true, reason: 'intervalo' };
-      }
-    }
-
-    // Check blocked slots
-    const isBlocked = blockedSlots.some((blocked) => {
-      const blockedStart = new Date(blocked.start_time);
-      const blockedEnd = new Date(blocked.end_time);
-      return isBefore(slotStart, blockedEnd) && isAfter(slotEnd, blockedStart);
-    });
-    
-    if (isBlocked) {
-      return { occupied: true, reason: 'bloqueado' };
-    }
-
-    // Check existing appointments
-    const hasAppointment = existingAppointments.some((apt) => {
-      const aptStart = new Date(apt.start_time);
-      const aptEnd = new Date(apt.end_time);
-      return slotStart < aptEnd && slotEnd > aptStart;
-    });
-
-    if (hasAppointment) {
-      return { occupied: true, reason: 'ocupado' };
-    }
-
-    return { occupied: false };
+  const getSlotStatus = (timeSlot: string, durationMinutes: number) => {
+    const availability = checkSlotAvailability(timeSlot, selectedDate, durationMinutes);
+    return {
+      occupied: !availability.available,
+      reason: availability.reason,
+    };
   };
 
   const onSubmit = async (data: AppointmentFormData) => {
@@ -270,10 +170,11 @@ const ManualAppointmentDialog = ({
       const startTime = setMinutes(setHours(selectedDate, hours), minutes);
       const endTime = addMinutes(startTime, durationMinutes);
 
-      // Check for conflicts before submitting
-      const slotCheck = isTimeSlotOccupied(data.start_time, durationMinutes);
+      // Check for conflicts before submitting using unified availability check
+      const slotCheck = getSlotStatus(data.start_time, durationMinutes);
       if (slotCheck.occupied) {
-        toast.error(`Este horário está ${slotCheck.reason}. Escolha outro horário.`);
+        const reasonText = slotCheck.reason === 'intervalo' ? 'no intervalo' : slotCheck.reason;
+        toast.error(`Horário indisponível (${reasonText}). Escolha outro horário.`);
         setLoading(false);
         return;
       }
@@ -398,7 +299,7 @@ const ManualAppointmentDialog = ({
                       </FormControl>
                       <SelectContent className="max-h-[200px]">
                         {timeSlots.map((time) => {
-                          const slotStatus = isTimeSlotOccupied(time, durationMinutes);
+                          const slotStatus = getSlotStatus(time, durationMinutes);
                           return (
                             <SelectItem 
                               key={time} 
