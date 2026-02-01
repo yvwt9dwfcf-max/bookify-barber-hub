@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { supabase, Service, Barber } from '@/lib/supabase';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
 import { 
   Dialog, 
   DialogContent, 
@@ -13,9 +14,10 @@ import {
   DialogTitle, 
   DialogTrigger,
   DialogFooter,
-  DialogClose
+  DialogClose,
+  DialogDescription,
 } from '@/components/ui/dialog';
-import { Scissors, Plus, Pencil, Trash2, Loader2, Clock } from 'lucide-react';
+import { Scissors, Plus, Pencil, Trash2, Loader2, Clock, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   AlertDialog,
@@ -28,6 +30,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
 
 interface ContextType {
   barber: Barber | null;
@@ -35,12 +38,17 @@ interface ContextType {
   isMaster: boolean;
 }
 
+interface ServiceWithBarbers extends Service {
+  assignedBarberIds: string[];
+}
+
 const Servicos = () => {
-  const { barber } = useOutletContext<ContextType>();
-  const [services, setServices] = useState<Service[]>([]);
+  const { barber, barbershop, isMaster } = useOutletContext<ContextType>();
+  const [services, setServices] = useState<ServiceWithBarbers[]>([]);
+  const [barbers, setBarbers] = useState<Barber[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingService, setEditingService] = useState<Service | null>(null);
+  const [editingService, setEditingService] = useState<ServiceWithBarbers | null>(null);
   const [saving, setSaving] = useState(false);
 
   // Form state
@@ -48,27 +56,56 @@ const Servicos = () => {
   const [price, setPrice] = useState('');
   const [duration, setDuration] = useState('30');
   const [active, setActive] = useState(true);
+  const [selectedBarberIds, setSelectedBarberIds] = useState<string[]>([]);
 
   useEffect(() => {
-    if (barber) {
-      fetchServices();
+    if (barbershop) {
+      fetchData();
     }
-  }, [barber]);
+  }, [barbershop]);
 
-  const fetchServices = async () => {
-    if (!barber) return;
+  const fetchData = async () => {
+    if (!barbershop) return;
 
     try {
-      const { data, error } = await supabase
+      // Fetch services da barbearia
+      const { data: servicesData, error: servicesError } = await supabase
         .from('services')
         .select('*')
-        .eq('barber_id', barber.id)
+        .eq('barbershop_id', barbershop.id)
         .order('name');
 
-      if (error) throw error;
-      setServices(data || []);
+      if (servicesError) throw servicesError;
+
+      // Fetch barbers da barbearia
+      const { data: barbersData, error: barbersError } = await supabase
+        .from('barbers')
+        .select('*')
+        .eq('barbershop_id', barbershop.id)
+        .eq('is_active', true)
+        .order('name');
+
+      if (barbersError) throw barbersError;
+
+      // Fetch barber_services associations
+      const { data: barberServicesData, error: bsError } = await supabase
+        .from('barber_services')
+        .select('barber_id, service_id');
+
+      if (bsError) throw bsError;
+
+      // Map services with their assigned barbers
+      const servicesWithBarbers = (servicesData || []).map(service => ({
+        ...service,
+        assignedBarberIds: (barberServicesData || [])
+          .filter(bs => bs.service_id === service.id)
+          .map(bs => bs.barber_id)
+      }));
+
+      setServices(servicesWithBarbers);
+      setBarbers(barbersData || []);
     } catch (error) {
-      console.error('Erro ao buscar serviços:', error);
+      console.error('Erro ao buscar dados:', error);
       toast.error('Erro ao carregar serviços');
     } finally {
       setLoading(false);
@@ -80,20 +117,29 @@ const Servicos = () => {
     setPrice('');
     setDuration('30');
     setActive(true);
+    setSelectedBarberIds([]);
     setEditingService(null);
   };
 
-  const openEditDialog = (service: Service) => {
+  const openEditDialog = (service: ServiceWithBarbers) => {
     setEditingService(service);
     setName(service.name);
     setPrice(String(service.price));
     setDuration(String(service.duration_minutes));
     setActive(service.active);
+    setSelectedBarberIds(service.assignedBarberIds);
+    setDialogOpen(true);
+  };
+
+  const openNewDialog = () => {
+    resetForm();
+    // Por padrão, todos os barbeiros ativos são selecionados para novos serviços
+    setSelectedBarberIds(barbers.map(b => b.id));
     setDialogOpen(true);
   };
 
   const handleSubmit = async () => {
-    if (!barber) return;
+    if (!barbershop || !barber) return;
     if (!name.trim()) {
       toast.error('Digite o nome do serviço');
       return;
@@ -109,7 +155,10 @@ const Servicos = () => {
 
     setSaving(true);
     try {
+      let serviceId: string;
+
       if (editingService) {
+        // Update existing service
         const { error } = await supabase
           .from('services')
           .update({
@@ -121,27 +170,56 @@ const Servicos = () => {
           .eq('id', editingService.id);
 
         if (error) throw error;
+        serviceId = editingService.id;
+
+        // Remove old associations
+        await supabase
+          .from('barber_services')
+          .delete()
+          .eq('service_id', serviceId);
+
         toast.success('Serviço atualizado');
       } else {
-        const { error } = await supabase
+        // Create new service - belongs to barbershop
+        const { data: newService, error } = await supabase
           .from('services')
           .insert({
-            barber_id: barber.id,
-            barbershop_id: barber.barbershop_id || null,
+            barber_id: barber.id, // Mantém para compatibilidade com RLS existente
+            barbershop_id: barbershop.id,
             name: name.trim(),
             price: Number(price),
             duration_minutes: Number(duration),
             active,
-          });
+          })
+          .select()
+          .single();
 
         if (error) throw error;
+        serviceId = newService.id;
         toast.success('Serviço criado');
+      }
+
+      // Create barber_services associations
+      if (selectedBarberIds.length > 0) {
+        const associations = selectedBarberIds.map(barberId => ({
+          barber_id: barberId,
+          service_id: serviceId,
+        }));
+
+        const { error: assocError } = await supabase
+          .from('barber_services')
+          .insert(associations);
+
+        if (assocError) {
+          console.error('Erro ao associar barbeiros:', assocError);
+        }
       }
 
       setDialogOpen(false);
       resetForm();
-      fetchServices();
+      fetchData();
     } catch (error) {
+      console.error('Erro ao salvar serviço:', error);
       toast.error('Erro ao salvar serviço');
     } finally {
       setSaving(false);
@@ -150,6 +228,13 @@ const Servicos = () => {
 
   const handleDelete = async (id: string) => {
     try {
+      // Delete associations first
+      await supabase
+        .from('barber_services')
+        .delete()
+        .eq('service_id', id);
+
+      // Delete service
       const { error } = await supabase
         .from('services')
         .delete()
@@ -157,10 +242,18 @@ const Servicos = () => {
 
       if (error) throw error;
       toast.success('Serviço excluído');
-      fetchServices();
+      fetchData();
     } catch (error) {
       toast.error('Erro ao excluir serviço');
     }
+  };
+
+  const toggleBarber = (barberId: string) => {
+    setSelectedBarberIds(prev => 
+      prev.includes(barberId)
+        ? prev.filter(id => id !== barberId)
+        : [...prev, barberId]
+    );
   };
 
   const formatPrice = (price: number) => {
@@ -185,88 +278,128 @@ const Servicos = () => {
         <div>
           <h1 className="text-2xl font-bold">Serviços</h1>
           <p className="text-muted-foreground">
-            Gerencie os serviços que você oferece
+            {isMaster 
+              ? 'Gerencie os serviços oferecidos pela barbearia'
+              : 'Serviços oferecidos pela barbearia'}
           </p>
         </div>
 
-        <Dialog open={dialogOpen} onOpenChange={(open) => {
-          setDialogOpen(open);
-          if (!open) resetForm();
-        }}>
-          <DialogTrigger asChild>
-            <Button className="btn-primary-gradient">
-              <Plus className="mr-2 h-4 w-4" />
-              Novo serviço
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>
-                {editingService ? 'Editar serviço' : 'Novo serviço'}
-              </DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Nome do serviço</Label>
-                <Input
-                  id="name"
-                  placeholder="Ex: Corte masculino"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="price">Preço (R$)</Label>
-                  <Input
-                    id="price"
-                    type="number"
-                    placeholder="0.00"
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
-                    min="0"
-                    step="0.01"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="duration">Duração (min)</Label>
-                  <Input
-                    id="duration"
-                    type="number"
-                    placeholder="30"
-                    value={duration}
-                    onChange={(e) => setDuration(e.target.value)}
-                    min="5"
-                    step="5"
-                  />
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <Label htmlFor="active">Serviço ativo</Label>
-                <Switch
-                  id="active"
-                  checked={active}
-                  onCheckedChange={setActive}
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button variant="outline">Cancelar</Button>
-              </DialogClose>
-              <Button onClick={handleSubmit} disabled={saving}>
-                {saving ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Salvando...
-                  </>
-                ) : (
-                  'Salvar'
-                )}
+        {isMaster && (
+          <Dialog open={dialogOpen} onOpenChange={(open) => {
+            setDialogOpen(open);
+            if (!open) resetForm();
+          }}>
+            <DialogTrigger asChild>
+              <Button className="btn-primary-gradient" onClick={openNewDialog}>
+                <Plus className="mr-2 h-4 w-4" />
+                Novo serviço
               </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+            </DialogTrigger>
+            <DialogContent className="max-w-lg">
+              <DialogHeader>
+                <DialogTitle>
+                  {editingService ? 'Editar serviço' : 'Novo serviço'}
+                </DialogTitle>
+                <DialogDescription>
+                  {editingService 
+                    ? 'Atualize as informações do serviço'
+                    : 'Adicione um novo serviço à barbearia'}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Nome do serviço</Label>
+                  <Input
+                    id="name"
+                    placeholder="Ex: Corte masculino"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="price">Preço (R$)</Label>
+                    <Input
+                      id="price"
+                      type="number"
+                      placeholder="0.00"
+                      value={price}
+                      onChange={(e) => setPrice(e.target.value)}
+                      min="0"
+                      step="0.01"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="duration">Duração (min)</Label>
+                    <Input
+                      id="duration"
+                      type="number"
+                      placeholder="30"
+                      value={duration}
+                      onChange={(e) => setDuration(e.target.value)}
+                      min="5"
+                      step="5"
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="active">Serviço ativo</Label>
+                  <Switch
+                    id="active"
+                    checked={active}
+                    onCheckedChange={setActive}
+                  />
+                </div>
+
+                {/* Seleção de barbeiros */}
+                <div className="space-y-3">
+                  <Label className="flex items-center gap-2">
+                    <Users className="h-4 w-4" />
+                    Barbeiros que atendem este serviço
+                  </Label>
+                  <div className="border rounded-lg p-3 space-y-2 max-h-40 overflow-y-auto">
+                    {barbers.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">
+                        Nenhum barbeiro cadastrado
+                      </p>
+                    ) : (
+                      barbers.map(b => (
+                        <div key={b.id} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`barber-${b.id}`}
+                            checked={selectedBarberIds.includes(b.id)}
+                            onCheckedChange={() => toggleBarber(b.id)}
+                          />
+                          <label
+                            htmlFor={`barber-${b.id}`}
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                          >
+                            {b.name}
+                          </label>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button variant="outline">Cancelar</Button>
+                </DialogClose>
+                <Button onClick={handleSubmit} disabled={saving}>
+                  {saving ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Salvando...
+                    </>
+                  ) : (
+                    'Salvar'
+                  )}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
 
       {/* Services List */}
@@ -276,12 +409,16 @@ const Servicos = () => {
             <Scissors className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-lg font-medium mb-2">Nenhum serviço cadastrado</h3>
             <p className="text-muted-foreground mb-4">
-              Adicione seus serviços para que clientes possam agendar.
+              {isMaster 
+                ? 'Adicione serviços para que clientes possam agendar.'
+                : 'Aguarde o administrador cadastrar os serviços.'}
             </p>
-            <Button onClick={() => setDialogOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Adicionar serviço
-            </Button>
+            {isMaster && (
+              <Button onClick={openNewDialog}>
+                <Plus className="mr-2 h-4 w-4" />
+                Adicionar serviço
+              </Button>
+            )}
           </CardContent>
         </Card>
       ) : (
@@ -310,41 +447,59 @@ const Servicos = () => {
                           Inativo
                         </span>
                       )}
+                      {/* Mostrar barbeiros associados */}
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {service.assignedBarberIds.length === 0 ? (
+                          <Badge variant="outline" className="text-xs text-muted-foreground">
+                            Nenhum barbeiro
+                          </Badge>
+                        ) : service.assignedBarberIds.length === barbers.length ? (
+                          <Badge variant="secondary" className="text-xs">
+                            Todos os barbeiros
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-xs">
+                            {service.assignedBarberIds.length} barbeiro(s)
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                   </div>
-                  <div className="flex gap-1">
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => openEditDialog(service)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button size="icon" variant="ghost">
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Excluir serviço?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Esta ação não pode ser desfeita. O serviço "{service.name}" será permanentemente excluído.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => handleDelete(service.id)}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          >
-                            Excluir
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
+                  {isMaster && (
+                    <div className="flex gap-1">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => openEditDialog(service)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button size="icon" variant="ghost">
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Excluir serviço?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Esta ação não pode ser desfeita. O serviço "{service.name}" será permanentemente excluído.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDelete(service.id)}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              Excluir
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>

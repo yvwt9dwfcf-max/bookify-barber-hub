@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { supabase, Appointment, Barber, Barbershop, DAY_NAMES } from '@/lib/supabase';
+import { supabase, Appointment, Barber, Barbershop } from '@/lib/supabase';
 import { useRealtimeAppointments } from '@/hooks/useRealtimeAppointments';
+import { useBarbershopBarbers } from '@/hooks/useBarbershopBarbers';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar, CalendarDays, ChevronLeft, ChevronRight, User, Clock, Phone, Loader2, Plus, Trash2, Bell } from 'lucide-react';
+import { Calendar, CalendarDays, ChevronLeft, ChevronRight, User, Clock, Phone, Loader2, Plus, Trash2 } from 'lucide-react';
 import { format, addDays, startOfDay, isSameDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -20,6 +21,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import MonthlyCalendar from '@/components/painel/MonthlyCalendar';
 import ManualAppointmentDialog from '@/components/painel/ManualAppointmentDialog';
 
@@ -32,32 +40,46 @@ interface ContextType {
 type ViewMode = 'daily' | 'monthly';
 
 const Agenda = () => {
-  const { barber } = useOutletContext<ContextType>();
+  const { barber, barbershop, isMaster } = useOutletContext<ContextType>();
+  const { barbers } = useBarbershopBarbers();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(startOfDay(new Date()));
   const [viewMode, setViewMode] = useState<ViewMode>('daily');
   const [showManualDialog, setShowManualDialog] = useState(false);
+  
+  // Barbeiro selecionado para visualização (master pode ver agenda de outros)
+  const [selectedBarberId, setSelectedBarberId] = useState<string | null>(null);
+  
+  // Barbeiro usado para o diálogo de novo agendamento
+  const selectedBarber = barbers.find(b => b.id === selectedBarberId) || barber;
+
+  // Inicializar com o barbeiro do contexto
+  useEffect(() => {
+    if (barber && !selectedBarberId) {
+      setSelectedBarberId(barber.id);
+    }
+  }, [barber, selectedBarberId]);
 
   // Memoize the callback to prevent unnecessary re-subscriptions
   const handleNewAppointment = useCallback(() => {
     fetchAppointments();
-  }, [barber, selectedDate]);
+  }, [selectedBarberId, selectedDate]);
 
   // Subscribe to realtime appointment updates
   useRealtimeAppointments({
-    barberId: barber?.id,
+    barberId: selectedBarberId || undefined,
     onNewAppointment: handleNewAppointment,
   });
 
   useEffect(() => {
-    if (barber) {
+    if (selectedBarberId) {
       fetchAppointments();
     }
-  }, [barber, selectedDate]);
+  }, [selectedBarberId, selectedDate]);
 
   const fetchAppointments = async () => {
-    if (!barber) return;
+    if (!selectedBarberId) return;
 
     try {
       const startOfSelectedDay = startOfDay(selectedDate);
@@ -67,9 +89,10 @@ const Agenda = () => {
         .from('appointments')
         .select(`
           *,
-          service:services(*)
+          service:services(*),
+          barber:barbers(*)
         `)
-        .eq('barber_id', barber.id)
+        .eq('barber_id', selectedBarberId)
         .gte('start_time', startOfSelectedDay.toISOString())
         .lt('start_time', endOfSelectedDay.toISOString())
         .order('start_time');
@@ -148,7 +171,7 @@ const Agenda = () => {
     return days;
   };
 
-  if (loading) {
+  if (loading && !selectedBarberId) {
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -172,7 +195,7 @@ const Agenda = () => {
         <div>
           <h1 className="text-2xl font-bold">Agenda</h1>
           <p className="text-muted-foreground">
-            {viewMode === 'daily' ? 'Gerencie seus agendamentos do dia' : 'Visão geral do mês'}
+            {viewMode === 'daily' ? 'Gerencie os agendamentos do dia' : 'Visão geral do mês'}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -202,21 +225,50 @@ const Agenda = () => {
         </div>
       </div>
 
+      {/* Seletor de barbeiro para master */}
+      {isMaster && barbers.length > 1 && (
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <User className="h-5 w-5 text-muted-foreground" />
+              <div className="flex-1">
+                <label className="text-sm font-medium">Visualizando agenda de:</label>
+                <Select
+                  value={selectedBarberId || ''}
+                  onValueChange={(value) => setSelectedBarberId(value)}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Selecione um barbeiro" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {barbers.map((b) => (
+                      <SelectItem key={b.id} value={b.id}>
+                        {b.name} {b.id === barber?.id ? '(você)' : ''}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Manual Appointment Dialog */}
-      {barber && (
+      {selectedBarber && (
         <ManualAppointmentDialog
           open={showManualDialog}
           onOpenChange={setShowManualDialog}
-          barber={barber}
+          barber={selectedBarber}
           selectedDate={selectedDate}
           onSuccess={fetchAppointments}
         />
       )}
 
       {/* Monthly Calendar View */}
-      {viewMode === 'monthly' && barber && (
+      {viewMode === 'monthly' && selectedBarber && (
         <MonthlyCalendar
-          barber={barber}
+          barber={selectedBarber}
           onDateSelect={handleDateSelectFromCalendar}
           selectedDate={selectedDate}
         />
@@ -301,7 +353,11 @@ const Agenda = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {appointments.length === 0 ? (
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            </div>
+          ) : appointments.length === 0 ? (
             <div className="text-center py-8">
               <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
               <p className="text-muted-foreground">
