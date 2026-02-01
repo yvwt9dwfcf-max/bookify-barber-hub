@@ -1,1 +1,4 @@
 project_id = "mtdshkvdggyiqovjteit"
+
+[functions.add-barber]
+verify_jwt = false
