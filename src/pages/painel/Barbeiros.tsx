@@ -64,13 +64,8 @@ const Barbeiros = () => {
   const handleAddBarber = async () => {
     if (!barbershop || !isMaster) return;
 
-    if (!newBarberName.trim() || !newBarberEmail.trim() || !newBarberPassword.trim()) {
-      toast.error('Preencha todos os campos');
-      return;
-    }
-
-    if (newBarberPassword.length < 6) {
-      toast.error('A senha deve ter pelo menos 6 caracteres');
+    if (!newBarberName.trim() || !newBarberEmail.trim()) {
+      toast.error('Preencha nome e email');
       return;
     }
 
@@ -81,70 +76,43 @@ const Barbeiros = () => {
 
     setSaving(true);
     try {
-      // Create auth user
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: newBarberEmail.trim(),
-        password: newBarberPassword,
-        options: {
-          data: {
-            name: newBarberName.trim(),
-            is_barber_invite: true, // Flag to prevent creating new barbershop
+      const { data: session } = await supabase.auth.getSession();
+      
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/add-barber`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.session?.access_token}`,
           },
-        },
-      });
+          body: JSON.stringify({
+            name: newBarberName.trim(),
+            email: newBarberEmail.trim(),
+            password: newBarberPassword || undefined,
+            barbershop_id: barbershop.id,
+            permissions: {
+              can_edit_own_schedule: true,
+              can_view_others_schedule: false,
+              can_edit_others_schedule: false,
+            },
+          }),
+        }
+      );
 
-      if (authError) throw authError;
-      if (!authData.user) throw new Error('Erro ao criar usuário');
+      const result = await response.json();
 
-      // Create barber profile
-      const { data: barberData, error: barberError } = await supabase
-        .from('barbers')
-        .insert({
-          auth_id: authData.user.id,
-          name: newBarberName.trim(),
-          email: newBarberEmail.trim(),
-          barbershop_id: barbershop.id,
-          is_active: true,
-        })
-        .select()
-        .single();
+      if (!response.ok) {
+        throw new Error(result.error || 'Erro ao adicionar barbeiro');
+      }
 
-      if (barberError) throw barberError;
-
-      // Create user role as barber
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .insert({
-          user_id: authData.user.id,
-          role: 'barber',
-          barbershop_id: barbershop.id,
-        });
-
-      if (roleError) throw roleError;
-
-      // Create default permissions
-      const { error: permError } = await supabase
-        .from('barber_permissions')
-        .insert({
-          barber_id: barberData.id,
-          can_edit_own_schedule: true,
-          can_view_others_schedule: false,
-          can_edit_others_schedule: false,
-        });
-
-      if (permError) throw permError;
-
-      toast.success('Barbeiro adicionado com sucesso!');
+      toast.success(result.message || 'Barbeiro adicionado com sucesso!');
       resetAddForm();
       setShowAddDialog(false);
       refetch();
     } catch (error: any) {
       console.error('Erro ao adicionar barbeiro:', error);
-      if (error.message?.includes('already registered')) {
-        toast.error('Este email já está cadastrado');
-      } else {
-        toast.error('Erro ao adicionar barbeiro');
-      }
+      toast.error(error.message || 'Erro ao adicionar barbeiro');
     } finally {
       setSaving(false);
     }
@@ -271,12 +239,12 @@ const Barbeiros = () => {
           </Button>
         </DialogTrigger>
         <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Adicionar Barbeiro</DialogTitle>
-            <DialogDescription>
-              Crie uma conta para o novo membro da equipe
-            </DialogDescription>
-          </DialogHeader>
+        <DialogHeader>
+          <DialogTitle>Adicionar Barbeiro</DialogTitle>
+          <DialogDescription>
+            Adicione um novo membro à equipe. Se o email já existir, o usuário será vinculado automaticamente.
+          </DialogDescription>
+        </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="barber-name">Nome</Label>
@@ -306,20 +274,20 @@ const Barbeiros = () => {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="barber-password">Senha inicial</Label>
+              <Label htmlFor="barber-password">Senha inicial (opcional)</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="barber-password"
                   type="password"
-                  placeholder="Mínimo 6 caracteres"
+                  placeholder="Necessária apenas para novos usuários"
                   value={newBarberPassword}
                   onChange={(e) => setNewBarberPassword(e.target.value)}
                   className="pl-10"
                 />
               </div>
               <p className="text-xs text-muted-foreground">
-                O barbeiro poderá alterar a senha após o primeiro login
+                Deixe em branco se o usuário já possui conta. Para novos usuários, mínimo 6 caracteres.
               </p>
             </div>
           </div>
