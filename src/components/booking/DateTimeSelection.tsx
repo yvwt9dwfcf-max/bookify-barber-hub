@@ -72,7 +72,7 @@ export function DateTimeSelection({ barberId, serviceDuration, onSelect }: DateT
   const availableSlots = selectedDate ? getAvailableSlotsForDate(selectedDate, serviceDuration) : [];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
         <h2 className="text-xl font-semibold">Escolha a data e horário</h2>
         <p className="text-muted-foreground text-sm mt-1">
@@ -81,25 +81,31 @@ export function DateTimeSelection({ barberId, serviceDuration, onSelect }: DateT
       </div>
 
       {/* Calendar Navigation */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between">
         <Button
           variant="outline"
           size="icon"
           onClick={goToPreviousWeek}
           disabled={isSameDay(weekStart, startOfDay(new Date()))}
+          className="transition-all duration-200 ease-out hover:-translate-y-0.5 active:scale-95"
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
         <span className="font-medium">
           {format(weekStart, "MMMM 'de' yyyy", { locale: ptBR })}
         </span>
-        <Button variant="outline" size="icon" onClick={goToNextWeek}>
+        <Button 
+          variant="outline" 
+          size="icon" 
+          onClick={goToNextWeek}
+          className="transition-all duration-200 ease-out hover:-translate-y-0.5 active:scale-95"
+        >
           <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
 
       {/* Days Grid */}
-      <div className="grid grid-cols-7 gap-2">
+      <div className="grid grid-cols-7 gap-3">
         {days.map((day) => {
           const dayOfWeek = day.getDay();
           const isOpen = !!getOpeningHoursForDay(dayOfWeek);
@@ -113,10 +119,11 @@ export function DateTimeSelection({ barberId, serviceDuration, onSelect }: DateT
               onClick={() => hasSlots && handleDateSelect(day)}
               disabled={!hasSlots}
               className={cn(
-                'flex flex-col items-center p-2 rounded-lg transition-all duration-200',
-                hasSlots && 'hover:bg-accent cursor-pointer',
-                !hasSlots && 'opacity-50 cursor-not-allowed',
-                isSelected && 'bg-primary text-primary-foreground hover:bg-primary'
+                'flex flex-col items-center p-3 rounded-xl border transition-all duration-200 ease-out',
+                'bg-white/60 dark:bg-card/60 backdrop-blur-[10px]',
+                hasSlots && 'hover:-translate-y-0.5 hover:shadow-md cursor-pointer border-white/30 dark:border-border/40',
+                !hasSlots && 'opacity-40 cursor-not-allowed border-transparent',
+                isSelected && 'bg-primary text-primary-foreground border-primary shadow-md hover:bg-primary'
               )}
             >
               <span className="text-xs font-medium uppercase">
@@ -132,28 +139,29 @@ export function DateTimeSelection({ barberId, serviceDuration, onSelect }: DateT
 
       {/* Time Slots */}
       {selectedDate && (
-        <div className="mt-6">
-          <h3 className="font-medium mb-4 flex items-center gap-2">
+        <div className="space-y-4 animate-fade-in">
+          <h3 className="font-medium flex items-center gap-2">
             <Clock className="h-4 w-4" />
             Horários disponíveis para {format(selectedDate, "d 'de' MMMM", { locale: ptBR })}
           </h3>
           
           {availableSlots.length === 0 ? (
-            <p className="text-muted-foreground text-center py-4">
+            <p className="text-muted-foreground text-center py-6">
               Nenhum horário disponível para esta data.
             </p>
           ) : (
-            <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
+            <div className="grid grid-cols-4 sm:grid-cols-6 gap-3">
               {availableSlots.map((time) => (
                 <button
                   key={time}
                   onClick={() => handleTimeSelect(time)}
                   className={cn(
-                    'py-2 px-3 rounded-lg border-2 font-medium transition-all duration-200',
-                    'hover:border-primary hover:bg-accent',
+                    'py-3 px-3 rounded-xl border font-medium transition-all duration-200 ease-out',
+                    'bg-white/60 dark:bg-card/60 backdrop-blur-[10px]',
+                    'hover:-translate-y-0.5 hover:shadow-md active:scale-95',
                     selectedTime === time
-                      ? 'border-primary bg-primary text-primary-foreground hover:bg-primary'
-                      : 'border-border'
+                      ? 'border-primary bg-primary text-primary-foreground shadow-md'
+                      : 'border-white/30 dark:border-border/40 hover:border-primary/50'
                   )}
                 >
                   {time}
