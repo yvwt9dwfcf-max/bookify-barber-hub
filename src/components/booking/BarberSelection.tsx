@@ -74,23 +74,27 @@ export function BarberSelection({ onSelect, barbershopId, availableBarbers }: Ba
   }
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-xl font-semibold">Escolha o profissional</h2>
-      <p className="text-muted-foreground text-sm">
-        Selecione o barbeiro de sua preferência
-      </p>
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-xl font-semibold">Escolha o profissional</h2>
+        <p className="text-muted-foreground text-sm mt-1">
+          Selecione o barbeiro de sua preferência
+        </p>
+      </div>
 
-      <div className="grid gap-3 mt-6">
+      <div className="grid gap-4">
         {barbers.map((barber) => (
           <button
             key={barber.id}
             onClick={() => handleSelect(barber)}
             className={cn(
-              'flex items-center gap-4 p-4 rounded-xl border-2 transition-all duration-200 text-left',
-              'hover:border-primary hover:bg-accent',
+              'flex items-center gap-5 p-5 rounded-2xl border transition-all duration-200 ease-out text-left',
+              'bg-white/60 dark:bg-card/60 backdrop-blur-[10px]',
+              'shadow-sm hover:shadow-lg',
+              'hover:-translate-y-1 active:scale-[0.98]',
               selected === barber.id
-                ? 'border-primary bg-accent'
-                : 'border-border'
+                ? 'border-primary bg-primary/5 dark:bg-primary/10 shadow-md'
+                : 'border-white/30 dark:border-border/40 hover:border-primary/50'
             )}
           >
             <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">

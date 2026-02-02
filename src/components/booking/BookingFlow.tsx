@@ -148,17 +148,17 @@ export function BookingFlow({ preselectedBarber, barbershopId, availableBarbers 
   }
 
   return (
-    <div className="w-full max-w-2xl mx-auto">
+    <div className="w-full max-w-2xl mx-auto px-2">
       <StepIndicator currentStep={step} />
       
-      <Card className="mt-8 shadow-card-lg">
-        <CardContent className="p-6">
+      <Card className="mt-10 bg-white/70 dark:bg-card/70 backdrop-blur-[10px] border border-white/20 dark:border-border/30 shadow-xl rounded-2xl">
+        <CardContent className="p-8 md:p-10">
           {currentStepIndex > 0 && step !== 'confirmation' && (
             <Button
               variant="ghost"
               size="sm"
               onClick={goBack}
-              className="mb-4 -ml-2"
+              className="mb-6 -ml-2 transition-all duration-200 ease-out hover:-translate-y-0.5 active:scale-95"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
               Voltar
@@ -166,41 +166,43 @@ export function BookingFlow({ preselectedBarber, barbershopId, availableBarbers 
           )}
 
           {error && (
-            <div className="mb-4 p-4 bg-destructive/10 text-destructive rounded-lg text-sm">
+            <div className="mb-6 p-4 bg-destructive/10 text-destructive rounded-xl text-sm">
               {error}
             </div>
           )}
 
-          {step === 'barber' && (
-            <BarberSelection 
-              onSelect={handleBarberSelect} 
-              barbershopId={barbershopId}
-              availableBarbers={availableBarbers}
-            />
-          )}
+          <div key={step} className="animate-fade-in">
+            {step === 'barber' && (
+              <BarberSelection 
+                onSelect={handleBarberSelect} 
+                barbershopId={barbershopId}
+                availableBarbers={availableBarbers}
+              />
+            )}
 
-          {step === 'service' && bookingData.barber && (
-            <ServiceSelection
-              barberId={bookingData.barber.id}
-              onSelect={handleServiceSelect}
-            />
-          )}
+            {step === 'service' && bookingData.barber && (
+              <ServiceSelection
+                barberId={bookingData.barber.id}
+                onSelect={handleServiceSelect}
+              />
+            )}
 
-          {step === 'datetime' && bookingData.barber && bookingData.service && (
-            <DateTimeSelection
-              barberId={bookingData.barber.id}
-              serviceDuration={bookingData.service.duration_minutes}
-              onSelect={handleDateTimeSelect}
-            />
-          )}
+            {step === 'datetime' && bookingData.barber && bookingData.service && (
+              <DateTimeSelection
+                barberId={bookingData.barber.id}
+                serviceDuration={bookingData.service.duration_minutes}
+                onSelect={handleDateTimeSelect}
+              />
+            )}
 
-          {step === 'info' && (
-            <CustomerInfo
-              onSubmit={handleCustomerInfoSubmit}
-              isSubmitting={isSubmitting}
-              bookingData={bookingData}
-            />
-          )}
+            {step === 'info' && (
+              <CustomerInfo
+                onSubmit={handleCustomerInfoSubmit}
+                isSubmitting={isSubmitting}
+                bookingData={bookingData}
+              />
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>
