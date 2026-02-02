@@ -9,17 +9,24 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import { 
   MessageCircle, 
   Phone, 
   Loader2, 
   Save, 
-  ExternalLink,
+  Copy,
+  CheckCircle2,
   Building2,
   User,
-  Eye
+  Smartphone,
+  ChevronRight
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -54,6 +61,7 @@ const WhatsAppAtendimento = () => {
   
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [copied, setCopied] = useState(false);
   
   // Global settings (only master can change mode)
   const [settings, setSettings] = useState<WhatsAppSettings | null>(null);
@@ -140,41 +148,51 @@ const WhatsAppAtendimento = () => {
     return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
   };
 
-  const getPhoneForWhatsApp = (phone: string) => {
-    const numbers = phone.replace(/\D/g, '');
-    // Add Brazil country code if not present
-    if (numbers.length === 11) {
-      return `55${numbers}`;
-    }
-    return numbers;
-  };
-
   const getResolvedMessage = (message: string, link: string) => {
     return message.replace('{{LINK_AGENDAMENTO}}', link);
   };
 
+  // Message based on current mode and user type
+  const currentMessage = useMemo(() => {
+    if (mode === 'global') {
+      return globalMessage;
+    } else {
+      return myMessage;
+    }
+  }, [mode, globalMessage, myMessage]);
+
+  const currentLink = useMemo(() => {
+    if (mode === 'global') {
+      return barbershopLink;
+    } else {
+      return myBarberLink;
+    }
+  }, [mode, barbershopLink, myBarberLink]);
+
   // Preview message with resolved link
   const previewMessage = useMemo(() => {
-    if (mode === 'global') {
-      return getResolvedMessage(globalMessage, barbershopLink);
-    } else {
-      return getResolvedMessage(myMessage, myBarberLink);
-    }
-  }, [mode, globalMessage, myMessage, barbershopLink, myBarberLink]);
+    return getResolvedMessage(currentMessage, currentLink);
+  }, [currentMessage, currentLink]);
 
-  const previewPhone = useMemo(() => {
+  // Can edit based on mode and role
+  const canEdit = useMemo(() => {
     if (mode === 'global') {
-      return globalPhone;
+      return isMaster;
     } else {
-      return myPhone;
+      return true; // In individual mode, barber can edit their own
     }
-  }, [mode, globalPhone, myPhone]);
+  }, [mode, isMaster]);
 
-  const whatsappUrl = useMemo(() => {
-    const phone = getPhoneForWhatsApp(previewPhone);
-    const text = encodeURIComponent(previewMessage);
-    return `https://wa.me/${phone}?text=${text}`;
-  }, [previewPhone, previewMessage]);
+  const handleCopyMessage = async () => {
+    try {
+      await navigator.clipboard.writeText(previewMessage);
+      setCopied(true);
+      toast.success('Mensagem copiada!');
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error('Erro ao copiar mensagem');
+    }
+  };
 
   const handleSaveGlobalSettings = async () => {
     if (!barbershop?.id) return;
@@ -182,7 +200,6 @@ const WhatsAppAtendimento = () => {
     setSaving(true);
     try {
       if (settings?.id) {
-        // Update existing
         const { error } = await supabase
           .from('whatsapp_settings')
           .update({
@@ -194,7 +211,6 @@ const WhatsAppAtendimento = () => {
         
         if (error) throw error;
       } else {
-        // Insert new
         const { error } = await supabase
           .from('whatsapp_settings')
           .insert({
@@ -222,7 +238,6 @@ const WhatsAppAtendimento = () => {
     setSaving(true);
     try {
       if (myWhatsApp?.id) {
-        // Update existing
         const { error } = await supabase
           .from('barber_whatsapp')
           .update({
@@ -233,7 +248,6 @@ const WhatsAppAtendimento = () => {
         
         if (error) throw error;
       } else {
-        // Insert new
         const { error } = await supabase
           .from('barber_whatsapp')
           .insert({
@@ -268,14 +282,154 @@ const WhatsAppAtendimento = () => {
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <MessageCircle className="h-6 w-6 text-green-500" />
-          WhatsApp & Atendimento
+          WhatsApp e atendimento
         </h1>
         <p className="text-muted-foreground">
-          Configure a integração com WhatsApp e mensagens automáticas
+          Configure como seus clientes entram em contato para agendar horários.
         </p>
       </div>
 
-      {/* Mode Selector - Only for Master */}
+      {/* BLOCK 1 - WhatsApp Business (Recommended) */}
+      <Card className="border-green-500/30 bg-green-500/5">
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-2">
+            <Smartphone className="h-5 w-5 text-green-500" />
+            <CardTitle className="text-lg">Usando WhatsApp Business (recomendado)</CardTitle>
+          </div>
+          <CardDescription>
+            Configure uma mensagem automática para responder todos os clientes.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="instructions" className="border-none">
+              <AccordionTrigger className="hover:no-underline py-2">
+                <span className="flex items-center gap-2 text-sm font-medium text-green-600">
+                  <ChevronRight className="h-4 w-4" />
+                  Como configurar no WhatsApp Business
+                </span>
+              </AccordionTrigger>
+              <AccordionContent className="pt-2">
+                <div className="bg-muted/50 rounded-lg p-4 space-y-3">
+                  <ol className="space-y-2 text-sm">
+                    <li className="flex gap-2">
+                      <span className="font-bold text-green-600">1.</span>
+                      <span>Instale o <strong>WhatsApp Business</strong> no seu celular.</span>
+                    </li>
+                    <li className="flex gap-2">
+                      <span className="font-bold text-green-600">2.</span>
+                      <span>Vá em <strong>Ferramentas</strong> no menu.</span>
+                    </li>
+                    <li className="flex gap-2">
+                      <span className="font-bold text-green-600">3.</span>
+                      <span>Acesse <strong>Mensagens automáticas</strong>.</span>
+                    </li>
+                    <li className="flex gap-2">
+                      <span className="font-bold text-green-600">4.</span>
+                      <span>Configure a <strong>Mensagem de saudação</strong>.</span>
+                    </li>
+                    <li className="flex gap-2">
+                      <span className="font-bold text-green-600">5.</span>
+                      <span>Cole a mensagem abaixo <strong>exatamente como está</strong>.</span>
+                    </li>
+                  </ol>
+                  <div className="mt-3 p-3 bg-green-500/10 border border-green-500/20 rounded-md">
+                    <p className="text-xs text-green-700 dark:text-green-400">
+                      💡 Este é o método <strong>recomendado</strong> para automatizar seu atendimento.
+                    </p>
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </CardContent>
+      </Card>
+
+      {/* BLOCK 2 - Manual Message Copy */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Copy className="h-5 w-5" />
+            Mensagem para enviar manualmente no WhatsApp
+          </CardTitle>
+          <CardDescription>
+            Copie e cole esta mensagem quando um cliente entrar em contato.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Message Editor - Only if user can edit */}
+          {canEdit && (
+            <div className="space-y-2">
+              <Label htmlFor="message">Mensagem</Label>
+              <Textarea
+                id="message"
+                placeholder="Digite a mensagem..."
+                value={mode === 'global' ? globalMessage : myMessage}
+                onChange={(e) => {
+                  if (mode === 'global') {
+                    setGlobalMessage(e.target.value);
+                  } else {
+                    setMyMessage(e.target.value);
+                  }
+                }}
+                rows={4}
+              />
+              <p className="text-xs text-muted-foreground">
+                Use <code className="bg-muted px-1 rounded">{'{{LINK_AGENDAMENTO}}'}</code> para inserir o link automaticamente
+              </p>
+            </div>
+          )}
+
+          {/* Preview Box */}
+          <div className="p-4 bg-muted rounded-lg border">
+            <p className="text-xs text-muted-foreground mb-2 font-medium">Preview da mensagem:</p>
+            <p className="text-sm whitespace-pre-wrap">{previewMessage}</p>
+          </div>
+
+          {/* Copy Button */}
+          <Button 
+            onClick={handleCopyMessage}
+            className="w-full"
+            variant={copied ? "secondary" : "default"}
+          >
+            {copied ? (
+              <>
+                <CheckCircle2 className="mr-2 h-4 w-4 text-green-500" />
+                Mensagem copiada!
+              </>
+            ) : (
+              <>
+                <Copy className="mr-2 h-4 w-4" />
+                Copiar mensagem
+              </>
+            )}
+          </Button>
+
+          {/* Save button for editable message */}
+          {canEdit && (
+            <Button 
+              onClick={mode === 'global' ? handleSaveGlobalSettings : handleSaveMySettings} 
+              disabled={saving} 
+              variant="outline"
+              className="w-full"
+            >
+              {saving ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Salvando...
+                </>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Salvar mensagem
+                </>
+              )}
+            </Button>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* BLOCK 3 - Mode Selector (Master Only) */}
       {isMaster && (
         <Card>
           <CardHeader>
@@ -316,11 +470,25 @@ const WhatsAppAtendimento = () => {
                 </div>
               </div>
             </RadioGroup>
+
+            <Button onClick={handleSaveGlobalSettings} disabled={saving} className="w-full">
+              {saving ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Salvando...
+                </>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Salvar modo
+                </>
+              )}
+            </Button>
           </CardContent>
         </Card>
       )}
 
-      {/* Current Mode Badge - For Barbers */}
+      {/* Current Mode Badge - For Barbers (view only) */}
       {!isMaster && (
         <Card>
           <CardHeader>
@@ -335,25 +503,24 @@ const WhatsAppAtendimento = () => {
             </Badge>
             {mode === 'global' && (
               <p className="text-sm text-muted-foreground mt-2">
-                O administrador gerencia o número e mensagem da barbearia.
+                O administrador gerencia o número e mensagem da barbearia. Você pode copiar a mensagem acima.
               </p>
             )}
           </CardContent>
         </Card>
       )}
 
-      <Separator />
-
-      {/* Global Settings - Only if mode is global AND user is master */}
+      {/* BLOCK 4 - Phone Number Configuration */}
+      {/* Global mode: only master can edit */}
       {mode === 'global' && isMaster && (
-        <Card className="border-green-500/20 bg-green-500/5">
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Phone className="h-5 w-5 text-green-500" />
+              <Phone className="h-5 w-5" />
               Número da Barbearia
             </CardTitle>
             <CardDescription>
-              Este número será usado para todas as mensagens de WhatsApp
+              Este número será usado para gerar links de WhatsApp
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -372,20 +539,6 @@ const WhatsAppAtendimento = () => {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="globalMessage">Mensagem automática</Label>
-              <Textarea
-                id="globalMessage"
-                placeholder="Digite a mensagem..."
-                value={globalMessage}
-                onChange={(e) => setGlobalMessage(e.target.value)}
-                rows={5}
-              />
-              <p className="text-xs text-muted-foreground">
-                Use <code className="bg-muted px-1 rounded">{'{{LINK_AGENDAMENTO}}'}</code> para inserir o link automaticamente
-              </p>
-            </div>
-
             <Button onClick={handleSaveGlobalSettings} disabled={saving} className="w-full">
               {saving ? (
                 <>
@@ -395,7 +548,7 @@ const WhatsAppAtendimento = () => {
               ) : (
                 <>
                   <Save className="mr-2 h-4 w-4" />
-                  Salvar configurações
+                  Salvar número
                 </>
               )}
             </Button>
@@ -403,21 +556,21 @@ const WhatsAppAtendimento = () => {
         </Card>
       )}
 
-      {/* Individual Settings - Only if mode is individual */}
+      {/* Individual mode: each barber edits their own */}
       {mode === 'individual' && (
-        <Card className="border-green-500/20 bg-green-500/5">
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <User className="h-5 w-5 text-green-500" />
-              Meu WhatsApp
+              <User className="h-5 w-5" />
+              Meu Número de WhatsApp
             </CardTitle>
             <CardDescription>
-              Configure seu número e mensagem pessoal
+              Configure seu número pessoal para receber contatos
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="myPhone">Meu número de WhatsApp</Label>
+              <Label htmlFor="myPhone">Meu número</Label>
               <div className="relative">
                 <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -431,20 +584,6 @@ const WhatsAppAtendimento = () => {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="myMessage">Minha mensagem automática</Label>
-              <Textarea
-                id="myMessage"
-                placeholder="Digite a mensagem..."
-                value={myMessage}
-                onChange={(e) => setMyMessage(e.target.value)}
-                rows={5}
-              />
-              <p className="text-xs text-muted-foreground">
-                Use <code className="bg-muted px-1 rounded">{'{{LINK_AGENDAMENTO}}'}</code> para inserir seu link de agendamento automaticamente
-              </p>
-            </div>
-
             <Button onClick={handleSaveMySettings} disabled={saving} className="w-full">
               {saving ? (
                 <>
@@ -454,50 +593,13 @@ const WhatsAppAtendimento = () => {
               ) : (
                 <>
                   <Save className="mr-2 h-4 w-4" />
-                  Salvar meu WhatsApp
+                  Salvar meu número
                 </>
               )}
             </Button>
           </CardContent>
         </Card>
       )}
-
-      {/* Preview Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Eye className="h-5 w-5" />
-            Preview da mensagem
-          </CardTitle>
-          <CardDescription>
-            Veja como a mensagem ficará para o cliente
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {previewPhone ? (
-            <>
-              <div className="p-4 bg-muted rounded-lg">
-                <p className="text-sm font-medium mb-2">Número: {previewPhone}</p>
-                <p className="text-sm whitespace-pre-wrap">{previewMessage}</p>
-              </div>
-              
-              <Button 
-                className="w-full bg-green-600 hover:bg-green-700"
-                onClick={() => window.open(whatsappUrl, '_blank')}
-              >
-                <ExternalLink className="mr-2 h-4 w-4" />
-                Testar no WhatsApp
-              </Button>
-            </>
-          ) : (
-            <div className="p-4 bg-muted rounded-lg text-center">
-              <p className="text-sm text-muted-foreground">
-                Configure o número de WhatsApp para ver o preview
-              </p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
     </div>
   );
 };
