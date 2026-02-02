@@ -1,0 +1,505 @@
+import { useState, useEffect, useMemo } from 'react';
+import { useOutletContext } from 'react-router-dom';
+import { Barber, Barbershop } from '@/lib/supabase';
+import { useUserRole } from '@/hooks/useUserRole';
+import { supabase } from '@/integrations/supabase/client';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
+import { 
+  MessageCircle, 
+  Phone, 
+  Loader2, 
+  Save, 
+  ExternalLink,
+  Building2,
+  User,
+  Eye
+} from 'lucide-react';
+import { toast } from 'sonner';
+
+interface ContextType {
+  barber: Barber | null;
+  barbershop: Barbershop | null;
+  isMaster: boolean;
+}
+
+interface WhatsAppSettings {
+  id?: string;
+  barbershop_id: string;
+  mode: 'global' | 'individual';
+  global_phone: string | null;
+  global_message: string;
+}
+
+interface BarberWhatsApp {
+  id?: string;
+  barber_id: string;
+  phone: string | null;
+  message: string;
+}
+
+const DEFAULT_MESSAGE = `Olá 👋
+Para agendar seu horário, clique no link abaixo:
+{{LINK_AGENDAMENTO}}`;
+
+const WhatsAppAtendimento = () => {
+  const { barber } = useOutletContext<ContextType>();
+  const { barbershop, isMaster } = useUserRole();
+  
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  
+  // Global settings (only master can change mode)
+  const [settings, setSettings] = useState<WhatsAppSettings | null>(null);
+  const [mode, setMode] = useState<'global' | 'individual'>('global');
+  const [globalPhone, setGlobalPhone] = useState('');
+  const [globalMessage, setGlobalMessage] = useState(DEFAULT_MESSAGE);
+  
+  // Individual barber settings
+  const [myWhatsApp, setMyWhatsApp] = useState<BarberWhatsApp | null>(null);
+  const [myPhone, setMyPhone] = useState('');
+  const [myMessage, setMyMessage] = useState(DEFAULT_MESSAGE);
+
+  // Links
+  const barbershopLink = barbershop 
+    ? `${window.location.origin}/agendar/${barbershop.id}`
+    : '';
+  
+  const myBarberLink = barber 
+    ? `${window.location.origin}/b/${barber.id}`
+    : '';
+
+  // Fetch settings
+  useEffect(() => {
+    if (!barbershop?.id) return;
+    
+    const fetchSettings = async () => {
+      setLoading(true);
+      try {
+        // Fetch global settings
+        const { data: settingsData, error: settingsError } = await supabase
+          .from('whatsapp_settings')
+          .select('*')
+          .eq('barbershop_id', barbershop.id)
+          .maybeSingle();
+
+        if (settingsError && settingsError.code !== 'PGRST116') {
+          throw settingsError;
+        }
+
+        if (settingsData) {
+          setSettings({
+            ...settingsData,
+            mode: settingsData.mode as 'global' | 'individual'
+          });
+          setMode(settingsData.mode as 'global' | 'individual');
+          setGlobalPhone(settingsData.global_phone || '');
+          setGlobalMessage(settingsData.global_message || DEFAULT_MESSAGE);
+        }
+
+        // Fetch my barber whatsapp settings
+        if (barber?.id) {
+          const { data: myData, error: myError } = await supabase
+            .from('barber_whatsapp')
+            .select('*')
+            .eq('barber_id', barber.id)
+            .maybeSingle();
+
+          if (myError && myError.code !== 'PGRST116') {
+            throw myError;
+          }
+
+          if (myData) {
+            setMyWhatsApp(myData);
+            setMyPhone(myData.phone || '');
+            setMyMessage(myData.message || DEFAULT_MESSAGE);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching whatsapp settings:', error);
+        toast.error('Erro ao carregar configurações');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSettings();
+  }, [barbershop?.id, barber?.id]);
+
+  const formatPhone = (value: string) => {
+    const numbers = value.replace(/\D/g, '');
+    if (numbers.length <= 2) return numbers;
+    if (numbers.length <= 7) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
+    if (numbers.length <= 11) return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7)}`;
+    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
+  };
+
+  const getPhoneForWhatsApp = (phone: string) => {
+    const numbers = phone.replace(/\D/g, '');
+    // Add Brazil country code if not present
+    if (numbers.length === 11) {
+      return `55${numbers}`;
+    }
+    return numbers;
+  };
+
+  const getResolvedMessage = (message: string, link: string) => {
+    return message.replace('{{LINK_AGENDAMENTO}}', link);
+  };
+
+  // Preview message with resolved link
+  const previewMessage = useMemo(() => {
+    if (mode === 'global') {
+      return getResolvedMessage(globalMessage, barbershopLink);
+    } else {
+      return getResolvedMessage(myMessage, myBarberLink);
+    }
+  }, [mode, globalMessage, myMessage, barbershopLink, myBarberLink]);
+
+  const previewPhone = useMemo(() => {
+    if (mode === 'global') {
+      return globalPhone;
+    } else {
+      return myPhone;
+    }
+  }, [mode, globalPhone, myPhone]);
+
+  const whatsappUrl = useMemo(() => {
+    const phone = getPhoneForWhatsApp(previewPhone);
+    const text = encodeURIComponent(previewMessage);
+    return `https://wa.me/${phone}?text=${text}`;
+  }, [previewPhone, previewMessage]);
+
+  const handleSaveGlobalSettings = async () => {
+    if (!barbershop?.id) return;
+    
+    setSaving(true);
+    try {
+      if (settings?.id) {
+        // Update existing
+        const { error } = await supabase
+          .from('whatsapp_settings')
+          .update({
+            mode,
+            global_phone: globalPhone || null,
+            global_message: globalMessage,
+          })
+          .eq('id', settings.id);
+        
+        if (error) throw error;
+      } else {
+        // Insert new
+        const { error } = await supabase
+          .from('whatsapp_settings')
+          .insert({
+            barbershop_id: barbershop.id,
+            mode,
+            global_phone: globalPhone || null,
+            global_message: globalMessage,
+          });
+        
+        if (error) throw error;
+      }
+      
+      toast.success('Configurações salvas!');
+    } catch (error) {
+      console.error('Error saving global settings:', error);
+      toast.error('Erro ao salvar configurações');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSaveMySettings = async () => {
+    if (!barber?.id) return;
+    
+    setSaving(true);
+    try {
+      if (myWhatsApp?.id) {
+        // Update existing
+        const { error } = await supabase
+          .from('barber_whatsapp')
+          .update({
+            phone: myPhone || null,
+            message: myMessage,
+          })
+          .eq('id', myWhatsApp.id);
+        
+        if (error) throw error;
+      } else {
+        // Insert new
+        const { error } = await supabase
+          .from('barber_whatsapp')
+          .insert({
+            barber_id: barber.id,
+            phone: myPhone || null,
+            message: myMessage,
+          });
+        
+        if (error) throw error;
+      }
+      
+      toast.success('Suas configurações foram salvas!');
+    } catch (error) {
+      console.error('Error saving my whatsapp settings:', error);
+      toast.error('Erro ao salvar configurações');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6 max-w-2xl">
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl font-bold flex items-center gap-2">
+          <MessageCircle className="h-6 w-6 text-green-500" />
+          WhatsApp & Atendimento
+        </h1>
+        <p className="text-muted-foreground">
+          Configure a integração com WhatsApp e mensagens automáticas
+        </p>
+      </div>
+
+      {/* Mode Selector - Only for Master */}
+      {isMaster && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Building2 className="h-5 w-5" />
+              Modo de funcionamento
+            </CardTitle>
+            <CardDescription>
+              Escolha como o WhatsApp será configurado na barbearia
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <RadioGroup
+              value={mode}
+              onValueChange={(value) => setMode(value as 'global' | 'individual')}
+              className="space-y-3"
+            >
+              <div className="flex items-start space-x-3 p-3 rounded-lg border hover:bg-accent/50 cursor-pointer">
+                <RadioGroupItem value="global" id="global" className="mt-1" />
+                <div className="flex-1">
+                  <Label htmlFor="global" className="font-medium cursor-pointer">
+                    WhatsApp da barbearia (global)
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Um único número e mensagem para toda a barbearia. Apenas você pode editar.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-3 p-3 rounded-lg border hover:bg-accent/50 cursor-pointer">
+                <RadioGroupItem value="individual" id="individual" className="mt-1" />
+                <div className="flex-1">
+                  <Label htmlFor="individual" className="font-medium cursor-pointer">
+                    WhatsApp por barbeiro
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Cada barbeiro cadastra e gerencia o próprio número e mensagem.
+                  </p>
+                </div>
+              </div>
+            </RadioGroup>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Current Mode Badge - For Barbers */}
+      {!isMaster && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Building2 className="h-5 w-5" />
+              Modo atual
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Badge variant="outline" className="text-sm">
+              {mode === 'global' ? 'WhatsApp da barbearia (global)' : 'WhatsApp por barbeiro'}
+            </Badge>
+            {mode === 'global' && (
+              <p className="text-sm text-muted-foreground mt-2">
+                O administrador gerencia o número e mensagem da barbearia.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      <Separator />
+
+      {/* Global Settings - Only if mode is global AND user is master */}
+      {mode === 'global' && isMaster && (
+        <Card className="border-green-500/20 bg-green-500/5">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Phone className="h-5 w-5 text-green-500" />
+              Número da Barbearia
+            </CardTitle>
+            <CardDescription>
+              Este número será usado para todas as mensagens de WhatsApp
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="globalPhone">Número do WhatsApp</Label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="globalPhone"
+                  placeholder="(00) 00000-0000"
+                  value={globalPhone}
+                  onChange={(e) => setGlobalPhone(formatPhone(e.target.value))}
+                  className="pl-10"
+                  maxLength={15}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="globalMessage">Mensagem automática</Label>
+              <Textarea
+                id="globalMessage"
+                placeholder="Digite a mensagem..."
+                value={globalMessage}
+                onChange={(e) => setGlobalMessage(e.target.value)}
+                rows={5}
+              />
+              <p className="text-xs text-muted-foreground">
+                Use <code className="bg-muted px-1 rounded">{'{{LINK_AGENDAMENTO}}'}</code> para inserir o link automaticamente
+              </p>
+            </div>
+
+            <Button onClick={handleSaveGlobalSettings} disabled={saving} className="w-full">
+              {saving ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Salvando...
+                </>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Salvar configurações
+                </>
+              )}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Individual Settings - Only if mode is individual */}
+      {mode === 'individual' && (
+        <Card className="border-green-500/20 bg-green-500/5">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <User className="h-5 w-5 text-green-500" />
+              Meu WhatsApp
+            </CardTitle>
+            <CardDescription>
+              Configure seu número e mensagem pessoal
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="myPhone">Meu número de WhatsApp</Label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="myPhone"
+                  placeholder="(00) 00000-0000"
+                  value={myPhone}
+                  onChange={(e) => setMyPhone(formatPhone(e.target.value))}
+                  className="pl-10"
+                  maxLength={15}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="myMessage">Minha mensagem automática</Label>
+              <Textarea
+                id="myMessage"
+                placeholder="Digite a mensagem..."
+                value={myMessage}
+                onChange={(e) => setMyMessage(e.target.value)}
+                rows={5}
+              />
+              <p className="text-xs text-muted-foreground">
+                Use <code className="bg-muted px-1 rounded">{'{{LINK_AGENDAMENTO}}'}</code> para inserir seu link de agendamento automaticamente
+              </p>
+            </div>
+
+            <Button onClick={handleSaveMySettings} disabled={saving} className="w-full">
+              {saving ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Salvando...
+                </>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Salvar meu WhatsApp
+                </>
+              )}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Preview Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Eye className="h-5 w-5" />
+            Preview da mensagem
+          </CardTitle>
+          <CardDescription>
+            Veja como a mensagem ficará para o cliente
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {previewPhone ? (
+            <>
+              <div className="p-4 bg-muted rounded-lg">
+                <p className="text-sm font-medium mb-2">Número: {previewPhone}</p>
+                <p className="text-sm whitespace-pre-wrap">{previewMessage}</p>
+              </div>
+              
+              <Button 
+                className="w-full bg-green-600 hover:bg-green-700"
+                onClick={() => window.open(whatsappUrl, '_blank')}
+              >
+                <ExternalLink className="mr-2 h-4 w-4" />
+                Testar no WhatsApp
+              </Button>
+            </>
+          ) : (
+            <div className="p-4 bg-muted rounded-lg text-center">
+              <p className="text-sm text-muted-foreground">
+                Configure o número de WhatsApp para ver o preview
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default WhatsAppAtendimento;

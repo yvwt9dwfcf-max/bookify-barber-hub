@@ -16,6 +16,7 @@ import Horarios from "./pages/painel/Horarios";
 import Bloqueios from "./pages/painel/Bloqueios";
 import Barbeiros from "./pages/painel/Barbeiros";
 import Configuracoes from "./pages/painel/Configuracoes";
+import WhatsAppAtendimento from "./pages/painel/WhatsAppAtendimento";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,6 +40,7 @@ const App = () => (
             <Route path="horarios" element={<Horarios />} />
             <Route path="bloqueios" element={<Bloqueios />} />
             <Route path="barbeiros" element={<Barbeiros />} />
+            <Route path="whatsapp" element={<WhatsAppAtendimento />} />
             <Route path="configuracoes" element={<Configuracoes />} />
           </Route>
           <Route path="*" element={<NotFound />} />

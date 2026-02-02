@@ -155,6 +155,41 @@ export type Database = {
           },
         ]
       }
+      barber_whatsapp: {
+        Row: {
+          barber_id: string
+          created_at: string
+          id: string
+          message: string | null
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          barber_id: string
+          created_at?: string
+          id?: string
+          message?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          barber_id?: string
+          created_at?: string
+          id?: string
+          message?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "barber_whatsapp_barber_id_fkey"
+            columns: ["barber_id"]
+            isOneToOne: true
+            referencedRelation: "barbers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       barbers: {
         Row: {
           auth_id: string
@@ -406,6 +441,44 @@ export type Database = {
             foreignKeyName: "user_roles_barbershop_id_fkey"
             columns: ["barbershop_id"]
             isOneToOne: false
+            referencedRelation: "barbershops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      whatsapp_settings: {
+        Row: {
+          barbershop_id: string
+          created_at: string
+          global_message: string | null
+          global_phone: string | null
+          id: string
+          mode: string
+          updated_at: string
+        }
+        Insert: {
+          barbershop_id: string
+          created_at?: string
+          global_message?: string | null
+          global_phone?: string | null
+          id?: string
+          mode?: string
+          updated_at?: string
+        }
+        Update: {
+          barbershop_id?: string
+          created_at?: string
+          global_message?: string | null
+          global_phone?: string | null
+          id?: string
+          mode?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_settings_barbershop_id_fkey"
+            columns: ["barbershop_id"]
+            isOneToOne: true
             referencedRelation: "barbershops"
             referencedColumns: ["id"]
           },
