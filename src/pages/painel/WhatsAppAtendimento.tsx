@@ -285,7 +285,7 @@ const WhatsAppAtendimento = () => {
           WhatsApp e atendimento
         </h1>
         <p className="text-muted-foreground">
-          Configure como seus clientes entram em contato para agendar horários.
+          Escolha como seus clientes vão receber a mensagem para agendar: automaticamente pelo WhatsApp Business ou manualmente copiando a mensagem.
         </p>
       </div>
 
@@ -311,6 +311,9 @@ const WhatsAppAtendimento = () => {
               </AccordionTrigger>
               <AccordionContent className="pt-2">
                 <div className="bg-muted/50 rounded-lg p-4 space-y-3">
+                  <p className="text-sm text-amber-600 dark:text-amber-400 font-medium">
+                    ⚠️ Este método funciona somente no aplicativo WhatsApp Business (não funciona no WhatsApp comum).
+                  </p>
                   <ol className="space-y-2 text-sm">
                     <li className="flex gap-2">
                       <span className="font-bold text-green-600">1.</span>
