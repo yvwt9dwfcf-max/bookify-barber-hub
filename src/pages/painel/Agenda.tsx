@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useOutletContext } from 'react-router-dom';
+import { useOutletContext, useNavigate } from 'react-router-dom';
 import { supabase, Appointment, Barber, Barbershop } from '@/lib/supabase';
 import { useRealtimeAppointments } from '@/hooks/useRealtimeAppointments';
 import { useBarbershopBarbers } from '@/hooks/useBarbershopBarbers';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar, CalendarDays, ChevronLeft, ChevronRight, User, Clock, Phone, Loader2, Plus, Trash2 } from 'lucide-react';
+import { Calendar, CalendarDays, ChevronLeft, ChevronRight, User, Clock, Phone, Loader2, Trash2 } from 'lucide-react';
 import { format, addDays, startOfDay, isSameDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -30,6 +30,7 @@ import {
 } from '@/components/ui/select';
 import MonthlyCalendar from '@/components/painel/MonthlyCalendar';
 import ManualAppointmentDialog from '@/components/painel/ManualAppointmentDialog';
+import FloatingActionButton from '@/components/painel/FloatingActionButton';
 
 interface ContextType {
   barber: Barber | null;
@@ -41,6 +42,7 @@ type ViewMode = 'daily' | 'monthly';
 
 const Agenda = () => {
   const { barber, barbershop, isMaster } = useOutletContext<ContextType>();
+  const navigate = useNavigate();
   const { barbers } = useBarbershopBarbers();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -189,55 +191,52 @@ const Agenda = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
+    <div className="space-y-8 pb-24">
+      {/* Header - clean and simple */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">Agenda</h1>
-          <p className="text-muted-foreground">
+          <p className="text-sm text-muted-foreground mt-1">
             {viewMode === 'daily' ? 'Gerencie os agendamentos do dia' : 'Visão geral do mês'}
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        
+        {/* View mode toggle - simplified */}
+        <div className="flex gap-2">
           <Button
-            variant={viewMode === 'daily' ? 'default' : 'outline'}
+            variant={viewMode === 'daily' ? 'default' : 'ghost'}
             size="sm"
             onClick={() => setViewMode('daily')}
+            className="transition-all hover:-translate-y-0.5 active:scale-95"
           >
             <Calendar className="h-4 w-4 mr-2" />
             Diário
           </Button>
           <Button
-            variant={viewMode === 'monthly' ? 'default' : 'outline'}
+            variant={viewMode === 'monthly' ? 'default' : 'ghost'}
             size="sm"
             onClick={() => setViewMode('monthly')}
+            className="transition-all hover:-translate-y-0.5 active:scale-95"
           >
             <CalendarDays className="h-4 w-4 mr-2" />
             Mensal
           </Button>
-          <Button
-            size="sm"
-            onClick={() => setShowManualDialog(true)}
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Novo
-          </Button>
         </div>
       </div>
 
-      {/* Seletor de barbeiro para master */}
+      {/* Seletor de barbeiro para master - lighter card */}
       {isMaster && barbers.length > 1 && (
-        <Card>
+        <Card className="border-border/50 shadow-sm bg-card/80 backdrop-blur-sm">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <User className="h-5 w-5 text-muted-foreground" />
+              <User className="h-4 w-4 text-muted-foreground" />
               <div className="flex-1">
-                <label className="text-sm font-medium">Visualizando agenda de:</label>
+                <label className="text-xs font-medium text-muted-foreground">Visualizando agenda de:</label>
                 <Select
                   value={selectedBarberId || ''}
                   onValueChange={(value) => setSelectedBarberId(value)}
                 >
-                  <SelectTrigger className="mt-1">
+                  <SelectTrigger className="mt-1 h-9 border-border/50">
                     <SelectValue placeholder="Selecione um barbeiro" />
                   </SelectTrigger>
                   <SelectContent>
@@ -274,25 +273,27 @@ const Agenda = () => {
         />
       )}
 
-      {/* Daily View - Date Navigation */}
+      {/* Daily View - Date Navigation - lighter design */}
       {viewMode === 'daily' && (
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-4">
+        <Card className="border-border/50 shadow-sm bg-card/80 backdrop-blur-sm">
+          <CardContent className="p-5">
+            <div className="flex items-center justify-between mb-5">
               <Button
-                variant="outline"
+                variant="ghost"
                 size="icon"
                 onClick={() => setSelectedDate(addDays(selectedDate, -7))}
+                className="h-8 w-8 transition-all hover:-translate-y-0.5 active:scale-95"
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <span className="font-medium">
+              <span className="text-sm font-medium text-muted-foreground">
                 {format(selectedDate, "MMMM 'de' yyyy", { locale: ptBR })}
               </span>
               <Button
-                variant="outline"
+                variant="ghost"
                 size="icon"
                 onClick={() => setSelectedDate(addDays(selectedDate, 7))}
+                className="h-8 w-8 transition-all hover:-translate-y-0.5 active:scale-95"
               >
                 <ChevronRight className="h-4 w-4" />
               </Button>
@@ -307,16 +308,16 @@ const Agenda = () => {
                     key={day.toISOString()}
                     onClick={() => setSelectedDate(day)}
                     className={cn(
-                      'flex flex-col items-center p-2 rounded-lg transition-all',
-                      'hover:bg-accent',
-                      isSelected && 'bg-primary text-primary-foreground hover:bg-primary',
-                      isToday && !isSelected && 'ring-2 ring-primary'
+                      'flex flex-col items-center py-2 px-1 rounded-xl transition-all',
+                      'hover:bg-accent/50 active:scale-95',
+                      isSelected && 'bg-primary text-primary-foreground hover:bg-primary shadow-md',
+                      isToday && !isSelected && 'ring-1 ring-primary/50'
                     )}
                   >
-                    <span className="text-xs font-medium uppercase">
+                    <span className="text-[10px] font-medium uppercase opacity-70">
                       {format(day, 'EEE', { locale: ptBR })}
                     </span>
-                    <span className="text-lg font-bold">{format(day, 'd')}</span>
+                    <span className="text-base font-semibold mt-0.5">{format(day, 'd')}</span>
                   </button>
                 );
               })}
@@ -325,133 +326,158 @@ const Agenda = () => {
         </Card>
       )}
 
-      {/* Stats - only show in daily view */}
+      {/* Stats - only show in daily view - compact design */}
       {viewMode === 'daily' && (
         <div className="grid grid-cols-2 gap-4">
-          <Card>
+          <Card className="border-border/50 shadow-sm bg-card/80 backdrop-blur-sm">
             <CardContent className="p-4 text-center">
-              <p className="text-2xl font-bold text-primary">{confirmedCount}</p>
-              <p className="text-sm text-muted-foreground">Confirmados</p>
+              <p className="text-3xl font-bold text-primary">{confirmedCount}</p>
+              <p className="text-xs text-muted-foreground mt-1">Confirmados</p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="border-border/50 shadow-sm bg-card/80 backdrop-blur-sm">
             <CardContent className="p-4 text-center">
-              <p className="text-2xl font-bold text-success">{completedCount}</p>
-              <p className="text-sm text-muted-foreground">Concluídos</p>
+              <p className="text-3xl font-bold text-success">{completedCount}</p>
+              <p className="text-xs text-muted-foreground mt-1">Concluídos</p>
             </CardContent>
           </Card>
         </div>
       )}
 
-      {/* Appointments List - only show in daily view */}
+      {/* Appointments List - only show in daily view - modern cards */}
       {viewMode === 'daily' && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
-            {format(selectedDate, "EEEE, d 'de' MMMM", { locale: ptBR })}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 px-1">
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm font-medium">
+              {format(selectedDate, "EEEE, d 'de' MMMM", { locale: ptBR })}
+            </span>
+          </div>
+
           {loading ? (
-            <div className="flex items-center justify-center py-8">
+            <div className="flex items-center justify-center py-12">
               <Loader2 className="h-6 w-6 animate-spin text-primary" />
             </div>
           ) : appointments.length === 0 ? (
-            <div className="text-center py-8">
-              <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">
-                Nenhum agendamento para este dia
-              </p>
-            </div>
+            <Card className="border-border/50 shadow-sm bg-card/80 backdrop-blur-sm">
+              <CardContent className="text-center py-12">
+                <Calendar className="h-10 w-10 mx-auto text-muted-foreground/50 mb-3" />
+                <p className="text-sm text-muted-foreground">
+                  Nenhum agendamento para este dia
+                </p>
+              </CardContent>
+            </Card>
           ) : (
             <div className="space-y-3">
-              {appointments.map((appointment) => (
-                <div
+              {appointments.map((appointment, index) => (
+                <Card 
                   key={appointment.id}
-                  className="flex items-center gap-4 p-4 rounded-xl border border-border bg-card"
+                  className={cn(
+                    "border-border/50 shadow-sm bg-card/80 backdrop-blur-sm overflow-hidden",
+                    "transition-all duration-300 animate-fade-in",
+                  )}
+                  style={{ animationDelay: `${index * 50}ms` }}
                 >
-                  <div className="flex-shrink-0 text-center">
-                    <p className="text-lg font-bold">
-                      {format(new Date(appointment.start_time), 'HH:mm')}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {format(new Date(appointment.end_time), 'HH:mm')}
-                    </p>
-                  </div>
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-4">
+                      {/* Time block - compact */}
+                      <div className="flex-shrink-0 text-center min-w-[52px]">
+                        <p className="text-base font-bold">
+                          {format(new Date(appointment.start_time), 'HH:mm')}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground">
+                          até {format(new Date(appointment.end_time), 'HH:mm')}
+                        </p>
+                      </div>
 
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <User className="h-4 w-4 text-muted-foreground" />
-                      <span className="font-medium truncate">
-                        {appointment.customer_name}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Phone className="h-3 w-3" />
-                      <span>{appointment.customer_phone}</span>
-                    </div>
-                    {appointment.service && (
-                      <p className="text-sm text-primary mt-1">
-                        {appointment.service.name}
-                      </p>
-                    )}
-                  </div>
+                      {/* Divider */}
+                      <div className="w-px h-10 bg-border/50" />
 
-                  <div className="flex flex-col items-end gap-2">
-                    <span
-                      className={cn(
-                        'px-2 py-1 rounded-full text-xs font-medium',
-                        getStatusColor(appointment.status)
-                      )}
-                    >
-                      {getStatusLabel(appointment.status)}
-                    </span>
-                    
-                    <div className="flex gap-1">
-                      {appointment.status === 'confirmed' && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleStatusChange(appointment.id, 'completed')}
+                      {/* Customer info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <span className="font-medium text-sm truncate">
+                            {appointment.customer_name}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                          <Phone className="h-3 w-3" />
+                          <span>{appointment.customer_phone}</span>
+                        </div>
+                        {appointment.service && (
+                          <p className="text-xs text-primary mt-1 font-medium">
+                            {appointment.service.name}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex flex-col items-end gap-2">
+                        <span
+                          className={cn(
+                            'px-2 py-0.5 rounded-full text-[10px] font-medium',
+                            getStatusColor(appointment.status)
+                          )}
                         >
-                          Concluir
-                        </Button>
-                      )}
-                      
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button size="sm" variant="ghost">
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Excluir agendamento?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Esta ação não pode ser desfeita. O agendamento será permanentemente excluído.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDeleteAppointment(appointment.id)}
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          {getStatusLabel(appointment.status)}
+                        </span>
+                        
+                        <div className="flex gap-1">
+                          {appointment.status === 'confirmed' && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-7 text-xs transition-all hover:-translate-y-0.5 active:scale-95"
+                              onClick={() => handleStatusChange(appointment.id, 'completed')}
                             >
-                              Excluir
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                              Concluir
+                            </Button>
+                          )}
+                          
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button 
+                                size="sm" 
+                                variant="ghost" 
+                                className="h-7 w-7 p-0 transition-all hover:-translate-y-0.5 active:scale-95"
+                              >
+                                <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Excluir agendamento?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Esta ação não pode ser desfeita. O agendamento será permanentemente excluído.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleDeleteAppointment(appointment.id)}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  Excluir
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
+                  </CardContent>
+                </Card>
               ))}
             </div>
-            )}
-          </CardContent>
-        </Card>
+          )}
+        </div>
       )}
+
+      {/* Floating Action Button */}
+      <FloatingActionButton
+        onNewAppointment={() => setShowManualDialog(true)}
+        onNewBlock={() => navigate('/painel/bloqueios')}
+      />
     </div>
   );
 };

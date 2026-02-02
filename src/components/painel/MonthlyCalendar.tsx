@@ -91,29 +91,31 @@ const MonthlyCalendar = ({ barber, onDateSelect, selectedDate }: MonthlyCalendar
   const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
   return (
-    <Card>
-      <CardHeader className="pb-2">
+    <Card className="border-border/50 shadow-sm bg-card/80 backdrop-blur-sm">
+      <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <Button
-            variant="outline"
+            variant="ghost"
             size="icon"
             onClick={handlePreviousMonth}
+            className="h-8 w-8 transition-all hover:-translate-y-0.5 active:scale-95"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <CardTitle className="text-lg capitalize">
+          <CardTitle className="text-base font-semibold capitalize">
             {format(currentMonth, 'MMMM yyyy', { locale: ptBR })}
           </CardTitle>
           <Button
-            variant="outline"
+            variant="ghost"
             size="icon"
             onClick={handleNextMonth}
+            className="h-8 w-8 transition-all hover:-translate-y-0.5 active:scale-95"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pb-5">
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-6 w-6 animate-spin text-primary" />
@@ -125,7 +127,7 @@ const MonthlyCalendar = ({ barber, onDateSelect, selectedDate }: MonthlyCalendar
               {weekDays.map((day) => (
                 <div
                   key={day}
-                  className="text-center text-xs font-medium text-muted-foreground py-2"
+                  className="text-center text-[10px] font-medium text-muted-foreground py-1.5"
                 >
                   {day}
                 </div>
@@ -149,15 +151,15 @@ const MonthlyCalendar = ({ barber, onDateSelect, selectedDate }: MonthlyCalendar
                     key={day.toISOString()}
                     onClick={() => handleDayClick(day)}
                     className={cn(
-                      'relative flex flex-col items-center justify-start p-1 h-16 sm:h-20 rounded-lg transition-all',
-                      'hover:bg-accent border border-transparent',
-                      !isCurrentMonth && 'opacity-40',
-                      isSelected && 'bg-primary text-primary-foreground hover:bg-primary border-primary',
-                      isToday && !isSelected && 'ring-2 ring-primary'
+                      'relative flex flex-col items-center justify-start p-1 h-14 sm:h-16 rounded-xl transition-all',
+                      'hover:bg-accent/50 active:scale-95',
+                      !isCurrentMonth && 'opacity-30',
+                      isSelected && 'bg-primary text-primary-foreground hover:bg-primary shadow-md',
+                      isToday && !isSelected && 'ring-1 ring-primary/50'
                     )}
                   >
                     <span className={cn(
-                      'text-sm font-medium',
+                      'text-xs font-medium',
                       isSelected && 'text-primary-foreground'
                     )}>
                       {format(day, 'd')}
@@ -167,20 +169,20 @@ const MonthlyCalendar = ({ barber, onDateSelect, selectedDate }: MonthlyCalendar
                       <div className="flex flex-wrap justify-center gap-0.5 mt-1">
                         {appointments.confirmed > 0 && (
                           <span className={cn(
-                            'text-[10px] px-1 rounded-full font-medium',
+                            'text-[9px] px-1 rounded-full font-medium',
                             isSelected 
                               ? 'bg-primary-foreground/20 text-primary-foreground' 
-                              : 'bg-primary/20 text-primary'
+                              : 'bg-primary/15 text-primary'
                           )}>
                             {appointments.confirmed}
                           </span>
                         )}
                         {appointments.completed > 0 && (
                           <span className={cn(
-                            'text-[10px] px-1 rounded-full font-medium',
+                            'text-[9px] px-1 rounded-full font-medium',
                             isSelected 
                               ? 'bg-primary-foreground/20 text-primary-foreground' 
-                              : 'bg-success/20 text-success'
+                              : 'bg-success/15 text-success'
                           )}>
                             {appointments.completed}
                           </span>
@@ -193,14 +195,14 @@ const MonthlyCalendar = ({ barber, onDateSelect, selectedDate }: MonthlyCalendar
             </div>
 
             {/* Legend */}
-            <div className="flex items-center justify-center gap-4 mt-4 pt-4 border-t border-border">
+            <div className="flex items-center justify-center gap-4 mt-4 pt-3 border-t border-border/30">
               <div className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-full bg-primary/20"></span>
-                <span className="text-xs text-muted-foreground">Confirmados</span>
+                <span className="w-2.5 h-2.5 rounded-full bg-primary/20"></span>
+                <span className="text-[10px] text-muted-foreground">Confirmados</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-full bg-success/20"></span>
-                <span className="text-xs text-muted-foreground">Concluídos</span>
+                <span className="w-2.5 h-2.5 rounded-full bg-success/20"></span>
+                <span className="text-[10px] text-muted-foreground">Concluídos</span>
               </div>
             </div>
           </>
