@@ -82,25 +82,33 @@ const Painel = () => {
           size="icon"
           onClick={() => setSidebarOpen(!sidebarOpen)}
         >
-          {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          {sidebarOpen ? (
+            <X className="h-5 w-5 transition-transform duration-200 active:rotate-90" />
+          ) : (
+            <Menu className="h-5 w-5" />
+          )}
         </Button>
       </header>
 
       {/* Mobile Sidebar Overlay */}
-      {sidebarOpen && (
-        <div
-          className="lg:hidden fixed inset-0 z-40 bg-black/50"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+      <div
+        className={cn(
+          'lg:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-opacity duration-300',
+          sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        )}
+        onClick={() => setSidebarOpen(false)}
+      />
 
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed top-0 left-0 z-50 h-full w-64 bg-sidebar text-sidebar-foreground transition-transform duration-300',
+          'fixed top-0 left-0 z-50 h-full w-64 bg-sidebar text-sidebar-foreground',
           'lg:translate-x-0',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         )}
+        style={{
+          transition: 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+        }}
       >
         <div className="flex flex-col h-full">
           {/* Sidebar Header */}
@@ -134,7 +142,7 @@ const Painel = () => {
 
           {/* Navigation */}
           <nav className="flex-1 p-4 space-y-1">
-            {menuItems.map((item) => {
+            {menuItems.map((item, index) => {
               const isActive = location.pathname === item.path;
               return (
                 <Link
@@ -142,11 +150,16 @@ const Painel = () => {
                   to={item.path}
                   onClick={() => setSidebarOpen(false)}
                   className={cn(
-                    'flex items-center gap-3 px-4 py-3 rounded-lg transition-colors',
+                    'flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200',
                     isActive
                       ? 'bg-sidebar-primary text-sidebar-primary-foreground'
-                      : 'hover:bg-sidebar-accent text-sidebar-foreground'
+                      : 'hover:bg-sidebar-accent hover:scale-[1.02] active:scale-[1.02] text-sidebar-foreground'
                   )}
+                  style={{
+                    boxShadow: isActive ? '0 0 15px rgba(16, 185, 129, 0.3)' : 'none',
+                    animationDelay: sidebarOpen ? `${index * 0.05}s` : '0s',
+                    animation: sidebarOpen ? 'fade-in 0.3s ease-out backwards' : 'none'
+                  }}
                 >
                   <item.icon className="h-5 w-5" />
                   <span>{item.label}</span>
