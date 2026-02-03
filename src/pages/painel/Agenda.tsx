@@ -191,7 +191,7 @@ const Agenda = () => {
   };
 
   return (
-    <div className="space-y-8 pb-24">
+    <div className="space-y-5 pb-24">
       {/* Header - clean and simple */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -227,16 +227,16 @@ const Agenda = () => {
       {/* Seletor de barbeiro para master - lighter card */}
       {isMaster && barbers.length > 1 && (
         <Card className="border-border/50 shadow-sm bg-card/80 backdrop-blur-sm">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <User className="h-4 w-4 text-muted-foreground" />
+          <CardContent className="p-2.5">
+            <div className="flex items-center gap-2">
+              <User className="h-3.5 w-3.5 text-muted-foreground" />
               <div className="flex-1">
-                <label className="text-xs font-medium text-muted-foreground">Visualizando agenda de:</label>
+                <label className="text-[10px] font-medium text-muted-foreground">Visualizando agenda de:</label>
                 <Select
                   value={selectedBarberId || ''}
                   onValueChange={(value) => setSelectedBarberId(value)}
                 >
-                  <SelectTrigger className="mt-1 h-9 border-border/50">
+                  <SelectTrigger className="mt-0.5 h-7 text-sm border-border/50">
                     <SelectValue placeholder="Selecione um barbeiro" />
                   </SelectTrigger>
                   <SelectContent>
@@ -276,29 +276,29 @@ const Agenda = () => {
       {/* Daily View - Date Navigation - lighter design */}
       {viewMode === 'daily' && (
         <Card className="border-border/50 shadow-sm bg-card/80 backdrop-blur-sm">
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between mb-5">
+          <CardContent className="p-3">
+            <div className="flex items-center justify-between mb-3">
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => setSelectedDate(addDays(selectedDate, -7))}
-                className="h-8 w-8 transition-all hover:-translate-y-0.5 active:scale-95"
+                className="h-7 w-7 min-h-[28px] min-w-[28px] transition-all hover:-translate-y-0.5 active:scale-95"
               >
-                <ChevronLeft className="h-4 w-4" />
+                <ChevronLeft className="h-3.5 w-3.5" />
               </Button>
-              <span className="text-sm font-medium text-muted-foreground">
+              <span className="text-xs font-medium text-muted-foreground">
                 {format(selectedDate, "MMMM 'de' yyyy", { locale: ptBR })}
               </span>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => setSelectedDate(addDays(selectedDate, 7))}
-                className="h-8 w-8 transition-all hover:-translate-y-0.5 active:scale-95"
+                className="h-7 w-7 min-h-[28px] min-w-[28px] transition-all hover:-translate-y-0.5 active:scale-95"
               >
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="h-3.5 w-3.5" />
               </Button>
             </div>
-            <div className="grid grid-cols-7 gap-2">
+            <div className="grid grid-cols-7 gap-1.5">
               {days.map((day) => {
                 const isSelected = isSameDay(day, selectedDate);
                 const isToday = isSameDay(day, new Date());
@@ -308,16 +308,16 @@ const Agenda = () => {
                     key={day.toISOString()}
                     onClick={() => setSelectedDate(day)}
                     className={cn(
-                      'flex flex-col items-center py-2 px-1 rounded-xl transition-all',
+                      'flex flex-col items-center py-1.5 px-1 rounded-lg transition-all',
                       'hover:bg-accent/50 active:scale-95',
                       isSelected && 'bg-primary text-primary-foreground hover:bg-primary shadow-md',
                       isToday && !isSelected && 'ring-1 ring-primary/50'
                     )}
                   >
-                    <span className="text-[10px] font-medium uppercase opacity-70">
+                    <span className="text-[9px] font-medium uppercase opacity-70">
                       {format(day, 'EEE', { locale: ptBR })}
                     </span>
-                    <span className="text-base font-semibold mt-0.5">{format(day, 'd')}</span>
+                    <span className="text-sm font-semibold mt-0.5">{format(day, 'd')}</span>
                   </button>
                 );
               })}
@@ -328,17 +328,17 @@ const Agenda = () => {
 
       {/* Stats - only show in daily view - compact design */}
       {viewMode === 'daily' && (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-3">
           <Card className="border-border/50 shadow-sm bg-card/80 backdrop-blur-sm">
-            <CardContent className="p-4 text-center">
-              <p className="text-3xl font-bold text-primary">{confirmedCount}</p>
-              <p className="text-xs text-muted-foreground mt-1">Confirmados</p>
+            <CardContent className="p-2.5 text-center">
+              <p className="text-2xl font-bold text-primary">{confirmedCount}</p>
+              <p className="text-[10px] text-muted-foreground">Confirmados</p>
             </CardContent>
           </Card>
           <Card className="border-border/50 shadow-sm bg-card/80 backdrop-blur-sm">
-            <CardContent className="p-4 text-center">
-              <p className="text-3xl font-bold text-success">{completedCount}</p>
-              <p className="text-xs text-muted-foreground mt-1">Concluídos</p>
+            <CardContent className="p-2.5 text-center">
+              <p className="text-2xl font-bold text-success">{completedCount}</p>
+              <p className="text-[10px] text-muted-foreground">Concluídos</p>
             </CardContent>
           </Card>
         </div>
@@ -346,29 +346,29 @@ const Agenda = () => {
 
       {/* Appointments List - only show in daily view - modern cards */}
       {viewMode === 'daily' && (
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 px-1">
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium">
+        <div className="space-y-3">
+          <div className="flex items-center gap-1.5 px-0.5">
+            <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+            <span className="text-xs font-medium">
               {format(selectedDate, "EEEE, d 'de' MMMM", { locale: ptBR })}
             </span>
           </div>
 
           {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-5 w-5 animate-spin text-primary" />
             </div>
           ) : appointments.length === 0 ? (
             <Card className="border-border/50 shadow-sm bg-card/80 backdrop-blur-sm">
-              <CardContent className="text-center py-12">
-                <Calendar className="h-10 w-10 mx-auto text-muted-foreground/50 mb-3" />
-                <p className="text-sm text-muted-foreground">
+              <CardContent className="text-center py-8">
+                <Calendar className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
+                <p className="text-xs text-muted-foreground">
                   Nenhum agendamento para este dia
                 </p>
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2">
               {appointments.map((appointment, index) => (
                 <Card 
                   key={appointment.id}
@@ -376,58 +376,56 @@ const Agenda = () => {
                     "border-border/50 shadow-sm bg-card/80 backdrop-blur-sm overflow-hidden",
                     "transition-all duration-300 animate-fade-in",
                   )}
-                  style={{ animationDelay: `${index * 50}ms` }}
+                  style={{ animationDelay: `${index * 30}ms` }}
                 >
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-4">
+                  <CardContent className="p-2.5">
+                    <div className="flex items-center gap-3">
                       {/* Time block - compact */}
-                      <div className="flex-shrink-0 text-center min-w-[52px]">
-                        <p className="text-base font-bold">
+                      <div className="flex-shrink-0 text-center min-w-[44px]">
+                        <p className="text-sm font-bold leading-tight">
                           {format(new Date(appointment.start_time), 'HH:mm')}
                         </p>
-                        <p className="text-[10px] text-muted-foreground">
+                        <p className="text-[9px] text-muted-foreground leading-tight">
                           até {format(new Date(appointment.end_time), 'HH:mm')}
                         </p>
                       </div>
 
                       {/* Divider */}
-                      <div className="w-px h-10 bg-border/50" />
+                      <div className="w-px h-8 bg-border/50" />
 
                       {/* Customer info */}
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-0.5">
-                          <span className="font-medium text-sm truncate">
-                            {appointment.customer_name}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                          <Phone className="h-3 w-3" />
+                        <span className="font-medium text-xs truncate block leading-tight">
+                          {appointment.customer_name}
+                        </span>
+                        <div className="flex items-center gap-1 text-[10px] text-muted-foreground leading-tight">
+                          <Phone className="h-2.5 w-2.5" />
                           <span>{appointment.customer_phone}</span>
                         </div>
                         {appointment.service && (
-                          <p className="text-xs text-primary mt-1 font-medium">
+                          <p className="text-[10px] text-primary font-medium leading-tight">
                             {appointment.service.name}
                           </p>
                         )}
                       </div>
 
                       {/* Actions */}
-                      <div className="flex flex-col items-end gap-2">
+                      <div className="flex flex-col items-end gap-1">
                         <span
                           className={cn(
-                            'px-2 py-0.5 rounded-full text-[10px] font-medium',
+                            'px-1.5 py-0.5 rounded-full text-[9px] font-medium',
                             getStatusColor(appointment.status)
                           )}
                         >
                           {getStatusLabel(appointment.status)}
                         </span>
                         
-                        <div className="flex gap-1">
+                        <div className="flex gap-0.5">
                           {appointment.status === 'confirmed' && (
                             <Button
                               size="sm"
                               variant="ghost"
-                              className="h-7 text-xs transition-all hover:-translate-y-0.5 active:scale-95"
+                              className="h-6 px-2 text-[10px] min-h-[32px] min-w-[48px] transition-all hover:-translate-y-0.5 active:scale-95"
                               onClick={() => handleStatusChange(appointment.id, 'completed')}
                             >
                               Concluir
@@ -439,9 +437,9 @@ const Agenda = () => {
                               <Button 
                                 size="sm" 
                                 variant="ghost" 
-                                className="h-7 w-7 p-0 transition-all hover:-translate-y-0.5 active:scale-95"
+                                className="h-6 w-6 p-0 min-h-[32px] min-w-[32px] transition-all hover:-translate-y-0.5 active:scale-95"
                               >
-                                <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                                <Trash2 className="h-3 w-3 text-destructive" />
                               </Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
