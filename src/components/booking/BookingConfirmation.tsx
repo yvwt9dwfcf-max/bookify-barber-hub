@@ -18,19 +18,58 @@ export function BookingConfirmation({ appointment, onNewBooking }: BookingConfir
     }).format(price);
   };
 
+  // Stagger delay base (0.08s = 80ms)
+  const staggerDelay = 0.08;
+
   return (
-    <div className="w-full max-w-md mx-auto text-center animate-fade-in">
-      <div className="mb-8">
-        <div className="w-20 h-20 mx-auto bg-success/20 rounded-full flex items-center justify-center mb-6">
+    <div className="w-full max-w-md mx-auto text-center">
+      {/* 1º - Ícone de check com animação pop elástica */}
+      <div 
+        className="mb-8"
+        style={{
+          opacity: 0,
+          animation: 'fade-in 0.3s ease-out forwards',
+          animationDelay: `${staggerDelay * 0}s`
+        }}
+      >
+        <div 
+          className="w-20 h-20 mx-auto bg-success/20 rounded-full flex items-center justify-center mb-6"
+          style={{
+            transform: 'scale(0)',
+            animation: 'pop-elastic 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+            animationDelay: `${staggerDelay * 0}s`
+          }}
+        >
           <CheckCircle className="h-10 w-10 text-success" />
         </div>
-        <h1 className="text-2xl font-bold mb-2">Agendamento confirmado!</h1>
-        <p className="text-muted-foreground">
-          Seu horário foi reservado com sucesso.
-        </p>
+        
+        {/* 2º - Título de sucesso */}
+        <div
+          style={{
+            opacity: 0,
+            transform: 'translateY(10px)',
+            animation: 'fade-in 0.3s ease-out forwards',
+            animationDelay: `${staggerDelay * 1}s`
+          }}
+        >
+          <h1 className="text-2xl font-bold mb-2">Agendamento confirmado!</h1>
+          <p className="text-muted-foreground">
+            Seu horário foi reservado com sucesso.
+          </p>
+        </div>
       </div>
 
-      <div className="bg-card rounded-2xl p-6 shadow-card-lg text-left space-y-4">
+      {/* 3º - Card de resumo com mesmo shadow dos cards da agenda */}
+      <div 
+        className="bg-card rounded-2xl p-6 text-left space-y-4"
+        style={{
+          boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
+          opacity: 0,
+          transform: 'translateY(10px)',
+          animation: 'fade-in 0.3s ease-out forwards',
+          animationDelay: `${staggerDelay * 2}s`
+        }}
+      >
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
             <User className="h-5 w-5 text-primary" />
@@ -72,11 +111,29 @@ export function BookingConfirmation({ appointment, onNewBooking }: BookingConfir
         </div>
       </div>
 
-      <div className="mt-8 space-y-3">
-        <Button onClick={onNewBooking} className="w-full btn-primary-gradient" size="lg">
+      {/* 4º - Botões de ação com feedback de clique consistente */}
+      <div 
+        className="mt-8 space-y-3"
+        style={{
+          opacity: 0,
+          transform: 'translateY(10px)',
+          animation: 'fade-in 0.3s ease-out forwards',
+          animationDelay: `${staggerDelay * 3}s`
+        }}
+      >
+        <Button 
+          onClick={onNewBooking} 
+          className="w-full btn-primary-gradient active:scale-[0.98] transition-transform duration-150" 
+          size="lg"
+        >
           Fazer novo agendamento
         </Button>
-        <Button variant="outline" asChild className="w-full" size="lg">
+        <Button 
+          variant="outline" 
+          asChild 
+          className="w-full active:scale-[0.98] transition-transform duration-150" 
+          size="lg"
+        >
           <Link to="/">Voltar ao início</Link>
         </Button>
       </div>
