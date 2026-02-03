@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Calendar, Ban, X } from 'lucide-react';
+import { Plus, Calendar, Ban } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
@@ -16,12 +16,22 @@ const FloatingActionButton = ({ onNewAppointment, onNewBlock }: FloatingActionBu
       {/* Menu items */}
       <div
         className={cn(
-          'flex flex-col-reverse gap-3 transition-all duration-300 ease-out',
-          isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
+          'flex flex-col-reverse gap-3',
+          isOpen ? '' : 'pointer-events-none'
         )}
       >
         {/* New Appointment */}
-        <div className="flex items-center gap-3">
+        <div 
+          className={cn(
+            'flex items-center gap-3 transition-all duration-300',
+            isOpen 
+              ? 'opacity-100 translate-y-0' 
+              : 'opacity-0 translate-y-4'
+          )}
+          style={{
+            transitionDelay: isOpen ? '0.1s' : '0s'
+          }}
+        >
           <span className="bg-card text-card-foreground text-sm font-medium px-3 py-1.5 rounded-lg shadow-md border border-border/50">
             Novo agendamento
           </span>
@@ -38,7 +48,17 @@ const FloatingActionButton = ({ onNewAppointment, onNewBlock }: FloatingActionBu
         </div>
 
         {/* New Block */}
-        <div className="flex items-center gap-3">
+        <div 
+          className={cn(
+            'flex items-center gap-3 transition-all duration-300',
+            isOpen 
+              ? 'opacity-100 translate-y-0' 
+              : 'opacity-0 translate-y-4'
+          )}
+          style={{
+            transitionDelay: isOpen ? '0.05s' : '0s'
+          }}
+        >
           <span className="bg-card text-card-foreground text-sm font-medium px-3 py-1.5 rounded-lg shadow-md border border-border/50">
             Novo bloqueio
           </span>
@@ -59,14 +79,15 @@ const FloatingActionButton = ({ onNewAppointment, onNewBlock }: FloatingActionBu
       {/* Main FAB */}
       <Button
         size="icon"
-        className={cn(
-          'h-14 w-14 rounded-full shadow-xl transition-all duration-300',
-          'bg-primary hover:bg-primary/90',
-          isOpen && 'rotate-45'
-        )}
+        className="h-14 w-14 rounded-full shadow-xl transition-all duration-300 bg-primary hover:bg-primary/90"
         onClick={() => setIsOpen(!isOpen)}
       >
-        {isOpen ? <X className="h-6 w-6" /> : <Plus className="h-6 w-6" />}
+        <Plus 
+          className={cn(
+            'h-6 w-6 transition-transform duration-300',
+            isOpen && 'rotate-45'
+          )} 
+        />
       </Button>
 
       {/* Backdrop */}
