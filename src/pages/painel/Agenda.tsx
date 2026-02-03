@@ -3,24 +3,13 @@ import { useOutletContext, useNavigate } from 'react-router-dom';
 import { supabase, Appointment, Barber, Barbershop } from '@/lib/supabase';
 import { useRealtimeAppointments } from '@/hooks/useRealtimeAppointments';
 import { useBarbershopBarbers } from '@/hooks/useBarbershopBarbers';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar, CalendarDays, ChevronLeft, ChevronRight, User, Clock, Phone, Loader2, Trash2 } from 'lucide-react';
+import { Calendar, CalendarDays, ChevronLeft, ChevronRight, User, Phone, Loader2 } from 'lucide-react';
 import { format, addDays, startOfDay, isSameDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
 import {
   Select,
   SelectContent,
@@ -31,6 +20,8 @@ import {
 import MonthlyCalendar from '@/components/painel/MonthlyCalendar';
 import ManualAppointmentDialog from '@/components/painel/ManualAppointmentDialog';
 import FloatingActionButton from '@/components/painel/FloatingActionButton';
+import AppointmentDetailsSheet from '@/components/painel/AppointmentDetailsSheet';
+import EditAppointmentDialog from '@/components/painel/EditAppointmentDialog';
 
 interface ContextType {
   barber: Barber | null;
@@ -49,6 +40,11 @@ const Agenda = () => {
   const [selectedDate, setSelectedDate] = useState(startOfDay(new Date()));
   const [viewMode, setViewMode] = useState<ViewMode>('daily');
   const [showManualDialog, setShowManualDialog] = useState(false);
+  
+  // Estados para detalhes e edição de agendamento
+  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
+  const [showDetailsSheet, setShowDetailsSheet] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
   
   // Barbeiro selecionado para visualização (master pode ver agenda de outros)
   const [selectedBarberId, setSelectedBarberId] = useState<string | null>(null);
@@ -110,34 +106,43 @@ const Agenda = () => {
   };
 
   const handleDeleteAppointment = async (id: string) => {
-    try {
-      const { error } = await supabase
-        .from('appointments')
-        .delete()
-        .eq('id', id);
+    const { error } = await supabase
+      .from('appointments')
+      .delete()
+      .eq('id', id);
 
-      if (error) throw error;
-      toast.success('Agendamento excluído');
-      fetchAppointments();
-    } catch (error) {
+    if (error) {
       toast.error('Erro ao excluir agendamento');
+      throw error;
     }
+    toast.success('Agendamento excluído');
+    fetchAppointments();
   };
 
   const handleStatusChange = async (id: string, status: 'confirmed' | 'completed' | 'cancelled') => {
-    try {
-      const { error } = await supabase
-        .from('appointments')
-        .update({ status })
-        .eq('id', id);
+    const { error } = await supabase
+      .from('appointments')
+      .update({ status })
+      .eq('id', id);
 
-      if (error) throw error;
-      toast.success('Status atualizado');
-      fetchAppointments();
-    } catch (error) {
+    if (error) {
       toast.error('Erro ao atualizar status');
+      throw error;
     }
+    toast.success('Status atualizado');
+    fetchAppointments();
   };
+
+  const handleCardClick = (appointment: Appointment) => {
+    setSelectedAppointment(appointment);
+    setShowDetailsSheet(true);
+  };
+
+  const handleEditAppointment = (appointment: Appointment) => {
+    setSelectedAppointment(appointment);
+    setShowEditDialog(true);
+  };
+
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -373,10 +378,11 @@ const Agenda = () => {
                 <Card 
                   key={appointment.id}
                   className={cn(
-                    "border-border/50 shadow-sm bg-card/80 backdrop-blur-sm overflow-hidden",
-                    "transition-all duration-300 animate-fade-in",
+                    "border-border/50 shadow-sm bg-card/80 backdrop-blur-sm overflow-hidden cursor-pointer",
+                    "transition-all duration-300 animate-fade-in hover:shadow-md hover:border-primary/30 active:scale-[0.99]",
                   )}
                   style={{ animationDelay: `${index * 30}ms` }}
+                  onClick={() => handleCardClick(appointment)}
                 >
                   <CardContent className="p-2.5">
                     <div className="flex items-center gap-3">
@@ -400,7 +406,7 @@ const Agenda = () => {
                         </span>
                         <div className="flex items-center gap-1 text-[10px] text-muted-foreground leading-tight">
                           <Phone className="h-2.5 w-2.5" />
-                          <span>{appointment.customer_phone}</span>
+                          <span>{appointment.customer_phone || 'Sem telefone'}</span>
                         </div>
                         {appointment.service && (
                           <p className="text-[10px] text-primary font-medium leading-tight">
@@ -409,8 +415,8 @@ const Agenda = () => {
                         )}
                       </div>
 
-                      {/* Actions */}
-                      <div className="flex flex-col items-end gap-1">
+                      {/* Status badge */}
+                      <div className="flex-shrink-0">
                         <span
                           className={cn(
                             'px-1.5 py-0.5 rounded-full text-[9px] font-medium',
@@ -419,48 +425,6 @@ const Agenda = () => {
                         >
                           {getStatusLabel(appointment.status)}
                         </span>
-                        
-                        <div className="flex gap-0.5">
-                          {appointment.status === 'confirmed' && (
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="h-6 px-2 text-[10px] min-h-[32px] min-w-[48px] transition-all hover:-translate-y-0.5 active:scale-95"
-                              onClick={() => handleStatusChange(appointment.id, 'completed')}
-                            >
-                              Concluir
-                            </Button>
-                          )}
-                          
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button 
-                                size="sm" 
-                                variant="ghost" 
-                                className="h-6 w-6 p-0 min-h-[32px] min-w-[32px] transition-all hover:-translate-y-0.5 active:scale-95"
-                              >
-                                <Trash2 className="h-3 w-3 text-destructive" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Excluir agendamento?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Esta ação não pode ser desfeita. O agendamento será permanentemente excluído.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => handleDeleteAppointment(appointment.id)}
-                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                >
-                                  Excluir
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </div>
                       </div>
                     </div>
                   </CardContent>
@@ -470,6 +434,25 @@ const Agenda = () => {
           )}
         </div>
       )}
+
+      {/* Appointment Details Sheet */}
+      <AppointmentDetailsSheet
+        appointment={selectedAppointment}
+        open={showDetailsSheet}
+        onOpenChange={setShowDetailsSheet}
+        onEdit={handleEditAppointment}
+        onComplete={(id) => handleStatusChange(id, 'completed')}
+        onDelete={handleDeleteAppointment}
+      />
+
+      {/* Edit Appointment Dialog */}
+      <EditAppointmentDialog
+        appointment={selectedAppointment}
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+        onSuccess={fetchAppointments}
+        isMaster={isMaster}
+      />
 
       {/* Floating Action Button */}
       <FloatingActionButton
