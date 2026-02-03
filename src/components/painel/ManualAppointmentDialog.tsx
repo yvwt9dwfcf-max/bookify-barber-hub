@@ -37,7 +37,7 @@ import { Textarea } from '@/components/ui/textarea';
 const appointmentSchema = z.object({
   customer_name: z.string().trim().min(1, 'Nome é obrigatório').max(100, 'Nome muito longo'),
   customer_phone: z.string().trim().max(20, 'Telefone inválido').optional().or(z.literal('')),
-  service_id: z.string().optional(),
+  service_id: z.string().min(1, 'Selecione um serviço'),
   start_time: z.string().min(1, 'Horário é obrigatório'),
   notes: z.string().max(500, 'Observações muito longas').optional(),
 });
@@ -163,7 +163,15 @@ const ManualAppointmentDialog = ({
     setLoading(true);
     try {
       const selectedService = services.find((s) => s.id === data.service_id);
-      const durationMinutes = selectedService?.duration_minutes || 30;
+      
+      // Serviço é obrigatório - garantir duração correta
+      if (!selectedService) {
+        toast.error('Selecione um serviço para continuar');
+        setLoading(false);
+        return;
+      }
+      
+      const durationMinutes = selectedService.duration_minutes;
 
       // Parse the time and combine with selected date
       const [hours, minutes] = data.start_time.split(':').map(Number);
@@ -251,7 +259,7 @@ const ManualAppointmentDialog = ({
               name="service_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Serviço (opcional)</FormLabel>
+                  <FormLabel>Serviço <span className="text-destructive">*</span></FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
@@ -346,7 +354,7 @@ const ManualAppointmentDialog = ({
               >
                 Cancelar
               </Button>
-              <Button type="submit" disabled={loading}>
+              <Button type="submit" disabled={loading || !form.watch('service_id')}>
                 {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 Criar Agendamento
               </Button>
