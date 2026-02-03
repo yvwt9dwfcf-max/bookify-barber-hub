@@ -16,20 +16,20 @@ const FloatingActionButton = ({ onNewAppointment, onNewBlock }: FloatingActionBu
       {/* Menu items */}
       <div
         className={cn(
-          'flex flex-col-reverse gap-3',
+          'flex flex-col-reverse gap-3 transition-all duration-400',
           isOpen ? '' : 'pointer-events-none'
         )}
       >
         {/* New Appointment */}
         <div 
           className={cn(
-            'flex items-center gap-3 transition-all duration-300',
+            'flex items-center gap-3 transition-all duration-400',
             isOpen 
               ? 'opacity-100 translate-y-0' 
               : 'opacity-0 translate-y-4'
           )}
           style={{
-            transitionDelay: isOpen ? '0.1s' : '0s'
+            transitionDelay: isOpen ? '0.12s' : '0s'
           }}
         >
           <span className="bg-card text-card-foreground text-sm font-medium px-3 py-1.5 rounded-lg shadow-md border border-border/50">
@@ -50,13 +50,13 @@ const FloatingActionButton = ({ onNewAppointment, onNewBlock }: FloatingActionBu
         {/* New Block */}
         <div 
           className={cn(
-            'flex items-center gap-3 transition-all duration-300',
+            'flex items-center gap-3 transition-all duration-400',
             isOpen 
               ? 'opacity-100 translate-y-0' 
               : 'opacity-0 translate-y-4'
           )}
           style={{
-            transitionDelay: isOpen ? '0.05s' : '0s'
+            transitionDelay: isOpen ? '0.06s' : '0s'
           }}
         >
           <span className="bg-card text-card-foreground text-sm font-medium px-3 py-1.5 rounded-lg shadow-md border border-border/50">
