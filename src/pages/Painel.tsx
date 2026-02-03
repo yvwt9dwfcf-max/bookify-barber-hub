@@ -107,7 +107,7 @@ const Painel = () => {
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         )}
         style={{
-          transition: 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+          transition: 'transform 0.55s cubic-bezier(0.22, 1, 0.36, 1)'
         }}
       >
         <div className="flex flex-col h-full">
@@ -157,7 +157,7 @@ const Painel = () => {
                   )}
                   style={{
                     boxShadow: isActive ? '0 0 15px rgba(16, 185, 129, 0.3)' : 'none',
-                    animationDelay: sidebarOpen ? `${index * 0.05}s` : '0s',
+                    animationDelay: sidebarOpen ? `${index * 0.08}s` : '0s',
                     animation: sidebarOpen ? 'fade-in 0.3s ease-out backwards' : 'none'
                   }}
                 >
