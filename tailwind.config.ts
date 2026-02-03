@@ -83,6 +83,10 @@ export default {
       boxShadow: {
         card: "var(--card-shadow)",
         "card-lg": "var(--card-shadow-lg)",
+        "selection-glow": "var(--selection-glow)",
+      },
+      transitionDuration: {
+        "250": "250ms",
       },
       keyframes: {
         "accordion-down": {
@@ -104,6 +108,10 @@ export default {
         "pulse-soft": {
           "0%, 100%": { opacity: "1" },
           "50%": { opacity: "0.7" },
+        },
+        "scale-press": {
+          "0%": { transform: "scale(1)" },
+          "100%": { transform: "scale(0.985)" },
         },
       },
       animation: {

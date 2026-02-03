@@ -21,6 +21,10 @@
     /* Verde Esmeralda como Primary */
     --primary: 160 84% 39%;
     --primary-foreground: 0 0% 100%;
+    
+    /* Cores do degradê para uso em gradientes */
+    --primary-gradient-start: 160 84% 39%; /* #10b981 */
+    --primary-gradient-end: 158 82% 31%; /* #059669 */
 
     /* Cinza suave */
     --secondary: 220 14% 96%;
@@ -49,20 +53,27 @@
 
     --radius: 0.75rem;
 
-    /* Sidebar */
-    --sidebar-background: 220 20% 10%;
+    /* Sidebar - Grafite escuro #111827 */
+    --sidebar-background: 222 47% 11%;
     --sidebar-foreground: 220 14% 96%;
     --sidebar-primary: 160 84% 39%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 20% 18%;
+    --sidebar-accent: 222 47% 16%;
     --sidebar-accent-foreground: 220 14% 96%;
-    --sidebar-border: 220 20% 18%;
+    --sidebar-border: 222 47% 16%;
     --sidebar-ring: 160 84% 39%;
 
     /* Custom */
-    --hero-gradient: linear-gradient(135deg, hsl(160, 84%, 39%) 0%, hsl(160, 70%, 30%) 100%);
-    --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-    --card-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    --hero-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    --primary-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    
+    /* Sombras */
+    --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    --card-shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.08);
+    
+    /* Glow para seleção */
+    --selection-glow: 0 0 0 2px hsl(160 84% 39% / 0.2);
+    --selection-border: hsl(160 84% 39%);
   }
 
   .dark {
@@ -77,6 +88,9 @@
 
     --primary: 160 84% 45%;
     --primary-foreground: 220 20% 10%;
+    
+    --primary-gradient-start: 160 84% 45%;
+    --primary-gradient-end: 158 82% 35%;
 
     --secondary: 220 20% 18%;
     --secondary-foreground: 220 14% 96%;
@@ -100,18 +114,22 @@
     --input: 220 20% 22%;
     --ring: 160 84% 45%;
 
-    --sidebar-background: 220 20% 8%;
+    /* Sidebar dark */
+    --sidebar-background: 222 47% 8%;
     --sidebar-foreground: 220 14% 96%;
     --sidebar-primary: 160 84% 45%;
     --sidebar-primary-foreground: 220 20% 10%;
-    --sidebar-accent: 220 20% 14%;
+    --sidebar-accent: 222 47% 14%;
     --sidebar-accent-foreground: 220 14% 96%;
-    --sidebar-border: 220 20% 14%;
+    --sidebar-border: 222 47% 14%;
     --sidebar-ring: 160 84% 45%;
 
     --hero-gradient: linear-gradient(135deg, hsl(160, 84%, 45%) 0%, hsl(160, 70%, 35%) 100%);
-    --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
-    --card-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
+    --primary-gradient: linear-gradient(135deg, hsl(160, 84%, 45%) 0%, hsl(160, 70%, 35%) 100%);
+    --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    --card-shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.25);
+    --selection-glow: 0 0 0 2px hsl(160 84% 45% / 0.3);
+    --selection-border: hsl(160 84% 45%);
   }
 }
 
@@ -139,20 +157,132 @@
 }
 
 @layer components {
+  /* Botão com degradê principal */
   .btn-primary-gradient {
-    background: var(--hero-gradient);
-    @apply text-primary-foreground font-semibold shadow-lg hover:shadow-xl transition-all duration-300;
+    background: var(--primary-gradient);
+    @apply text-primary-foreground font-semibold shadow-lg transition-all duration-250 ease-out;
+  }
+  
+  .btn-primary-gradient:hover {
+    @apply shadow-xl;
+    filter: brightness(1.05);
+  }
+  
+  .btn-primary-gradient:active {
+    transform: scale(0.985);
   }
 
+  /* Card com sombra padrão */
+  .card-elevated {
+    box-shadow: var(--card-shadow);
+    @apply bg-card transition-all duration-250 ease-out;
+  }
+  
+  .card-elevated:hover {
+    box-shadow: var(--card-shadow-lg);
+  }
+
+  /* Card clicável com efeito de escala */
+  .card-interactive {
+    box-shadow: var(--card-shadow);
+    @apply bg-card cursor-pointer transition-all duration-250 ease-out;
+  }
+  
+  .card-interactive:hover {
+    box-shadow: var(--card-shadow-lg);
+  }
+  
+  .card-interactive:active {
+    transform: scale(0.985);
+  }
+
+  /* Estado selecionado com borda verde e glow */
+  .selected-state {
+    border: 2px solid var(--selection-border);
+    box-shadow: var(--selection-glow);
+  }
+
+  /* Card hover legado (mantido para compatibilidade) */
   .card-hover {
-    @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+    @apply transition-all duration-250 ease-out;
+    box-shadow: var(--card-shadow);
+  }
+  
+  .card-hover:hover {
+    box-shadow: var(--card-shadow-lg);
+    @apply -translate-y-1;
   }
 
+  /* Efeito glassmorphism */
   .glass-effect {
-    @apply bg-white/80 backdrop-blur-sm border border-white/20;
+    @apply bg-white/80 border border-white/20;
+  }
+  
+  @supports (backdrop-filter: blur(8px)) {
+    .glass-effect {
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+  }
+
+  /* Sidebar glass effect */
+  .sidebar-glass {
+    background: hsl(var(--sidebar-background));
+  }
+  
+  @supports (backdrop-filter: blur(8px)) {
+    .sidebar-glass {
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
   }
 
   .section-padding {
     @apply px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Botão interativo com escala */
+  .btn-interactive {
+    @apply transition-all duration-250 ease-out;
+  }
+  
+  .btn-interactive:active {
+    transform: scale(0.985);
+  }
+
+  /* Item de lista interativo */
+  .list-item-interactive {
+    @apply transition-all duration-250 ease-out;
+  }
+  
+  .list-item-interactive:active {
+    transform: scale(0.985);
+  }
+
+  /* Badge com degradê */
+  .badge-gradient {
+    background: var(--primary-gradient);
+    @apply text-primary-foreground;
+  }
+}
+
+/* Utility para transições suaves globais em componentes interativos */
+@layer utilities {
+  .transition-interactive {
+    transition-property: transform, box-shadow, background-color, border-color, opacity;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 250ms;
+  }
+  
+  .duration-250 {
+    transition-duration: 250ms;
+  }
+  
+  .ease-out-smooth {
+    transition-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1);
+  }
+  
+  .active-scale:active {
+    transform: scale(0.985);
   }
 }
