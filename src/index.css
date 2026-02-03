@@ -286,3 +286,21 @@
     transform: scale(0.985);
   }
 }
+
+/* Animação pop elástica para ícone de sucesso */
+@keyframes pop-elastic {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  70% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
