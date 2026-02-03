@@ -102,8 +102,8 @@ const AppointmentDetailsSheet = ({
   return (
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="bottom" className="rounded-t-2xl max-h-[85vh]">
-          <SheetHeader className="text-left pb-4">
+        <SheetContent side="bottom" className="rounded-t-2xl max-h-[90vh] flex flex-col p-0">
+          <SheetHeader className="text-left p-4 pb-2 flex-shrink-0">
             <div className="flex items-center justify-between">
               <SheetTitle className="text-lg">Detalhes do Agendamento</SheetTitle>
               <span
@@ -120,35 +120,36 @@ const AppointmentDetailsSheet = ({
             </SheetDescription>
           </SheetHeader>
 
-          <div className="space-y-4">
-            {/* Informações do cliente */}
+          {/* Conteúdo com scroll */}
+          <div className="flex-1 overflow-y-auto px-4 pb-2">
             <div className="space-y-3">
+              {/* Informações do cliente */}
               <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <User className="h-5 w-5 text-primary" />
                 </div>
-                <div>
-                  <p className="font-medium">{appointment.customer_name}</p>
+                <div className="min-w-0">
+                  <p className="font-medium truncate">{appointment.customer_name}</p>
                   <p className="text-sm text-muted-foreground">Cliente</p>
                 </div>
               </div>
 
               <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <Phone className="h-5 w-5 text-primary" />
                 </div>
-                <div>
-                  <p className="font-medium">{appointment.customer_phone || 'Não informado'}</p>
+                <div className="min-w-0">
+                  <p className="font-medium truncate">{appointment.customer_phone || 'Não informado'}</p>
                   <p className="text-sm text-muted-foreground">Telefone</p>
                 </div>
               </div>
 
               <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <Scissors className="h-5 w-5 text-primary" />
                 </div>
-                <div>
-                  <p className="font-medium">
+                <div className="min-w-0">
+                  <p className="font-medium truncate">
                     {appointment.service?.name || 'Serviço não especificado'}
                   </p>
                   {appointment.service && (
@@ -160,10 +161,10 @@ const AppointmentDetailsSheet = ({
               </div>
 
               <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <Clock className="h-5 w-5 text-primary" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="font-medium">
                     {format(new Date(appointment.start_time), 'HH:mm')} - {format(new Date(appointment.end_time), 'HH:mm')}
                   </p>
@@ -172,10 +173,10 @@ const AppointmentDetailsSheet = ({
               </div>
 
               <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <Calendar className="h-5 w-5 text-primary" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="font-medium">
                     {format(new Date(appointment.start_time), "EEEE, d 'de' MMMM", { locale: ptBR })}
                   </p>
@@ -185,11 +186,11 @@ const AppointmentDetailsSheet = ({
 
               {appointment.barber && (
                 <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                     <User className="h-5 w-5 text-primary" />
                   </div>
-                  <div>
-                    <p className="font-medium">{appointment.barber.name}</p>
+                  <div className="min-w-0">
+                    <p className="font-medium truncate">{appointment.barber.name}</p>
                     <p className="text-sm text-muted-foreground">Profissional</p>
                   </div>
                 </div>
@@ -202,38 +203,38 @@ const AppointmentDetailsSheet = ({
                 </div>
               )}
             </div>
+          </div>
 
-            {/* Ações */}
-            <div className="flex flex-col gap-2 pt-2 pb-4">
+          {/* Ações fixas no rodapé */}
+          <div className="flex-shrink-0 border-t bg-background p-4 space-y-2">
+            <Button
+              variant="outline"
+              className="w-full justify-start gap-2 h-11"
+              onClick={handleEdit}
+            >
+              <Pencil className="h-4 w-4" />
+              Editar agendamento
+            </Button>
+
+            {appointment.status === 'confirmed' && (
               <Button
                 variant="outline"
-                className="w-full justify-start gap-2 h-11"
-                onClick={handleEdit}
+                className="w-full justify-start gap-2 h-11 text-success hover:text-success hover:bg-success/10"
+                onClick={() => setShowCompleteConfirm(true)}
               >
-                <Pencil className="h-4 w-4" />
-                Editar agendamento
+                <Check className="h-4 w-4" />
+                Concluir atendimento
               </Button>
+            )}
 
-              {appointment.status === 'confirmed' && (
-                <Button
-                  variant="outline"
-                  className="w-full justify-start gap-2 h-11 text-success hover:text-success hover:bg-success/10"
-                  onClick={() => setShowCompleteConfirm(true)}
-                >
-                  <Check className="h-4 w-4" />
-                  Concluir atendimento
-                </Button>
-              )}
-
-              <Button
-                variant="outline"
-                className="w-full justify-start gap-2 h-11 text-destructive hover:text-destructive hover:bg-destructive/10"
-                onClick={() => setShowDeleteConfirm(true)}
-              >
-                <Trash2 className="h-4 w-4" />
-                Excluir agendamento
-              </Button>
-            </div>
+            <Button
+              variant="outline"
+              className="w-full justify-start gap-2 h-11 text-destructive hover:text-destructive hover:bg-destructive/10"
+              onClick={() => setShowDeleteConfirm(true)}
+            >
+              <Trash2 className="h-4 w-4" />
+              Excluir agendamento
+            </Button>
           </div>
         </SheetContent>
       </Sheet>
