@@ -239,6 +239,7 @@ export type Database = {
           created_at: string
           id: string
           max_barbers: number
+          monthly_goal: number | null
           name: string
           plan: Database["public"]["Enums"]["plan_type"]
           slug: string | null
@@ -248,6 +249,7 @@ export type Database = {
           created_at?: string
           id?: string
           max_barbers?: number
+          monthly_goal?: number | null
           name: string
           plan?: Database["public"]["Enums"]["plan_type"]
           slug?: string | null
@@ -257,6 +259,7 @@ export type Database = {
           created_at?: string
           id?: string
           max_barbers?: number
+          monthly_goal?: number | null
           name?: string
           plan?: Database["public"]["Enums"]["plan_type"]
           slug?: string | null

@@ -3,47 +3,106 @@ import { useOutletContext } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { BarChart3, TrendingUp, Users, Scissors } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { BarChart3, TrendingUp, Users, Scissors, Target } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useQuery } from '@tanstack/react-query';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { format, subDays, startOfDay, endOfDay } from 'date-fns';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
+import { format, startOfMonth, endOfMonth, startOfDay, endOfDay, subDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { toast } from 'sonner';
 
 type PeriodFilter = 'today' | '7days' | '30days';
 
 interface OutletContext {
   barber: { id: string; barbershop_id: string } | null;
-  barbershop: { id: string; name: string } | null;
+  barbershop: { id: string; name: string; monthly_goal?: number | null } | null;
   isMaster: boolean;
 }
 
 const Relatorios = () => {
   const { barbershop, isMaster } = useOutletContext<OutletContext>();
   const [period, setPeriod] = useState<PeriodFilter>('7days');
+  const [goalDialogOpen, setGoalDialogOpen] = useState(false);
+  const [goalValue, setGoalValue] = useState('');
+  const queryClient = useQueryClient();
+
+  // Fetch barbershop with monthly_goal
+  const { data: barbershopData } = useQuery({
+    queryKey: ['barbershop-goal', barbershop?.id],
+    queryFn: async () => {
+      if (!barbershop?.id) return null;
+      const { data, error } = await supabase
+        .from('barbershops')
+        .select('id, monthly_goal')
+        .eq('id', barbershop.id)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!barbershop?.id && isMaster
+  });
+
+  const monthlyGoal = barbershopData?.monthly_goal ?? null;
+
+  // Mutation to update monthly goal
+  const updateGoalMutation = useMutation({
+    mutationFn: async (newGoal: number | null) => {
+      if (!barbershop?.id) throw new Error('Barbearia não encontrada');
+      const { error } = await supabase
+        .from('barbershops')
+        .update({ monthly_goal: newGoal })
+        .eq('id', barbershop.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['barbershop-goal'] });
+      toast.success('Meta atualizada com sucesso!');
+      setGoalDialogOpen(false);
+    },
+    onError: () => {
+      toast.error('Erro ao atualizar meta');
+    }
+  });
+
+  const handleSaveGoal = () => {
+    const value = parseFloat(goalValue.replace(',', '.'));
+    if (isNaN(value) || value < 0) {
+      toast.error('Informe um valor válido');
+      return;
+    }
+    updateGoalMutation.mutate(value > 0 ? value : null);
+  };
 
   // Calculate date range based on period
   const dateRange = useMemo(() => {
     const now = new Date();
     let startDate: Date;
+    let endDate: Date;
     
     switch (period) {
       case 'today':
         startDate = startOfDay(now);
+        endDate = endOfDay(now);
         break;
       case '7days':
         startDate = startOfDay(subDays(now, 6));
+        endDate = endOfDay(now);
         break;
       case '30days':
-        startDate = startOfDay(subDays(now, 29));
+        // Changed: Use current month (1st to last day)
+        startDate = startOfMonth(now);
+        endDate = endOfMonth(now);
         break;
       default:
         startDate = startOfDay(subDays(now, 6));
+        endDate = endOfDay(now);
     }
     
     return {
       start: startDate.toISOString(),
-      end: endOfDay(now).toISOString()
+      end: endDate.toISOString()
     };
   }, [period]);
 
@@ -156,32 +215,32 @@ const Relatorios = () => {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <BarChart3 className="h-6 w-6 text-primary" />
+    <div className="space-y-4 animate-fade-in">
+      {/* Header - more compact */}
+      <div className="pb-1">
+        <h1 className="text-xl font-bold flex items-center gap-2">
+          <BarChart3 className="h-5 w-5 text-primary" />
           Relatórios & Desempenho
         </h1>
-        <p className="text-muted-foreground mt-1">
+        <p className="text-sm text-muted-foreground">
           Visualize o desempenho da sua barbearia
         </p>
       </div>
 
       {/* Bloco 1 - Faturamento */}
       <Card>
-        <CardHeader className="pb-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <TrendingUp className="h-5 w-5 text-primary" />
+        <CardHeader className="pb-2 pt-4 px-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <TrendingUp className="h-4 w-4 text-primary" />
               Faturamento
             </CardTitle>
-            <div className="flex gap-2">
+            <div className="flex gap-1.5">
               <Button
                 variant={period === 'today' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setPeriod('today')}
-                className={period === 'today' ? 'btn-primary-gradient' : ''}
+                className={`h-7 px-2.5 text-xs ${period === 'today' ? 'btn-primary-gradient' : ''}`}
               >
                 Hoje
               </Button>
@@ -189,7 +248,7 @@ const Relatorios = () => {
                 variant={period === '7days' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setPeriod('7days')}
-                className={period === '7days' ? 'btn-primary-gradient' : ''}
+                className={`h-7 px-2.5 text-xs ${period === '7days' ? 'btn-primary-gradient' : ''}`}
               >
                 7 dias
               </Button>
@@ -197,37 +256,75 @@ const Relatorios = () => {
                 variant={period === '30days' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setPeriod('30days')}
-                className={period === '30days' ? 'btn-primary-gradient' : ''}
+                className={`h-7 px-2.5 text-xs ${period === '30days' ? 'btn-primary-gradient' : ''}`}
               >
                 30 dias
               </Button>
             </div>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-4 pb-4 pt-2">
           {isLoading ? (
-            <div className="space-y-4">
-              <Skeleton className="h-8 w-32" />
-              <Skeleton className="h-[200px] w-full" />
+            <div className="space-y-3">
+              <Skeleton className="h-6 w-28" />
+              <Skeleton className="h-[180px] w-full" />
             </div>
           ) : (
             <>
-              <div className="mb-4">
-                <p className="text-sm text-muted-foreground">Total do período</p>
-                <p className="text-3xl font-bold text-primary">{formatCurrency(totalRevenue)}</p>
+              <div className="mb-3 flex items-end justify-between">
+                <div>
+                  <p className="text-xs text-muted-foreground">Total do período</p>
+                  <p className="text-2xl font-bold text-primary">{formatCurrency(totalRevenue)}</p>
+                </div>
+                {period === '30days' && (
+                  <div className="text-right">
+                    {monthlyGoal ? (
+                      <div className="flex items-center gap-2">
+                        <div>
+                          <p className="text-xs text-muted-foreground">Meta do mês</p>
+                          <p className="text-sm font-semibold">{formatCurrency(monthlyGoal)}</p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setGoalValue(monthlyGoal.toString());
+                            setGoalDialogOpen(true);
+                          }}
+                          className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+                        >
+                          <Target className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setGoalValue('');
+                          setGoalDialogOpen(true);
+                        }}
+                        className="h-7 px-2.5 text-xs"
+                      >
+                        <Target className="h-3.5 w-3.5 mr-1" />
+                        Definir meta
+                      </Button>
+                    )}
+                  </div>
+                )}
               </div>
               
               {revenueData.length > 0 ? (
-                <div className="h-[200px] sm:h-[250px]">
+                <div className="h-[180px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={revenueData}>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                       <XAxis 
                         dataKey="day" 
-                        tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                        tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }}
                       />
                       <YAxis 
-                        tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                        tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }}
                         tickFormatter={(value) => `R$${value}`}
                       />
                       <Tooltip 
@@ -243,6 +340,20 @@ const Relatorios = () => {
                         fill="url(#primaryGradient)" 
                         radius={[4, 4, 0, 0]}
                       />
+                      {period === '30days' && monthlyGoal && (
+                        <ReferenceLine 
+                          y={monthlyGoal} 
+                          stroke="hsl(var(--destructive))" 
+                          strokeDasharray="5 5"
+                          strokeWidth={2}
+                          label={{
+                            value: 'Meta',
+                            position: 'right',
+                            fill: 'hsl(var(--destructive))',
+                            fontSize: 11
+                          }}
+                        />
+                      )}
                       <defs>
                         <linearGradient id="primaryGradient" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="0%" stopColor="#10b981" />
@@ -253,7 +364,7 @@ const Relatorios = () => {
                   </ResponsiveContainer>
                 </div>
               ) : (
-                <div className="h-[200px] flex items-center justify-center text-muted-foreground">
+                <div className="h-[180px] flex items-center justify-center text-muted-foreground text-sm">
                   Nenhum agendamento concluído no período selecionado.
                 </div>
               )}
@@ -263,46 +374,46 @@ const Relatorios = () => {
       </Card>
 
       {/* Grid for services and barber performance */}
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2">
         {/* Bloco 2 - Serviços mais vendidos */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Scissors className="h-5 w-5 text-primary" />
+          <CardHeader className="pb-2 pt-4 px-4">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Scissors className="h-4 w-4 text-primary" />
               Serviços mais vendidos
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-4 pb-4 pt-1">
             {isLoading ? (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {[1, 2, 3].map((i) => (
                   <div key={i} className="flex items-center justify-between">
-                    <Skeleton className="h-5 w-32" />
-                    <Skeleton className="h-5 w-16" />
+                    <Skeleton className="h-4 w-28" />
+                    <Skeleton className="h-4 w-14" />
                   </div>
                 ))}
               </div>
             ) : topServices.length > 0 ? (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {topServices.map((service, index) => (
                   <div 
                     key={service.name}
-                    className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
+                    className="flex items-center justify-between p-2.5 rounded-lg bg-muted/50"
                   >
-                    <div className="flex items-center gap-3">
-                      <span className="text-lg font-bold text-primary">
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-sm font-bold text-primary">
                         #{index + 1}
                       </span>
-                      <span className="font-medium">{service.name}</span>
+                      <span className="text-sm font-medium">{service.name}</span>
                     </div>
-                    <span className="text-muted-foreground">
+                    <span className="text-xs text-muted-foreground">
                       {service.count} {service.count === 1 ? 'atendimento' : 'atendimentos'}
                     </span>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="py-8 text-center text-muted-foreground">
+              <div className="py-6 text-center text-muted-foreground text-sm">
                 Nenhum serviço realizado no período.
               </div>
             )}
@@ -311,49 +422,92 @@ const Relatorios = () => {
 
         {/* Bloco 3 - Desempenho dos barbeiros */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Users className="h-5 w-5 text-primary" />
+          <CardHeader className="pb-2 pt-4 px-4">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Users className="h-4 w-4 text-primary" />
               Desempenho dos barbeiros
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-4 pb-4 pt-1">
             {isLoading ? (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {[1, 2, 3].map((i) => (
                   <div key={i} className="flex items-center justify-between">
-                    <Skeleton className="h-5 w-32" />
-                    <Skeleton className="h-5 w-16" />
+                    <Skeleton className="h-4 w-28" />
+                    <Skeleton className="h-4 w-14" />
                   </div>
                 ))}
               </div>
             ) : barberPerformance.length > 0 ? (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {barberPerformance.map((barber, index) => (
                   <div 
                     key={barber.name}
-                    className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
+                    className="flex items-center justify-between p-2.5 rounded-lg bg-muted/50"
                   >
-                    <div className="flex items-center gap-3">
-                      <span className="text-lg font-bold text-primary">
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-sm font-bold text-primary">
                         #{index + 1}
                       </span>
-                      <span className="font-medium">{barber.name}</span>
+                      <span className="text-sm font-medium">{barber.name}</span>
                     </div>
-                    <span className="text-muted-foreground">
+                    <span className="text-xs text-muted-foreground">
                       {barber.count} {barber.count === 1 ? 'atendimento' : 'atendimentos'}
                     </span>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="py-8 text-center text-muted-foreground">
+              <div className="py-6 text-center text-muted-foreground text-sm">
                 Nenhum atendimento realizado no período.
               </div>
             )}
           </CardContent>
         </Card>
       </div>
+
+      {/* Dialog para definir meta mensal */}
+      <Dialog open={goalDialogOpen} onOpenChange={setGoalDialogOpen}>
+        <DialogContent className="sm:max-w-[360px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Target className="h-5 w-5 text-primary" />
+              Definir meta mensal
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <label className="text-sm text-muted-foreground mb-2 block">
+              Valor da meta (R$)
+            </label>
+            <Input
+              type="text"
+              inputMode="decimal"
+              placeholder="Ex: 5000"
+              value={goalValue}
+              onChange={(e) => setGoalValue(e.target.value)}
+              className="text-lg"
+            />
+            <p className="text-xs text-muted-foreground mt-2">
+              A meta será exibida como linha de referência no gráfico mensal.
+            </p>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setGoalDialogOpen(false)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleSaveGoal}
+              disabled={updateGoalMutation.isPending}
+              className="btn-primary-gradient"
+            >
+              {updateGoalMutation.isPending ? 'Salvando...' : 'Salvar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
