@@ -136,15 +136,24 @@ const Relatorios = () => {
     enabled: !!barbershop?.id && isMaster
   });
 
-  // Calculate revenue data for chart - one bar per day
+  // Calculate revenue data for chart
   const revenueData = useMemo(() => {
-    // Generate all days in the range
+    // For "Mês" filter: show single bar with total
+    if (period === '30days') {
+      const total = appointments?.reduce((sum, apt) => sum + Number(apt.services?.price || 0), 0) || 0;
+      const monthName = format(dateRange.startDate, 'MMMM', { locale: ptBR });
+      return [{
+        day: monthName.charAt(0).toUpperCase() + monthName.slice(1),
+        revenue: total
+      }];
+    }
+
+    // For other filters: show one bar per day
     const allDays = eachDayOfInterval({
       start: dateRange.startDate,
       end: dateRange.endDate
     });
 
-    // Build a map of revenue per day (YYYY-MM-DD as key)
     const revenueByDay: Record<string, number> = {};
     
     appointments?.forEach((apt) => {
@@ -153,7 +162,6 @@ const Relatorios = () => {
       revenueByDay[dayKey] = (revenueByDay[dayKey] || 0) + Number(price);
     });
 
-    // Return one entry per day in the range
     return allDays.map((day) => {
       const dayKey = format(day, 'yyyy-MM-dd');
       const displayDay = format(day, 'dd/MM', { locale: ptBR });
@@ -162,7 +170,7 @@ const Relatorios = () => {
         revenue: revenueByDay[dayKey] || 0
       };
     });
-  }, [appointments, dateRange]);
+  }, [appointments, dateRange, period]);
 
   // Calculate total revenue
   const totalRevenue = useMemo(() => {
