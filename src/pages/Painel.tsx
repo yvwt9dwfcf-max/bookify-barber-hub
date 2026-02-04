@@ -18,7 +18,8 @@ import {
   CalendarOff,
   Users,
   Crown,
-  MessageCircle
+  MessageCircle,
+  BarChart3
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
@@ -40,6 +41,7 @@ const Painel = () => {
     { icon: Clock, label: 'Horários', path: '/painel/horarios' },
     { icon: CalendarOff, label: 'Bloqueios', path: '/painel/bloqueios' },
     ...(isMaster ? [{ icon: Users, label: 'Equipe', path: '/painel/barbeiros' }] : []),
+    ...(isMaster ? [{ icon: BarChart3, label: 'Relatórios', path: '/painel/relatorios' }] : []),
     { icon: MessageCircle, label: 'WhatsApp', path: '/painel/whatsapp' },
     { icon: Settings, label: 'Configurações', path: '/painel/configuracoes' },
   ];
