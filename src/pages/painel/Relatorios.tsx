@@ -9,7 +9,7 @@ import { BarChart3, TrendingUp, Users, Scissors, Target } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
-import { format, startOfMonth, endOfMonth, startOfDay, endOfDay, subDays } from 'date-fns';
+import { format, startOfMonth, startOfDay, endOfDay, subDays, eachDayOfInterval } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
 
@@ -91,9 +91,9 @@ const Relatorios = () => {
         endDate = endOfDay(now);
         break;
       case '30days':
-        // Changed: Use current month (1st to last day)
+        // Current month: from 1st day to today
         startDate = startOfMonth(now);
-        endDate = endOfMonth(now);
+        endDate = endOfDay(now);
         break;
       default:
         startDate = startOfDay(subDays(now, 6));
@@ -102,7 +102,9 @@ const Relatorios = () => {
     
     return {
       start: startDate.toISOString(),
-      end: endDate.toISOString()
+      end: endDate.toISOString(),
+      startDate,
+      endDate
     };
   }, [period]);
 
@@ -134,23 +136,33 @@ const Relatorios = () => {
     enabled: !!barbershop?.id && isMaster
   });
 
-  // Calculate revenue data for chart
+  // Calculate revenue data for chart - one bar per day
   const revenueData = useMemo(() => {
-    if (!appointments?.length) return [];
-
-    const revenueByDay: Record<string, number> = {};
-    
-    appointments.forEach((apt) => {
-      const day = format(new Date(apt.start_time), 'dd/MM', { locale: ptBR });
-      const price = apt.services?.price || 0;
-      revenueByDay[day] = (revenueByDay[day] || 0) + Number(price);
+    // Generate all days in the range
+    const allDays = eachDayOfInterval({
+      start: dateRange.startDate,
+      end: dateRange.endDate
     });
 
-    return Object.entries(revenueByDay).map(([day, revenue]) => ({
-      day,
-      revenue
-    }));
-  }, [appointments]);
+    // Build a map of revenue per day (YYYY-MM-DD as key)
+    const revenueByDay: Record<string, number> = {};
+    
+    appointments?.forEach((apt) => {
+      const dayKey = format(new Date(apt.start_time), 'yyyy-MM-dd');
+      const price = apt.services?.price || 0;
+      revenueByDay[dayKey] = (revenueByDay[dayKey] || 0) + Number(price);
+    });
+
+    // Return one entry per day in the range
+    return allDays.map((day) => {
+      const dayKey = format(day, 'yyyy-MM-dd');
+      const displayDay = format(day, 'dd/MM', { locale: ptBR });
+      return {
+        day: displayDay,
+        revenue: revenueByDay[dayKey] || 0
+      };
+    });
+  }, [appointments, dateRange]);
 
   // Calculate total revenue
   const totalRevenue = useMemo(() => {
@@ -258,7 +270,7 @@ const Relatorios = () => {
                 onClick={() => setPeriod('30days')}
                 className={`h-7 px-2.5 text-xs ${period === '30days' ? 'btn-primary-gradient' : ''}`}
               >
-                30 dias
+                Mês
               </Button>
             </div>
           </div>
