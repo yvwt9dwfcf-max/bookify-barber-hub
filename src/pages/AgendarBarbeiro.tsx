@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { supabase, Barber, Barbershop } from '@/lib/supabase';
+import { supabase, Barber } from '@/lib/supabase';
 import { Logo } from '@/components/ui/Logo';
 import { BookingFlow } from '@/components/booking/BookingFlow';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, UserX, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Loader2, UserX } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 
 const AgendarBarbeiro = () => {
@@ -12,7 +12,6 @@ const AgendarBarbeiro = () => {
   const [barber, setBarber] = useState<Barber | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [subscriptionInactive, setSubscriptionInactive] = useState(false);
 
   useEffect(() => {
     if (barberId) {
@@ -35,19 +34,6 @@ const AgendarBarbeiro = () => {
         setNotFound(true);
       } else {
         setBarber(data);
-
-        // Check if barbershop subscription is active
-        if (data.barbershop_id) {
-          const { data: shopData } = await supabase
-            .from('barbershops')
-            .select('subscription_active')
-            .eq('id', data.barbershop_id)
-            .maybeSingle();
-
-          if (shopData && !shopData.subscription_active) {
-            setSubscriptionInactive(true);
-          }
-        }
       }
     } catch (error) {
       console.error('Erro ao buscar barbeiro:', error);
@@ -94,45 +80,6 @@ const AgendarBarbeiro = () => {
                 <Button asChild className="btn-primary-gradient">
                   <Link to="/agendar">
                     Ver todos os profissionais
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </main>
-      </div>
-    );
-  }
-
-  if (subscriptionInactive) {
-    return (
-      <div className="min-h-screen bg-background">
-        <header className="section-padding py-4 border-b border-border/50">
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <Logo />
-            <Button variant="ghost" asChild>
-              <Link to="/">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Voltar
-              </Link>
-            </Button>
-          </div>
-        </header>
-
-        <main className="section-padding py-12">
-          <div className="max-w-md mx-auto text-center">
-            <Card>
-              <CardContent className="p-8">
-                <div className="w-16 h-16 rounded-full bg-warning/10 mx-auto flex items-center justify-center mb-4">
-                  <AlertTriangle className="h-8 w-8 text-warning" />
-                </div>
-                <h1 className="text-xl font-bold mb-2">Agendamentos indisponíveis</h1>
-                <p className="text-muted-foreground mb-6">
-                  Este profissional está temporariamente sem aceitar novos agendamentos.
-                </p>
-                <Button asChild className="btn-primary-gradient">
-                  <Link to="/">
-                    Voltar ao início
                   </Link>
                 </Button>
               </CardContent>

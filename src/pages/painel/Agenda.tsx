@@ -5,7 +5,7 @@ import { useRealtimeAppointments } from '@/hooks/useRealtimeAppointments';
 import { useBarbershopBarbers } from '@/hooks/useBarbershopBarbers';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar, CalendarDays, ChevronLeft, ChevronRight, User, Phone, Loader2, AlertTriangle } from 'lucide-react';
+import { Calendar, CalendarDays, ChevronLeft, ChevronRight, User, Phone, Loader2 } from 'lucide-react';
 import { format, addDays, startOfDay, isSameDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -119,15 +119,7 @@ const Agenda = () => {
     fetchAppointments();
   };
 
-  const isSubscriptionActive = barbershop?.subscription_active !== false;
-
   const handleStatusChange = async (id: string, status: 'confirmed' | 'completed' | 'cancelled') => {
-    // Block completing appointments if subscription is inactive
-    if (status === 'completed' && !isSubscriptionActive) {
-      toast.error('Ative sua assinatura para concluir atendimentos');
-      return;
-    }
-
     const { error } = await supabase
       .from('appointments')
       .update({ status })
@@ -236,21 +228,6 @@ const Agenda = () => {
           </Button>
         </div>
       </div>
-
-      {/* Subscription Inactive Warning */}
-      {!isSubscriptionActive && (
-        <Card className="border-destructive/50 bg-destructive/10">
-          <CardContent className="p-4 flex items-center gap-3">
-            <AlertTriangle className="h-5 w-5 text-destructive flex-shrink-0" />
-            <div>
-              <p className="font-medium text-destructive">Assinatura inativa</p>
-              <p className="text-sm text-muted-foreground">
-                Novos agendamentos e conclusões estão bloqueados.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Seletor de barbeiro para master - lighter card */}
       {isMaster && barbers.length > 1 && (
@@ -479,13 +456,7 @@ const Agenda = () => {
 
       {/* Floating Action Button */}
       <FloatingActionButton
-        onNewAppointment={() => {
-          if (!isSubscriptionActive) {
-            toast.error('Ative sua assinatura para criar novos agendamentos');
-            return;
-          }
-          setShowManualDialog(true);
-        }}
+        onNewAppointment={() => setShowManualDialog(true)}
         onNewBlock={() => navigate('/painel/bloqueios')}
       />
     </div>

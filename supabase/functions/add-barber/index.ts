@@ -18,15 +18,6 @@ interface AddBarberRequest {
   };
 }
 
-// Plan display labels for error messages
-const PLAN_DISPLAY_LABELS: Record<string, string> = {
-  basic: '1 barbeiro',
-  plus: 'até 3 barbeiros',
-  pro: 'até 6 barbeiros',
-  studio: 'até 12 barbeiros',
-  rede: 'acima de 12 barbeiros',
-};
-
 Deno.serve(async (req) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
@@ -89,29 +80,14 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Check if subscription is active
-    const { data: shopData } = await supabaseAdmin
-      .from("barbershops")
-      .select("subscription_active, plan, max_barbers")
-      .eq("id", barbershop_id)
-      .maybeSingle();
-
-    if (!shopData?.subscription_active) {
-      return new Response(
-        JSON.stringify({ error: "Ative sua assinatura para adicionar barbeiros" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Check if can add more barbers (using database function)
+    // Check if can add more barbers
     const { data: canAdd } = await supabaseAdmin.rpc("can_add_barber", {
       _barbershop_id: barbershop_id,
     });
 
     if (!canAdd) {
-      const planLabel = PLAN_DISPLAY_LABELS[shopData?.plan || 'basic'] || '1 barbeiro';
       return new Response(
-        JSON.stringify({ error: `Seu plano permite ${planLabel}` }),
+        JSON.stringify({ error: "Limite de barbeiros atingido" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }

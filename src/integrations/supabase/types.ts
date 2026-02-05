@@ -243,7 +243,6 @@ export type Database = {
           name: string
           plan: Database["public"]["Enums"]["plan_type"]
           slug: string | null
-          subscription_active: boolean
           updated_at: string
         }
         Insert: {
@@ -254,7 +253,6 @@ export type Database = {
           name: string
           plan?: Database["public"]["Enums"]["plan_type"]
           slug?: string | null
-          subscription_active?: boolean
           updated_at?: string
         }
         Update: {
@@ -265,7 +263,6 @@ export type Database = {
           name?: string
           plan?: Database["public"]["Enums"]["plan_type"]
           slug?: string | null
-          subscription_active?: boolean
           updated_at?: string
         }
         Relationships: []
@@ -517,7 +514,6 @@ export type Database = {
         }[]
       }
       get_current_barber_id: { Args: never; Returns: string }
-      get_plan_limit: { Args: { plan_name: string }; Returns: number }
       get_user_barbershop_id: { Args: { _user_id: string }; Returns: string }
       get_user_role: {
         Args: { _user_id: string }
@@ -535,14 +531,10 @@ export type Database = {
         Args: { _barbershop_id: string; _user_id: string }
         Returns: boolean
       }
-      is_subscription_active: {
-        Args: { _barbershop_id: string }
-        Returns: boolean
-      }
     }
     Enums: {
       app_role: "master" | "barber"
-      plan_type: "basic" | "plus" | "pro" | "studio" | "rede"
+      plan_type: "basic" | "pro" | "advanced"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -671,7 +663,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["master", "barber"],
-      plan_type: ["basic", "plus", "pro", "studio", "rede"],
+      plan_type: ["basic", "pro", "advanced"],
     },
   },
 } as const
