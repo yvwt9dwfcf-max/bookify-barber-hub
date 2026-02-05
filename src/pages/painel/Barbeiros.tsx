@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useBarbershopBarbers } from '@/hooks/useBarbershopBarbers';
-import { supabase, Barber, BarberPermissions, PLAN_NAMES } from '@/lib/supabase';
+import { supabase, Barber, BarberPermissions, PLAN_NAMES, PLAN_DISPLAY_LABELS } from '@/lib/supabase';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -69,8 +69,13 @@ const Barbeiros = () => {
       return;
     }
 
+    if (!barbershop.subscription_active) {
+      toast.error('Ative sua assinatura para adicionar barbeiros');
+      return;
+    }
+
     if (!canAddMore) {
-      toast.error(`Limite de ${maxBarbers} barbeiros atingido`);
+      toast.error(`Seu plano permite ${PLAN_DISPLAY_LABELS[barbershop.plan]}`);
       return;
     }
 
@@ -232,7 +237,7 @@ const Barbeiros = () => {
         <DialogTrigger asChild>
           <Button 
             className="btn-primary-gradient"
-            disabled={!canAddMore}
+            disabled={!canAddMore || !barbershop?.subscription_active}
           >
             <Plus className="mr-2 h-4 w-4" />
             Adicionar Barbeiro
@@ -316,7 +321,22 @@ const Barbeiros = () => {
             <div>
               <p className="font-medium">Limite de barbeiros atingido</p>
               <p className="text-sm text-muted-foreground">
-                Seu plano permite até {maxBarbers} barbeiros. Faça upgrade para adicionar mais.
+                Seu plano permite {PLAN_DISPLAY_LABELS[barbershop?.plan || 'basic']}. Faça upgrade para adicionar mais.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Subscription Inactive Warning */}
+      {barbershop && !barbershop.subscription_active && (
+        <Card className="border-destructive/50 bg-destructive/10">
+          <CardContent className="p-4 flex items-center gap-3">
+            <AlertTriangle className="h-5 w-5 text-destructive" />
+            <div>
+              <p className="font-medium text-destructive">Assinatura inativa</p>
+              <p className="text-sm text-muted-foreground">
+                Ative sua assinatura para adicionar novos barbeiros.
               </p>
             </div>
           </CardContent>

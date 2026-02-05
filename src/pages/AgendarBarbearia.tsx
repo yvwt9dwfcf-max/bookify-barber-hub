@@ -4,7 +4,7 @@ import { supabase, Barber, Barbershop } from '@/lib/supabase';
 import { Logo } from '@/components/ui/Logo';
 import { BookingFlow } from '@/components/booking/BookingFlow';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, Building2 } from 'lucide-react';
+import { ArrowLeft, Loader2, Building2, AlertTriangle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 
 const AgendarBarbearia = () => {
@@ -13,6 +13,7 @@ const AgendarBarbearia = () => {
   const [barbers, setBarbers] = useState<Barber[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [subscriptionInactive, setSubscriptionInactive] = useState(false);
 
   useEffect(() => {
     if (barbershopId) {
@@ -37,6 +38,12 @@ const AgendarBarbearia = () => {
       }
 
       setBarbershop(shopData as Barbershop);
+
+      // Check if subscription is active
+      if (!shopData.subscription_active) {
+        setSubscriptionInactive(true);
+        return;
+      }
 
       // Fetch active barbers from this barbershop
       const { data: barbersData, error: barbersError } = await supabase
@@ -89,6 +96,45 @@ const AgendarBarbearia = () => {
                 <h1 className="text-xl font-bold mb-2">Barbearia não encontrada</h1>
                 <p className="text-muted-foreground mb-6">
                   O link que você acessou não é válido ou a barbearia não está mais disponível.
+                </p>
+                <Button asChild className="btn-primary-gradient">
+                  <Link to="/">
+                    Voltar ao início
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (subscriptionInactive) {
+    return (
+      <div className="min-h-screen bg-background">
+        <header className="section-padding py-4 border-b border-border/50">
+          <div className="max-w-7xl mx-auto flex items-center justify-between">
+            <Logo />
+            <Button variant="ghost" asChild>
+              <Link to="/">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Voltar
+              </Link>
+            </Button>
+          </div>
+        </header>
+
+        <main className="section-padding py-12">
+          <div className="max-w-md mx-auto text-center">
+            <Card>
+              <CardContent className="p-8">
+                <div className="w-16 h-16 rounded-full bg-warning/10 mx-auto flex items-center justify-center mb-4">
+                  <AlertTriangle className="h-8 w-8 text-warning" />
+                </div>
+                <h1 className="text-xl font-bold mb-2">Agendamentos indisponíveis</h1>
+                <p className="text-muted-foreground mb-6">
+                  Esta barbearia está temporariamente sem aceitar novos agendamentos.
                 </p>
                 <Button asChild className="btn-primary-gradient">
                   <Link to="/">

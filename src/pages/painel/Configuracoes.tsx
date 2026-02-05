@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { Barber, Barbershop } from '@/lib/supabase';
+import { Barber, Barbershop, PLAN_NAMES, PLAN_DISPLAY_LABELS, supabase, PlanType, PLAN_LIMITS } from '@/lib/supabase';
 import { useBarber } from '@/hooks/useBarber';
 import { useUserRole } from '@/hooks/useUserRole';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -8,8 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { User, Phone, Mail, Loader2, Save, Building2, Crown } from 'lucide-react';
+import { User, Phone, Mail, Loader2, Save, Building2, Crown, CreditCard, ChevronRight, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
+import { SubscriptionSheet } from '@/components/painel/SubscriptionSheet';
 
 interface ContextType {
   barber: Barber | null;
@@ -20,9 +21,11 @@ interface ContextType {
 const Configuracoes = () => {
   const { barber } = useOutletContext<ContextType>();
   const { updateBarber } = useBarber();
-  const { barbershop, isMaster } = useUserRole();
+  const { barbershop, isMaster, refetch } = useUserRole();
   
   const [saving, setSaving] = useState(false);
+  const [showSubscriptionSheet, setShowSubscriptionSheet] = useState(false);
+  const [updatingPlan, setUpdatingPlan] = useState(false);
 
   const [name, setName] = useState(barber?.name || '');
   const [phone, setPhone] = useState(barber?.phone || '');
@@ -62,6 +65,33 @@ const Configuracoes = () => {
     }
   };
 
+  const handlePlanChange = async (newPlan: PlanType) => {
+    if (!barbershop || !isMaster) return;
+    
+    setUpdatingPlan(true);
+    try {
+      const newLimit = PLAN_LIMITS[newPlan];
+      
+      const { error } = await supabase
+        .from('barbershops')
+        .update({ 
+          plan: newPlan,
+          max_barbers: newLimit
+        })
+        .eq('id', barbershop.id);
+
+      if (error) throw error;
+      
+      toast.success(`Plano alterado para ${PLAN_NAMES[newPlan]}`);
+      refetch();
+    } catch (error) {
+      console.error('Erro ao alterar plano:', error);
+      toast.error('Erro ao alterar plano');
+    } finally {
+      setUpdatingPlan(false);
+    }
+  };
+
   return (
     <div className="space-y-6 max-w-2xl">
       {/* Header */}
@@ -92,6 +122,49 @@ const Configuracoes = () => {
           </Badge>
         )}
       </div>
+
+      {/* Subscription Card - Only for Masters */}
+      {isMaster && barbershop && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2">
+              <CreditCard className="h-5 w-5" />
+              Assinatura
+            </CardTitle>
+            <CardDescription>
+              Gerencie o plano da sua barbearia
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Subscription Status Warning */}
+            {!barbershop.subscription_active && (
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+                <AlertTriangle className="h-5 w-5 text-destructive flex-shrink-0" />
+                <div>
+                  <p className="font-medium text-destructive">Assinatura inativa</p>
+                  <p className="text-sm text-muted-foreground">
+                    Algumas funcionalidades estão bloqueadas
+                  </p>
+                </div>
+              </div>
+            )}
+            
+            <button
+              onClick={() => setShowSubscriptionSheet(true)}
+              disabled={updatingPlan}
+              className="w-full flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors text-left"
+            >
+              <div>
+                <p className="font-medium">Plano atual</p>
+                <p className="text-sm text-muted-foreground">
+                  {PLAN_NAMES[barbershop.plan]} – {PLAN_DISPLAY_LABELS[barbershop.plan]}
+                </p>
+              </div>
+              <ChevronRight className="h-5 w-5 text-muted-foreground" />
+            </button>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Profile Card */}
       <Card>
@@ -165,6 +238,16 @@ const Configuracoes = () => {
           </Button>
         </CardContent>
       </Card>
+
+      {/* Subscription Sheet */}
+      {barbershop && (
+        <SubscriptionSheet
+          open={showSubscriptionSheet}
+          onOpenChange={setShowSubscriptionSheet}
+          currentPlan={barbershop.plan}
+          onSelectPlan={isMaster ? handlePlanChange : undefined}
+        />
+      )}
     </div>
   );
 };
