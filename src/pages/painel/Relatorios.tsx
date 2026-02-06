@@ -499,6 +499,39 @@ const Relatorios = () => {
                   </div>
                 )}
               </div>
+
+              {/* Progress bar for monthly goal */}
+              {period === '30days' && monthlyGoal && monthlyGoal > 0 && (
+                <div className="mb-3">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs text-muted-foreground">Progresso da meta</span>
+                    <span className={`text-xs font-semibold ${
+                      (totalRevenue / monthlyGoal) >= 1 
+                        ? 'text-primary' 
+                        : (totalRevenue / monthlyGoal) >= 0.7 
+                          ? 'text-yellow-500' 
+                          : 'text-muted-foreground'
+                    }`}>
+                      {Math.min((totalRevenue / monthlyGoal) * 100, 999).toFixed(1)}%
+                    </span>
+                  </div>
+                  <div className="h-2.5 w-full rounded-full bg-muted overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-700 ease-out ${
+                        (totalRevenue / monthlyGoal) >= 1
+                          ? 'bg-primary'
+                          : (totalRevenue / monthlyGoal) >= 0.7
+                            ? 'bg-yellow-500'
+                            : 'bg-muted-foreground/50'
+                      }`}
+                      style={{ width: `${Math.min((totalRevenue / monthlyGoal) * 100, 100)}%` }}
+                    />
+                  </div>
+                  {(totalRevenue / monthlyGoal) >= 1 && (
+                    <p className="text-xs text-primary mt-1 font-medium">🎉 Meta atingida!</p>
+                  )}
+                </div>
+              )}
               
               {revenueData.length > 0 ? (
                 <div className="h-[180px]">
