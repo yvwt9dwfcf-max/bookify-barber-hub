@@ -1,17 +1,18 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { BarChart3, TrendingUp, Users, Scissors, Target } from 'lucide-react';
+import { BarChart3, TrendingUp, Users, Scissors, Target, Download } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { format, startOfMonth, startOfDay, endOfDay, subDays, eachDayOfInterval } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
+import jsPDF from 'jspdf';
 
 type PeriodFilter = 'today' | '7days' | '30days';
 
@@ -226,6 +227,159 @@ const Relatorios = () => {
     }).format(value);
   };
 
+  const periodLabel = period === 'today' ? 'Hoje' : period === '7days' ? '7 dias' : 'Mês';
+
+  const handleExportPDF = useCallback(() => {
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    let y = 20;
+
+    // Title
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Relatórios & Desempenho', pageWidth / 2, y, { align: 'center' });
+    y += 8;
+
+    // Subtitle with barbershop name and period
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(120, 120, 120);
+    const periodText = period === 'today'
+      ? format(dateRange.startDate, "dd/MM/yyyy", { locale: ptBR })
+      : period === '7days'
+        ? `${format(dateRange.startDate, "dd/MM/yyyy", { locale: ptBR })} a ${format(dateRange.endDate, "dd/MM/yyyy", { locale: ptBR })}`
+        : format(dateRange.startDate, "MMMM 'de' yyyy", { locale: ptBR });
+    doc.text(`${barbershop?.name || 'Barbearia'} — ${periodLabel} (${periodText})`, pageWidth / 2, y, { align: 'center' });
+    y += 4;
+
+    doc.setFontSize(8);
+    doc.text(`Gerado em ${format(new Date(), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}`, pageWidth / 2, y, { align: 'center' });
+    y += 10;
+
+    doc.setTextColor(0, 0, 0);
+
+    // Section 1: Faturamento
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Faturamento', 15, y);
+    y += 7;
+
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Total do período: ${formatCurrency(totalRevenue)}`, 15, y);
+    y += 6;
+
+    if (period === '30days' && monthlyGoal) {
+      doc.text(`Meta do mês: ${formatCurrency(monthlyGoal)}`, 15, y);
+      y += 6;
+      const pct = totalRevenue > 0 && monthlyGoal > 0 ? ((totalRevenue / monthlyGoal) * 100).toFixed(1) : '0';
+      doc.text(`Progresso: ${pct}%`, 15, y);
+      y += 6;
+    }
+
+    // Revenue table
+    if (revenueData.length > 0) {
+      y += 2;
+      const colWidths = [90, 80];
+      const startX = 15;
+
+      // Table header
+      doc.setFillColor(240, 240, 240);
+      doc.rect(startX, y - 4, colWidths[0] + colWidths[1], 7, 'F');
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Período', startX + 3, y);
+      doc.text('Faturamento', startX + colWidths[0] + 3, y);
+      y += 6;
+
+      doc.setFont('helvetica', 'normal');
+      revenueData.forEach((item) => {
+        if (y > 270) { doc.addPage(); y = 20; }
+        doc.text(item.day, startX + 3, y);
+        doc.text(formatCurrency(item.revenue), startX + colWidths[0] + 3, y);
+        y += 5;
+      });
+    }
+
+    y += 8;
+
+    // Section 2: Serviços mais vendidos
+    if (y > 240) { doc.addPage(); y = 20; }
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Serviços mais vendidos', 15, y);
+    y += 7;
+
+    if (topServices.length > 0) {
+      const colWidths = [15, 110, 45];
+      const startX = 15;
+
+      doc.setFillColor(240, 240, 240);
+      doc.rect(startX, y - 4, colWidths[0] + colWidths[1] + colWidths[2], 7, 'F');
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'bold');
+      doc.text('#', startX + 3, y);
+      doc.text('Serviço', startX + colWidths[0] + 3, y);
+      doc.text('Atendimentos', startX + colWidths[0] + colWidths[1] + 3, y);
+      y += 6;
+
+      doc.setFont('helvetica', 'normal');
+      topServices.forEach((service, i) => {
+        if (y > 270) { doc.addPage(); y = 20; }
+        doc.text(`${i + 1}`, startX + 3, y);
+        doc.text(service.name, startX + colWidths[0] + 3, y);
+        doc.text(`${service.count}`, startX + colWidths[0] + colWidths[1] + 3, y);
+        y += 5;
+      });
+    } else {
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Nenhum serviço realizado no período.', 15, y);
+      y += 6;
+    }
+
+    y += 8;
+
+    // Section 3: Desempenho dos barbeiros
+    if (y > 240) { doc.addPage(); y = 20; }
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Desempenho dos barbeiros', 15, y);
+    y += 7;
+
+    if (barberPerformance.length > 0) {
+      const colWidths = [15, 110, 45];
+      const startX = 15;
+
+      doc.setFillColor(240, 240, 240);
+      doc.rect(startX, y - 4, colWidths[0] + colWidths[1] + colWidths[2], 7, 'F');
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'bold');
+      doc.text('#', startX + 3, y);
+      doc.text('Barbeiro', startX + colWidths[0] + 3, y);
+      doc.text('Atendimentos', startX + colWidths[0] + colWidths[1] + 3, y);
+      y += 6;
+
+      doc.setFont('helvetica', 'normal');
+      barberPerformance.forEach((barber, i) => {
+        if (y > 270) { doc.addPage(); y = 20; }
+        doc.text(`${i + 1}`, startX + 3, y);
+        doc.text(barber.name, startX + colWidths[0] + 3, y);
+        doc.text(`${barber.count}`, startX + colWidths[0] + colWidths[1] + 3, y);
+        y += 5;
+      });
+    } else {
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Nenhum atendimento realizado no período.', 15, y);
+    }
+
+    // Save
+    const fileName = `relatorio-${period}-${format(new Date(), 'yyyy-MM-dd')}.pdf`;
+    doc.save(fileName);
+    toast.success('PDF exportado com sucesso!');
+  }, [period, dateRange, barbershop, totalRevenue, monthlyGoal, revenueData, topServices, barberPerformance, formatCurrency, periodLabel]);
+
   if (!isMaster) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -237,14 +391,26 @@ const Relatorios = () => {
   return (
     <div className="space-y-4 animate-fade-in">
       {/* Header - more compact */}
-      <div className="pb-1">
-        <h1 className="text-xl font-bold flex items-center gap-2">
-          <BarChart3 className="h-5 w-5 text-primary" />
-          Relatórios & Desempenho
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Visualize o desempenho da sua barbearia
-        </p>
+      <div className="pb-1 flex items-start justify-between">
+        <div>
+          <h1 className="text-xl font-bold flex items-center gap-2">
+            <BarChart3 className="h-5 w-5 text-primary" />
+            Relatórios & Desempenho
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Visualize o desempenho da sua barbearia
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleExportPDF}
+          disabled={isLoading}
+          className="h-8 px-3 text-xs gap-1.5 shrink-0"
+        >
+          <Download className="h-3.5 w-3.5" />
+          Exportar
+        </Button>
       </div>
 
       {/* Bloco 1 - Faturamento */}
