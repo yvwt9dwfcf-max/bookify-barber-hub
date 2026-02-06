@@ -5,11 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { BarChart3, TrendingUp, Users, Scissors, Target, Download } from 'lucide-react';
+import { BarChart3, TrendingUp, TrendingDown, Users, Scissors, Target, Download, Minus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
-import { format, startOfMonth, startOfDay, endOfDay, subDays, eachDayOfInterval } from 'date-fns';
+import { format, startOfMonth, endOfMonth, startOfDay, endOfDay, subDays, subMonths, eachDayOfInterval } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
 import jsPDF from 'jspdf';
@@ -38,7 +38,7 @@ const Relatorios = () => {
         .from('barbershops')
         .select('id, monthly_goal')
         .eq('id', barbershop.id)
-        .single();
+        .maybeSingle();
       if (error) throw error;
       return data;
     },
@@ -136,6 +136,38 @@ const Relatorios = () => {
     },
     enabled: !!barbershop?.id && isMaster
   });
+
+  // Fetch previous month appointments for comparison (only when period is '30days')
+  const prevMonthRange = useMemo(() => {
+    const now = new Date();
+    const prevMonth = subMonths(now, 1);
+    return {
+      start: startOfMonth(prevMonth).toISOString(),
+      end: endOfMonth(prevMonth).toISOString()
+    };
+  }, []);
+
+  const { data: prevMonthAppointments } = useQuery({
+    queryKey: ['reports-prev-month', barbershop?.id, prevMonthRange],
+    queryFn: async () => {
+      if (!barbershop?.id) return [];
+      const { data, error } = await supabase
+        .from('appointments')
+        .select('id, services(price)')
+        .eq('barbershop_id', barbershop.id)
+        .eq('status', 'completed')
+        .gte('start_time', prevMonthRange.start)
+        .lte('start_time', prevMonthRange.end);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!barbershop?.id && isMaster && period === '30days'
+  });
+
+  const prevMonthRevenue = useMemo(() => {
+    if (!prevMonthAppointments?.length) return 0;
+    return prevMonthAppointments.reduce((sum, apt) => sum + Number(apt.services?.price || 0), 0);
+  }, [prevMonthAppointments]);
 
   // Calculate revenue data for chart
   const revenueData = useMemo(() => {
@@ -460,7 +492,28 @@ const Relatorios = () => {
               <div className="mb-3 flex items-end justify-between">
                 <div>
                   <p className="text-xs text-muted-foreground">Total do período</p>
-                  <p className="text-2xl font-bold text-primary">{formatCurrency(totalRevenue)}</p>
+                  <div className="flex items-end gap-2">
+                    <p className="text-2xl font-bold text-primary">{formatCurrency(totalRevenue)}</p>
+                    {period === '30days' && prevMonthRevenue > 0 && (() => {
+                      const diff = totalRevenue - prevMonthRevenue;
+                      const pct = ((diff / prevMonthRevenue) * 100).toFixed(1);
+                      const isUp = diff > 0;
+                      const isEqual = diff === 0;
+                      return (
+                        <span className={`inline-flex items-center gap-0.5 text-xs font-medium pb-0.5 ${
+                          isEqual ? 'text-muted-foreground' : isUp ? 'text-primary' : 'text-destructive'
+                        }`}>
+                          {isEqual ? <Minus className="h-3 w-3" /> : isUp ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                          {isEqual ? '0%' : `${isUp ? '+' : ''}${pct}%`}
+                        </span>
+                      );
+                    })()}
+                  </div>
+                  {period === '30days' && prevMonthRevenue > 0 && (
+                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                      vs mês anterior: {formatCurrency(prevMonthRevenue)}
+                    </p>
+                  )}
                 </div>
                 {period === '30days' && (
                   <div className="text-right">
