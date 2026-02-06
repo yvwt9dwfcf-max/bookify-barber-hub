@@ -25,6 +25,8 @@ import { cn } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useState } from 'react';
+import { useDayClosing } from '@/hooks/useDayClosing';
+import DayClosingModal from '@/components/painel/DayClosingModal';
 
 const Painel = () => {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -33,6 +35,17 @@ const Painel = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const {
+    showModal: showDayClosing,
+    pendingAppointments,
+    isPastDays,
+    handleClose: closeDayClosing,
+    handleCompleted: completedDayClosing,
+  } = useDayClosing({
+    barbershopId: barbershop?.id,
+    barberId: barber?.id,
+  });
 
   // Build menu items based on role
   const menuItems = [
@@ -190,6 +203,15 @@ const Painel = () => {
           <Outlet context={{ barber, barbershop, isMaster }} />
         </div>
       </main>
+
+      {/* Day Closing Modal */}
+      <DayClosingModal
+        open={showDayClosing}
+        onClose={closeDayClosing}
+        pendingAppointments={pendingAppointments}
+        isPastDays={isPastDays}
+        onCompleted={completedDayClosing}
+      />
     </div>
   );
 };
