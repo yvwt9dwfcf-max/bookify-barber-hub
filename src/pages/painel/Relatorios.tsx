@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { BarChart3, TrendingUp, TrendingDown, Users, Scissors, Target, Download, Minus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, PieChart, Pie, Cell, Legend } from 'recharts';
 import { format, startOfMonth, endOfMonth, startOfDay, endOfDay, subDays, subMonths, eachDayOfInterval } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -231,6 +231,19 @@ const Relatorios = () => {
       .sort((a, b) => b.count - a.count)
       .slice(0, 5);
   }, [appointments]);
+
+  // Pie chart data with percentages
+  const pieChartData = useMemo(() => {
+    if (!topServices.length) return [];
+    const total = topServices.reduce((sum, s) => sum + s.count, 0);
+    return topServices.map((s) => ({
+      name: s.name,
+      value: s.count,
+      percentage: ((s.count / total) * 100).toFixed(1)
+    }));
+  }, [topServices]);
+
+  const PIE_COLORS = ['#10b981', '#059669', '#34d399', '#6ee7b7', '#a7f3d0'];
 
   // Calculate barber performance
   const barberPerformance = useMemo(() => {
@@ -666,24 +679,57 @@ const Relatorios = () => {
                 ))}
               </div>
             ) : topServices.length > 0 ? (
-              <div className="space-y-2">
-                {topServices.map((service, index) => (
-                  <div 
-                    key={service.name}
-                    className="flex items-center justify-between p-2.5 rounded-lg bg-muted/50"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <span className="text-sm font-bold text-primary">
-                        #{index + 1}
+              <>
+                {/* Pie Chart */}
+                <div className="h-[180px] mb-3">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={pieChartData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={40}
+                        outerRadius={70}
+                        paddingAngle={3}
+                        dataKey="value"
+                      >
+                        {pieChartData.map((_, index) => (
+                          <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        formatter={(value: number, name: string) => [`${value} atend.`, name]}
+                        contentStyle={{
+                          backgroundColor: 'hsl(var(--card))',
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: '8px',
+                          fontSize: '12px'
+                        }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                {/* Legend list */}
+                <div className="space-y-1.5">
+                  {pieChartData.map((service, index) => (
+                    <div 
+                      key={service.name}
+                      className="flex items-center justify-between p-2 rounded-lg bg-muted/50"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="h-2.5 w-2.5 rounded-full shrink-0"
+                          style={{ backgroundColor: PIE_COLORS[index % PIE_COLORS.length] }}
+                        />
+                        <span className="text-sm font-medium truncate">{service.name}</span>
+                      </div>
+                      <span className="text-xs text-muted-foreground whitespace-nowrap ml-2">
+                        {service.percentage}% ({service.value})
                       </span>
-                      <span className="text-sm font-medium">{service.name}</span>
                     </div>
-                    <span className="text-xs text-muted-foreground">
-                      {service.count} {service.count === 1 ? 'atendimento' : 'atendimentos'}
-                    </span>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              </>
             ) : (
               <div className="py-6 text-center text-muted-foreground text-sm">
                 Nenhum serviço realizado no período.
