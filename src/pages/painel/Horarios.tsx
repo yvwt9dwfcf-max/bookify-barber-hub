@@ -15,6 +15,10 @@ interface ContextType {
   isMaster: boolean;
 }
 
+interface BarbershopClosingConfig {
+  closing_time: string | null;
+}
+
 interface DayHours {
   day_of_week: number;
   start_time: string;
@@ -36,16 +40,57 @@ const defaultHours: DayHours[] = [
 ];
 
 const Horarios = () => {
-  const { barber } = useOutletContext<ContextType>();
+  const { barber, barbershop } = useOutletContext<ContextType>();
   const [hours, setHours] = useState<DayHours[]>(defaultHours);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [closingTime, setClosingTime] = useState<string>('');
+  const [savingClosing, setSavingClosing] = useState(false);
 
   useEffect(() => {
     if (barber) {
       fetchHours();
     }
   }, [barber]);
+
+  useEffect(() => {
+    if (barbershop?.id) {
+      fetchClosingTime();
+    }
+  }, [barbershop]);
+
+  const fetchClosingTime = async () => {
+    if (!barbershop?.id) return;
+    try {
+      const { data, error } = await supabase
+        .from('barbershops')
+        .select('closing_time')
+        .eq('id', barbershop.id)
+        .maybeSingle();
+      if (error) throw error;
+      setClosingTime((data as any)?.closing_time || '');
+    } catch (error) {
+      console.error('Erro ao buscar horário de encerramento:', error);
+    }
+  };
+
+  const handleSaveClosingTime = async () => {
+    if (!barbershop?.id) return;
+    setSavingClosing(true);
+    try {
+      const { error } = await supabase
+        .from('barbershops')
+        .update({ closing_time: closingTime || null } as any)
+        .eq('id', barbershop.id);
+      if (error) throw error;
+      toast.success('Horário de encerramento salvo!');
+    } catch (error) {
+      console.error('Erro ao salvar horário de encerramento:', error);
+      toast.error('Erro ao salvar horário de encerramento');
+    } finally {
+      setSavingClosing(false);
+    }
+  };
 
   const fetchHours = async () => {
     if (!barber) return;
@@ -246,6 +291,62 @@ const Horarios = () => {
       <p className="text-sm text-muted-foreground text-center">
         Os clientes só poderão agendar nos dias e horários configurados acima.
       </p>
+
+      {/* Separator */}
+      <div className="border-t border-border" />
+
+      {/* Closing Time Configuration */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="h-5 w-5" />
+            Encerramento do dia
+          </CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Horário em que o sistema irá sugerir o fechamento dos atendimentos do dia.
+          </p>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col sm:flex-row sm:items-end gap-4">
+            <div className="flex-1">
+              <Label htmlFor="closing-time" className="text-sm font-medium">
+                Horário de encerramento
+              </Label>
+              <Input
+                id="closing-time"
+                type="time"
+                value={closingTime}
+                onChange={(e) => setClosingTime(e.target.value)}
+                className="mt-1.5 w-auto"
+                placeholder="18:00"
+              />
+            </div>
+            <Button
+              onClick={handleSaveClosingTime}
+              disabled={savingClosing}
+              size="sm"
+              className="btn-primary-gradient"
+            >
+              {savingClosing ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Salvando...
+                </>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Salvar
+                </>
+              )}
+            </Button>
+          </div>
+          {closingTime && (
+            <p className="text-xs text-muted-foreground mt-3">
+              Ao abrir o painel após as {closingTime}, você receberá um lembrete para concluir os atendimentos do dia.
+            </p>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };

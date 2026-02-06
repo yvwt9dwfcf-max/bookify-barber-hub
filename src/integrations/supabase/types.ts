@@ -236,6 +236,7 @@ export type Database = {
       }
       barbershops: {
         Row: {
+          closing_time: string | null
           created_at: string
           id: string
           max_barbers: number
@@ -247,6 +248,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          closing_time?: string | null
           created_at?: string
           id?: string
           max_barbers?: number
@@ -258,6 +260,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          closing_time?: string | null
           created_at?: string
           id?: string
           max_barbers?: number
