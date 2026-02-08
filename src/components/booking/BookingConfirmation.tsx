@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import { Appointment } from '@/lib/supabase';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Link } from 'react-router-dom';
 
 interface BookingConfirmationProps {
   appointment: Appointment;
@@ -127,14 +126,6 @@ export function BookingConfirmation({ appointment, onNewBooking }: BookingConfir
           size="lg"
         >
           Fazer novo agendamento
-        </Button>
-        <Button 
-          variant="outline" 
-          asChild 
-          className="w-full active:scale-[0.98] transition-transform duration-150" 
-          size="lg"
-        >
-          <Link to="/">Voltar ao início</Link>
         </Button>
       </div>
     </div>
