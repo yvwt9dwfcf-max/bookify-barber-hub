@@ -24,7 +24,7 @@ import AppointmentDetailsSheet from '@/components/painel/AppointmentDetailsSheet
 import EditAppointmentDialog from '@/components/painel/EditAppointmentDialog';
 
 interface ContextType {
-  barber: Barber | null;
+  barber: (Barber & { permissions?: { can_view_others_schedule?: boolean; can_edit_others_schedule?: boolean } }) | null;
   barbershop: Barbershop | null;
   isMaster: boolean;
 }
@@ -35,6 +35,10 @@ const Agenda = () => {
   const { barber, barbershop, isMaster } = useOutletContext<ContextType>();
   const navigate = useNavigate();
   const { barbers } = useBarbershopBarbers();
+
+  // Permissions for current barber
+  const canViewOthers = isMaster || barber?.permissions?.can_view_others_schedule === true;
+  const canCreateForOthers = isMaster || barber?.permissions?.can_edit_others_schedule === true;
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(startOfDay(new Date()));
@@ -229,8 +233,8 @@ const Agenda = () => {
         </div>
       </div>
 
-      {/* Seletor de barbeiro para master - lighter card */}
-      {isMaster && barbers.length > 1 && (
+      {/* Seletor de barbeiro - visible for master or barbers with permission */}
+      {canViewOthers && barbers.length > 1 && (
         <Card className="border-border/50 shadow-sm bg-card/80 backdrop-blur-sm">
           <CardContent className="p-2.5">
             <div className="flex items-center gap-2">
@@ -266,6 +270,8 @@ const Agenda = () => {
           barber={selectedBarber}
           selectedDate={selectedDate}
           onSuccess={fetchAppointments}
+          canCreateForOthers={canCreateForOthers}
+          barbers={barbers}
         />
       )}
 
