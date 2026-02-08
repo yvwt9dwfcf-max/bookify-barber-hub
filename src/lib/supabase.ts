@@ -11,8 +11,10 @@ export interface Barbershop {
   id: string;
   name: string;
   slug: string | null;
+  phone: string | null;
   plan: PlanType;
   max_barbers: number;
+  onboarding_completed: boolean;
   created_at: string;
   updated_at: string;
 }

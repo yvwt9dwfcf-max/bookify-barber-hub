@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useBarber } from '@/hooks/useBarber';
 import { useUserRole } from '@/hooks/useUserRole';
-import { supabase } from '@/lib/supabase';
 import { useNavigate, Outlet, Link, useLocation } from 'react-router-dom';
 import { Logo } from '@/components/ui/Logo';
 import { Button } from '@/components/ui/button';
@@ -60,8 +59,8 @@ const Painel = () => {
     { icon: Settings, label: 'Configurações', path: '/painel/configuracoes' },
   ];
 
-  // Check onboarding status
-  const [onboardingChecked, setOnboardingChecked] = useState(false);
+  // Check onboarding status using the flag
+  const onboardingChecked = !roleLoading && barbershop?.onboarding_completed === true;
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -70,26 +69,10 @@ const Painel = () => {
   }, [user, authLoading, navigate]);
 
   useEffect(() => {
-    const checkOnboarding = async () => {
-      if (!barber || barberLoading || roleLoading) return;
-      
-      const { data } = await supabase
-        .from('opening_hours')
-        .select('id')
-        .eq('barber_id', barber.id)
-        .limit(1);
-
-      if (!data || data.length === 0) {
-        navigate('/onboarding', { replace: true });
-        return;
-      }
-      setOnboardingChecked(true);
-    };
-
-    if (user && barber) {
-      checkOnboarding();
+    if (!roleLoading && barbershop && !barbershop.onboarding_completed) {
+      navigate('/onboarding', { replace: true });
     }
-  }, [user, barber, barberLoading, roleLoading, navigate]);
+  }, [barbershop, roleLoading, navigate]);
 
   const handleSignOut = async () => {
     try {

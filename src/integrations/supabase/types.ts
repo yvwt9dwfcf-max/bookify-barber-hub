@@ -242,6 +242,8 @@ export type Database = {
           max_barbers: number
           monthly_goal: number | null
           name: string
+          onboarding_completed: boolean
+          phone: string | null
           plan: Database["public"]["Enums"]["plan_type"]
           slug: string | null
           subscription_active: boolean
@@ -254,6 +256,8 @@ export type Database = {
           max_barbers?: number
           monthly_goal?: number | null
           name: string
+          onboarding_completed?: boolean
+          phone?: string | null
           plan?: Database["public"]["Enums"]["plan_type"]
           slug?: string | null
           subscription_active?: boolean
@@ -266,6 +270,8 @@ export type Database = {
           max_barbers?: number
           monthly_goal?: number | null
           name?: string
+          onboarding_completed?: boolean
+          phone?: string | null
           plan?: Database["public"]["Enums"]["plan_type"]
           slug?: string | null
           subscription_active?: boolean

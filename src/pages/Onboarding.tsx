@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { 
-  Loader2, Building2, Clock, Calendar, CheckCircle, ArrowRight, ArrowLeft 
+  Loader2, Building2, Clock, Calendar, CheckCircle, ArrowRight, ArrowLeft, User, Phone
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -34,7 +34,7 @@ const defaultDays: DayConfig[] = [
   { day_of_week: 6, is_open: true, start_time: '09:00', end_time: '14:00', break_start: '', break_end: '' },
 ];
 
-const TOTAL_STEPS = 3;
+const TOTAL_STEPS = 4;
 
 const Onboarding = () => {
   const { user, loading: authLoading } = useAuth();
@@ -45,8 +45,10 @@ const Onboarding = () => {
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
 
-  // Step 1: Barbershop name
+  // Step 1: Personal info + Barbershop
+  const [barberName, setBarberName] = useState('');
   const [barbershopName, setBarbershopName] = useState('');
+  const [barbershopPhone, setBarbershopPhone] = useState('');
 
   // Step 2 & 3: Days and hours
   const [days, setDays] = useState<DayConfig[]>(defaultDays);
@@ -58,34 +60,28 @@ const Onboarding = () => {
     }
   }, [user, authLoading, navigate]);
 
-  // Initialize barbershop name
+  // Initialize with existing data
   useEffect(() => {
     if (barbershop) {
-      setBarbershopName(barbershop.name);
+      setBarbershopName(barbershop.name === 'Minha Barbearia' ? '' : barbershop.name);
+      setBarbershopPhone(barbershop.phone || '');
     }
   }, [barbershop]);
 
+  useEffect(() => {
+    if (barber) {
+      setBarberName(barber.name === 'Barbeiro' ? '' : barber.name);
+    }
+  }, [barber]);
+
   // Check if onboarding already completed
   useEffect(() => {
-    if (!barberLoading && barber && !roleLoading && barbershop) {
-      checkOnboardingStatus();
+    if (!roleLoading && barbershop) {
+      if (barbershop.onboarding_completed) {
+        navigate('/painel', { replace: true });
+      }
     }
-  }, [barber, barberLoading, barbershop, roleLoading]);
-
-  const checkOnboardingStatus = async () => {
-    if (!barber) return;
-    
-    const { data } = await supabase
-      .from('opening_hours')
-      .select('id')
-      .eq('barber_id', barber.id)
-      .limit(1);
-
-    if (data && data.length > 0) {
-      // Already has opening hours, skip onboarding
-      navigate('/painel', { replace: true });
-    }
-  };
+  }, [barbershop, roleLoading, navigate]);
 
   const updateDay = (dayOfWeek: number, field: keyof DayConfig, value: string | boolean) => {
     setDays(prev => prev.map(d => 
@@ -95,21 +91,34 @@ const Onboarding = () => {
 
   const handleNext = async () => {
     if (step === 1) {
+      if (!barberName.trim()) {
+        toast.error('Digite seu nome');
+        return;
+      }
       if (!barbershopName.trim()) {
         toast.error('Digite o nome da barbearia');
         return;
       }
-      // Save barbershop name if changed
-      if (barbershop && barbershopName.trim() !== barbershop.name) {
-        const { error } = await supabase
-          .from('barbershops')
-          .update({ name: barbershopName.trim() })
-          .eq('id', barbershop.id);
-        if (error) {
-          toast.error('Erro ao salvar nome da barbearia');
-          return;
-        }
+
+      // Save barber name
+      if (barber) {
+        await supabase
+          .from('barbers')
+          .update({ name: barberName.trim() })
+          .eq('id', barber.id);
       }
+
+      // Save barbershop name & phone
+      if (barbershop) {
+        await supabase
+          .from('barbershops')
+          .update({ 
+            name: barbershopName.trim(),
+            phone: barbershopPhone.trim() || null,
+          })
+          .eq('id', barbershop.id);
+      }
+
       setStep(2);
     } else if (step === 2) {
       const hasOpenDay = days.some(d => d.is_open);
@@ -118,6 +127,8 @@ const Onboarding = () => {
         return;
       }
       setStep(3);
+    } else if (step === 3) {
+      setStep(4);
     }
   };
 
@@ -138,11 +149,19 @@ const Onboarding = () => {
         break_end: d.break_end || null,
       }));
 
-      const { error } = await supabase
+      const { error: hoursError } = await supabase
         .from('opening_hours')
         .insert(toInsert);
 
-      if (error) throw error;
+      if (hoursError) throw hoursError;
+
+      // Mark onboarding as completed
+      const { error: updateError } = await supabase
+        .from('barbershops')
+        .update({ onboarding_completed: true })
+        .eq('id', barbershop.id);
+
+      if (updateError) throw updateError;
 
       toast.success('Barbearia configurada com sucesso! 🎉');
       navigate('/painel', { replace: true });
@@ -191,29 +210,59 @@ const Onboarding = () => {
             ))}
           </div>
 
-          {/* Step 1: Barbershop Name */}
+          {/* Step 1: Personal Info + Barbershop */}
           {step === 1 && (
             <Card className="shadow-card-lg animate-in fade-in-50 duration-300">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Building2 className="h-5 w-5 text-primary" />
-                  Nome da Barbearia
+                  Seus dados e barbearia
                 </CardTitle>
                 <CardDescription>
-                  Como seus clientes conhecem sua barbearia?
+                  Informações básicas para começar
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="barbershop-name">Nome</Label>
-                  <Input
-                    id="barbershop-name"
-                    placeholder="Ex: Barbearia do João"
-                    value={barbershopName}
-                    onChange={(e) => setBarbershopName(e.target.value)}
-                    className="text-lg"
-                    autoFocus
-                  />
+                  <Label htmlFor="barber-name">Seu nome *</Label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="barber-name"
+                      placeholder="Seu nome completo"
+                      value={barberName}
+                      onChange={(e) => setBarberName(e.target.value)}
+                      className="pl-10"
+                      autoFocus
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="barbershop-name">Nome da barbearia *</Label>
+                  <div className="relative">
+                    <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="barbershop-name"
+                      placeholder="Ex: Barbearia do João"
+                      value={barbershopName}
+                      onChange={(e) => setBarbershopName(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="barbershop-phone">Telefone da barbearia</Label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="barbershop-phone"
+                      type="tel"
+                      placeholder="(00) 00000-0000"
+                      value={barbershopPhone}
+                      onChange={(e) => setBarbershopPhone(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
                 </div>
                 <Button onClick={handleNext} className="w-full btn-primary-gradient">
                   Continuar
@@ -264,16 +313,16 @@ const Onboarding = () => {
             </Card>
           )}
 
-          {/* Step 3: Hours & Breaks */}
+          {/* Step 3: Hours */}
           {step === 3 && (
             <Card className="shadow-card-lg animate-in fade-in-50 duration-300">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Clock className="h-5 w-5 text-primary" />
-                  Horários e Intervalos
+                  Horários de Funcionamento
                 </CardTitle>
                 <CardDescription>
-                  Configure o horário de cada dia de atendimento
+                  Configure o horário de cada dia
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -299,6 +348,38 @@ const Onboarding = () => {
                         />
                       </div>
                     </div>
+                  </div>
+                ))}
+                <div className="flex gap-3 pt-2">
+                  <Button variant="outline" onClick={() => setStep(2)} className="flex-1">
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Voltar
+                  </Button>
+                  <Button onClick={handleNext} className="flex-1 btn-primary-gradient">
+                    Continuar
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Step 4: Breaks / Intervals */}
+          {step === 4 && (
+            <Card className="shadow-card-lg animate-in fade-in-50 duration-300">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-primary" />
+                  Intervalos / Almoço
+                </CardTitle>
+                <CardDescription>
+                  Configure os intervalos de cada dia (opcional)
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {days.filter(d => d.is_open).map(day => (
+                  <div key={day.day_of_week} className="p-3 rounded-lg border border-border space-y-3">
+                    <p className="font-medium text-sm">{DAY_NAMES[day.day_of_week]}</p>
                     <div className="flex items-center gap-2">
                       <div className="flex-1">
                         <Label className="text-xs text-muted-foreground">Intervalo início</Label>
@@ -323,7 +404,7 @@ const Onboarding = () => {
                   </div>
                 ))}
                 <div className="flex gap-3 pt-2">
-                  <Button variant="outline" onClick={() => setStep(2)} className="flex-1">
+                  <Button variant="outline" onClick={() => setStep(3)} className="flex-1">
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     Voltar
                   </Button>

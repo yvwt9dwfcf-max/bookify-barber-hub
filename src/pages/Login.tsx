@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate, Link } from 'react-router-dom';
-import { Loader2, Mail, Lock, User, Scissors, Building2 } from 'lucide-react';
+import { Loader2, Mail, Lock, Scissors } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface LoginProps {
@@ -25,8 +25,6 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
   const [loginPassword, setLoginPassword] = useState('');
 
   // Signup form
-  const [signupName, setSignupName] = useState('');
-  const [signupBarbershopName, setSignupBarbershopName] = useState('');
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
   const [signupConfirmPassword, setSignupConfirmPassword] = useState('');
@@ -67,7 +65,7 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!signupName || !signupEmail || !signupPassword || !signupBarbershopName) {
+    if (!signupEmail || !signupPassword) {
       toast.error('Preencha todos os campos');
       return;
     }
@@ -84,7 +82,7 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
 
     setIsLoading(true);
     try {
-      const { error } = await signUp(signupEmail, signupPassword, signupName, signupBarbershopName);
+      const { error } = await signUp(signupEmail, signupPassword);
       if (error) {
         toast.error(error.message);
       } else {
@@ -132,7 +130,7 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
               <CardDescription>
                 {activeTab === 'login' 
                   ? 'Entre para acessar seu painel' 
-                  : 'Crie sua conta e comece a gerenciar'
+                  : 'Crie sua conta para começar'
                 }
               </CardDescription>
             </CardHeader>
@@ -200,36 +198,6 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
 
                 <TabsContent value="signup">
                   <form onSubmit={handleSignup} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-barbershop">Nome da Barbearia *</Label>
-                      <div className="relative">
-                        <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="signup-barbershop"
-                          type="text"
-                          placeholder="Ex: Barbearia do João"
-                          value={signupBarbershopName}
-                          onChange={(e) => setSignupBarbershopName(e.target.value)}
-                          className="pl-10"
-                          required
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-name">Seu Nome *</Label>
-                      <div className="relative">
-                        <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="signup-name"
-                          type="text"
-                          placeholder="Seu nome completo"
-                          value={signupName}
-                          onChange={(e) => setSignupName(e.target.value)}
-                          className="pl-10"
-                          required
-                        />
-                      </div>
-                    </div>
                     <div className="space-y-2">
                       <Label htmlFor="signup-email">Email *</Label>
                       <div className="relative">
