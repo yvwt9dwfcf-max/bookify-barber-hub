@@ -28,8 +28,8 @@ const Configuracoes = () => {
   const [name, setName] = useState(barber?.name || '');
   const [phone, setPhone] = useState(barber?.phone || '');
 
-  const publicLink = barbershop?.slug 
-    ? `${window.location.origin}/agendar/${barbershop.slug}`
+  const publicLink = barbershop
+    ? `${window.location.origin}/agendar/${barbershop.slug || barbershop.id}`
     : '';
 
   const handleCopyLink = async () => {
