@@ -50,6 +50,8 @@ interface ManualAppointmentDialogProps {
   barber: Barber;
   selectedDate: Date;
   onSuccess: () => void;
+  canCreateForOthers?: boolean;
+  barbers?: Barber[];
 }
 
 const ManualAppointmentDialog = ({
@@ -58,17 +60,23 @@ const ManualAppointmentDialog = ({
   barber,
   selectedDate,
   onSuccess,
+  canCreateForOthers = false,
+  barbers = [],
 }: ManualAppointmentDialogProps) => {
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingServices, setLoadingServices] = useState(true);
+  
+  // Selected barber for appointment (can be different from current barber if has permission)
+  const [targetBarberId, setTargetBarberId] = useState<string>(barber.id);
+  const targetBarber = (canCreateForOthers ? barbers.find(b => b.id === targetBarberId) : barber) || barber;
 
   // Use the unified availability hook
   const { 
     checkSlotAvailability, 
     refetch: refetchAvailability 
   } = useAvailability({ 
-    barberId: barber.id, 
+    barberId: targetBarber.id, 
     selectedDate 
   });
 
@@ -83,27 +91,38 @@ const ManualAppointmentDialog = ({
     },
   });
 
+  // Reset target barber when dialog opens
   useEffect(() => {
     if (open) {
+      setTargetBarberId(barber.id);
       fetchServices();
       refetchAvailability();
       form.reset();
     }
   }, [open, selectedDate]);
 
+  // Refetch when target barber changes
+  useEffect(() => {
+    if (open) {
+      fetchServices();
+      refetchAvailability();
+      form.setValue('start_time', '');
+    }
+  }, [targetBarberId]);
+
   const fetchServices = async () => {
     setLoadingServices(true);
     try {
-      if (!barber.barbershop_id) {
+      if (!targetBarber.barbershop_id) {
         setServices([]);
         return;
       }
 
-      // Buscar serviços vinculados ao barbeiro
+      // Buscar serviços vinculados ao barbeiro alvo
       const { data: barberServicesData, error: bsError } = await supabase
         .from('barber_services')
         .select('service_id')
-        .eq('barber_id', barber.id);
+        .eq('barber_id', targetBarber.id);
 
       if (bsError) throw bsError;
 
@@ -114,7 +133,7 @@ const ManualAppointmentDialog = ({
         const { data: allServices, error: allError } = await supabase
           .from('services')
           .select('*')
-          .eq('barbershop_id', barber.barbershop_id)
+          .eq('barbershop_id', targetBarber.barbershop_id!)
           .eq('active', true)
           .order('name');
 
@@ -188,8 +207,8 @@ const ManualAppointmentDialog = ({
       }
 
       const { error } = await supabase.from('appointments').insert({
-        barber_id: barber.id,
-        barbershop_id: barber.barbershop_id || null,
+        barber_id: targetBarber.id,
+        barbershop_id: targetBarber.barbershop_id || null,
         service_id: data.service_id || null,
         customer_name: data.customer_name.trim(),
         customer_phone: data.customer_phone?.trim() || '',
@@ -220,12 +239,33 @@ const ManualAppointmentDialog = ({
         <DialogHeader>
           <DialogTitle>Novo Agendamento</DialogTitle>
           <DialogDescription>
-            {format(selectedDate, "EEEE, d 'de' MMMM", { locale: ptBR })} - {barber.name}
+            {format(selectedDate, "EEEE, d 'de' MMMM", { locale: ptBR })} - {targetBarber.name}
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            {/* Barber selector - only when user can create for others */}
+            {canCreateForOthers && barbers.length > 1 && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Profissional</label>
+                <Select
+                  value={targetBarberId}
+                  onValueChange={setTargetBarberId}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o profissional" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {barbers.map((b) => (
+                      <SelectItem key={b.id} value={b.id}>
+                        {b.name} {b.id === barber.id ? '(você)' : ''}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <FormField
               control={form.control}
               name="customer_name"

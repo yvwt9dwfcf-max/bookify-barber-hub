@@ -346,15 +346,15 @@ const Barbeiros = () => {
                   <p className="text-sm text-muted-foreground truncate">
                     {barber.email}
                   </p>
-                  <div className="flex flex-wrap gap-1 mt-2">
+                    <div className="flex flex-wrap gap-1 mt-2">
                     {barber.permissions?.can_edit_own_schedule && (
                       <Badge variant="outline" className="text-xs">Edita própria agenda</Badge>
                     )}
                     {barber.permissions?.can_view_others_schedule && (
-                      <Badge variant="outline" className="text-xs">Vê outras agendas</Badge>
+                      <Badge variant="outline" className="text-xs">Vê agendas de outros</Badge>
                     )}
                     {barber.permissions?.can_edit_others_schedule && (
-                      <Badge variant="outline" className="text-xs">Edita outras agendas</Badge>
+                      <Badge variant="outline" className="text-xs">Cria para outros</Badge>
                     )}
                   </div>
                 </div>
@@ -438,11 +438,11 @@ const Barbeiros = () => {
               Configure o que este barbeiro pode fazer no sistema
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="flex items-center justify-between">
-              <div>
+          <div className="space-y-5 py-4">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex-1">
                 <Label>Editar própria agenda</Label>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground mt-0.5">
                   Pode criar, editar e cancelar seus próprios agendamentos
                 </p>
               </div>
@@ -451,11 +451,11 @@ const Barbeiros = () => {
                 onCheckedChange={setCanEditOwn}
               />
             </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <Label>Visualizar agenda de outros</Label>
-                <p className="text-xs text-muted-foreground">
-                  Pode ver os agendamentos de outros barbeiros
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex-1">
+                <Label>Pode visualizar agenda de outros profissionais</Label>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Permite ver os agendamentos dos demais membros da equipe
                 </p>
               </div>
               <Switch
@@ -463,11 +463,11 @@ const Barbeiros = () => {
                 onCheckedChange={setCanViewOthers}
               />
             </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <Label>Editar agenda de outros</Label>
-                <p className="text-xs text-muted-foreground">
-                  Pode criar, editar e cancelar agendamentos de outros barbeiros
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex-1">
+                <Label>Pode criar agendamentos para outros profissionais</Label>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Permite criar, editar e cancelar agendamentos de outros membros
                 </p>
               </div>
               <Switch
