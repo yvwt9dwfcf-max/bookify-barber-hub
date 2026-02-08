@@ -76,7 +76,7 @@ const WhatsAppAtendimento = () => {
 
   // Links
   const barbershopLink = barbershop 
-    ? `${window.location.origin}/agendar/${barbershop.id}`
+    ? `${window.location.origin}/agendar/${barbershop.slug || barbershop.id}`
     : '';
   
   const myBarberLink = barber 
