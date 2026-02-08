@@ -42,11 +42,11 @@ const EsqueciSenha = () => {
       <div className="min-h-screen bg-background flex flex-col">
         <header className="section-padding py-4 border-b border-border/50">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <Logo />
+            <Logo linkTo="/" />
             <Button variant="ghost" asChild>
-              <Link to="/login">
+              <Link to="/">
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Voltar
+                Voltar ao login
               </Link>
             </Button>
           </div>
@@ -63,7 +63,7 @@ const EsqueciSenha = () => {
                 Enviamos um link para recuperar sua senha para <strong>{email}</strong>
               </p>
               <Button asChild variant="outline">
-                <Link to="/login">Voltar ao login</Link>
+                <Link to="/">Voltar ao login</Link>
               </Button>
             </CardContent>
           </Card>
@@ -76,11 +76,11 @@ const EsqueciSenha = () => {
     <div className="min-h-screen bg-background flex flex-col">
       <header className="section-padding py-4 border-b border-border/50">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <Logo />
+          <Logo linkTo="/" />
           <Button variant="ghost" asChild>
-            <Link to="/login">
+            <Link to="/">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Voltar
+              Voltar ao login
             </Link>
           </Button>
         </div>

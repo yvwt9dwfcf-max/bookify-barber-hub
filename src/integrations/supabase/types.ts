@@ -511,6 +511,7 @@ export type Database = {
         Args: { _barbershop_id: string }
         Returns: number
       }
+      generate_slug: { Args: { input_name: string }; Returns: string }
       get_barber_permissions: {
         Args: { _barber_id: string }
         Returns: {

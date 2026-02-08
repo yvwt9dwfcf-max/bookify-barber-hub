@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { supabase, Barber } from '@/lib/supabase';
 import { Logo } from '@/components/ui/Logo';
 import { BookingFlow } from '@/components/booking/BookingFlow';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, UserX } from 'lucide-react';
+import { Loader2, UserX } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 
 const AgendarBarbeiro = () => {
@@ -55,14 +54,8 @@ const AgendarBarbeiro = () => {
     return (
       <div className="min-h-screen bg-background">
         <header className="section-padding py-4 border-b border-border/50">
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <Logo />
-            <Button variant="ghost" asChild>
-              <Link to="/">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Voltar
-              </Link>
-            </Button>
+          <div className="max-w-7xl mx-auto">
+            <Logo linkTo={undefined} />
           </div>
         </header>
 
@@ -74,14 +67,9 @@ const AgendarBarbeiro = () => {
                   <UserX className="h-8 w-8 text-muted-foreground" />
                 </div>
                 <h1 className="text-xl font-bold mb-2">Profissional não encontrado</h1>
-                <p className="text-muted-foreground mb-6">
+                <p className="text-muted-foreground">
                   O link que você acessou não é válido ou o profissional não está mais disponível.
                 </p>
-                <Button asChild className="btn-primary-gradient">
-                  <Link to="/agendar">
-                    Ver todos os profissionais
-                  </Link>
-                </Button>
               </CardContent>
             </Card>
           </div>
@@ -92,16 +80,10 @@ const AgendarBarbeiro = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
+      {/* Header - Clean, no admin links */}
       <header className="section-padding py-4 border-b border-border/50">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <Logo />
-          <Button variant="ghost" asChild>
-            <Link to="/">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Voltar
-            </Link>
-          </Button>
+        <div className="max-w-7xl mx-auto">
+          <Logo linkTo={undefined} />
         </div>
       </header>
 

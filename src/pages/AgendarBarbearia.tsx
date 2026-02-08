@@ -1,36 +1,48 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { supabase, Barber, Barbershop } from '@/lib/supabase';
 import { Logo } from '@/components/ui/Logo';
 import { BookingFlow } from '@/components/booking/BookingFlow';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, Building2 } from 'lucide-react';
+import { Loader2, Building2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 
 const AgendarBarbearia = () => {
-  const { barbershopId } = useParams<{ barbershopId: string }>();
+  const { slugOrId } = useParams<{ slugOrId: string }>();
   const [barbershop, setBarbershop] = useState<Barbershop | null>(null);
   const [barbers, setBarbers] = useState<Barber[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    if (barbershopId) {
+    if (slugOrId) {
       fetchBarbershopData();
     }
-  }, [barbershopId]);
+  }, [slugOrId]);
 
   const fetchBarbershopData = async () => {
     try {
-      // Fetch barbershop
-      const { data: shopData, error: shopError } = await supabase
+      // Try to find by slug first, then by ID
+      let shopData: any = null;
+
+      // Try slug
+      const { data: bySlug } = await supabase
         .from('barbershops')
         .select('*')
-        .eq('id', barbershopId)
+        .eq('slug', slugOrId)
         .maybeSingle();
 
-      if (shopError) throw shopError;
-      
+      if (bySlug) {
+        shopData = bySlug;
+      } else {
+        // Fallback to ID (for backward compatibility)
+        const { data: byId } = await supabase
+          .from('barbershops')
+          .select('*')
+          .eq('id', slugOrId)
+          .maybeSingle();
+        shopData = byId;
+      }
+
       if (!shopData) {
         setNotFound(true);
         return;
@@ -42,7 +54,7 @@ const AgendarBarbearia = () => {
       const { data: barbersData, error: barbersError } = await supabase
         .from('barbers')
         .select('*')
-        .eq('barbershop_id', barbershopId)
+        .eq('barbershop_id', shopData.id)
         .eq('is_active', true)
         .order('name');
 
@@ -68,14 +80,8 @@ const AgendarBarbearia = () => {
     return (
       <div className="min-h-screen bg-background">
         <header className="section-padding py-4 border-b border-border/50">
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <Logo />
-            <Button variant="ghost" asChild>
-              <Link to="/">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Voltar
-              </Link>
-            </Button>
+          <div className="max-w-7xl mx-auto">
+            <Logo linkTo={undefined} />
           </div>
         </header>
 
@@ -87,14 +93,9 @@ const AgendarBarbearia = () => {
                   <Building2 className="h-8 w-8 text-muted-foreground" />
                 </div>
                 <h1 className="text-xl font-bold mb-2">Barbearia não encontrada</h1>
-                <p className="text-muted-foreground mb-6">
+                <p className="text-muted-foreground">
                   O link que você acessou não é válido ou a barbearia não está mais disponível.
                 </p>
-                <Button asChild className="btn-primary-gradient">
-                  <Link to="/">
-                    Voltar ao início
-                  </Link>
-                </Button>
               </CardContent>
             </Card>
           </div>
@@ -105,16 +106,10 @@ const AgendarBarbearia = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
+      {/* Header - Clean, no admin links */}
       <header className="section-padding py-4 border-b border-border/50">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <Logo />
-          <Button variant="ghost" asChild>
-            <Link to="/">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Voltar
-            </Link>
-          </Button>
+        <div className="max-w-7xl mx-auto">
+          <Logo linkTo={undefined} />
         </div>
       </header>
 
@@ -130,7 +125,7 @@ const AgendarBarbearia = () => {
             </p>
           </div>
           <BookingFlow 
-            barbershopId={barbershopId} 
+            barbershopId={barbershop?.id} 
             availableBarbers={barbers}
           />
         </div>

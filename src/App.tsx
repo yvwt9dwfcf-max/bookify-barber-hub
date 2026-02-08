@@ -2,13 +2,10 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import Agendar from "./pages/Agendar";
-import AgendarBarbeiro from "./pages/AgendarBarbeiro";
-import AgendarBarbearia from "./pages/AgendarBarbearia";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
 import EsqueciSenha from "./pages/EsqueciSenha";
+import Onboarding from "./pages/Onboarding";
 import Painel from "./pages/Painel";
 import Agenda from "./pages/painel/Agenda";
 import Servicos from "./pages/painel/Servicos";
@@ -18,6 +15,8 @@ import Barbeiros from "./pages/painel/Barbeiros";
 import Configuracoes from "./pages/painel/Configuracoes";
 import WhatsAppAtendimento from "./pages/painel/WhatsAppAtendimento";
 import Relatorios from "./pages/painel/Relatorios";
+import AgendarBarbearia from "./pages/AgendarBarbearia";
+import AgendarBarbeiro from "./pages/AgendarBarbeiro";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,12 +28,16 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/agendar" element={<Agendar />} />
-          <Route path="/agendar/:barbershopId" element={<AgendarBarbearia />} />
-          <Route path="/b/:barberId" element={<AgendarBarbeiro />} />
+          {/* Auth routes */}
+          <Route path="/" element={<Login />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Login initialTab="signup" />} />
           <Route path="/esqueci-senha" element={<EsqueciSenha />} />
+
+          {/* Onboarding */}
+          <Route path="/onboarding" element={<Onboarding />} />
+
+          {/* Protected panel routes */}
           <Route path="/painel" element={<Painel />}>
             <Route index element={<Agenda />} />
             <Route path="servicos" element={<Servicos />} />
@@ -45,6 +48,11 @@ const App = () => (
             <Route path="whatsapp" element={<WhatsAppAtendimento />} />
             <Route path="configuracoes" element={<Configuracoes />} />
           </Route>
+
+          {/* Public booking routes */}
+          <Route path="/agendar/:slugOrId" element={<AgendarBarbearia />} />
+          <Route path="/b/:barberId" element={<AgendarBarbeiro />} />
+
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

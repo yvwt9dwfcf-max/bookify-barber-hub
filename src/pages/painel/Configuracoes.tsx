@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { User, Phone, Mail, Loader2, Save, Building2, Crown } from 'lucide-react';
+import { User, Phone, Mail, Loader2, Save, Building2, Crown, Link2, Copy, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface ContextType {
@@ -23,9 +23,26 @@ const Configuracoes = () => {
   const { barbershop, isMaster } = useUserRole();
   
   const [saving, setSaving] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const [name, setName] = useState(barber?.name || '');
   const [phone, setPhone] = useState(barber?.phone || '');
+
+  const publicLink = barbershop?.slug 
+    ? `${window.location.origin}/agendar/${barbershop.slug}`
+    : '';
+
+  const handleCopyLink = async () => {
+    if (!publicLink) return;
+    try {
+      await navigator.clipboard.writeText(publicLink);
+      setCopied(true);
+      toast.success('Link copiado!');
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error('Erro ao copiar link');
+    }
+  };
 
   const formatPhone = (value: string) => {
     const numbers = value.replace(/\D/g, '');
@@ -92,6 +109,42 @@ const Configuracoes = () => {
           </Badge>
         )}
       </div>
+
+      {/* Public Booking Link */}
+      {publicLink && (
+        <Card className="border-primary/20 bg-primary/5">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Link2 className="h-5 w-5 text-primary" />
+              Link Público de Agendamento
+            </CardTitle>
+            <CardDescription>
+              Compartilhe este link com seus clientes para que agendem online
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-2">
+              <Input
+                value={publicLink}
+                readOnly
+                className="font-mono text-sm bg-background"
+              />
+              <Button
+                onClick={handleCopyLink}
+                variant={copied ? 'default' : 'outline'}
+                className={copied ? 'btn-primary-gradient' : ''}
+                size="icon"
+              >
+                {copied ? (
+                  <CheckCircle className="h-4 w-4" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Profile Card */}
       <Card>
