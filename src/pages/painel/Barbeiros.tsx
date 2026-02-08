@@ -208,7 +208,7 @@ const Barbeiros = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 overflow-x-hidden max-w-full">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -328,25 +328,25 @@ const Barbeiros = () => {
         {barbers.map((barber) => (
           <Card key={barber.id}>
             <CardContent className="p-4">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <User className="h-6 w-6 text-primary" />
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <User className="h-5 w-5 text-primary" />
                 </div>
                 
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 overflow-hidden">
                   <div className="flex items-center gap-2 mb-1">
                     <h3 className="font-medium truncate">{barber.name}</h3>
                     {barber.auth_id === barbershop?.id && (
-                      <Badge variant="secondary" className="flex items-center gap-1">
+                      <Badge variant="secondary" className="flex items-center gap-1 flex-shrink-0">
                         <Crown className="h-3 w-3" />
                         Master
                       </Badge>
                     )}
                   </div>
-                  <p className="text-sm text-muted-foreground truncate">
+                  <p className="text-sm text-muted-foreground break-all" style={{ overflowWrap: 'anywhere' }}>
                     {barber.email}
                   </p>
-                    <div className="flex flex-wrap gap-1 mt-2">
+                  <div className="flex flex-wrap gap-1 mt-2">
                     {barber.permissions?.can_edit_own_schedule && (
                       <Badge variant="outline" className="text-xs">Edita própria agenda</Badge>
                     )}
@@ -359,10 +359,11 @@ const Barbeiros = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="flex items-center gap-1 flex-shrink-0">
                   <Button
                     variant="ghost"
                     size="icon"
+                    className="h-8 w-8"
                     onClick={() => copyBarberLink(barber.id)}
                     title="Copiar link de agendamento"
                   >
@@ -376,6 +377,7 @@ const Barbeiros = () => {
                   <Button
                     variant="ghost"
                     size="icon"
+                    className="h-8 w-8"
                     onClick={() => handleOpenPermissions(barber)}
                     title="Configurar permissões"
                   >
@@ -387,6 +389,7 @@ const Barbeiros = () => {
                       <Button
                         variant="ghost"
                         size="icon"
+                        className="h-8 w-8"
                         title="Remover barbeiro"
                       >
                         <Trash2 className="h-4 w-4 text-destructive" />
