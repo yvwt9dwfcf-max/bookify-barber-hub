@@ -263,11 +263,11 @@ const Agenda = () => {
       )}
 
       {/* Manual Appointment Dialog */}
-      {selectedBarber && (
+      {(selectedBarber || barber) && (
         <ManualAppointmentDialog
           open={showManualDialog}
           onOpenChange={setShowManualDialog}
-          barber={selectedBarber}
+          barber={canCreateForOthers ? selectedBarber! : barber!}
           selectedDate={selectedDate}
           onSuccess={fetchAppointments}
           canCreateForOthers={canCreateForOthers}
