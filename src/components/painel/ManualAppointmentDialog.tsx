@@ -69,7 +69,9 @@ const ManualAppointmentDialog = ({
   
   // Selected barber for appointment (can be different from current barber if has permission)
   const [targetBarberId, setTargetBarberId] = useState<string>(barber.id);
-  const targetBarber = (canCreateForOthers ? barbers.find(b => b.id === targetBarberId) : barber) || barber;
+  // When canCreateForOthers is false, ALWAYS force target to the barber prop (own barber)
+  const effectiveBarberId = canCreateForOthers ? targetBarberId : barber.id;
+  const targetBarber = (canCreateForOthers ? barbers.find(b => b.id === effectiveBarberId) : barber) || barber;
 
   // Use the unified availability hook
   const { 
@@ -101,14 +103,14 @@ const ManualAppointmentDialog = ({
     }
   }, [open, selectedDate]);
 
-  // Refetch when target barber changes
+  // Refetch when effective target barber changes
   useEffect(() => {
     if (open) {
       fetchServices();
       refetchAvailability();
       form.setValue('start_time', '');
     }
-  }, [targetBarberId]);
+  }, [effectiveBarberId]);
 
   const fetchServices = async () => {
     setLoadingServices(true);

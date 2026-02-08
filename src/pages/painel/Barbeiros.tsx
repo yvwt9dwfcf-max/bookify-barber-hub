@@ -146,7 +146,7 @@ const Barbeiros = () => {
 
       toast.success('Permissões atualizadas!');
       setShowPermissionsDialog(false);
-      refetch();
+      await refetch();
     } catch (error) {
       console.error('Erro ao atualizar permissões:', error);
       toast.error('Erro ao atualizar permissões');
