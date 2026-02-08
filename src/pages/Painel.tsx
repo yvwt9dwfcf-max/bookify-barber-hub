@@ -1,7 +1,8 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useBarber } from '@/hooks/useBarber';
 import { useUserRole } from '@/hooks/useUserRole';
+import { supabase } from '@/lib/supabase';
 import { useNavigate, Outlet, Link, useLocation } from 'react-router-dom';
 import { Logo } from '@/components/ui/Logo';
 import { Button } from '@/components/ui/button';
@@ -24,7 +25,7 @@ import {
 import { cn } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useState } from 'react';
+
 import { useDayClosing } from '@/hooks/useDayClosing';
 import DayClosingModal from '@/components/painel/DayClosingModal';
 
@@ -59,23 +60,48 @@ const Painel = () => {
     { icon: Settings, label: 'Configurações', path: '/painel/configuracoes' },
   ];
 
+  // Check onboarding status
+  const [onboardingChecked, setOnboardingChecked] = useState(false);
+
   useEffect(() => {
     if (!authLoading && !user) {
-      navigate('/login');
+      navigate('/', { replace: true });
     }
   }, [user, authLoading, navigate]);
+
+  useEffect(() => {
+    const checkOnboarding = async () => {
+      if (!barber || barberLoading || roleLoading) return;
+      
+      const { data } = await supabase
+        .from('opening_hours')
+        .select('id')
+        .eq('barber_id', barber.id)
+        .limit(1);
+
+      if (!data || data.length === 0) {
+        navigate('/onboarding', { replace: true });
+        return;
+      }
+      setOnboardingChecked(true);
+    };
+
+    if (user && barber) {
+      checkOnboarding();
+    }
+  }, [user, barber, barberLoading, roleLoading, navigate]);
 
   const handleSignOut = async () => {
     try {
       await signOut();
       toast.success('Logout realizado com sucesso');
-      navigate('/');
+      navigate('/', { replace: true });
     } catch (error) {
       toast.error('Erro ao fazer logout');
     }
   };
 
-  if (authLoading || barberLoading || roleLoading) {
+  if (authLoading || barberLoading || roleLoading || !onboardingChecked) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
