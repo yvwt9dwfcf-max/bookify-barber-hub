@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
   Calendar, Clock, Users, Smartphone, BarChart3, Shield, 
-  ArrowRight, CheckCircle, Star, Zap, Globe
+  ArrowRight, CheckCircle, Zap, Globe
 } from 'lucide-react';
 
 const features = [
@@ -135,24 +135,6 @@ const LandingPage = () => {
             </a>
           </div>
 
-          {/* Social proof */}
-          <div className="flex items-center justify-center gap-6 mt-12 animate-fade-in" style={{ animationDelay: '0.4s' }}>
-            <div className="flex -space-x-2">
-              {[1,2,3,4].map(i => (
-                <div key={i} className="w-8 h-8 rounded-full border-2 border-background flex items-center justify-center text-xs font-bold" style={{ background: `var(--primary-gradient)`, color: 'white' }}>
-                  {String.fromCharCode(64 + i)}
-                </div>
-              ))}
-            </div>
-            <div className="text-left">
-              <div className="flex items-center gap-1">
-                {[1,2,3,4,5].map(i => (
-                  <Star key={i} className="h-4 w-4 fill-warning text-warning" />
-                ))}
-              </div>
-              <p className="text-xs text-muted-foreground">+500 barbearias ativas</p>
-            </div>
-          </div>
         </div>
       </section>
 
