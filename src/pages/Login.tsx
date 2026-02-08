@@ -106,14 +106,20 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
+      {/* Background effects */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full bg-primary/5 blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full bg-primary/5 blur-3xl" />
+      </div>
+
       {/* Main Content */}
-      <main className="flex-1 flex items-center justify-center p-4">
-        <div className="w-full max-w-md space-y-8">
+      <main className="flex-1 flex items-center justify-center p-4 relative z-10">
+        <div className="w-full max-w-md space-y-8 animate-fade-in">
           {/* Logo & Branding */}
           <div className="text-center space-y-3">
             <div className="flex justify-center">
-              <Logo size="lg" linkTo={undefined} />
+              <Logo size="lg" linkTo="/" />
             </div>
             <p className="text-muted-foreground">
               Gerencie sua barbearia de forma simples e profissional
@@ -121,10 +127,12 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
           </div>
 
           {/* Auth Card */}
-          <Card className="shadow-card-lg border-border/50">
+          <Card className="shadow-card-lg border-border/40 bg-card/80 backdrop-blur-sm">
             <CardHeader className="text-center pb-4">
               <CardTitle className="text-xl flex items-center justify-center gap-2">
-                <Scissors className="h-5 w-5 text-primary" />
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'var(--primary-gradient)' }}>
+                  <Scissors className="h-4 w-4 text-primary-foreground" />
+                </div>
                 Área do Profissional
               </CardTitle>
               <CardDescription>
@@ -153,7 +161,7 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
                           placeholder="seu@email.com"
                           value={loginEmail}
                           onChange={(e) => setLoginEmail(e.target.value)}
-                          className="pl-10"
+                          className="pl-10 h-11"
                         />
                       </div>
                     </div>
@@ -167,13 +175,13 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
                           placeholder="••••••••"
                           value={loginPassword}
                           onChange={(e) => setLoginPassword(e.target.value)}
-                          className="pl-10"
+                          className="pl-10 h-11"
                         />
                       </div>
                     </div>
                     <Button
                       type="submit"
-                      className="w-full btn-primary-gradient"
+                      className="w-full btn-primary-gradient h-11 rounded-xl"
                       disabled={isLoading}
                     >
                       {isLoading ? (
@@ -208,7 +216,7 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
                           placeholder="seu@email.com"
                           value={signupEmail}
                           onChange={(e) => setSignupEmail(e.target.value)}
-                          className="pl-10"
+                          className="pl-10 h-11"
                           required
                         />
                       </div>
@@ -223,7 +231,7 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
                           placeholder="Mínimo 6 caracteres"
                           value={signupPassword}
                           onChange={(e) => setSignupPassword(e.target.value)}
-                          className="pl-10"
+                          className="pl-10 h-11"
                           required
                         />
                       </div>
@@ -238,14 +246,14 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
                           placeholder="••••••••"
                           value={signupConfirmPassword}
                           onChange={(e) => setSignupConfirmPassword(e.target.value)}
-                          className="pl-10"
+                          className="pl-10 h-11"
                           required
                         />
                       </div>
                     </div>
                     <Button
                       type="submit"
-                      className="w-full btn-primary-gradient"
+                      className="w-full btn-primary-gradient h-11 rounded-xl"
                       disabled={isLoading}
                     >
                       {isLoading ? (
