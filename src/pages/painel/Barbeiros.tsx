@@ -118,12 +118,32 @@ const Barbeiros = () => {
     }
   };
 
-  const handleOpenPermissions = (barber: BarberWithPermissions) => {
+  const handleOpenPermissions = async (barber: BarberWithPermissions) => {
     setSelectedBarber(barber);
-    setCanEditOwn(barber.permissions?.can_edit_own_schedule ?? true);
-    setCanViewOthers(barber.permissions?.can_view_others_schedule ?? false);
-    setCanEditOthers(barber.permissions?.can_edit_others_schedule ?? false);
     setShowPermissionsDialog(true);
+
+    // Fetch permissions fresh from the database to avoid stale/missing join data
+    try {
+      const { data, error } = await supabase
+        .from('barber_permissions')
+        .select('*')
+        .eq('barber_id', barber.id)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Erro ao carregar permissões:', error);
+      }
+
+      setCanEditOwn(data?.can_edit_own_schedule ?? true);
+      setCanViewOthers(data?.can_view_others_schedule ?? false);
+      setCanEditOthers(data?.can_edit_others_schedule ?? false);
+    } catch (err) {
+      console.error('Erro ao carregar permissões:', err);
+      // Fallback to barber object data
+      setCanEditOwn(barber.permissions?.can_edit_own_schedule ?? true);
+      setCanViewOthers(barber.permissions?.can_view_others_schedule ?? false);
+      setCanEditOthers(barber.permissions?.can_edit_others_schedule ?? false);
+    }
   };
 
   const handleSavePermissions = async () => {
