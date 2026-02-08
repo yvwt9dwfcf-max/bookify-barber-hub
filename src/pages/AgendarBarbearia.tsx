@@ -21,10 +21,8 @@ const AgendarBarbearia = () => {
 
   const fetchBarbershopData = async () => {
     try {
-      // Try to find by slug first, then by ID
       let shopData: any = null;
 
-      // Try slug
       const { data: bySlug } = await supabase
         .from('barbershops')
         .select('*')
@@ -34,7 +32,6 @@ const AgendarBarbearia = () => {
       if (bySlug) {
         shopData = bySlug;
       } else {
-        // Fallback to ID (for backward compatibility)
         const { data: byId } = await supabase
           .from('barbershops')
           .select('*')
@@ -50,7 +47,6 @@ const AgendarBarbearia = () => {
 
       setBarbershop(shopData as Barbershop);
 
-      // Fetch active barbers from this barbershop
       const { data: barbersData, error: barbersError } = await supabase
         .from('barbers')
         .select('*')
@@ -79,18 +75,18 @@ const AgendarBarbearia = () => {
   if (notFound) {
     return (
       <div className="min-h-screen bg-background">
-        <header className="section-padding py-4 border-b border-border/50">
+        <header className="px-4 sm:px-6 py-4 border-b border-border/50 bg-card/80 backdrop-blur-xl">
           <div className="max-w-7xl mx-auto">
             <Logo linkTo={undefined} />
           </div>
         </header>
 
-        <main className="section-padding py-12">
+        <main className="px-4 sm:px-6 py-12">
           <div className="max-w-md mx-auto text-center">
-            <Card>
+            <Card className="border-border/40">
               <CardContent className="p-8">
-                <div className="w-16 h-16 rounded-full bg-muted mx-auto flex items-center justify-center mb-4">
-                  <Building2 className="h-8 w-8 text-muted-foreground" />
+                <div className="w-16 h-16 rounded-2xl mx-auto flex items-center justify-center mb-4" style={{ background: 'var(--primary-gradient)', opacity: 0.15 }}>
+                  <Building2 className="h-8 w-8 text-primary" />
                 </div>
                 <h1 className="text-xl font-bold mb-2">Barbearia não encontrada</h1>
                 <p className="text-muted-foreground">
@@ -105,16 +101,21 @@ const AgendarBarbearia = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header - Clean, no admin links */}
-      <header className="section-padding py-4 border-b border-border/50">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Background effects */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full bg-primary/5 blur-3xl" />
+      </div>
+
+      {/* Header */}
+      <header className="relative z-10 px-4 sm:px-6 py-4 border-b border-border/50 bg-card/80 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto">
           <Logo linkTo={undefined} />
         </div>
       </header>
 
       {/* Booking Flow */}
-      <main className="section-padding py-8 md:py-12">
+      <main className="relative z-10 px-4 sm:px-6 py-8 md:py-12">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-8">
             <h1 className="text-2xl md:text-3xl font-bold mb-2">

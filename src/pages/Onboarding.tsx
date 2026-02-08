@@ -36,6 +36,15 @@ const defaultDays: DayConfig[] = [
 
 const TOTAL_STEPS = 4;
 
+const stepIcons = [Building2, Calendar, Clock, Clock];
+const stepTitles = ['Seus dados e barbearia', 'Dias de Atendimento', 'Horários de Funcionamento', 'Intervalos / Almoço'];
+const stepDescriptions = [
+  'Informações básicas para começar',
+  'Selecione os dias em que você atende',
+  'Configure o horário de cada dia',
+  'Configure os intervalos de cada dia (opcional)',
+];
+
 const Onboarding = () => {
   const { user, loading: authLoading } = useAuth();
   const { barber, loading: barberLoading } = useBarber();
@@ -100,7 +109,6 @@ const Onboarding = () => {
         return;
       }
 
-      // Save barber name
       if (barber) {
         await supabase
           .from('barbers')
@@ -108,7 +116,6 @@ const Onboarding = () => {
           .eq('id', barber.id);
       }
 
-      // Save barbershop name & phone
       if (barbershop) {
         await supabase
           .from('barbershops')
@@ -137,7 +144,6 @@ const Onboarding = () => {
 
     setSaving(true);
     try {
-      // Save opening hours
       const toInsert = days.map(d => ({
         barber_id: barber.id,
         barbershop_id: barbershop.id,
@@ -155,7 +161,6 @@ const Onboarding = () => {
 
       if (hoursError) throw hoursError;
 
-      // Mark onboarding as completed
       const { error: updateError } = await supabase
         .from('barbershops')
         .update({ onboarding_completed: true })
@@ -183,10 +188,17 @@ const Onboarding = () => {
 
   if (!user) return null;
 
+  const StepIcon = stepIcons[step - 1];
+
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <main className="flex-1 flex items-center justify-center p-4">
-        <div className="w-full max-w-lg space-y-6">
+    <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
+      {/* Background effects */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-primary/5 blur-3xl" />
+      </div>
+
+      <main className="flex-1 flex items-center justify-center p-4 relative z-10">
+        <div className="w-full max-w-lg space-y-6 animate-fade-in">
           {/* Logo */}
           <div className="text-center">
             <div className="flex justify-center mb-4">
@@ -203,212 +215,180 @@ const Onboarding = () => {
             {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
               <div
                 key={i}
-                className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${
-                  i < step ? 'bg-primary' : 'bg-muted'
-                }`}
-              />
+                className="h-1.5 flex-1 rounded-full transition-all duration-500"
+                style={{
+                  background: i < step ? 'var(--primary-gradient)' : undefined,
+                }}
+              >
+                {i >= step && <div className="h-full w-full rounded-full bg-muted" />}
+              </div>
             ))}
           </div>
 
-          {/* Step 1: Personal Info + Barbershop */}
-          {step === 1 && (
-            <Card className="shadow-card-lg animate-in fade-in-50 duration-300">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Building2 className="h-5 w-5 text-primary" />
-                  Seus dados e barbearia
-                </CardTitle>
-                <CardDescription>
-                  Informações básicas para começar
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="barber-name">Seu nome *</Label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="barber-name"
-                      placeholder="Seu nome completo"
-                      value={barberName}
-                      onChange={(e) => setBarberName(e.target.value)}
-                      className="pl-10"
-                      autoFocus
-                    />
-                  </div>
+          {/* Step Card */}
+          <Card className="shadow-card-lg border-border/40 bg-card/80 backdrop-blur-sm animate-fade-in" key={step}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'var(--primary-gradient)' }}>
+                  <StepIcon className="h-4 w-4 text-primary-foreground" />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="barbershop-name">Nome da barbearia *</Label>
-                  <div className="relative">
-                    <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="barbershop-name"
-                      placeholder="Ex: Barbearia do João"
-                      value={barbershopName}
-                      onChange={(e) => setBarbershopName(e.target.value)}
-                      className="pl-10"
-                    />
+                {stepTitles[step - 1]}
+              </CardTitle>
+              <CardDescription>
+                {stepDescriptions[step - 1]}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Step 1: Personal Info + Barbershop */}
+              {step === 1 && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="barber-name">Seu nome *</Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="barber-name"
+                        placeholder="Seu nome completo"
+                        value={barberName}
+                        onChange={(e) => setBarberName(e.target.value)}
+                        className="pl-10 h-11"
+                        autoFocus
+                      />
+                    </div>
                   </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="barbershop-phone">Telefone da barbearia</Label>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="barbershop-phone"
-                      type="tel"
-                      placeholder="(00) 00000-0000"
-                      value={barbershopPhone}
-                      onChange={(e) => setBarbershopPhone(e.target.value)}
-                      className="pl-10"
-                    />
+                  <div className="space-y-2">
+                    <Label htmlFor="barbershop-name">Nome da barbearia *</Label>
+                    <div className="relative">
+                      <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="barbershop-name"
+                        placeholder="Ex: Barbearia do João"
+                        value={barbershopName}
+                        onChange={(e) => setBarbershopName(e.target.value)}
+                        className="pl-10 h-11"
+                      />
+                    </div>
                   </div>
-                </div>
-                <Button onClick={handleNext} className="w-full btn-primary-gradient">
-                  Continuar
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </CardContent>
-            </Card>
-          )}
+                  <div className="space-y-2">
+                    <Label htmlFor="barbershop-phone">Telefone da barbearia</Label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="barbershop-phone"
+                        type="tel"
+                        placeholder="(00) 00000-0000"
+                        value={barbershopPhone}
+                        onChange={(e) => setBarbershopPhone(e.target.value)}
+                        className="pl-10 h-11"
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
 
-          {/* Step 2: Working Days */}
-          {step === 2 && (
-            <Card className="shadow-card-lg animate-in fade-in-50 duration-300">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-primary" />
-                  Dias de Atendimento
-                </CardTitle>
-                <CardDescription>
-                  Selecione os dias em que você atende
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {days.map(day => (
-                  <div
-                    key={day.day_of_week}
-                    className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
-                      day.is_open ? 'border-primary/30 bg-primary/5' : 'border-border'
-                    }`}
-                  >
-                    <span className="font-medium">{DAY_NAMES[day.day_of_week]}</span>
-                    <Switch
-                      checked={day.is_open}
-                      onCheckedChange={(checked) => updateDay(day.day_of_week, 'is_open', checked)}
-                    />
-                  </div>
-                ))}
-                <div className="flex gap-3 pt-2">
-                  <Button variant="outline" onClick={() => setStep(1)} className="flex-1">
+              {/* Step 2: Working Days */}
+              {step === 2 && (
+                <div className="space-y-2">
+                  {days.map(day => (
+                    <div
+                      key={day.day_of_week}
+                      className={`flex items-center justify-between p-3.5 rounded-xl border transition-all duration-200 ${
+                        day.is_open 
+                          ? 'border-primary/30 bg-primary/5 shadow-sm' 
+                          : 'border-border/50 hover:border-border'
+                      }`}
+                    >
+                      <span className="font-medium text-sm">{DAY_NAMES[day.day_of_week]}</span>
+                      <Switch
+                        checked={day.is_open}
+                        onCheckedChange={(checked) => updateDay(day.day_of_week, 'is_open', checked)}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Step 3: Hours */}
+              {step === 3 && (
+                <div className="space-y-3">
+                  {days.filter(d => d.is_open).map(day => (
+                    <div key={day.day_of_week} className="p-3.5 rounded-xl border border-border/50 space-y-3 bg-secondary/20">
+                      <p className="font-medium text-sm">{DAY_NAMES[day.day_of_week]}</p>
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1">
+                          <Label className="text-xs text-muted-foreground">Início</Label>
+                          <Input
+                            type="time"
+                            value={day.start_time}
+                            onChange={(e) => updateDay(day.day_of_week, 'start_time', e.target.value)}
+                            className="h-10"
+                          />
+                        </div>
+                        <span className="text-muted-foreground mt-5">—</span>
+                        <div className="flex-1">
+                          <Label className="text-xs text-muted-foreground">Fim</Label>
+                          <Input
+                            type="time"
+                            value={day.end_time}
+                            onChange={(e) => updateDay(day.day_of_week, 'end_time', e.target.value)}
+                            className="h-10"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Step 4: Breaks */}
+              {step === 4 && (
+                <div className="space-y-3">
+                  {days.filter(d => d.is_open).map(day => (
+                    <div key={day.day_of_week} className="p-3.5 rounded-xl border border-border/50 space-y-3 bg-secondary/20">
+                      <p className="font-medium text-sm">{DAY_NAMES[day.day_of_week]}</p>
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1">
+                          <Label className="text-xs text-muted-foreground">Intervalo início</Label>
+                          <Input
+                            type="time"
+                            value={day.break_start}
+                            onChange={(e) => updateDay(day.day_of_week, 'break_start', e.target.value)}
+                            placeholder="--:--"
+                            className="h-10"
+                          />
+                        </div>
+                        <span className="text-muted-foreground mt-5">—</span>
+                        <div className="flex-1">
+                          <Label className="text-xs text-muted-foreground">Intervalo fim</Label>
+                          <Input
+                            type="time"
+                            value={day.break_end}
+                            onChange={(e) => updateDay(day.day_of_week, 'break_end', e.target.value)}
+                            placeholder="--:--"
+                            className="h-10"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Navigation Buttons */}
+              <div className="flex gap-3 pt-2">
+                {step > 1 && (
+                  <Button variant="outline" onClick={() => setStep(step - 1)} className="flex-1 h-11 rounded-xl">
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     Voltar
                   </Button>
-                  <Button onClick={handleNext} className="flex-1 btn-primary-gradient">
+                )}
+                {step < TOTAL_STEPS ? (
+                  <Button onClick={handleNext} className="flex-1 btn-primary-gradient h-11 rounded-xl">
                     Continuar
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Step 3: Hours */}
-          {step === 3 && (
-            <Card className="shadow-card-lg animate-in fade-in-50 duration-300">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-primary" />
-                  Horários de Funcionamento
-                </CardTitle>
-                <CardDescription>
-                  Configure o horário de cada dia
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {days.filter(d => d.is_open).map(day => (
-                  <div key={day.day_of_week} className="p-3 rounded-lg border border-border space-y-3">
-                    <p className="font-medium text-sm">{DAY_NAMES[day.day_of_week]}</p>
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1">
-                        <Label className="text-xs text-muted-foreground">Início</Label>
-                        <Input
-                          type="time"
-                          value={day.start_time}
-                          onChange={(e) => updateDay(day.day_of_week, 'start_time', e.target.value)}
-                        />
-                      </div>
-                      <span className="text-muted-foreground mt-5">—</span>
-                      <div className="flex-1">
-                        <Label className="text-xs text-muted-foreground">Fim</Label>
-                        <Input
-                          type="time"
-                          value={day.end_time}
-                          onChange={(e) => updateDay(day.day_of_week, 'end_time', e.target.value)}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                <div className="flex gap-3 pt-2">
-                  <Button variant="outline" onClick={() => setStep(2)} className="flex-1">
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Voltar
-                  </Button>
-                  <Button onClick={handleNext} className="flex-1 btn-primary-gradient">
-                    Continuar
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Step 4: Breaks / Intervals */}
-          {step === 4 && (
-            <Card className="shadow-card-lg animate-in fade-in-50 duration-300">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-primary" />
-                  Intervalos / Almoço
-                </CardTitle>
-                <CardDescription>
-                  Configure os intervalos de cada dia (opcional)
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {days.filter(d => d.is_open).map(day => (
-                  <div key={day.day_of_week} className="p-3 rounded-lg border border-border space-y-3">
-                    <p className="font-medium text-sm">{DAY_NAMES[day.day_of_week]}</p>
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1">
-                        <Label className="text-xs text-muted-foreground">Intervalo início</Label>
-                        <Input
-                          type="time"
-                          value={day.break_start}
-                          onChange={(e) => updateDay(day.day_of_week, 'break_start', e.target.value)}
-                          placeholder="--:--"
-                        />
-                      </div>
-                      <span className="text-muted-foreground mt-5">—</span>
-                      <div className="flex-1">
-                        <Label className="text-xs text-muted-foreground">Intervalo fim</Label>
-                        <Input
-                          type="time"
-                          value={day.break_end}
-                          onChange={(e) => updateDay(day.day_of_week, 'break_end', e.target.value)}
-                          placeholder="--:--"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                <div className="flex gap-3 pt-2">
-                  <Button variant="outline" onClick={() => setStep(3)} className="flex-1">
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Voltar
-                  </Button>
-                  <Button onClick={handleFinish} disabled={saving} className="flex-1 btn-primary-gradient">
+                ) : (
+                  <Button onClick={handleFinish} disabled={saving} className="flex-1 btn-primary-gradient h-11 rounded-xl">
                     {saving ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -421,10 +401,10 @@ const Onboarding = () => {
                       </>
                     )}
                   </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+                )}
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </main>
     </div>

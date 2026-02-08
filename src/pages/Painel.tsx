@@ -99,12 +99,13 @@ const Painel = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Mobile Header */}
-      <header className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-card border-b border-border px-4 py-3 flex items-center justify-between">
+      <header className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-card/80 backdrop-blur-xl border-b border-border/50 px-4 py-3 flex items-center justify-between">
         <Logo size="sm" linkTo="/painel" />
         <Button
           variant="ghost"
           size="icon"
           onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="h-9 w-9 rounded-xl"
         >
           {sidebarOpen ? (
             <X className="h-5 w-5 transition-transform duration-200 active:rotate-90" />
@@ -126,8 +127,8 @@ const Painel = () => {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed top-0 left-0 z-50 h-full w-64 bg-sidebar text-sidebar-foreground',
-          'lg:translate-x-0',
+          'fixed top-0 left-0 z-50 h-full w-[270px] bg-sidebar text-sidebar-foreground shadow-2xl',
+          'lg:translate-x-0 lg:shadow-xl',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         )}
         style={{
@@ -143,21 +144,19 @@ const Painel = () => {
           {/* User Info */}
           <div className="p-4 border-b border-sidebar-border">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-sidebar-accent flex items-center justify-center">
-                {isMaster ? <Crown className="h-5 w-5" /> : <User className="h-5 w-5" />}
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'var(--primary-gradient)' }}>
+                {isMaster ? <Crown className="h-5 w-5 text-primary-foreground" /> : <User className="h-5 w-5 text-primary-foreground" />}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className="font-medium truncate">{barber?.name || 'Barbeiro'}</p>
-                </div>
+                <p className="font-semibold text-sm truncate">{barber?.name || 'Barbeiro'}</p>
                 <p className="text-xs text-sidebar-foreground/60 truncate">
                   {isMaster ? 'Administrador' : 'Barbeiro'}
                 </p>
               </div>
             </div>
             {barbershop && (
-              <div className="mt-2">
-                <Badge variant="outline" className="text-xs">
+              <div className="mt-3">
+                <Badge variant="outline" className="text-xs border-sidebar-border text-sidebar-foreground/70">
                   {barbershop.name}
                 </Badge>
               </div>
@@ -165,7 +164,7 @@ const Painel = () => {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-1">
+          <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
             {menuItems.map((item, index) => {
               const isActive = location.pathname === item.path;
               return (
@@ -174,29 +173,30 @@ const Painel = () => {
                   to={item.path}
                   onClick={() => setSidebarOpen(false)}
                   className={cn(
-                    'flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200',
+                    'flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group',
                     isActive
-                      ? 'bg-sidebar-primary text-sidebar-primary-foreground'
-                      : 'hover:bg-sidebar-accent hover:scale-[1.02] active:scale-[1.02] text-sidebar-foreground'
+                      ? 'text-primary-foreground shadow-lg'
+                      : 'hover:bg-sidebar-accent active:scale-[0.98] text-sidebar-foreground/80 hover:text-sidebar-foreground'
                   )}
                   style={{
-                    boxShadow: isActive ? '0 0 15px rgba(16, 185, 129, 0.3)' : 'none',
-                    animationDelay: sidebarOpen ? `${index * 0.08}s` : '0s',
+                    background: isActive ? 'var(--primary-gradient)' : undefined,
+                    boxShadow: isActive ? '0 4px 15px rgba(16, 185, 129, 0.3)' : 'none',
+                    animationDelay: sidebarOpen ? `${index * 0.05}s` : '0s',
                     animation: sidebarOpen ? 'fade-in 0.3s ease-out backwards' : 'none'
                   }}
                 >
-                  <item.icon className="h-5 w-5" />
-                  <span>{item.label}</span>
+                  <item.icon className={cn("h-5 w-5 transition-transform duration-200", !isActive && "group-hover:scale-110")} />
+                  <span className="font-medium text-sm">{item.label}</span>
                 </Link>
               );
             })}
           </nav>
 
           {/* Logout Button */}
-          <div className="p-4 border-t border-sidebar-border">
+          <div className="p-3 border-t border-sidebar-border">
             <Button
               variant="ghost"
-              className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
+              className="w-full justify-start text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent rounded-xl"
               onClick={handleSignOut}
             >
               <LogOut className="mr-2 h-5 w-5" />
@@ -207,8 +207,8 @@ const Painel = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="lg:ml-64 pt-16 lg:pt-0 min-h-screen">
-        <div className="p-4 md:p-6 lg:p-8">
+      <main className="lg:ml-[270px] pt-16 lg:pt-0 min-h-screen">
+        <div className="p-4 md:p-6 lg:p-8 max-w-6xl">
           <Outlet context={{ barber, barbershop, isMaster }} />
         </div>
       </main>
