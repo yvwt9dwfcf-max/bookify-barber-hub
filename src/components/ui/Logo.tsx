@@ -1,37 +1,35 @@
-import { Scissors } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import logoImg from '@/assets/logo.png';
 
 interface LogoProps {
   className?: string;
   size?: 'sm' | 'md' | 'lg';
   linkTo?: string;
+  showText?: boolean;
 }
 
-export function Logo({ className, size = 'md', linkTo = '/' }: LogoProps) {
+export function Logo({ className, size = 'md', linkTo = '/', showText = true }: LogoProps) {
   const sizeClasses = {
     sm: 'text-xl',
     md: 'text-2xl',
     lg: 'text-4xl',
   };
 
-  const iconSizes = {
-    sm: 20,
-    md: 24,
-    lg: 36,
+  const imgSizes = {
+    sm: 28,
+    md: 36,
+    lg: 52,
   };
 
   const content = (
     <div className={cn('flex items-center gap-2', className)}>
-      <div className="relative">
-        <div className="absolute inset-0 bg-primary/20 rounded-full blur-lg" />
-        <div className="relative bg-primary rounded-full p-2">
-          <Scissors className="text-primary-foreground" size={iconSizes[size]} />
-        </div>
-      </div>
-      <span className={cn('font-display font-bold text-foreground', sizeClasses[size])}>
-        Bookify
-      </span>
+      <img src={logoImg} alt="Bookify" width={imgSizes[size]} height={imgSizes[size]} className="rounded-lg" />
+      {showText && (
+        <span className={cn('font-display font-bold text-foreground', sizeClasses[size])}>
+          Bookify
+        </span>
+      )}
     </div>
   );
 
