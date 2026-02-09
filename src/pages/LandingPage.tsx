@@ -262,9 +262,15 @@ const LandingPage = () => {
       <footer className="border-t border-border/50 py-8 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <Logo size="sm" linkTo="/" />
-          <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Bookify. Todos os direitos reservados.
-          </p>
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
+            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+              <Link to="/termos" className="hover:text-foreground transition-colors">Termos de Uso</Link>
+              <Link to="/privacidade" className="hover:text-foreground transition-colors">Privacidade</Link>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              © {new Date().getFullYear()} Bookify. Todos os direitos reservados.
+            </p>
+          </div>
         </div>
       </footer>
     </div>
