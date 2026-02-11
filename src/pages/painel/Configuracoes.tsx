@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useOutletContext } from 'react-router-dom';
+import { useOutletContext, useNavigate } from 'react-router-dom';
 import { Barber, Barbershop } from '@/lib/supabase';
 import { useBarber } from '@/hooks/useBarber';
 import { useUserRole } from '@/hooks/useUserRole';
@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { User, Phone, Mail, Loader2, Save, Building2, Crown, Link2, Copy, CheckCircle } from 'lucide-react';
+import { User, Phone, Mail, Loader2, Save, Building2, Crown, Link2, Copy, CheckCircle, CreditCard, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface ContextType {
@@ -21,6 +21,7 @@ const Configuracoes = () => {
   const { barber } = useOutletContext<ContextType>();
   const { updateBarber } = useBarber();
   const { barbershop, isMaster } = useUserRole();
+  const navigate = useNavigate();
   
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -142,6 +143,25 @@ const Configuracoes = () => {
                 )}
               </Button>
             </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Subscription */}
+      {isMaster && (
+        <Card 
+          className="cursor-pointer hover:shadow-md transition-all duration-200 active:scale-[0.99]"
+          onClick={() => navigate('/painel/assinatura')}
+        >
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'var(--primary-gradient)' }}>
+              <CreditCard className="h-5 w-5 text-primary-foreground" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-medium">Assinatura</h3>
+              <p className="text-sm text-muted-foreground">Gerencie seu plano</p>
+            </div>
+            <ChevronRight className="h-5 w-5 text-muted-foreground" />
           </CardContent>
         </Card>
       )}

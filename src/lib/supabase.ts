@@ -4,7 +4,7 @@ export { supabase };
 
 // Role types
 export type AppRole = 'master' | 'barber';
-export type PlanType = 'basic' | 'pro' | 'advanced';
+export type PlanType = 'basic' | 'plus' | 'pro' | 'studio' | 'rede';
 
 // Types based on database schema
 export interface Barbershop {
@@ -15,6 +15,9 @@ export interface Barbershop {
   plan: PlanType;
   max_barbers: number;
   onboarding_completed: boolean;
+  subscription_active: boolean;
+  trial_started_at: string | null;
+  trial_ends_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -123,13 +126,17 @@ export const DAY_NAMES = [
 export const DAY_NAMES_SHORT = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
 export const PLAN_LIMITS: Record<PlanType, number> = {
-  basic: 3,
-  pro: 10,
-  advanced: 50,
+  basic: 1,
+  plus: 3,
+  pro: 6,
+  studio: 12,
+  rede: 20,
 };
 
 export const PLAN_NAMES: Record<PlanType, string> = {
-  basic: 'Básico',
-  pro: 'Profissional',
-  advanced: 'Avançado',
+  basic: 'Basic',
+  plus: 'Plus',
+  pro: 'Pro',
+  studio: 'Studio',
+  rede: 'Rede',
 };

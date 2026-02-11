@@ -3,6 +3,7 @@ import { useOutletContext, useNavigate } from 'react-router-dom';
 import { supabase, Appointment, Barber, Barbershop } from '@/lib/supabase';
 import { useRealtimeAppointments } from '@/hooks/useRealtimeAppointments';
 import { useBarbershopBarbers } from '@/hooks/useBarbershopBarbers';
+import { useSubscription } from '@/hooks/useSubscription';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
@@ -93,6 +94,7 @@ const Agenda = () => {
   const { barber, barbershop, isMaster } = useOutletContext<ContextType>();
   const navigate = useNavigate();
   const { barbers } = useBarbershopBarbers();
+  const { checkCanPerformAction } = useSubscription();
 
   const canViewOthers = isMaster || barber?.permissions?.can_view_others_schedule === true;
   const canCreateForOthers = isMaster || barber?.permissions?.can_edit_others_schedule === true;
@@ -101,6 +103,11 @@ const Agenda = () => {
   const [selectedDate, setSelectedDate] = useState(startOfDay(new Date()));
   const [viewMode, setViewMode] = useState<ViewMode>('daily');
   const [showManualDialog, setShowManualDialog] = useState(false);
+
+  const handleOpenManualDialog = () => {
+    if (!checkCanPerformAction('create_appointment')) return;
+    setShowManualDialog(true);
+  };
   
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [showDetailsSheet, setShowDetailsSheet] = useState(false);
@@ -175,6 +182,7 @@ const Agenda = () => {
   };
 
   const handleStatusChange = async (id: string, status: 'confirmed' | 'completed' | 'cancelled') => {
+    if (status === 'completed' && !checkCanPerformAction('complete_appointment')) return;
     const { error } = await supabase
       .from('appointments')
       .update({ status })
@@ -451,7 +459,7 @@ const Agenda = () => {
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={() => setShowManualDialog(true)}
+                    onClick={() => handleOpenManualDialog()}
                     className="text-xs h-8 px-4 border-primary/30 text-primary hover:bg-primary/5"
                   >
                     <Sparkles className="h-3.5 w-3.5 mr-1.5" />
@@ -552,7 +560,7 @@ const Agenda = () => {
 
       {/* Floating Action Button */}
       <FloatingActionButton
-        onNewAppointment={() => setShowManualDialog(true)}
+        onNewAppointment={() => handleOpenManualDialog()}
         onNewBlock={() => navigate('/painel/bloqueios')}
       />
     </div>
