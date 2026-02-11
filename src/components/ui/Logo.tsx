@@ -11,15 +11,15 @@ interface LogoProps {
 
 export function Logo({ className, size = 'md', linkTo = '/', showText = true }: LogoProps) {
   const sizeClasses = {
-    sm: 'text-2xl',
-    md: 'text-3xl',
-    lg: 'text-5xl',
+    sm: 'text-xl',
+    md: 'text-2xl',
+    lg: 'text-4xl',
   };
 
   const imgSizes = {
-    sm: 200,
-    md: 260,
-    lg: 340,
+    sm: 44,
+    md: 56,
+    lg: 80,
   };
 
   const content = (
