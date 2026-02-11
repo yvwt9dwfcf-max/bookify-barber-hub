@@ -17,9 +17,9 @@ export function Logo({ className, size = 'md', linkTo = '/', showText = true }: 
   };
 
   const imgSizes = {
-    sm: 120,
-    md: 150,
-    lg: 200,
+    sm: 200,
+    md: 260,
+    lg: 340,
   };
 
   const content = (
