@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useBarbershopBarbers } from '@/hooks/useBarbershopBarbers';
+import { useSubscription } from '@/hooks/useSubscription';
 import { supabase, Barber, BarberPermissions, PLAN_NAMES } from '@/lib/supabase';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -38,6 +40,8 @@ interface BarberWithPermissions extends Barber {
 const Barbeiros = () => {
   const { barbershop, isMaster } = useUserRole();
   const { barbers, loading, canAddMore, currentCount, maxBarbers, refetch } = useBarbershopBarbers();
+  const { checkCanPerformAction, checkBarberLimit } = useSubscription();
+  const navigate = useNavigate();
   
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showPermissionsDialog, setShowPermissionsDialog] = useState(false);
@@ -63,6 +67,8 @@ const Barbeiros = () => {
 
   const handleAddBarber = async () => {
     if (!barbershop || !isMaster) return;
+    if (!checkCanPerformAction('create_barber')) return;
+    if (!checkBarberLimit(currentCount)) return;
 
     if (!newBarberName.trim() || !newBarberEmail.trim()) {
       toast.error('Preencha nome e email');
