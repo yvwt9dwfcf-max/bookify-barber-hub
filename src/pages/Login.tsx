@@ -206,6 +206,9 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
 
                 <TabsContent value="signup">
                   <form onSubmit={handleSignup} className="space-y-4">
+                    <div className="rounded-lg bg-primary/10 text-primary text-sm p-3 text-center font-medium">
+                      Teste grátis por 3 dias. Após isso, escolha um plano para continuar.
+                    </div>
                     <div className="space-y-2">
                       <Label htmlFor="signup-email">Email *</Label>
                       <div className="relative">
