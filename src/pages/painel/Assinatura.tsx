@@ -7,56 +7,13 @@ import { Badge } from '@/components/ui/badge';
 import { Check, Users, Sparkles, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { PLANS } from '@/lib/plans';
 
 interface ContextType {
   barber: Barber | null;
   barbershop: Barbershop | null;
   isMaster: boolean;
 }
-
-const PLANS = [
-  {
-    id: 'basic',
-    name: 'Basic',
-    barbers: 1,
-    label: '1 barbeiro',
-    maxBarbers: 1,
-    features: ['Agenda completa', 'Link de agendamento', 'Relatórios básicos'],
-  },
-  {
-    id: 'plus',
-    name: 'Plus',
-    barbers: 3,
-    label: 'até 3 barbeiros',
-    maxBarbers: 3,
-    features: ['Tudo do Basic', 'Gestão de equipe', 'Permissões por barbeiro'],
-  },
-  {
-    id: 'pro',
-    name: 'Pro',
-    barbers: 6,
-    label: 'até 6 barbeiros',
-    maxBarbers: 6,
-    popular: true,
-    features: ['Tudo do Plus', 'Relatórios avançados', 'Bloqueios de horário'],
-  },
-  {
-    id: 'studio',
-    name: 'Studio',
-    barbers: 12,
-    label: 'até 12 barbeiros',
-    maxBarbers: 12,
-    features: ['Tudo do Pro', 'Gestão completa', 'Suporte prioritário'],
-  },
-  {
-    id: 'rede',
-    name: 'Rede',
-    barbers: 20,
-    label: 'acima de 12 barbeiros',
-    maxBarbers: 20,
-    features: ['Tudo do Studio', 'Múltiplas unidades', 'Dashboard consolidado'],
-  },
-];
 
 const Assinatura = () => {
   const { barbershop, isMaster } = useOutletContext<ContextType>();

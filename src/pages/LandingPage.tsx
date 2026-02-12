@@ -6,6 +6,7 @@ import {
   Calendar, Clock, Users, Smartphone, BarChart3, Shield, 
   ArrowRight, CheckCircle, Zap, Globe
 } from 'lucide-react';
+import { PLANS } from '@/lib/plans';
 
 const features = [
   {
@@ -37,33 +38,6 @@ const features = [
     icon: Shield,
     title: 'Seguro e Confiável',
     description: 'Seus dados protegidos com criptografia e backups automáticos.',
-  },
-];
-
-const plans = [
-  {
-    name: 'Básico',
-    price: 'Grátis',
-    period: '',
-    description: 'Para começar',
-    features: ['1 barbeiro', 'Agendamento online', 'Agenda diária', 'Link de agendamento'],
-    highlighted: false,
-  },
-  {
-    name: 'Profissional',
-    price: 'R$ 49',
-    period: '/mês',
-    description: 'Mais popular',
-    features: ['Até 5 barbeiros', 'Tudo do Básico', 'Relatórios completos', 'WhatsApp integrado', 'Suporte prioritário'],
-    highlighted: true,
-  },
-  {
-    name: 'Estúdio',
-    price: 'R$ 99',
-    period: '/mês',
-    description: 'Para grandes equipes',
-    features: ['Barbeiros ilimitados', 'Tudo do Profissional', 'Multi-unidades', 'API personalizada', 'Gerente dedicado'],
-    highlighted: false,
   },
 ];
 
@@ -102,7 +76,7 @@ const LandingPage = () => {
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-8 animate-fade-in">
             <Zap className="h-4 w-4" />
-            <span>A plataforma #1 para barbearias</span>
+            <span>Teste grátis por 3 dias. Sem cartão de crédito.</span>
           </div>
 
           {/* Heading */}
@@ -124,7 +98,7 @@ const LandingPage = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in" style={{ animationDelay: '0.3s' }}>
             <Link to="/register">
               <Button size="lg" className="btn-primary-gradient text-base px-8 py-6 rounded-xl shadow-xl shadow-primary/20 hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300">
-                Começar grátis
+                Começar teste grátis
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
@@ -134,7 +108,6 @@ const LandingPage = () => {
               </Button>
             </a>
           </div>
-
         </div>
       </section>
 
@@ -182,34 +155,33 @@ const LandingPage = () => {
               Planos simples e transparentes
             </h2>
             <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-              Escolha o plano ideal para o tamanho da sua barbearia.
+              Escolha o plano ideal para o tamanho da sua barbearia. Teste grátis por 3 dias.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-            {plans.map((plan) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+            {PLANS.map((plan) => (
               <Card 
-                key={plan.name}
+                key={plan.id}
                 className={`relative overflow-hidden transition-all duration-300 hover:-translate-y-1 ${
-                  plan.highlighted 
+                  plan.popular 
                     ? 'border-primary shadow-xl shadow-primary/10 scale-[1.02] md:scale-105' 
                     : 'border-border/50 hover:shadow-lg'
                 }`}
               >
-                {plan.highlighted && (
+                {plan.popular && (
                   <div className="absolute top-0 left-0 right-0 h-1" style={{ background: 'var(--primary-gradient)' }} />
                 )}
                 <CardContent className="p-6 md:p-8">
-                  {plan.highlighted && (
+                  {plan.popular && (
                     <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold mb-4 badge-gradient">
                       Mais popular
                     </span>
                   )}
                   <h3 className="text-xl font-bold mb-1">{plan.name}</h3>
-                  <p className="text-sm text-muted-foreground mb-4">{plan.description}</p>
-                  <div className="flex items-baseline gap-1 mb-6">
-                    <span className="text-4xl font-extrabold">{plan.price}</span>
-                    {plan.period && <span className="text-muted-foreground text-sm">{plan.period}</span>}
+                  <div className="flex items-center gap-1.5 text-muted-foreground mb-6">
+                    <Users className="h-4 w-4" />
+                    <span className="text-sm font-medium">{plan.label}</span>
                   </div>
                   <ul className="space-y-3 mb-8">
                     {plan.features.map((feat) => (
@@ -221,10 +193,10 @@ const LandingPage = () => {
                   </ul>
                   <Link to="/register">
                     <Button 
-                      className={`w-full rounded-xl ${plan.highlighted ? 'btn-primary-gradient' : ''}`}
-                      variant={plan.highlighted ? 'default' : 'outline'}
+                      className={`w-full rounded-xl ${plan.popular ? 'btn-primary-gradient' : ''}`}
+                      variant={plan.popular ? 'default' : 'outline'}
                     >
-                      Começar agora
+                      Começar teste grátis
                     </Button>
                   </Link>
                 </CardContent>
@@ -245,11 +217,11 @@ const LandingPage = () => {
                 Pronto para transformar sua barbearia?
               </h2>
               <p className="text-primary-foreground/80 text-lg mb-8 max-w-lg mx-auto">
-                Junte-se a centenas de profissionais que já modernizaram seus negócios.
+                Teste grátis por 3 dias. Sem cartão de crédito. Cancele quando quiser.
               </p>
               <Link to="/register">
                 <Button size="lg" variant="secondary" className="text-base px-8 py-6 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300">
-                  Criar minha conta grátis
+                  Começar teste grátis
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
