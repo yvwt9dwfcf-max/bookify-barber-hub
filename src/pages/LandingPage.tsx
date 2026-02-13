@@ -179,6 +179,10 @@ const LandingPage = () => {
                     </span>
                   )}
                   <h3 className="text-xl font-bold mb-1">{plan.name}</h3>
+                  <div className="mb-4">
+                    <span className="text-3xl font-extrabold">R$ {plan.price.toFixed(2).replace('.', ',')}</span>
+                    <span className="text-muted-foreground text-sm">/mês</span>
+                  </div>
                   <div className="flex items-center gap-1.5 text-muted-foreground mb-6">
                     <Users className="h-4 w-4" />
                     <span className="text-sm font-medium">{plan.label}</span>

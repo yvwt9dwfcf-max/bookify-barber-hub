@@ -117,7 +117,11 @@ const Assinatura = () => {
                       </Badge>
                     )}
                   </div>
-                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                  <div className="mt-2">
+                    <span className="text-2xl font-extrabold">R$ {plan.price.toFixed(2).replace('.', ',')}</span>
+                    <span className="text-muted-foreground text-sm">/mês</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-muted-foreground mt-1">
                     <Users className="h-3.5 w-3.5" />
                     <span className="text-sm font-medium">{plan.label}</span>
                   </div>
