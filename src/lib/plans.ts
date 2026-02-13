@@ -4,6 +4,7 @@ export interface Plan {
   barbers: number;
   label: string;
   maxBarbers: number;
+  price: number;
   popular?: boolean;
   features: string[];
 }
@@ -15,6 +16,7 @@ export const PLANS: Plan[] = [
     barbers: 1,
     label: '1 barbeiro',
     maxBarbers: 1,
+    price: 29.9,
     features: ['Agenda completa', 'Link de agendamento', 'Relatórios básicos'],
   },
   {
@@ -23,6 +25,7 @@ export const PLANS: Plan[] = [
     barbers: 3,
     label: 'até 3 barbeiros',
     maxBarbers: 3,
+    price: 59.9,
     features: ['Tudo do Basic', 'Gestão de equipe', 'Permissões por barbeiro'],
   },
   {
@@ -31,6 +34,7 @@ export const PLANS: Plan[] = [
     barbers: 6,
     label: 'até 6 barbeiros',
     maxBarbers: 6,
+    price: 89.9,
     popular: true,
     features: ['Tudo do Plus', 'Relatórios avançados', 'Bloqueios de horário'],
   },
@@ -40,6 +44,7 @@ export const PLANS: Plan[] = [
     barbers: 12,
     label: 'até 12 barbeiros',
     maxBarbers: 12,
+    price: 149.9,
     features: ['Tudo do Pro', 'Gestão completa', 'Suporte prioritário'],
   },
   {
@@ -48,6 +53,7 @@ export const PLANS: Plan[] = [
     barbers: 20,
     label: 'acima de 12 barbeiros',
     maxBarbers: 20,
+    price: 249.9,
     features: ['Tudo do Studio', 'Múltiplas unidades', 'Dashboard consolidado'],
   },
 ];
