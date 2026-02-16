@@ -243,7 +243,7 @@ const Relatorios = () => {
     }));
   }, [topServices]);
 
-  const PIE_COLORS = ['#10b981', '#059669', '#34d399', '#6ee7b7', '#a7f3d0'];
+  const PIE_COLORS = ['#2563EB', '#F59E0B', '#10B981', '#EF4444', '#8B5CF6'];
 
   // Calculate barber performance
   const barberPerformance = useMemo(() => {

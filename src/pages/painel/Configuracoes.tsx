@@ -8,8 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { User, Phone, Mail, Loader2, Save, Building2, Crown, Link2, Copy, CheckCircle, CreditCard, ChevronRight } from 'lucide-react';
+import { User, Phone, Mail, Loader2, Save, Building2, Crown, Link2, Copy, CheckCircle, CreditCard, ChevronRight, Sun, Moon } from 'lucide-react';
 import { toast } from 'sonner';
+import { Switch } from '@/components/ui/switch';
 
 interface ContextType {
   barber: Barber | null;
@@ -25,6 +26,23 @@ const Configuracoes = () => {
   
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const saved = localStorage.getItem('bookify-theme');
+    if (saved) return saved === 'dark';
+    return !document.documentElement.classList.contains('light');
+  });
+
+  const handleToggleTheme = (checked: boolean) => {
+    const dark = !checked;
+    setIsDarkMode(dark);
+    if (dark) {
+      document.documentElement.classList.remove('light');
+      localStorage.setItem('bookify-theme', 'dark');
+    } else {
+      document.documentElement.classList.add('light');
+      localStorage.setItem('bookify-theme', 'light');
+    }
+  };
 
   const [name, setName] = useState(barber?.name || '');
   const [phone, setPhone] = useState(barber?.phone || '');
@@ -165,6 +183,24 @@ const Configuracoes = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Theme Toggle */}
+      <Card>
+        <CardContent className="p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-accent">
+            {isDarkMode ? <Moon className="h-5 w-5 text-accent-foreground" /> : <Sun className="h-5 w-5 text-accent-foreground" />}
+          </div>
+          <div className="flex-1">
+            <h3 className="font-medium">Tema</h3>
+            <p className="text-sm text-muted-foreground">{isDarkMode ? 'Modo escuro' : 'Modo claro'}</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Moon className="h-4 w-4 text-muted-foreground" />
+            <Switch checked={!isDarkMode} onCheckedChange={handleToggleTheme} />
+            <Sun className="h-4 w-4 text-muted-foreground" />
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Profile Card */}
       <Card>
