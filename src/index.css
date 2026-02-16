@@ -2,134 +2,101 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Bookify Design System - Sistema de Agendamento para Barbearias */
+/* Bookify Design System - Premium Modern */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 @layer base {
   :root {
-    /* Cores principais - Verde Esmeralda */
-    --background: 0 0% 99%;
-    --foreground: 220 20% 10%;
+    /* Paleta Premium - Azul Profundo */
+    --background: 222 47% 11%; /* #0F172A */
+    --foreground: 210 40% 96%; /* #F1F5F9 */
 
-    --card: 0 0% 100%;
-    --card-foreground: 220 20% 10%;
+    --card: 217 33% 17%; /* #1E293B */
+    --card-foreground: 210 40% 96%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 20% 10%;
+    --popover: 217 33% 17%;
+    --popover-foreground: 210 40% 96%;
 
-    /* Verde Esmeralda como Primary */
-    --primary: 160 84% 39%;
+    /* Azul médio como Primary */
+    --primary: 217 91% 60%; /* #2563EB */
     --primary-foreground: 0 0% 100%;
-    
-    /* Cores do degradê para uso em gradientes */
-    --primary-gradient-start: 160 84% 39%; /* #10b981 */
-    --primary-gradient-end: 158 82% 31%; /* #059669 */
 
-    /* Cinza suave */
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 220 20% 10%;
+    /* Gradiente azul profundo */
+    --primary-gradient-start: 217 91% 60%; /* #2563EB */
+    --primary-gradient-end: 224 76% 33%; /* #1E3A8A */
 
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 10% 46%;
+    --secondary: 217 33% 22%;
+    --secondary-foreground: 210 40% 96%;
 
-    --accent: 160 60% 95%;
-    --accent-foreground: 160 84% 25%;
+    --muted: 217 33% 22%;
+    --muted-foreground: 215 20% 65%; /* #94A3B8 */
+
+    --accent: 217 91% 20%;
+    --accent-foreground: 217 91% 75%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Success - Verde mais claro */
-    --success: 160 84% 39%;
+    /* Success - Verde para ações positivas */
+    --success: 160 84% 39%; /* #10B981 */
     --success-foreground: 0 0% 100%;
 
     /* Warning */
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
 
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 160 84% 39%;
+    --border: 217 33% 25%;
+    --input: 217 33% 25%;
+    --ring: 217 91% 60%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem; /* 8px */
 
-    /* Sidebar - Grafite escuro #111827 */
-    --sidebar-background: 222 47% 11%;
-    --sidebar-foreground: 220 14% 96%;
-    --sidebar-primary: 160 84% 39%;
+    /* Sidebar */
+    --sidebar-background: 222 47% 8%;
+    --sidebar-foreground: 210 40% 96%;
+    --sidebar-primary: 217 91% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 222 47% 16%;
-    --sidebar-accent-foreground: 220 14% 96%;
-    --sidebar-border: 222 47% 16%;
-    --sidebar-ring: 160 84% 39%;
+    --sidebar-accent: 222 47% 14%;
+    --sidebar-accent-foreground: 210 40% 96%;
+    --sidebar-border: 222 47% 14%;
+    --sidebar-ring: 217 91% 60%;
 
     /* Custom */
-    --hero-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    --primary-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    --hero-gradient: linear-gradient(135deg, #2563EB 0%, #1E3A8A 100%);
+    --primary-gradient: linear-gradient(135deg, #2563EB 0%, #1E3A8A 100%);
+    --success-gradient: linear-gradient(135deg, #10B981 0%, #059669 100%);
     
     /* Sombras */
-    --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-    --card-shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.08);
+    --card-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+    --card-shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.35);
     
     /* Glow para seleção */
-    --selection-glow: 0 0 0 2px hsl(160 84% 39% / 0.2);
-    --selection-border: hsl(160 84% 39%);
+    --selection-glow: 0 0 0 2px hsl(217 91% 60% / 0.3);
+    --selection-border: hsl(217 91% 60%);
   }
 
-  .dark {
-    --background: 220 20% 10%;
-    --foreground: 220 14% 96%;
-
-    --card: 220 20% 14%;
-    --card-foreground: 220 14% 96%;
-
-    --popover: 220 20% 14%;
-    --popover-foreground: 220 14% 96%;
-
-    --primary: 160 84% 45%;
-    --primary-foreground: 220 20% 10%;
-    
-    --primary-gradient-start: 160 84% 45%;
-    --primary-gradient-end: 158 82% 35%;
-
-    --secondary: 220 20% 18%;
-    --secondary-foreground: 220 14% 96%;
-
-    --muted: 220 20% 18%;
-    --muted-foreground: 220 10% 60%;
-
-    --accent: 160 60% 20%;
-    --accent-foreground: 160 84% 75%;
-
-    --destructive: 0 62% 50%;
-    --destructive-foreground: 0 0% 100%;
-
-    --success: 160 84% 45%;
-    --success-foreground: 220 20% 10%;
-
-    --warning: 38 92% 50%;
-    --warning-foreground: 220 20% 10%;
-
-    --border: 220 20% 22%;
-    --input: 220 20% 22%;
-    --ring: 160 84% 45%;
-
-    /* Sidebar dark */
-    --sidebar-background: 222 47% 8%;
-    --sidebar-foreground: 220 14% 96%;
-    --sidebar-primary: 160 84% 45%;
-    --sidebar-primary-foreground: 220 20% 10%;
-    --sidebar-accent: 222 47% 14%;
-    --sidebar-accent-foreground: 220 14% 96%;
-    --sidebar-border: 222 47% 14%;
-    --sidebar-ring: 160 84% 45%;
-
-    --hero-gradient: linear-gradient(135deg, hsl(160, 84%, 45%) 0%, hsl(160, 70%, 35%) 100%);
-    --primary-gradient: linear-gradient(135deg, hsl(160, 84%, 45%) 0%, hsl(160, 70%, 35%) 100%);
-    --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-    --card-shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.25);
-    --selection-glow: 0 0 0 2px hsl(160 84% 45% / 0.3);
-    --selection-border: hsl(160 84% 45%);
+  /* Light mode override (caso necessário no futuro) */
+  .light {
+    --background: 0 0% 99%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 20% 46%;
+    --accent: 217 91% 95%;
+    --accent-foreground: 217 91% 30%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 217 91% 60%;
+    --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    --card-shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.1);
   }
 }
 
@@ -150,14 +117,10 @@
   h1, h2, h3, h4, h5, h6 {
     @apply font-semibold tracking-tight;
   }
-
-  .font-display {
-    font-family: 'Playfair Display', serif;
-  }
 }
 
 @layer components {
-  /* Botão com degradê principal */
+  /* Botão com degradê principal - Azul */
   .btn-primary-gradient {
     background: var(--primary-gradient);
     @apply text-primary-foreground font-semibold shadow-lg transition-all duration-250 ease-out;
@@ -165,11 +128,22 @@
   
   .btn-primary-gradient:hover {
     @apply shadow-xl;
-    filter: brightness(1.05);
+    filter: brightness(1.1);
   }
   
   .btn-primary-gradient:active {
     transform: scale(0.985);
+  }
+
+  /* Botão success - Verde */
+  .btn-success-gradient {
+    background: var(--success-gradient);
+    @apply text-white font-semibold shadow-lg transition-all duration-250 ease-out;
+  }
+  
+  .btn-success-gradient:hover {
+    @apply shadow-xl;
+    filter: brightness(1.1);
   }
 
   /* Card com sombra padrão */
@@ -196,13 +170,13 @@
     transform: scale(0.985);
   }
 
-  /* Estado selecionado com borda verde e glow */
+  /* Estado selecionado com borda azul e glow */
   .selected-state {
     border: 2px solid var(--selection-border);
     box-shadow: var(--selection-glow);
   }
 
-  /* Card hover legado (mantido para compatibilidade) */
+  /* Card hover legado */
   .card-hover {
     @apply transition-all duration-250 ease-out;
     box-shadow: var(--card-shadow);
@@ -213,15 +187,15 @@
     @apply -translate-y-1;
   }
 
-  /* Efeito glassmorphism */
+  /* Efeito glassmorphism - escuro */
   .glass-effect {
-    @apply bg-white/80 border border-white/20;
+    @apply bg-card/80 border border-border/30;
   }
   
-  @supports (backdrop-filter: blur(8px)) {
+  @supports (backdrop-filter: blur(12px)) {
     .glass-effect {
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
     }
   }
 
@@ -241,7 +215,6 @@
     @apply px-4 sm:px-6 lg:px-8;
   }
 
-  /* Botão interativo com escala */
   .btn-interactive {
     @apply transition-all duration-250 ease-out;
   }
@@ -250,7 +223,6 @@
     transform: scale(0.985);
   }
 
-  /* Item de lista interativo */
   .list-item-interactive {
     @apply transition-all duration-250 ease-out;
   }
@@ -259,14 +231,19 @@
     transform: scale(0.985);
   }
 
-  /* Badge com degradê */
+  /* Badge com degradê azul */
   .badge-gradient {
     background: var(--primary-gradient);
     @apply text-primary-foreground;
   }
+
+  /* Badge success verde */
+  .badge-success {
+    background: var(--success-gradient);
+    @apply text-white;
+  }
 }
 
-/* Utility para transições suaves globais em componentes interativos */
 @layer utilities {
   .transition-interactive {
     transition-property: transform, box-shadow, background-color, border-color, opacity;
