@@ -41,7 +41,6 @@ export function BookingFlow({ preselectedBarber, barbershopId, availableBarbers 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Define steps based on whether barber is preselected
   const steps: BookingStep[] = preselectedBarber 
     ? ['service', 'datetime', 'info', 'confirmation']
     : ['barber', 'service', 'datetime', 'info', 'confirmation'];
@@ -75,7 +74,6 @@ export function BookingFlow({ preselectedBarber, barbershopId, availableBarbers 
       const startTime = bookingData.dateTime;
       const endTime = new Date(startTime.getTime() + bookingData.service.duration_minutes * 60000);
 
-      // Check for conflicts
       const { data: conflicts } = await supabase
         .from('appointments')
         .select('id')
@@ -151,14 +149,14 @@ export function BookingFlow({ preselectedBarber, barbershopId, availableBarbers 
     <div className="w-full max-w-2xl mx-auto px-2">
       <StepIndicator currentStep={step} />
       
-      <Card className="mt-10 bg-white/70 dark:bg-card/70 backdrop-blur-[10px] border border-white/20 dark:border-border/30 shadow-xl rounded-2xl">
-        <CardContent className="p-8 md:p-10">
+      <Card className="mt-8 bg-card/80 backdrop-blur-sm border border-border/30 shadow-xl rounded-2xl">
+        <CardContent className="p-6 md:p-8">
           {currentStepIndex > 0 && step !== 'confirmation' && (
             <Button
               variant="ghost"
               size="sm"
               onClick={goBack}
-              className="mb-6 -ml-2 transition-all duration-200 ease-out hover:-translate-y-0.5 active:scale-95"
+              className="mb-6 -ml-2 transition-all duration-200 ease-out hover:-translate-y-0.5 active:scale-95 rounded-xl"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
               Voltar
@@ -166,7 +164,7 @@ export function BookingFlow({ preselectedBarber, barbershopId, availableBarbers 
           )}
 
           {error && (
-            <div className="mb-6 p-4 bg-destructive/10 text-destructive rounded-xl text-sm">
+            <div className="mb-6 p-4 bg-destructive/10 text-destructive rounded-xl text-sm border border-destructive/20">
               {error}
             </div>
           )}

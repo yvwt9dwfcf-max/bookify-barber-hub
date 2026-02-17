@@ -71,37 +71,45 @@ export function CustomerInfo({ onSubmit, isSubmitting, bookingData }: CustomerIn
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold">Seus dados</h2>
+        <h2 className="text-xl font-bold">Seus dados</h2>
         <p className="text-muted-foreground text-sm mt-1">
           Preencha suas informações para confirmar o agendamento
         </p>
       </div>
 
       {/* Booking Summary */}
-      <div className="bg-accent/50 rounded-xl p-4 space-y-3">
-        <h3 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">
+      <div className="bg-accent/30 border border-border/30 rounded-xl p-4 space-y-3">
+        <h3 className="font-semibold text-xs text-muted-foreground uppercase tracking-wider">
           Resumo do agendamento
         </h3>
-        <div className="space-y-2">
+        <div className="space-y-2.5">
           {bookingData.barber && (
-            <div className="flex items-center gap-2 text-sm">
-              <User className="h-4 w-4 text-primary" />
-              <span>{bookingData.barber.name}</span>
+            <div className="flex items-center gap-2.5 text-sm">
+              <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
+                <User className="h-3.5 w-3.5 text-primary" />
+              </div>
+              <span className="font-medium">{bookingData.barber.name}</span>
             </div>
           )}
           {bookingData.service && (
-            <div className="flex items-center gap-2 text-sm">
-              <Scissors className="h-4 w-4 text-primary" />
-              <span>{bookingData.service.name}</span>
-              <span className="text-muted-foreground">
-                ({bookingData.service.duration_minutes} min - {formatPrice(Number(bookingData.service.price))})
-              </span>
+            <div className="flex items-center gap-2.5 text-sm">
+              <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Scissors className="h-3.5 w-3.5 text-primary" />
+              </div>
+              <div>
+                <span className="font-medium">{bookingData.service.name}</span>
+                <span className="text-muted-foreground ml-2 text-xs">
+                  {bookingData.service.duration_minutes} min · {formatPrice(Number(bookingData.service.price))}
+                </span>
+              </div>
             </div>
           )}
           {bookingData.dateTime && (
-            <div className="flex items-center gap-2 text-sm">
-              <Calendar className="h-4 w-4 text-primary" />
-              <span>
+            <div className="flex items-center gap-2.5 text-sm">
+              <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Calendar className="h-3.5 w-3.5 text-primary" />
+              </div>
+              <span className="font-medium capitalize">
                 {format(bookingData.dateTime, "EEEE, d 'de' MMMM 'às' HH:mm", { locale: ptBR })}
               </span>
             </div>
@@ -109,9 +117,9 @@ export function CustomerInfo({ onSubmit, isSubmitting, bookingData }: CustomerIn
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-5">
         <div className="space-y-2">
-          <Label htmlFor="name">Nome completo</Label>
+          <Label htmlFor="name" className="font-semibold text-sm">Nome completo</Label>
           <div className="relative">
             <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -120,7 +128,7 @@ export function CustomerInfo({ onSubmit, isSubmitting, bookingData }: CustomerIn
               placeholder="Digite seu nome"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className={`pl-10 ${errors.name ? 'border-destructive' : ''}`}
+              className={`pl-10 h-12 rounded-xl ${errors.name ? 'border-destructive' : ''}`}
               maxLength={100}
             />
           </div>
@@ -130,7 +138,7 @@ export function CustomerInfo({ onSubmit, isSubmitting, bookingData }: CustomerIn
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="phone">Telefone</Label>
+          <Label htmlFor="phone" className="font-semibold text-sm">Telefone</Label>
           <div className="relative">
             <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -139,7 +147,7 @@ export function CustomerInfo({ onSubmit, isSubmitting, bookingData }: CustomerIn
               placeholder="(00) 00000-0000"
               value={phone}
               onChange={handlePhoneChange}
-              className={`pl-10 ${errors.phone ? 'border-destructive' : ''}`}
+              className={`pl-10 h-12 rounded-xl ${errors.phone ? 'border-destructive' : ''}`}
               maxLength={15}
             />
           </div>
@@ -150,17 +158,17 @@ export function CustomerInfo({ onSubmit, isSubmitting, bookingData }: CustomerIn
 
         <Button
           type="submit"
-          className="w-full btn-primary-gradient"
+          className="w-full btn-primary-gradient h-14 text-base font-bold rounded-xl shadow-lg active:scale-[0.98] transition-all"
           size="lg"
           disabled={isSubmitting}
         >
           {isSubmitting ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
               Confirmando...
             </>
           ) : (
-            'Confirmar agendamento'
+            'Confirmar Agendamento'
           )}
         </Button>
       </form>

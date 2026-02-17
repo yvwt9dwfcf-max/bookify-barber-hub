@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase, Service, Barber } from '@/lib/supabase';
+import { supabase, Service } from '@/lib/supabase';
 import { Scissors, Clock, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -19,7 +19,6 @@ export function ServiceSelection({ barberId, onSelect }: ServiceSelectionProps) 
 
   const fetchServices = async () => {
     try {
-      // Primeiro, buscar o barbershop_id do barbeiro
       const { data: barberData, error: barberError } = await supabase
         .from('barbers')
         .select('barbershop_id')
@@ -34,7 +33,6 @@ export function ServiceSelection({ barberId, onSelect }: ServiceSelectionProps) 
         return;
       }
 
-      // Buscar serviços que o barbeiro atende através da tabela de junção
       const { data: barberServicesData, error: bsError } = await supabase
         .from('barber_services')
         .select('service_id')
@@ -45,7 +43,6 @@ export function ServiceSelection({ barberId, onSelect }: ServiceSelectionProps) 
       const serviceIds = (barberServicesData || []).map(bs => bs.service_id);
 
       if (serviceIds.length === 0) {
-        // Se não houver vínculos, buscar todos os serviços ativos da barbearia
         const { data: allServices, error: allError } = await supabase
           .from('services')
           .select('*')
@@ -56,7 +53,6 @@ export function ServiceSelection({ barberId, onSelect }: ServiceSelectionProps) 
         if (allError) throw allError;
         setServices(allServices || []);
       } else {
-        // Buscar serviços pelos IDs vinculados
         const { data: linkedServices, error: linkedError } = await supabase
           .from('services')
           .select('*')
@@ -109,40 +105,43 @@ export function ServiceSelection({ barberId, onSelect }: ServiceSelectionProps) 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold">Escolha o serviço</h2>
+        <h2 className="text-xl font-bold">Escolha o serviço</h2>
         <p className="text-muted-foreground text-sm mt-1">
           Selecione o serviço que deseja
         </p>
       </div>
 
-      <div className="grid gap-4">
+      <div className="grid gap-3">
         {services.map((service) => (
           <button
             key={service.id}
             onClick={() => handleSelect(service)}
             className={cn(
-              'flex items-center gap-5 p-5 rounded-2xl border transition-all duration-200 ease-out text-left',
-              'bg-white/60 dark:bg-card/60 backdrop-blur-[10px]',
-              'shadow-sm hover:shadow-lg',
-              'hover:-translate-y-1 active:scale-[0.98]',
+              'flex items-center gap-4 p-4 rounded-xl border-2 transition-all duration-200 ease-out text-left',
+              'hover:shadow-lg active:scale-[0.98]',
               selected === service.id
                 ? 'border-primary bg-primary/5 dark:bg-primary/10 shadow-md'
-                : 'border-white/30 dark:border-border/40 hover:border-primary/50'
+                : 'border-border/40 hover:border-primary/40 bg-card/60 dark:bg-card/60'
             )}
           >
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <Scissors className="h-6 w-6 text-primary" />
+            <div className={cn(
+              "w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 transition-all",
+              selected === service.id
+                ? "text-primary-foreground"
+                : "bg-primary/10"
+            )}
+              style={selected === service.id ? { background: 'var(--primary-gradient)' } : undefined}
+            >
+              <Scissors className={cn("h-5 w-5", selected === service.id ? "text-primary-foreground" : "text-primary")} />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold">{service.name}</h3>
-              <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
-                <span className="flex items-center gap-1">
-                  <Clock className="h-4 w-4" />
-                  {service.duration_minutes} min
-                </span>
+              <h3 className="font-bold text-sm">{service.name}</h3>
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-1">
+                <Clock className="h-3.5 w-3.5" />
+                <span>{service.duration_minutes} min</span>
               </div>
             </div>
-            <div className="text-right">
+            <div className="text-right shrink-0">
               <span className="text-lg font-bold text-primary">
                 {formatPrice(Number(service.price))}
               </span>

@@ -74,7 +74,7 @@ export function DateTimeSelection({ barberId, serviceDuration, onSelect }: DateT
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-xl font-semibold">Escolha a data e horário</h2>
+        <h2 className="text-xl font-bold">Escolha a data e horário</h2>
         <p className="text-muted-foreground text-sm mt-1">
           Selecione quando deseja ser atendido
         </p>
@@ -87,25 +87,25 @@ export function DateTimeSelection({ barberId, serviceDuration, onSelect }: DateT
           size="icon"
           onClick={goToPreviousWeek}
           disabled={isSameDay(weekStart, startOfDay(new Date()))}
-          className="transition-all duration-200 ease-out hover:-translate-y-0.5 active:scale-95"
+          className="transition-all duration-200 ease-out hover:-translate-y-0.5 active:scale-95 rounded-xl"
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
-        <span className="font-medium">
+        <span className="font-semibold text-sm capitalize">
           {format(weekStart, "MMMM 'de' yyyy", { locale: ptBR })}
         </span>
         <Button 
           variant="outline" 
           size="icon" 
           onClick={goToNextWeek}
-          className="transition-all duration-200 ease-out hover:-translate-y-0.5 active:scale-95"
+          className="transition-all duration-200 ease-out hover:-translate-y-0.5 active:scale-95 rounded-xl"
         >
           <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
 
       {/* Days Grid */}
-      <div className="grid grid-cols-7 gap-3">
+      <div className="grid grid-cols-7 gap-2">
         {days.map((day) => {
           const dayOfWeek = day.getDay();
           const isOpen = !!getOpeningHoursForDay(dayOfWeek);
@@ -119,17 +119,17 @@ export function DateTimeSelection({ barberId, serviceDuration, onSelect }: DateT
               onClick={() => hasSlots && handleDateSelect(day)}
               disabled={!hasSlots}
               className={cn(
-                'flex flex-col items-center p-3 rounded-xl border transition-all duration-200 ease-out',
-                'bg-white/60 dark:bg-card/60 backdrop-blur-[10px]',
-                hasSlots && 'hover:-translate-y-0.5 hover:shadow-md cursor-pointer border-white/30 dark:border-border/40',
-                !hasSlots && 'opacity-40 cursor-not-allowed border-transparent',
-                isSelected && 'bg-primary text-primary-foreground border-primary shadow-md hover:bg-primary'
+                'flex flex-col items-center p-2.5 rounded-xl border-2 transition-all duration-200 ease-out',
+                hasSlots && 'hover:-translate-y-0.5 hover:shadow-md cursor-pointer border-border/30',
+                !hasSlots && 'opacity-40 cursor-not-allowed border-transparent bg-muted/30',
+                isSelected && 'text-primary-foreground border-primary shadow-md hover:border-primary'
               )}
+              style={isSelected ? { background: 'var(--primary-gradient)' } : undefined}
             >
-              <span className="text-xs font-medium uppercase">
+              <span className="text-[10px] font-semibold uppercase">
                 {DAY_NAMES_SHORT[dayOfWeek]}
               </span>
-              <span className="text-lg font-bold mt-1">
+              <span className="text-lg font-bold mt-0.5">
                 {format(day, 'd')}
               </span>
             </button>
@@ -137,11 +137,11 @@ export function DateTimeSelection({ barberId, serviceDuration, onSelect }: DateT
         })}
       </div>
 
-      {/* Time Slots */}
+      {/* Time Slots - GRID */}
       {selectedDate && (
         <div className="space-y-4 animate-fade-in">
-          <h3 className="font-medium flex items-center gap-2">
-            <Clock className="h-4 w-4" />
+          <h3 className="font-semibold text-sm flex items-center gap-2">
+            <Clock className="h-4 w-4 text-primary" />
             Horários disponíveis para {format(selectedDate, "d 'de' MMMM", { locale: ptBR })}
           </h3>
           
@@ -150,19 +150,19 @@ export function DateTimeSelection({ barberId, serviceDuration, onSelect }: DateT
               Nenhum horário disponível para esta data.
             </p>
           ) : (
-            <div className="grid grid-cols-4 sm:grid-cols-6 gap-3">
+            <div className="grid grid-cols-4 sm:grid-cols-5 gap-2.5">
               {availableSlots.map((time) => (
                 <button
                   key={time}
                   onClick={() => handleTimeSelect(time)}
                   className={cn(
-                    'py-3 px-3 rounded-xl border font-medium transition-all duration-200 ease-out',
-                    'bg-white/60 dark:bg-card/60 backdrop-blur-[10px]',
+                    'py-3 px-2 rounded-xl border-2 font-semibold text-sm transition-all duration-200 ease-out',
                     'hover:-translate-y-0.5 hover:shadow-md active:scale-95',
                     selectedTime === time
-                      ? 'border-primary bg-primary text-primary-foreground shadow-md'
-                      : 'border-white/30 dark:border-border/40 hover:border-primary/50'
+                      ? 'border-primary text-primary-foreground shadow-md'
+                      : 'border-border/30 hover:border-primary/40 bg-card/60'
                   )}
+                  style={selectedTime === time ? { background: 'var(--primary-gradient)' } : undefined}
                 >
                   {time}
                 </button>

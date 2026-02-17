@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useOutletContext, useNavigate } from 'react-router-dom';
 import { supabase, Appointment, Barber, Barbershop } from '@/lib/supabase';
 import { useRealtimeAppointments } from '@/hooks/useRealtimeAppointments';
@@ -8,7 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
   Calendar, CalendarDays, ChevronLeft, ChevronRight, 
-  User, Phone, Loader2, CheckCircle2, Clock, Sparkles, CalendarPlus
+  User, Loader2, CheckCircle2, Clock, Sparkles, CalendarPlus
 } from 'lucide-react';
 import { format, addDays, startOfDay, isSameDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -35,12 +35,6 @@ interface ContextType {
 
 type ViewMode = 'daily' | 'monthly';
 
-const getGreeting = () => {
-  const hour = new Date().getHours();
-  if (hour < 12) return 'Bom dia';
-  if (hour < 18) return 'Boa tarde';
-  return 'Boa noite';
-};
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -51,20 +45,20 @@ const getStatusColor = (status: string) => {
     case 'cancelled':
       return 'border-l-destructive bg-destructive/5';
     default:
-      return 'border-l-muted-foreground bg-muted/30';
+      return 'border-l-amber-500 bg-amber-500/5';
   }
 };
 
 const getStatusBadgeColor = (status: string) => {
   switch (status) {
     case 'confirmed':
-      return 'bg-primary/10 text-primary';
+      return 'bg-primary/10 text-primary border border-primary/20';
     case 'completed':
-      return 'bg-emerald-500/10 text-emerald-600';
+      return 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20';
     case 'cancelled':
-      return 'bg-destructive/10 text-destructive';
+      return 'bg-destructive/10 text-destructive border border-destructive/20';
     default:
-      return 'bg-muted text-muted-foreground';
+      return 'bg-amber-500/10 text-amber-600 border border-amber-500/20';
   }
 };
 
@@ -77,7 +71,7 @@ const getStatusLabel = (status: string) => {
     case 'cancelled':
       return 'Cancelado';
     default:
-      return status;
+      return 'Pendente';
   }
 };
 
@@ -90,8 +84,17 @@ const getInitials = (name: string) => {
     .toUpperCase();
 };
 
+// Generate timeline hours
+const generateTimelineHours = () => {
+  const hours: string[] = [];
+  for (let h = 7; h <= 21; h++) {
+    hours.push(`${h.toString().padStart(2, '0')}:00`);
+  }
+  return hours;
+};
+
 const Agenda = () => {
-  const { barber, barbershop, isMaster } = useOutletContext<ContextType>();
+  const { barber, isMaster } = useOutletContext<ContextType>();
   const navigate = useNavigate();
   const { barbers } = useBarbershopBarbers();
   const { checkCanPerformAction } = useSubscription();
@@ -214,6 +217,24 @@ const Agenda = () => {
     return days;
   };
 
+  // Current time indicator
+  const currentHour = new Date().getHours();
+  const currentMinute = new Date().getMinutes();
+  const isToday = isSameDay(selectedDate, new Date());
+
+  // Map appointments to timeline
+  const timelineHours = generateTimelineHours();
+  const appointmentsByHour = useMemo(() => {
+    const map: Record<string, Appointment[]> = {};
+    appointments.forEach(apt => {
+      const hour = format(new Date(apt.start_time), 'HH');
+      const key = `${hour}:00`;
+      if (!map[key]) map[key] = [];
+      map[key].push(apt);
+    });
+    return map;
+  }, [appointments]);
+
   if (loading && !selectedBarberId) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -232,52 +253,46 @@ const Agenda = () => {
     setViewMode('daily');
   };
 
-  const firstName = barber?.name?.split(' ')[0] || 'Barbeiro';
+  
 
   return (
     <div className="space-y-5 pb-24">
-      {/* Greeting Header */}
+      {/* Premium Header */}
       <div className="animate-fade-in">
         <div className="flex items-start justify-between gap-3">
-          <div>
-            <h1 className="text-xl font-bold flex items-center gap-2">
-              {getGreeting()}, {firstName}! 👋
+          <div className="flex-1">
+            {/* Day of week prominent */}
+            <h1 className="text-2xl font-bold capitalize">
+              {format(selectedDate, 'EEEE', { locale: ptBR })}
             </h1>
             <p className="text-sm text-muted-foreground mt-0.5">
-              {isSameDay(selectedDate, new Date()) 
-                ? totalCount > 0
-                  ? `Você tem ${totalCount} agendamento${totalCount > 1 ? 's' : ''} hoje`
-                  : 'Nenhum agendamento para hoje'
-                : format(selectedDate, "EEEE, d 'de' MMMM", { locale: ptBR })
-              }
+              {format(selectedDate, "d 'de' MMMM 'de' yyyy", { locale: ptBR })}
             </p>
           </div>
           
-          {/* View mode toggle */}
-          <div className="flex gap-1.5 shrink-0">
+          {/* Top icons */}
+          <div className="flex items-center gap-1 shrink-0">
             <Button
               variant={viewMode === 'daily' ? 'default' : 'ghost'}
-              size="sm"
+              size="icon"
               onClick={() => setViewMode('daily')}
               className={cn(
-                "h-8 px-3 transition-all active:scale-95",
+                "h-9 w-9 rounded-xl transition-all active:scale-95",
                 viewMode === 'daily' && 'btn-primary-gradient shadow-md'
               )}
             >
-              <Calendar className="h-4 w-4 mr-1.5" />
-              Diário
+              <Calendar className="h-4 w-4" />
             </Button>
             <Button
               variant={viewMode === 'monthly' ? 'default' : 'ghost'}
-              size="sm"
+              size="icon"
               onClick={() => setViewMode('monthly')}
               className={cn(
-                "h-8 px-3 transition-all active:scale-95",
+                "h-9 w-9 rounded-xl transition-all active:scale-95",
                 viewMode === 'monthly' && 'btn-primary-gradient shadow-md'
               )}
             >
-              <CalendarDays className="h-4 w-4 mr-1.5" />
-              Mensal
+              <CalendarDays className="h-4 w-4" />
             </Button>
           </div>
         </div>
@@ -285,7 +300,7 @@ const Agenda = () => {
 
       {/* Barber selector */}
       {canViewOthers && barbers.length > 1 && (
-        <Card className="border-border/50 shadow-sm bg-card/80 backdrop-blur-sm animate-fade-in" style={{ animationDelay: '0.05s' }}>
+        <Card className="border-border/50 shadow-sm bg-card/80 backdrop-blur-sm animate-fade-in rounded-xl" style={{ animationDelay: '0.05s' }}>
           <CardContent className="p-2.5">
             <div className="flex items-center gap-2">
               <User className="h-3.5 w-3.5 text-muted-foreground" />
@@ -338,7 +353,7 @@ const Agenda = () => {
       {viewMode === 'daily' && (
         <>
           {/* Date Navigation */}
-          <Card className="border-border/50 shadow-sm bg-card/80 backdrop-blur-sm overflow-hidden animate-fade-in" style={{ animationDelay: '0.08s' }}>
+          <Card className="border-border/50 shadow-sm bg-card/80 backdrop-blur-sm overflow-hidden animate-fade-in rounded-xl" style={{ animationDelay: '0.08s' }}>
             <CardContent className="p-3">
               <div className="flex items-center justify-between mb-3">
                 <Button
@@ -364,17 +379,17 @@ const Agenda = () => {
               <div className="grid grid-cols-7 gap-1.5">
                 {days.map((day) => {
                   const isSelected = isSameDay(day, selectedDate);
-                  const isToday = isSameDay(day, new Date());
+                  const isDayToday = isSameDay(day, new Date());
                   
                   return (
                     <button
                       key={day.toISOString()}
                       onClick={() => setSelectedDate(day)}
                       className={cn(
-                        'flex flex-col items-center py-1.5 px-1 rounded-lg transition-all duration-200',
+                        'flex flex-col items-center py-1.5 px-1 rounded-xl transition-all duration-200',
                         'hover:bg-accent/50 active:scale-95',
                         isSelected && 'text-primary-foreground hover:bg-primary shadow-md',
-                        isToday && !isSelected && 'ring-1 ring-primary/50'
+                        isDayToday && !isSelected && 'ring-1 ring-primary/50'
                       )}
                       style={{
                         background: isSelected ? 'var(--primary-gradient)' : undefined,
@@ -393,11 +408,10 @@ const Agenda = () => {
 
           {/* Stats Cards */}
           <div className="grid grid-cols-3 gap-3 animate-fade-in" style={{ animationDelay: '0.12s' }}>
-            {/* Total */}
-            <Card className="border-border/50 shadow-sm bg-card/80 backdrop-blur-sm overflow-hidden relative group hover:shadow-md transition-all duration-200">
+            <Card className="border-border/50 shadow-sm bg-card/80 backdrop-blur-sm overflow-hidden relative group hover:shadow-md transition-all duration-200 rounded-xl">
               <div className="absolute top-0 left-0 right-0 h-0.5 bg-muted-foreground/20" />
               <CardContent className="p-3 text-center">
-                <div className="w-8 h-8 rounded-lg mx-auto mb-1.5 flex items-center justify-center bg-muted/60">
+                <div className="w-8 h-8 rounded-xl mx-auto mb-1.5 flex items-center justify-center bg-muted/60">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                 </div>
                 <p className="text-2xl font-bold">{totalCount}</p>
@@ -405,11 +419,10 @@ const Agenda = () => {
               </CardContent>
             </Card>
 
-            {/* Confirmed */}
-            <Card className="border-border/50 shadow-sm bg-card/80 backdrop-blur-sm overflow-hidden relative group hover:shadow-md transition-all duration-200">
+            <Card className="border-border/50 shadow-sm bg-card/80 backdrop-blur-sm overflow-hidden relative group hover:shadow-md transition-all duration-200 rounded-xl">
               <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: 'var(--primary-gradient)' }} />
               <CardContent className="p-3 text-center">
-                <div className="w-8 h-8 rounded-lg mx-auto mb-1.5 flex items-center justify-center bg-primary/10">
+                <div className="w-8 h-8 rounded-xl mx-auto mb-1.5 flex items-center justify-center bg-primary/10">
                   <Clock className="h-4 w-4 text-primary" />
                 </div>
                 <p className="text-2xl font-bold text-primary">{confirmedCount}</p>
@@ -417,11 +430,10 @@ const Agenda = () => {
               </CardContent>
             </Card>
 
-            {/* Completed */}
-            <Card className="border-border/50 shadow-sm bg-card/80 backdrop-blur-sm overflow-hidden relative group hover:shadow-md transition-all duration-200">
+            <Card className="border-border/50 shadow-sm bg-card/80 backdrop-blur-sm overflow-hidden relative group hover:shadow-md transition-all duration-200 rounded-xl">
               <div className="absolute top-0 left-0 right-0 h-0.5 bg-emerald-500" />
               <CardContent className="p-3 text-center">
-                <div className="w-8 h-8 rounded-lg mx-auto mb-1.5 flex items-center justify-center bg-emerald-500/10">
+                <div className="w-8 h-8 rounded-xl mx-auto mb-1.5 flex items-center justify-center bg-emerald-500/10">
                   <CheckCircle2 className="h-4 w-4 text-emerald-600" />
                 </div>
                 <p className="text-2xl font-bold text-emerald-600">{completedCount}</p>
@@ -430,22 +442,14 @@ const Agenda = () => {
             </Card>
           </div>
 
-          {/* Appointments List */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-1.5 px-0.5">
-              <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-              <span className="text-xs font-medium">
-                {format(selectedDate, "EEEE, d 'de' MMMM", { locale: ptBR })}
-              </span>
-            </div>
-
+          {/* Timeline View */}
+          <div className="space-y-0 animate-fade-in" style={{ animationDelay: '0.16s' }}>
             {loading ? (
               <div className="flex items-center justify-center py-8">
                 <Loader2 className="h-5 w-5 animate-spin text-primary" />
               </div>
             ) : appointments.length === 0 ? (
-              /* Empty state - more visual */
-              <Card className="border-border/40 border-dashed shadow-sm bg-card/60 backdrop-blur-sm">
+              <Card className="border-border/40 border-dashed shadow-sm bg-card/60 backdrop-blur-sm rounded-xl">
                 <CardContent className="text-center py-12">
                   <div className="w-16 h-16 rounded-2xl mx-auto flex items-center justify-center mb-4 bg-primary/5">
                     <CalendarPlus className="h-8 w-8 text-primary/40" />
@@ -460,7 +464,7 @@ const Agenda = () => {
                     variant="outline" 
                     size="sm"
                     onClick={() => handleOpenManualDialog()}
-                    className="text-xs h-8 px-4 border-primary/30 text-primary hover:bg-primary/5"
+                    className="text-xs h-8 px-4 border-primary/30 text-primary hover:bg-primary/5 rounded-xl"
                   >
                     <Sparkles className="h-3.5 w-3.5 mr-1.5" />
                     Agendar horário
@@ -468,71 +472,110 @@ const Agenda = () => {
                 </CardContent>
               </Card>
             ) : (
-              <div className="space-y-2">
-                {appointments.map((appointment, index) => (
-                  <Card 
-                    key={appointment.id}
-                    className={cn(
-                      "border-border/40 shadow-sm bg-card/80 backdrop-blur-sm overflow-hidden cursor-pointer",
-                      "transition-all duration-200 animate-fade-in",
-                      "hover:shadow-md hover:border-primary/20 active:scale-[0.99]",
-                      "border-l-[3px]",
-                      getStatusColor(appointment.status),
-                    )}
-                    style={{ animationDelay: `${index * 40}ms` }}
-                    onClick={() => handleCardClick(appointment)}
-                  >
-                    <CardContent className="p-3">
-                      <div className="flex items-center gap-3">
-                        {/* Client Avatar */}
-                        <div 
-                          className="w-10 h-10 rounded-xl flex items-center justify-center text-xs font-bold shrink-0 text-primary-foreground"
-                          style={{ background: 'var(--primary-gradient)' }}
-                        >
-                          {getInitials(appointment.customer_name)}
-                        </div>
+              <div className="relative">
+                {/* Timeline line */}
+                <div className="absolute left-[52px] top-0 bottom-0 w-px bg-border/50" />
 
-                        {/* Customer info */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="font-semibold text-sm truncate leading-tight">
-                              {appointment.customer_name}
-                            </span>
-                          </div>
-                          {appointment.service && (
-                            <p className="text-xs text-primary font-medium leading-tight mt-0.5">
-                              {appointment.service.name}
-                            </p>
-                          )}
-                          <div className="flex items-center gap-1 text-[10px] text-muted-foreground leading-tight mt-0.5">
-                            <Phone className="h-2.5 w-2.5" />
-                            <span>{appointment.customer_phone || 'Sem telefone'}</span>
-                          </div>
-                        </div>
+                {timelineHours.map((hour) => {
+                  const hourNum = parseInt(hour.split(':')[0]);
+                  const hourAppointments = appointmentsByHour[hour] || [];
+                  const isCurrentHour = isToday && hourNum === currentHour;
+                  const hasAppointments = hourAppointments.length > 0;
 
-                        {/* Time + Status */}
-                        <div className="flex flex-col items-end gap-1 shrink-0">
-                          <div className="text-right">
-                            <p className="text-sm font-bold leading-tight">
-                              {format(new Date(appointment.start_time), 'HH:mm')}
-                            </p>
-                            <p className="text-[9px] text-muted-foreground leading-tight">
-                              {format(new Date(appointment.end_time), 'HH:mm')}
-                            </p>
-                          </div>
-                          <span
-                            className={cn(
-                              'px-1.5 py-0.5 rounded-full text-[9px] font-medium',
-                              getStatusBadgeColor(appointment.status)
-                            )}
-                          >
-                            {getStatusLabel(appointment.status)}
-                          </span>
-                        </div>
+                  // Skip hours without appointments that are far from current time
+                  if (!hasAppointments && !isCurrentHour && Math.abs(hourNum - currentHour) > 2 && !isToday) {
+                    return null;
+                  }
+
+                  return (
+                    <div key={hour} className="relative flex gap-4 min-h-[48px] mb-1">
+                      {/* Time label */}
+                      <div className="w-[44px] shrink-0 text-right pt-0.5">
+                        <span className={cn(
+                          "text-xs font-medium",
+                          isCurrentHour ? "text-primary font-bold" : "text-muted-foreground"
+                        )}>
+                          {hour}
+                        </span>
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
+
+                      {/* Timeline dot */}
+                      <div className="relative shrink-0 w-[16px] flex justify-center pt-1.5">
+                        <div className={cn(
+                          "w-2 h-2 rounded-full z-10",
+                          isCurrentHour ? "bg-primary shadow-[0_0_8px_rgba(37,99,235,0.5)]" : 
+                          hasAppointments ? "bg-primary/60" : "bg-border"
+                        )} />
+                      </div>
+
+                      {/* Current time indicator line */}
+                      {isCurrentHour && (
+                        <div 
+                          className="absolute left-[44px] right-0 h-px bg-primary/40 z-0"
+                          style={{ top: `${(currentMinute / 60) * 100}%` }}
+                        >
+                          <div className="absolute -left-1 -top-[3px] w-2 h-2 rounded-full bg-primary" />
+                        </div>
+                      )}
+
+                      {/* Cards */}
+                      <div className="flex-1 space-y-2 pb-2">
+                        {hourAppointments.map((appointment, index) => (
+                          <Card 
+                            key={appointment.id}
+                            className={cn(
+                              "border-border/30 shadow-sm bg-card/90 backdrop-blur-sm overflow-hidden cursor-pointer",
+                              "transition-all duration-200",
+                              "hover:shadow-lg hover:border-primary/20 active:scale-[0.99]",
+                              "border-l-[3px] rounded-xl",
+                              getStatusColor(appointment.status),
+                            )}
+                            onClick={() => handleCardClick(appointment)}
+                          >
+                            <CardContent className="p-3.5">
+                              <div className="flex items-center gap-3">
+                                {/* Client Avatar */}
+                                <div 
+                                  className="w-11 h-11 rounded-xl flex items-center justify-center text-xs font-bold shrink-0 text-primary-foreground"
+                                  style={{ background: 'var(--primary-gradient)' }}
+                                >
+                                  {getInitials(appointment.customer_name)}
+                                </div>
+
+                                {/* Customer info */}
+                                <div className="flex-1 min-w-0">
+                                  <span className="font-bold text-sm truncate block leading-tight">
+                                    {appointment.customer_name}
+                                  </span>
+                                  {appointment.service && (
+                                    <p className="text-xs text-muted-foreground leading-tight mt-0.5">
+                                      {appointment.service.name}
+                                    </p>
+                                  )}
+                                </div>
+
+                                {/* Time + Status */}
+                                <div className="flex flex-col items-end gap-1.5 shrink-0">
+                                  <p className="text-base font-bold leading-tight tabular-nums">
+                                    {format(new Date(appointment.start_time), 'HH:mm')}
+                                  </p>
+                                  <span
+                                    className={cn(
+                                      'px-2 py-0.5 rounded-full text-[10px] font-semibold',
+                                      getStatusBadgeColor(appointment.status)
+                                    )}
+                                  >
+                                    {getStatusLabel(appointment.status)}
+                                  </span>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
