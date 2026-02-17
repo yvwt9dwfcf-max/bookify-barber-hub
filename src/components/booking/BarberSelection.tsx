@@ -15,7 +15,6 @@ export function BarberSelection({ onSelect, barbershopId, availableBarbers }: Ba
   const [selected, setSelected] = useState<string | null>(null);
 
   useEffect(() => {
-    // If barbers are already provided, don't fetch
     if (availableBarbers && availableBarbers.length > 0) {
       setBarbers(availableBarbers);
       setLoading(false);
@@ -32,7 +31,6 @@ export function BarberSelection({ onSelect, barbershopId, availableBarbers }: Ba
         .eq('is_active', true)
         .order('name');
 
-      // Filter by barbershop if provided
       if (barbershopId) {
         query = query.eq('barbershop_id', barbershopId);
       }
@@ -76,37 +74,41 @@ export function BarberSelection({ onSelect, barbershopId, availableBarbers }: Ba
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold">Escolha o profissional</h2>
+        <h2 className="text-xl font-bold">Escolha o profissional</h2>
         <p className="text-muted-foreground text-sm mt-1">
           Selecione o barbeiro de sua preferência
         </p>
       </div>
 
-      <div className="grid gap-4">
+      <div className="grid gap-3">
         {barbers.map((barber) => (
           <button
             key={barber.id}
             onClick={() => handleSelect(barber)}
             className={cn(
-              'flex items-center gap-5 p-5 rounded-2xl border transition-all duration-200 ease-out text-left',
-              'bg-white/60 dark:bg-card/60 backdrop-blur-[10px]',
-              'shadow-sm hover:shadow-lg',
-              'hover:-translate-y-1 active:scale-[0.98]',
+              'flex items-center gap-4 p-4 rounded-xl border-2 transition-all duration-200 ease-out text-left',
+              'hover:shadow-lg active:scale-[0.98]',
               selected === barber.id
                 ? 'border-primary bg-primary/5 dark:bg-primary/10 shadow-md'
-                : 'border-white/30 dark:border-border/40 hover:border-primary/50'
+                : 'border-border/40 hover:border-primary/40 bg-card/60 dark:bg-card/60'
             )}
           >
-            <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <User className="h-7 w-7 text-primary" />
+            {/* Avatar circular */}
+            <div className={cn(
+              "w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0 transition-all",
+              selected === barber.id
+                ? "text-primary-foreground"
+                : "bg-primary/10"
+            )}
+              style={selected === barber.id ? { background: 'var(--primary-gradient)' } : undefined}
+            >
+              <User className={cn("h-7 w-7", selected === barber.id ? "text-primary-foreground" : "text-primary")} />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-lg">{barber.name}</h3>
-              {barber.phone && (
-                <p className="text-sm text-muted-foreground truncate">
-                  {barber.phone}
-                </p>
-              )}
+              <h3 className="font-bold text-base">{barber.name}</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Profissional
+              </p>
             </div>
           </button>
         ))}
