@@ -1,0 +1,326 @@
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { Loader2, MapPin, MessageCircle, User, Clock, ChevronRight, Scissors } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+
+interface BarbershopData {
+  id: string;
+  name: string;
+  slug: string | null;
+  phone: string | null;
+  photo_url: string | null;
+  city: string | null;
+  google_maps_url: string | null;
+}
+
+interface BarberData {
+  id: string;
+  name: string;
+  photo_url: string | null;
+  is_active: boolean;
+}
+
+interface ServiceData {
+  id: string;
+  name: string;
+  duration_minutes: number;
+  barber_id: string;
+}
+
+interface GalleryImage {
+  id: string;
+  image_url: string;
+  sort_order: number;
+}
+
+const BarbeariaPublica = () => {
+  const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
+  const [barbershop, setBarbershop] = useState<BarbershopData | null>(null);
+  const [barbers, setBarbers] = useState<BarberData[]>([]);
+  const [services, setServices] = useState<ServiceData[]>([]);
+  const [gallery, setGallery] = useState<GalleryImage[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
+  const [selectedBarber, setSelectedBarber] = useState<string | null>(null);
+  const [fadeIn, setFadeIn] = useState(false);
+
+  useEffect(() => {
+    if (slug) fetchData();
+  }, [slug]);
+
+  useEffect(() => {
+    if (!loading) {
+      requestAnimationFrame(() => setFadeIn(true));
+    }
+  }, [loading]);
+
+  const fetchData = async () => {
+    try {
+      // Find barbershop by slug or id
+      let shop: BarbershopData | null = null;
+      const { data: bySlug } = await supabase
+        .from('barbershops')
+        .select('id, name, slug, phone, photo_url, city, google_maps_url')
+        .eq('slug', slug!)
+        .maybeSingle();
+
+      if (bySlug) {
+        shop = bySlug;
+      } else {
+        const { data: byId } = await supabase
+          .from('barbershops')
+          .select('id, name, slug, phone, photo_url, city, google_maps_url')
+          .eq('id', slug!)
+          .maybeSingle();
+        shop = byId;
+      }
+
+      if (!shop) {
+        setNotFound(true);
+        return;
+      }
+
+      setBarbershop(shop);
+
+      // Fetch barbers, services, and gallery in parallel
+      const [barbersRes, servicesRes, galleryRes] = await Promise.all([
+        supabase
+          .from('barbers')
+          .select('id, name, photo_url, is_active')
+          .eq('barbershop_id', shop.id)
+          .eq('is_active', true)
+          .order('name'),
+        supabase
+          .from('services')
+          .select('id, name, duration_minutes, barber_id')
+          .eq('barbershop_id', shop.id)
+          .eq('active', true),
+        supabase
+          .from('barbershop_gallery')
+          .select('*')
+          .eq('barbershop_id', shop.id)
+          .order('sort_order'),
+      ]);
+
+      setBarbers(barbersRes.data || []);
+      setServices(servicesRes.data || []);
+      setGallery(galleryRes.data || []);
+    } catch (err) {
+      console.error(err);
+      setNotFound(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSelectBarber = (barberId: string) => {
+    setSelectedBarber(prev => prev === barberId ? null : barberId);
+  };
+
+  const handleAgendar = (barberId: string) => {
+    if (barbershop) {
+      navigate(`/agendar/${barbershop.slug || barbershop.id}`);
+    }
+  };
+
+  const barberServices = selectedBarber
+    ? services.filter(s => s.barber_id === selectedBarber)
+    : [];
+
+  const whatsappLink = barbershop?.phone
+    ? `https://wa.me/${barbershop.phone.replace(/\D/g, '')}`
+    : null;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (notFound) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="max-w-sm w-full">
+          <CardContent className="p-8 text-center">
+            <Scissors className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <h1 className="text-xl font-bold mb-2">Barbearia não encontrada</h1>
+            <p className="text-muted-foreground text-sm">
+              O link que você acessou não é válido ou a barbearia não está mais disponível.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`min-h-screen bg-background transition-opacity duration-700 ${fadeIn ? 'opacity-100' : 'opacity-0'}`}>
+      {/* Hero / Header */}
+      <header className="relative overflow-hidden">
+        {barbershop?.photo_url ? (
+          <div className="relative h-56 sm:h-72">
+            <img
+              src={barbershop.photo_url}
+              alt={barbershop.name}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+          </div>
+        ) : (
+          <div className="h-32 sm:h-44 bg-gradient-to-br from-primary/20 via-primary/10 to-background" />
+        )}
+
+        <div className="relative -mt-16 sm:-mt-20 px-4 sm:px-6 pb-6 max-w-lg mx-auto">
+          {!barbershop?.photo_url && (
+            <div className="w-20 h-20 rounded-2xl mx-auto mb-4 flex items-center justify-center border-2 border-border bg-card shadow-lg">
+              <Scissors className="h-8 w-8 text-primary" />
+            </div>
+          )}
+          <h1 className="text-2xl sm:text-3xl font-bold text-center">{barbershop?.name}</h1>
+          {barbershop?.city && (
+            <p className="flex items-center justify-center gap-1.5 text-muted-foreground text-sm mt-2">
+              <MapPin className="h-3.5 w-3.5" />
+              {barbershop.city}
+            </p>
+          )}
+
+          <div className="flex gap-3 justify-center mt-5">
+            {barbershop?.google_maps_url && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full gap-2"
+                onClick={() => window.open(barbershop.google_maps_url!, '_blank')}
+              >
+                <MapPin className="h-4 w-4" />
+                Ver no mapa
+              </Button>
+            )}
+            {whatsappLink && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full gap-2"
+                onClick={() => window.open(whatsappLink, '_blank')}
+              >
+                <MessageCircle className="h-4 w-4" />
+                WhatsApp
+              </Button>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="px-4 sm:px-6 pb-12 max-w-lg mx-auto space-y-8">
+        {/* Barbers Section */}
+        <section>
+          <h2 className="text-lg font-semibold mb-4">Nossos Profissionais</h2>
+          <div className="space-y-3">
+            {barbers.map(barber => (
+              <Card
+                key={barber.id}
+                className={`cursor-pointer transition-all duration-250 ${
+                  selectedBarber === barber.id
+                    ? 'selected-state'
+                    : 'hover:shadow-lg'
+                }`}
+                onClick={() => handleSelectBarber(barber.id)}
+              >
+                <CardContent className="p-4 flex items-center gap-4">
+                  {barber.photo_url ? (
+                    <img
+                      src={barber.photo_url}
+                      alt={barber.name}
+                      className="w-14 h-14 rounded-full object-cover ring-2 ring-border"
+                    />
+                  ) : (
+                    <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center ring-2 ring-border">
+                      <User className="h-6 w-6 text-muted-foreground" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold truncate">{barber.name}</h3>
+                    <p className="text-sm text-muted-foreground">Profissional</p>
+                  </div>
+                  <ChevronRight className={`h-5 w-5 text-muted-foreground transition-transform duration-250 ${selectedBarber === barber.id ? 'rotate-90' : ''}`} />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
+
+        {/* Services Section (after barber selection) */}
+        {selectedBarber && (
+          <section className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+            <h2 className="text-lg font-semibold mb-4">Serviços</h2>
+            {barberServices.length > 0 ? (
+              <div className="space-y-2">
+                {barberServices.map(service => (
+                  <Card key={service.id} className="transition-all duration-200">
+                    <CardContent className="p-4 flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-primary/10">
+                        <Scissors className="h-4 w-4 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-medium truncate">{service.name}</h3>
+                        <p className="text-sm text-muted-foreground flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {service.duration_minutes} min
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                Nenhum serviço cadastrado para este profissional.
+              </p>
+            )}
+
+            <Button
+              className="w-full mt-6 btn-primary-gradient h-12 text-base rounded-xl"
+              onClick={() => handleAgendar(selectedBarber)}
+            >
+              Agendar com este profissional
+            </Button>
+          </section>
+        )}
+
+        {/* Gallery Section */}
+        {gallery.length > 0 && (
+          <section>
+            <h2 className="text-lg font-semibold mb-4">Galeria</h2>
+            <div className="grid grid-cols-3 gap-2">
+              {gallery.map(img => (
+                <div key={img.id} className="aspect-square rounded-xl overflow-hidden">
+                  <img
+                    src={img.image_url}
+                    alt="Foto da barbearia"
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                    loading="lazy"
+                  />
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Footer */}
+        <footer className="text-center pt-4 pb-2">
+          <p className="text-xs text-muted-foreground">
+            Agendamento online por <span className="font-semibold text-foreground">Bookify</span>
+          </p>
+        </footer>
+      </main>
+    </div>
+  );
+};
+
+export default BarbeariaPublica;

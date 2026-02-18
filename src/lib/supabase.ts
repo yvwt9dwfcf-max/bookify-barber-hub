@@ -12,6 +12,9 @@ export interface Barbershop {
   name: string;
   slug: string | null;
   phone: string | null;
+  photo_url: string | null;
+  city: string | null;
+  google_maps_url: string | null;
   plan: PlanType;
   max_barbers: number;
   onboarding_completed: boolean;
@@ -46,6 +49,7 @@ export interface Barber {
   name: string;
   phone: string | null;
   email: string | null;
+  photo_url: string | null;
   barbershop_id: string | null;
   is_active: boolean;
   created_at: string;
