@@ -200,6 +200,7 @@ export type Database = {
           is_active: boolean
           name: string
           phone: string | null
+          photo_url: string | null
           updated_at: string
         }
         Insert: {
@@ -211,6 +212,7 @@ export type Database = {
           is_active?: boolean
           name: string
           phone?: string | null
+          photo_url?: string | null
           updated_at?: string
         }
         Update: {
@@ -222,6 +224,7 @@ export type Database = {
           is_active?: boolean
           name?: string
           phone?: string | null
+          photo_url?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -234,16 +237,51 @@ export type Database = {
           },
         ]
       }
+      barbershop_gallery: {
+        Row: {
+          barbershop_id: string
+          created_at: string
+          id: string
+          image_url: string
+          sort_order: number
+        }
+        Insert: {
+          barbershop_id: string
+          created_at?: string
+          id?: string
+          image_url: string
+          sort_order?: number
+        }
+        Update: {
+          barbershop_id?: string
+          created_at?: string
+          id?: string
+          image_url?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "barbershop_gallery_barbershop_id_fkey"
+            columns: ["barbershop_id"]
+            isOneToOne: false
+            referencedRelation: "barbershops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       barbershops: {
         Row: {
+          city: string | null
           closing_time: string | null
           created_at: string
+          google_maps_url: string | null
           id: string
           max_barbers: number
           monthly_goal: number | null
           name: string
           onboarding_completed: boolean
           phone: string | null
+          photo_url: string | null
           plan: Database["public"]["Enums"]["plan_type"]
           slug: string | null
           subscription_active: boolean
@@ -252,14 +290,17 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          city?: string | null
           closing_time?: string | null
           created_at?: string
+          google_maps_url?: string | null
           id?: string
           max_barbers?: number
           monthly_goal?: number | null
           name: string
           onboarding_completed?: boolean
           phone?: string | null
+          photo_url?: string | null
           plan?: Database["public"]["Enums"]["plan_type"]
           slug?: string | null
           subscription_active?: boolean
@@ -268,14 +309,17 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          city?: string | null
           closing_time?: string | null
           created_at?: string
+          google_maps_url?: string | null
           id?: string
           max_barbers?: number
           monthly_goal?: number | null
           name?: string
           onboarding_completed?: boolean
           phone?: string | null
+          photo_url?: string | null
           plan?: Database["public"]["Enums"]["plan_type"]
           slug?: string | null
           subscription_active?: boolean

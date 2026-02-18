@@ -48,7 +48,7 @@ const Configuracoes = () => {
   const [phone, setPhone] = useState(barber?.phone || '');
 
   const publicLink = barbershop
-    ? `${window.location.origin}/agendar/${barbershop.slug || barbershop.id}`
+    ? `${window.location.origin}/barbearia/${barbershop.slug || barbershop.id}`
     : '';
 
   const handleCopyLink = async () => {

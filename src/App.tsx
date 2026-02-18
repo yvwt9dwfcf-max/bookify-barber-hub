@@ -19,6 +19,7 @@ import Relatorios from "./pages/painel/Relatorios";
 import Assinatura from "./pages/painel/Assinatura";
 import AgendarBarbearia from "./pages/AgendarBarbearia";
 import AgendarBarbeiro from "./pages/AgendarBarbeiro";
+import BarbeariaPublica from "./pages/BarbeariaPublica";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -57,6 +58,7 @@ const App = () => (
           {/* Public booking routes */}
           <Route path="/agendar/:slugOrId" element={<AgendarBarbearia />} />
           <Route path="/b/:barberId" element={<AgendarBarbeiro />} />
+          <Route path="/barbearia/:slug" element={<BarbeariaPublica />} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>
