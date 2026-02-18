@@ -30,7 +30,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Users, Plus, Loader2, Trash2, Settings, Mail, Lock, User, Crown, AlertTriangle, Copy, Link as LinkIcon, ExternalLink, Check } from 'lucide-react';
+import { Users, Plus, Loader2, Trash2, Settings, Mail, Lock, User, Crown, AlertTriangle, Copy, Link as LinkIcon, ExternalLink, Check, Camera } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface BarberWithPermissions extends Barber {
@@ -48,6 +48,7 @@ const Barbeiros = () => {
   const [selectedBarber, setSelectedBarber] = useState<BarberWithPermissions | null>(null);
   const [saving, setSaving] = useState(false);
   const [copiedLink, setCopiedLink] = useState<string | null>(null);
+  const [uploadingPhoto, setUploadingPhoto] = useState<string | null>(null);
 
   // Add barber form
   const [newBarberName, setNewBarberName] = useState('');
@@ -355,8 +356,53 @@ const Barbeiros = () => {
           <Card key={barber.id}>
             <CardContent className="p-4">
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <User className="h-5 w-5 text-primary" />
+                {/* Barber Photo with Upload */}
+                <div className="relative group flex-shrink-0">
+                  {barber.photo_url ? (
+                    <img src={barber.photo_url} alt={barber.name} className="w-12 h-12 rounded-full object-cover ring-2 ring-border" />
+                  ) : (
+                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center ring-2 ring-border">
+                      <User className="h-5 w-5 text-primary" />
+                    </div>
+                  )}
+                  <label className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
+                    {uploadingPhoto === barber.id ? (
+                      <Loader2 className="h-4 w-4 animate-spin text-white" />
+                    ) : (
+                      <Camera className="h-4 w-4 text-white" />
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        setUploadingPhoto(barber.id);
+                        try {
+                          const ext = file.name.split('.').pop();
+                          const fileName = `${barber.id}/${Date.now()}.${ext}`;
+                          const { error: uploadErr } = await supabase.storage
+                            .from('barber-photos')
+                            .upload(fileName, file, { upsert: true });
+                          if (uploadErr) throw uploadErr;
+                          const { data: urlData } = supabase.storage
+                            .from('barber-photos')
+                            .getPublicUrl(fileName);
+                          await supabase
+                            .from('barbers')
+                            .update({ photo_url: urlData.publicUrl })
+                            .eq('id', barber.id);
+                          toast.success('Foto atualizada!');
+                          refetch();
+                        } catch {
+                          toast.error('Erro ao enviar foto');
+                        } finally {
+                          setUploadingPhoto(null);
+                        }
+                      }}
+                    />
+                  </label>
                 </div>
                 
                 <div className="flex-1 min-w-0 overflow-hidden">

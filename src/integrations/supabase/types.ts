@@ -428,6 +428,74 @@ export type Database = {
           },
         ]
       }
+      public_profiles: {
+        Row: {
+          barbershop_id: string
+          cep: string | null
+          cidade: string | null
+          created_at: string
+          descricao: string | null
+          endereco: string | null
+          estado: string | null
+          foto_capa_url: string | null
+          id: string
+          instagram_url: string | null
+          latitude: number | null
+          logo_url: string | null
+          longitude: number | null
+          numero: string | null
+          slug_personalizado: string | null
+          updated_at: string
+          whatsapp_numero: string | null
+        }
+        Insert: {
+          barbershop_id: string
+          cep?: string | null
+          cidade?: string | null
+          created_at?: string
+          descricao?: string | null
+          endereco?: string | null
+          estado?: string | null
+          foto_capa_url?: string | null
+          id?: string
+          instagram_url?: string | null
+          latitude?: number | null
+          logo_url?: string | null
+          longitude?: number | null
+          numero?: string | null
+          slug_personalizado?: string | null
+          updated_at?: string
+          whatsapp_numero?: string | null
+        }
+        Update: {
+          barbershop_id?: string
+          cep?: string | null
+          cidade?: string | null
+          created_at?: string
+          descricao?: string | null
+          endereco?: string | null
+          estado?: string | null
+          foto_capa_url?: string | null
+          id?: string
+          instagram_url?: string | null
+          latitude?: number | null
+          logo_url?: string | null
+          longitude?: number | null
+          numero?: string | null
+          slug_personalizado?: string | null
+          updated_at?: string
+          whatsapp_numero?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "public_profiles_barbershop_id_fkey"
+            columns: ["barbershop_id"]
+            isOneToOne: true
+            referencedRelation: "barbershops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       services: {
         Row: {
           active: boolean

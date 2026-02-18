@@ -17,6 +17,7 @@ import Configuracoes from "./pages/painel/Configuracoes";
 import WhatsAppAtendimento from "./pages/painel/WhatsAppAtendimento";
 import Relatorios from "./pages/painel/Relatorios";
 import Assinatura from "./pages/painel/Assinatura";
+import PerfilPublico from "./pages/painel/PerfilPublico";
 import AgendarBarbearia from "./pages/AgendarBarbearia";
 import AgendarBarbeiro from "./pages/AgendarBarbeiro";
 import BarbeariaPublica from "./pages/BarbeariaPublica";
@@ -52,6 +53,7 @@ const App = () => (
             <Route path="relatorios" element={<Relatorios />} />
             <Route path="whatsapp" element={<WhatsAppAtendimento />} />
             <Route path="assinatura" element={<Assinatura />} />
+            <Route path="perfil-publico" element={<PerfilPublico />} />
             <Route path="configuracoes" element={<Configuracoes />} />
           </Route>
 

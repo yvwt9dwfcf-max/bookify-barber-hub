@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { supabase, Barber, Barbershop } from '@/lib/supabase';
 import { Logo } from '@/components/ui/Logo';
 import { BookingFlow } from '@/components/booking/BookingFlow';
@@ -8,8 +8,11 @@ import { Card, CardContent } from '@/components/ui/card';
 
 const AgendarBarbearia = () => {
   const { slugOrId } = useParams<{ slugOrId: string }>();
+  const [searchParams] = useSearchParams();
+  const preselectedBarberId = searchParams.get('barber');
   const [barbershop, setBarbershop] = useState<Barbershop | null>(null);
   const [barbers, setBarbers] = useState<Barber[]>([]);
+  const [preselectedBarber, setPreselectedBarber] = useState<Barber | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
@@ -56,6 +59,12 @@ const AgendarBarbearia = () => {
 
       if (barbersError) throw barbersError;
       setBarbers(barbersData || []);
+
+      // Pre-select barber if specified in URL
+      if (preselectedBarberId && barbersData) {
+        const found = barbersData.find(b => b.id === preselectedBarberId);
+        if (found) setPreselectedBarber(found as Barber);
+      }
     } catch (error) {
       console.error('Erro ao buscar barbearia:', error);
       setNotFound(true);
@@ -128,6 +137,7 @@ const AgendarBarbearia = () => {
           <BookingFlow 
             barbershopId={barbershop?.id} 
             availableBarbers={barbers}
+            preselectedBarber={preselectedBarber}
           />
         </div>
       </main>
