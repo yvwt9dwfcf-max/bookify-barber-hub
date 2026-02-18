@@ -16,10 +16,11 @@ import {
   Menu,
   X,
   CalendarOff,
-  Users,
-  Crown,
-  MessageCircle,
-  BarChart3
+    Users,
+    Crown,
+    MessageCircle,
+    BarChart3,
+    Globe
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
@@ -56,6 +57,7 @@ const Painel = () => {
     ...(isMaster ? [{ icon: Users, label: 'Equipe', path: '/painel/barbeiros' }] : []),
     ...(isMaster ? [{ icon: BarChart3, label: 'Relatórios', path: '/painel/relatorios' }] : []),
     { icon: MessageCircle, label: 'WhatsApp', path: '/painel/whatsapp' },
+    ...(isMaster ? [{ icon: Globe, label: 'Perfil Público', path: '/painel/perfil-publico' }] : []),
     { icon: Settings, label: 'Configurações', path: '/painel/configuracoes' },
   ];
 
@@ -144,9 +146,13 @@ const Painel = () => {
           {/* User Info */}
           <div className="p-4 border-b border-sidebar-border">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'var(--primary-gradient)' }}>
-                {isMaster ? <Crown className="h-5 w-5 text-primary-foreground" /> : <User className="h-5 w-5 text-primary-foreground" />}
-              </div>
+              {barber?.photo_url ? (
+                <img src={barber.photo_url} alt={barber.name} className="w-10 h-10 rounded-xl object-cover" />
+              ) : (
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'var(--primary-gradient)' }}>
+                  {isMaster ? <Crown className="h-5 w-5 text-primary-foreground" /> : <User className="h-5 w-5 text-primary-foreground" />}
+                </div>
+              )}
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-sm truncate">{barber?.name || 'Barbeiro'}</p>
                 <p className="text-xs text-sidebar-foreground/60 truncate">
