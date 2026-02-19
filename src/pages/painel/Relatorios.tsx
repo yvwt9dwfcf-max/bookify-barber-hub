@@ -243,7 +243,7 @@ const Relatorios = () => {
     }));
   }, [topServices]);
 
-  const PIE_COLORS = ['#2563EB', '#F59E0B', '#10B981', '#EF4444', '#8B5CF6'];
+  const PIE_COLORS = ['#22C55E', '#F59E0B', '#4ADE80', '#EF4444', '#A1A1A1'];
 
   // Calculate barber performance
   const barberPerformance = useMemo(() => {
@@ -641,8 +641,8 @@ const Relatorios = () => {
                       )}
                       <defs>
                         <linearGradient id="primaryGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#10b981" />
-                          <stop offset="100%" stopColor="#059669" />
+                          <stop offset="0%" stopColor="#22C55E" />
+                          <stop offset="100%" stopColor="#16A34A" />
                         </linearGradient>
                       </defs>
                     </BarChart>

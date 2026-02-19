@@ -41,7 +41,7 @@ const getStatusColor = (status: string) => {
     case 'confirmed':
       return 'border-l-primary bg-primary/5';
     case 'completed':
-      return 'border-l-emerald-500 bg-emerald-500/5';
+      return 'border-l-success bg-success/5';
     case 'cancelled':
       return 'border-l-destructive bg-destructive/5';
     default:
@@ -54,7 +54,7 @@ const getStatusBadgeColor = (status: string) => {
     case 'confirmed':
       return 'bg-primary/10 text-primary border border-primary/20';
     case 'completed':
-      return 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20';
+      return 'bg-success/10 text-success border border-success/20';
     case 'cancelled':
       return 'bg-destructive/10 text-destructive border border-destructive/20';
     default:
@@ -431,12 +431,12 @@ const Agenda = () => {
             </Card>
 
             <Card className="border-border/50 shadow-sm bg-card/80 backdrop-blur-sm overflow-hidden relative group hover:shadow-md transition-all duration-200 rounded-xl">
-              <div className="absolute top-0 left-0 right-0 h-0.5 bg-emerald-500" />
+              <div className="absolute top-0 left-0 right-0 h-0.5 bg-success" />
               <CardContent className="p-3 text-center">
-                <div className="w-8 h-8 rounded-xl mx-auto mb-1.5 flex items-center justify-center bg-emerald-500/10">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                <div className="w-8 h-8 rounded-xl mx-auto mb-1.5 flex items-center justify-center bg-success/10">
+                  <CheckCircle2 className="h-4 w-4 text-success" />
                 </div>
-                <p className="text-2xl font-bold text-emerald-600">{completedCount}</p>
+                <p className="text-2xl font-bold text-success">{completedCount}</p>
                 <p className="text-[10px] text-muted-foreground font-medium">Concluídos</p>
               </CardContent>
             </Card>

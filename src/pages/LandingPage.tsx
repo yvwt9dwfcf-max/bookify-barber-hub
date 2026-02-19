@@ -69,7 +69,7 @@ const LandingPage = () => {
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[600px] h-[600px] md:w-[900px] md:h-[900px] rounded-full bg-primary/8 blur-[120px]" />
           <div className="absolute top-40 left-1/4 w-[300px] h-[300px] rounded-full bg-primary/5 blur-[100px] animate-pulse-soft" />
-          <div className="absolute top-60 right-1/4 w-[200px] h-[200px] rounded-full bg-[#1E3A8A]/10 blur-[80px] animate-pulse-soft" style={{ animationDelay: '1s' }} />
+          <div className="absolute top-60 right-1/4 w-[200px] h-[200px] rounded-full bg-primary/10 blur-[80px] animate-pulse-soft" style={{ animationDelay: '1s' }} />
         </div>
 
         <div className="relative max-w-4xl mx-auto text-center">
@@ -223,7 +223,7 @@ const LandingPage = () => {
                 Teste grátis por 3 dias. Sem cartão de crédito. Cancele quando quiser.
               </p>
               <Link to="/register">
-                <Button size="lg" variant="secondary" className="text-base px-8 py-6 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 bg-white text-[#1E3A8A] hover:bg-white/90">
+                <Button size="lg" variant="secondary" className="text-base px-8 py-6 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 bg-white text-primary hover:bg-white/90">
                   Começar teste grátis
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
