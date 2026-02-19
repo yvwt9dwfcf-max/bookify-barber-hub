@@ -179,20 +179,18 @@ const Painel = () => {
                   to={item.path}
                   onClick={() => setSidebarOpen(false)}
                   className={cn(
-                    'flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group',
+                    'flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative',
                     isActive
-                      ? 'text-primary-foreground shadow-lg'
-                      : 'hover:bg-sidebar-accent active:scale-[0.98] text-sidebar-foreground/80 hover:text-sidebar-foreground'
+                      ? 'bg-primary/10 text-primary font-semibold sidebar-active-indicator'
+                      : 'hover:bg-secondary active:scale-[0.98] text-sidebar-foreground/70 hover:text-sidebar-foreground'
                   )}
                   style={{
-                    background: isActive ? 'var(--primary-gradient)' : undefined,
-                    boxShadow: isActive ? '0 4px 15px rgba(16, 185, 129, 0.3)' : 'none',
                     animationDelay: sidebarOpen ? `${index * 0.05}s` : '0s',
                     animation: sidebarOpen ? 'fade-in 0.3s ease-out backwards' : 'none'
                   }}
                 >
-                  <item.icon className={cn("h-5 w-5 transition-transform duration-200", !isActive && "group-hover:scale-110")} />
-                  <span className="font-medium text-sm">{item.label}</span>
+                  <item.icon className={cn("h-5 w-5 transition-transform duration-200", isActive ? "text-primary" : "group-hover:scale-110")} />
+                  <span className="text-sm">{item.label}</span>
                 </Link>
               );
             })}

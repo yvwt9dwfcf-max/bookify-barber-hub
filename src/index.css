@@ -50,7 +50,7 @@
     --input: 0 0% 15%;
     --ring: 142 71% 45%;
 
-    --radius: 0.875rem; /* 14px */
+    --radius: 1rem; /* 16px */
 
     /* Sidebar */
     --sidebar-background: 0 0% 3%;
@@ -132,6 +132,7 @@
   .btn-primary-gradient:hover {
     @apply shadow-xl;
     filter: brightness(1.1);
+    transform: scale(1.02);
   }
   
   .btn-primary-gradient:active {
@@ -147,26 +148,29 @@
   .btn-success-gradient:hover {
     @apply shadow-xl;
     filter: brightness(1.1);
+    transform: scale(1.02);
   }
 
-  /* Card com sombra padrão */
+  /* Card com sombra padrão + glass blur */
   .card-elevated {
     box-shadow: var(--card-shadow);
-    @apply bg-card transition-all duration-250 ease-out;
+    @apply bg-card/90 backdrop-blur-sm transition-all duration-250 ease-out;
   }
   
   .card-elevated:hover {
     box-shadow: var(--card-shadow-lg);
+    transform: translateY(-2px);
   }
 
   /* Card clicável com efeito de escala e glow verde */
   .card-interactive {
     box-shadow: var(--card-shadow);
-    @apply bg-card cursor-pointer transition-all duration-250 ease-out;
+    @apply bg-card/90 backdrop-blur-sm cursor-pointer transition-all duration-250 ease-out;
   }
   
   .card-interactive:hover {
     box-shadow: var(--card-shadow-lg), 0 0 20px var(--green-glow);
+    transform: translateY(-2px);
   }
   
   .card-interactive:active {
@@ -222,6 +226,10 @@
     @apply transition-all duration-250 ease-out;
   }
   
+  .btn-interactive:hover {
+    transform: scale(1.02);
+  }
+  
   .btn-interactive:active {
     transform: scale(0.985);
   }
@@ -244,6 +252,26 @@
   .badge-success {
     background: var(--success-gradient);
     @apply text-white;
+  }
+
+  /* Ripple effect */
+  .ripple-effect {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .ripple-effect::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at var(--ripple-x, 50%) var(--ripple-y, 50%), hsl(var(--primary) / 0.15) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.3s ease-out;
+    pointer-events: none;
+  }
+  
+  .ripple-effect:active::after {
+    opacity: 1;
   }
 }
 
@@ -306,6 +334,25 @@
 
 /* Focus ring verde global */
 *:focus-visible {
-  outline: 2px solid hsl(142 71% 45%);
+  outline: 2px solid hsl(142 71% 45% / 0.7);
   outline-offset: 2px;
+  box-shadow: 0 0 0 4px hsl(142 71% 45% / 0.15);
+}
+
+/* Sidebar active indicator */
+.sidebar-active-indicator {
+  position: relative;
+}
+
+.sidebar-active-indicator::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  border-radius: 0 4px 4px 0;
+  background: hsl(var(--primary));
+  box-shadow: 0 0 8px hsl(var(--primary) / 0.4);
 }
