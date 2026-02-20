@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { supabase, Barber, Service } from '@/lib/supabase';
 import { useAvailability } from '@/hooks/useAvailability';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Clock, Calendar, UserCircle, Scissors } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -34,6 +34,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 
+
 const appointmentSchema = z.object({
   customer_name: z.string().trim().min(1, 'Nome é obrigatório').max(100, 'Nome muito longo'),
   customer_phone: z.string().trim().max(20, 'Telefone inválido').optional().or(z.literal('')),
@@ -52,6 +53,7 @@ interface ManualAppointmentDialogProps {
   onSuccess: () => void;
   canCreateForOthers?: boolean;
   barbers?: Barber[];
+  preselectedTime?: string | null;
 }
 
 const ManualAppointmentDialog = ({
@@ -62,18 +64,16 @@ const ManualAppointmentDialog = ({
   onSuccess,
   canCreateForOthers = false,
   barbers = [],
+  preselectedTime = null,
 }: ManualAppointmentDialogProps) => {
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingServices, setLoadingServices] = useState(true);
   
-  // Selected barber for appointment (can be different from current barber if has permission)
   const [targetBarberId, setTargetBarberId] = useState<string>(barber.id);
-  // When canCreateForOthers is false, ALWAYS force target to the barber prop (own barber)
   const effectiveBarberId = canCreateForOthers ? targetBarberId : barber.id;
   const targetBarber = (canCreateForOthers ? barbers.find(b => b.id === effectiveBarberId) : barber) || barber;
 
-  // Use the unified availability hook
   const { 
     checkSlotAvailability, 
     refetch: refetchAvailability 
@@ -88,7 +88,7 @@ const ManualAppointmentDialog = ({
       customer_name: '',
       customer_phone: '',
       service_id: '',
-      start_time: '',
+      start_time: preselectedTime || '',
       notes: '',
     },
   });
@@ -99,16 +99,22 @@ const ManualAppointmentDialog = ({
       setTargetBarberId(barber.id);
       fetchServices();
       refetchAvailability();
-      form.reset();
+      form.reset({
+        customer_name: '',
+        customer_phone: '',
+        service_id: '',
+        start_time: preselectedTime || '',
+        notes: '',
+      });
     }
-  }, [open, selectedDate]);
+  }, [open, selectedDate, preselectedTime]);
 
   // Refetch when effective target barber changes
   useEffect(() => {
     if (open) {
       fetchServices();
       refetchAvailability();
-      form.setValue('start_time', '');
+      form.setValue('start_time', preselectedTime || '');
     }
   }, [effectiveBarberId]);
 
@@ -120,7 +126,6 @@ const ManualAppointmentDialog = ({
         return;
       }
 
-      // Buscar serviços vinculados ao barbeiro alvo
       const { data: barberServicesData, error: bsError } = await supabase
         .from('barber_services')
         .select('service_id')
@@ -131,7 +136,6 @@ const ManualAppointmentDialog = ({
       const serviceIds = (barberServicesData || []).map(bs => bs.service_id);
 
       if (serviceIds.length === 0) {
-        // Se não há vínculos, buscar todos os serviços da barbearia
         const { data: allServices, error: allError } = await supabase
           .from('services')
           .select('*')
@@ -142,7 +146,6 @@ const ManualAppointmentDialog = ({
         if (allError) throw allError;
         setServices(allServices || []);
       } else {
-        // Buscar serviços vinculados
         const { data: linkedServices, error: linkedError } = await supabase
           .from('services')
           .select('*')
@@ -185,7 +188,6 @@ const ManualAppointmentDialog = ({
     try {
       const selectedService = services.find((s) => s.id === data.service_id);
       
-      // Serviço é obrigatório - garantir duração correta
       if (!selectedService) {
         toast.error('Selecione um serviço para continuar');
         setLoading(false);
@@ -194,12 +196,10 @@ const ManualAppointmentDialog = ({
       
       const durationMinutes = selectedService.duration_minutes;
 
-      // Parse the time and combine with selected date
       const [hours, minutes] = data.start_time.split(':').map(Number);
       const startTime = setMinutes(setHours(selectedDate, hours), minutes);
       const endTime = addMinutes(startTime, durationMinutes);
 
-      // Check for conflicts before submitting using unified availability check
       const slotCheck = getSlotStatus(data.start_time, durationMinutes);
       if (slotCheck.occupied) {
         const reasonText = slotCheck.reason === 'intervalo' ? 'no intervalo' : slotCheck.reason;
@@ -234,20 +234,41 @@ const ManualAppointmentDialog = ({
   };
 
   const timeSlots = generateTimeSlots();
+  const selectedService = services.find((s) => s.id === form.watch('service_id'));
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[440px]">
         <DialogHeader>
-          <DialogTitle>Novo Agendamento</DialogTitle>
-          <DialogDescription>
-            {format(selectedDate, "EEEE, d 'de' MMMM", { locale: ptBR })} - {targetBarber.name}
+          <DialogTitle className="text-lg">Novo Agendamento</DialogTitle>
+          <DialogDescription className="sr-only">
+            Criar novo agendamento manual
           </DialogDescription>
         </DialogHeader>
 
+        {/* Context Banner */}
+        <div className="flex items-center gap-3 p-3 rounded-xl bg-primary/5 border border-primary/10">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <UserCircle className="h-4 w-4 text-primary shrink-0" />
+            <span className="text-sm font-medium truncate">{targetBarber.name}</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-sm text-muted-foreground shrink-0">
+            <Calendar className="h-3.5 w-3.5" />
+            <span className="capitalize text-xs">
+              {format(selectedDate, "EEE, d MMM", { locale: ptBR })}
+            </span>
+          </div>
+          {(preselectedTime || form.watch('start_time')) && (
+            <div className="flex items-center gap-1.5 text-sm text-primary font-semibold shrink-0">
+              <Clock className="h-3.5 w-3.5" />
+              <span className="text-xs">{preselectedTime || form.watch('start_time')}</span>
+            </div>
+          )}
+        </div>
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            {/* Barber selector - only when user can create for others */}
+            {/* Barber selector */}
             {canCreateForOthers && barbers.length > 1 && (
               <div className="space-y-2">
                 <label className="text-sm font-medium">Profissional</label>
@@ -268,6 +289,7 @@ const ManualAppointmentDialog = ({
                 </Select>
               </div>
             )}
+
             <FormField
               control={form.control}
               name="customer_name"
@@ -275,7 +297,7 @@ const ManualAppointmentDialog = ({
                 <FormItem>
                   <FormLabel>Nome do cliente</FormLabel>
                   <FormControl>
-                    <Input placeholder="João Silva" {...field} />
+                    <Input placeholder="João Silva" {...field} autoFocus />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -326,16 +348,22 @@ const ManualAppointmentDialog = ({
                       )}
                     </SelectContent>
                   </Select>
+                  {selectedService && (
+                    <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground">
+                      <Scissors className="h-3 w-3" />
+                      <span>{selectedService.duration_minutes} minutos • R$ {Number(selectedService.price).toFixed(2)}</span>
+                    </div>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}
             />
 
+            {/* Time slot - hidden if preselected, otherwise show select */}
             <FormField
               control={form.control}
               name="start_time"
               render={({ field }) => {
-                const selectedService = services.find((s) => s.id === form.watch('service_id'));
                 const durationMinutes = selectedService?.duration_minutes || 30;
                 
                 return (
@@ -398,7 +426,7 @@ const ManualAppointmentDialog = ({
               </Button>
               <Button type="submit" disabled={loading || !form.watch('service_id')}>
                 {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                Criar Agendamento
+                Confirmar Agendamento
               </Button>
             </div>
           </form>
