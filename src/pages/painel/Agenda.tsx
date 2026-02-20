@@ -4,13 +4,15 @@ import { supabase, Appointment, Barber, Barbershop } from '@/lib/supabase';
 import { useRealtimeAppointments } from '@/hooks/useRealtimeAppointments';
 import { useBarbershopBarbers } from '@/hooks/useBarbershopBarbers';
 import { useSubscription } from '@/hooks/useSubscription';
+import { useAvailability } from '@/hooks/useAvailability';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
   Calendar, CalendarDays, ChevronLeft, ChevronRight, 
-  User, Loader2, CheckCircle2, Clock, Sparkles, CalendarPlus
+  User, Loader2, CheckCircle2, Clock, CalendarPlus,
+  Ban
 } from 'lucide-react';
-import { format, addDays, startOfDay, isSameDay } from 'date-fns';
+import { format, addDays, startOfDay, isSameDay, setHours, setMinutes } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -34,7 +36,6 @@ interface ContextType {
 }
 
 type ViewMode = 'daily' | 'monthly';
-
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -84,15 +85,6 @@ const getInitials = (name: string) => {
     .toUpperCase();
 };
 
-// Generate timeline hours
-const generateTimelineHours = () => {
-  const hours: string[] = [];
-  for (let h = 7; h <= 21; h++) {
-    hours.push(`${h.toString().padStart(2, '0')}:00`);
-  }
-  return hours;
-};
-
 const Agenda = () => {
   const { barber, isMaster } = useOutletContext<ContextType>();
   const navigate = useNavigate();
@@ -106,9 +98,11 @@ const Agenda = () => {
   const [selectedDate, setSelectedDate] = useState(startOfDay(new Date()));
   const [viewMode, setViewMode] = useState<ViewMode>('daily');
   const [showManualDialog, setShowManualDialog] = useState(false);
+  const [preselectedTime, setPreselectedTime] = useState<string | null>(null);
 
-  const handleOpenManualDialog = () => {
+  const handleOpenManualDialog = (time?: string) => {
     if (!checkCanPerformAction('create_appointment')) return;
+    setPreselectedTime(time || null);
     setShowManualDialog(true);
   };
   
@@ -120,6 +114,17 @@ const Agenda = () => {
   
   const selectedBarber = barbers.find(b => b.id === selectedBarberId) || barber;
 
+  // Use availability hook for the selected barber
+  const { 
+    checkSlotAvailability, 
+    getOpeningHoursForDay,
+    blockedSlots,
+    refetch: refetchAvailability,
+    loading: availabilityLoading 
+  } = useAvailability({ 
+    barberId: selectedBarberId || barber?.id || '' 
+  });
+
   useEffect(() => {
     if (barber && !selectedBarberId) {
       setSelectedBarberId(barber.id);
@@ -128,6 +133,7 @@ const Agenda = () => {
 
   const handleNewAppointment = useCallback(() => {
     fetchAppointments();
+    refetchAvailability();
   }, [selectedBarberId, selectedDate]);
 
   useRealtimeAppointments({
@@ -217,23 +223,66 @@ const Agenda = () => {
     return days;
   };
 
-  // Current time indicator
+  // Current time
   const currentHour = new Date().getHours();
   const currentMinute = new Date().getMinutes();
   const isToday = isSameDay(selectedDate, new Date());
 
-  // Map appointments to timeline
-  const timelineHours = generateTimelineHours();
-  const appointmentsByHour = useMemo(() => {
-    const map: Record<string, Appointment[]> = {};
+  // Generate all time slots for the day based on opening hours
+  const daySlots = useMemo(() => {
+    const dayOfWeek = selectedDate.getDay();
+    const dayHours = getOpeningHoursForDay(dayOfWeek);
+    
+    if (!dayHours) return [];
+
+    const [startH, startM] = dayHours.start_time.split(':').map(Number);
+    const [endH, endM] = dayHours.end_time.split(':').map(Number);
+    
+    const slots: { time: string; hour: number; minute: number }[] = [];
+    let h = startH;
+    let m = startM;
+    
+    while (h < endH || (h === endH && m < endM)) {
+      slots.push({
+        time: `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`,
+        hour: h,
+        minute: m,
+      });
+      m += 30;
+      if (m >= 60) {
+        m = 0;
+        h++;
+      }
+    }
+    
+    return slots;
+  }, [selectedDate, getOpeningHoursForDay]);
+
+  // Map appointments to their time slots
+  const appointmentsBySlot = useMemo(() => {
+    const map: Record<string, Appointment> = {};
     appointments.forEach(apt => {
-      const hour = format(new Date(apt.start_time), 'HH');
-      const key = `${hour}:00`;
-      if (!map[key]) map[key] = [];
-      map[key].push(apt);
+      const startTime = new Date(apt.start_time);
+      const key = format(startTime, 'HH:mm');
+      map[key] = apt;
     });
     return map;
   }, [appointments]);
+
+  // Check if a time slot falls within a blocked period
+  const getBlockedReason = useCallback((time: string): string | null => {
+    const [h, m] = time.split(':').map(Number);
+    const slotStart = setMinutes(setHours(selectedDate, h), m);
+    
+    for (const blocked of blockedSlots) {
+      const blockedStart = new Date(blocked.start_time);
+      const blockedEnd = new Date(blocked.end_time);
+      if (slotStart >= blockedStart && slotStart < blockedEnd) {
+        return blocked.reason || 'Bloqueado';
+      }
+    }
+    return null;
+  }, [selectedDate, blockedSlots]);
 
   if (loading && !selectedBarberId) {
     return (
@@ -253,15 +302,16 @@ const Agenda = () => {
     setViewMode('daily');
   };
 
-  
+  const dayOfWeek = selectedDate.getDay();
+  const dayHours = getOpeningHoursForDay(dayOfWeek);
+  const isDayClosed = !dayHours;
 
   return (
-    <div className="space-y-5 pb-24">
+    <div className="space-y-4 pb-24">
       {/* Premium Header */}
       <div className="animate-fade-in">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1">
-            {/* Day of week prominent */}
             <h1 className="text-2xl font-bold capitalize">
               {format(selectedDate, 'EEEE', { locale: ptBR })}
             </h1>
@@ -270,7 +320,6 @@ const Agenda = () => {
             </p>
           </div>
           
-          {/* Top icons */}
           <div className="flex items-center gap-1 shrink-0">
             <Button
               variant={viewMode === 'daily' ? 'default' : 'ghost'}
@@ -331,12 +380,19 @@ const Agenda = () => {
       {(selectedBarber || barber) && (
         <ManualAppointmentDialog
           open={showManualDialog}
-          onOpenChange={setShowManualDialog}
+          onOpenChange={(open) => {
+            setShowManualDialog(open);
+            if (!open) setPreselectedTime(null);
+          }}
           barber={canCreateForOthers ? selectedBarber! : barber!}
           selectedDate={selectedDate}
-          onSuccess={fetchAppointments}
+          onSuccess={() => {
+            fetchAppointments();
+            refetchAvailability();
+          }}
           canCreateForOthers={canCreateForOthers}
           barbers={barbers}
+          preselectedTime={preselectedTime}
         />
       )}
 
@@ -352,8 +408,8 @@ const Agenda = () => {
       {/* Daily View */}
       {viewMode === 'daily' && (
         <>
-          {/* Date Navigation */}
-          <Card className="border-border/50 shadow-sm bg-card/80 backdrop-blur-sm overflow-hidden animate-fade-in rounded-xl" style={{ animationDelay: '0.08s' }}>
+          {/* Date Navigation - Sticky */}
+          <Card className="border-border/50 shadow-sm bg-card/80 backdrop-blur-sm overflow-hidden animate-fade-in rounded-xl sticky top-0 z-20" style={{ animationDelay: '0.08s' }}>
             <CardContent className="p-3">
               <div className="flex items-center justify-between mb-3">
                 <Button
@@ -442,140 +498,217 @@ const Agenda = () => {
             </Card>
           </div>
 
-          {/* Timeline View */}
-          <div className="space-y-0 animate-fade-in" style={{ animationDelay: '0.16s' }}>
-            {loading ? (
+          {/* Slot Grid View */}
+          <div className="animate-fade-in" style={{ animationDelay: '0.16s' }}>
+            {loading || availabilityLoading ? (
               <div className="flex items-center justify-center py-8">
                 <Loader2 className="h-5 w-5 animate-spin text-primary" />
               </div>
-            ) : appointments.length === 0 ? (
+            ) : isDayClosed ? (
               <Card className="border-border/40 border-dashed shadow-sm bg-card/60 backdrop-blur-sm rounded-xl">
                 <CardContent className="text-center py-12">
-                  <div className="w-16 h-16 rounded-2xl mx-auto flex items-center justify-center mb-4 bg-primary/5">
-                    <CalendarPlus className="h-8 w-8 text-primary/40" />
+                  <div className="w-16 h-16 rounded-2xl mx-auto flex items-center justify-center mb-4 bg-muted/30">
+                    <Ban className="h-8 w-8 text-muted-foreground/40" />
                   </div>
                   <p className="text-sm font-medium text-muted-foreground mb-1">
-                    Dia livre!
+                    Dia fechado
                   </p>
-                  <p className="text-xs text-muted-foreground/70 mb-4">
-                    Nenhum agendamento para este dia
+                  <p className="text-xs text-muted-foreground/70">
+                    Não há expediente configurado para este dia
                   </p>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => handleOpenManualDialog()}
-                    className="text-xs h-8 px-4 border-primary/30 text-primary hover:bg-primary/5 rounded-xl"
-                  >
-                    <Sparkles className="h-3.5 w-3.5 mr-1.5" />
-                    Agendar horário
-                  </Button>
                 </CardContent>
               </Card>
             ) : (
-              <div className="relative">
-                {/* Timeline line */}
-                <div className="absolute left-[52px] top-0 bottom-0 w-px bg-border/50" />
+              <div className="space-y-1.5">
+                {daySlots.map((slot, index) => {
+                  const appointment = appointmentsBySlot[slot.time];
+                  const availability = checkSlotAvailability(slot.time, selectedDate, 30);
+                  const blockedReason = getBlockedReason(slot.time);
+                  const isCurrentSlot = isToday && slot.hour === currentHour && 
+                    currentMinute >= slot.minute && currentMinute < slot.minute + 30;
+                  const isPast = availability.reason === 'passado';
+                  const isBreak = availability.reason === 'intervalo';
+                  const isBlocked = availability.reason === 'bloqueado';
+                  
 
-                {timelineHours.map((hour) => {
-                  const hourNum = parseInt(hour.split(':')[0]);
-                  const hourAppointments = appointmentsByHour[hour] || [];
-                  const isCurrentHour = isToday && hourNum === currentHour;
-                  const hasAppointments = hourAppointments.length > 0;
+                  // If this slot has an appointment (occupied)
+                  if (appointment && appointment.status !== 'cancelled') {
+                    return (
+                      <Card
+                        key={slot.time}
+                        className={cn(
+                          "border-l-[3px] rounded-xl overflow-hidden cursor-pointer",
+                          "transition-all duration-200 hover:shadow-lg hover:border-primary/20 active:scale-[0.99]",
+                          "border-border/30 shadow-sm bg-card/90 backdrop-blur-sm",
+                          getStatusColor(appointment.status),
+                        )}
+                        onClick={() => handleCardClick(appointment)}
+                        style={{ animationDelay: `${index * 0.02}s` }}
+                      >
+                        <CardContent className="p-3">
+                          <div className="flex items-center gap-3">
+                            {/* Time */}
+                            <div className="w-12 shrink-0 text-center">
+                              <p className="text-base font-bold tabular-nums leading-tight">
+                                {format(new Date(appointment.start_time), 'HH:mm')}
+                              </p>
+                              <p className="text-[10px] text-muted-foreground tabular-nums">
+                                {format(new Date(appointment.end_time), 'HH:mm')}
+                              </p>
+                            </div>
 
-                  // Skip hours without appointments that are far from current time
-                  if (!hasAppointments && !isCurrentHour && Math.abs(hourNum - currentHour) > 2 && !isToday) {
-                    return null;
+                            {/* Divider */}
+                            <div className="w-px h-10 bg-border/50" />
+
+                            {/* Client Avatar */}
+                            <div 
+                              className="w-10 h-10 rounded-xl flex items-center justify-center text-xs font-bold shrink-0 text-primary-foreground"
+                              style={{ background: 'var(--primary-gradient)' }}
+                            >
+                              {getInitials(appointment.customer_name)}
+                            </div>
+
+                            {/* Info */}
+                            <div className="flex-1 min-w-0">
+                              <span className="font-bold text-sm truncate block leading-tight">
+                                {appointment.customer_name}
+                              </span>
+                              {appointment.service && (
+                                <p className="text-xs text-muted-foreground leading-tight mt-0.5 truncate">
+                                  {appointment.service.name} • {appointment.service.duration_minutes}min
+                                </p>
+                              )}
+                            </div>
+
+                            {/* Status Badge */}
+                            <span
+                              className={cn(
+                                'px-2 py-0.5 rounded-full text-[10px] font-semibold shrink-0',
+                                getStatusBadgeColor(appointment.status)
+                              )}
+                            >
+                              {getStatusLabel(appointment.status)}
+                            </span>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
                   }
 
-                  return (
-                    <div key={hour} className="relative flex gap-4 min-h-[48px] mb-1">
-                      {/* Time label */}
-                      <div className="w-[44px] shrink-0 text-right pt-0.5">
-                        <span className={cn(
-                          "text-xs font-medium",
-                          isCurrentHour ? "text-primary font-bold" : "text-muted-foreground"
-                        )}>
-                          {hour}
+                  // Blocked slot
+                  if (isBlocked) {
+                    return (
+                      <div
+                        key={slot.time}
+                        className={cn(
+                          "flex items-center gap-3 px-4 py-2.5 rounded-xl",
+                          "bg-muted/30 border border-border/30",
+                          "opacity-60"
+                        )}
+                      >
+                        <div className="w-12 shrink-0 text-center">
+                          <p className="text-sm font-medium tabular-nums text-muted-foreground">{slot.time}</p>
+                        </div>
+                        <div className="w-px h-6 bg-border/30" />
+                        <Ban className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                        <span className="text-xs text-muted-foreground">
+                          {blockedReason || 'Bloqueado'}
                         </span>
                       </div>
+                    );
+                  }
 
-                      {/* Timeline dot */}
-                      <div className="relative shrink-0 w-[16px] flex justify-center pt-1.5">
-                        <div className={cn(
-                          "w-2 h-2 rounded-full z-10",
-                          isCurrentHour ? "bg-primary shadow-[0_0_8px_rgba(37,99,235,0.5)]" : 
-                          hasAppointments ? "bg-primary/60" : "bg-border"
-                        )} />
-                      </div>
-
-                      {/* Current time indicator line */}
-                      {isCurrentHour && (
-                        <div 
-                          className="absolute left-[44px] right-0 h-px bg-primary/40 z-0"
-                          style={{ top: `${(currentMinute / 60) * 100}%` }}
-                        >
-                          <div className="absolute -left-1 -top-[3px] w-2 h-2 rounded-full bg-primary" />
+                  // Break slot
+                  if (isBreak) {
+                    return (
+                      <div
+                        key={slot.time}
+                        className={cn(
+                          "flex items-center gap-3 px-4 py-2.5 rounded-xl",
+                          "bg-amber-500/5 border border-amber-500/10",
+                          "opacity-50"
+                        )}
+                      >
+                        <div className="w-12 shrink-0 text-center">
+                          <p className="text-sm font-medium tabular-nums text-muted-foreground">{slot.time}</p>
                         </div>
-                      )}
-
-                      {/* Cards */}
-                      <div className="flex-1 space-y-2 pb-2">
-                        {hourAppointments.map((appointment, index) => (
-                          <Card 
-                            key={appointment.id}
-                            className={cn(
-                              "border-border/30 shadow-sm bg-card/90 backdrop-blur-sm overflow-hidden cursor-pointer",
-                              "transition-all duration-200",
-                              "hover:shadow-lg hover:border-primary/20 active:scale-[0.99]",
-                              "border-l-[3px] rounded-xl",
-                              getStatusColor(appointment.status),
-                            )}
-                            onClick={() => handleCardClick(appointment)}
-                          >
-                            <CardContent className="p-3.5">
-                              <div className="flex items-center gap-3">
-                                {/* Client Avatar */}
-                                <div 
-                                  className="w-11 h-11 rounded-xl flex items-center justify-center text-xs font-bold shrink-0 text-primary-foreground"
-                                  style={{ background: 'var(--primary-gradient)' }}
-                                >
-                                  {getInitials(appointment.customer_name)}
-                                </div>
-
-                                {/* Customer info */}
-                                <div className="flex-1 min-w-0">
-                                  <span className="font-bold text-sm truncate block leading-tight">
-                                    {appointment.customer_name}
-                                  </span>
-                                  {appointment.service && (
-                                    <p className="text-xs text-muted-foreground leading-tight mt-0.5">
-                                      {appointment.service.name}
-                                    </p>
-                                  )}
-                                </div>
-
-                                {/* Time + Status */}
-                                <div className="flex flex-col items-end gap-1.5 shrink-0">
-                                  <p className="text-base font-bold leading-tight tabular-nums">
-                                    {format(new Date(appointment.start_time), 'HH:mm')}
-                                  </p>
-                                  <span
-                                    className={cn(
-                                      'px-2 py-0.5 rounded-full text-[10px] font-semibold',
-                                      getStatusBadgeColor(appointment.status)
-                                    )}
-                                  >
-                                    {getStatusLabel(appointment.status)}
-                                  </span>
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
+                        <div className="w-px h-6 bg-border/30" />
+                        <Clock className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                        <span className="text-xs text-amber-500/80">Intervalo</span>
                       </div>
-                    </div>
+                    );
+                  }
+
+                  // Past slot
+                  if (isPast) {
+                    return (
+                      <div
+                        key={slot.time}
+                        className={cn(
+                          "flex items-center gap-3 px-4 py-2 rounded-xl",
+                          "opacity-30"
+                        )}
+                      >
+                        <div className="w-12 shrink-0 text-center">
+                          <p className="text-sm font-medium tabular-nums text-muted-foreground">{slot.time}</p>
+                        </div>
+                        <div className="w-px h-6 bg-border/20" />
+                        <div className="flex-1 h-px bg-border/20" />
+                      </div>
+                    );
+                  }
+
+                  // Available slot - clickable
+                  return (
+                    <button
+                      key={slot.time}
+                      onClick={() => handleOpenManualDialog(slot.time)}
+                      className={cn(
+                        "w-full flex items-center gap-3 px-4 py-2.5 rounded-xl",
+                        "border border-transparent",
+                        "transition-all duration-200",
+                        "hover:bg-primary/5 hover:border-primary/20 hover:shadow-sm",
+                        "active:scale-[0.99] active:bg-primary/10",
+                        "group",
+                        isCurrentSlot && "bg-primary/5 border-primary/15 ring-1 ring-primary/20"
+                      )}
+                    >
+                      <div className="w-12 shrink-0 text-center">
+                        <p className={cn(
+                          "text-sm font-medium tabular-nums",
+                          isCurrentSlot ? "text-primary font-bold" : "text-muted-foreground"
+                        )}>
+                          {slot.time}
+                        </p>
+                      </div>
+                      <div className="w-px h-6 bg-border/30 group-hover:bg-primary/30 transition-colors" />
+                      <div className="flex-1 flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground/50 group-hover:text-primary/70 transition-colors">
+                          Horário disponível
+                        </span>
+                        <CalendarPlus className="h-3.5 w-3.5 text-muted-foreground/0 group-hover:text-primary/60 transition-all duration-200" />
+                      </div>
+                    </button>
                   );
                 })}
+
+                {/* Current time indicator */}
+                {isToday && daySlots.length > 0 && (
+                  <div className="fixed right-4 bottom-24 z-10">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        const currentSlotEl = document.querySelector('[data-current-slot]');
+                        currentSlotEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      }}
+                      className="rounded-full shadow-md text-xs h-8 px-3 border-primary/30 text-primary bg-card/95 backdrop-blur-sm"
+                    >
+                      <Clock className="h-3 w-3 mr-1" />
+                      Agora
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
           </div>
