@@ -434,7 +434,7 @@ const Relatorios = () => {
   }
 
   return (
-    <div className="space-y-4 animate-fade-in">
+    <div className="space-y-4 animate-page-enter">
       {/* Header - more compact */}
       <div className="pb-1 flex items-start justify-between">
         <div>

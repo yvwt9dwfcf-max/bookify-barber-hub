@@ -7,9 +7,10 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { useAvailability } from '@/hooks/useAvailability';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { PremiumSkeleton, SkeletonSlot, SkeletonStats } from '@/components/ui/premium-skeleton';
 import { 
   Calendar, CalendarDays, ChevronLeft, ChevronRight, 
-  User, Loader2, CheckCircle2, Clock, CalendarPlus,
+  User, CheckCircle2, Clock, CalendarPlus,
   Ban
 } from 'lucide-react';
 import { format, addDays, startOfDay, isSameDay, setHours, setMinutes } from 'date-fns';
@@ -286,8 +287,13 @@ const Agenda = () => {
 
   if (loading && !selectedBarberId) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="space-y-4 pb-24 animate-page-enter">
+        <PremiumSkeleton className="h-12 w-3/4" />
+        <PremiumSkeleton className="h-24 rounded-xl" />
+        <SkeletonStats />
+        {Array.from({ length: 6 }).map((_, i) => (
+          <SkeletonSlot key={i} />
+        ))}
       </div>
     );
   }
@@ -307,7 +313,7 @@ const Agenda = () => {
   const isDayClosed = !dayHours;
 
   return (
-    <div className="space-y-4 pb-24">
+    <div className="space-y-4 pb-24 animate-page-enter">
       {/* Premium Header */}
       <div className="animate-fade-in">
         <div className="flex items-start justify-between gap-3">
@@ -501,8 +507,10 @@ const Agenda = () => {
           {/* Slot Grid View */}
           <div className="animate-fade-in" style={{ animationDelay: '0.16s' }}>
             {loading || availabilityLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-5 w-5 animate-spin text-primary" />
+              <div className="space-y-1.5">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <SkeletonSlot key={i} />
+                ))}
               </div>
             ) : isDayClosed ? (
               <Card className="border-border/40 border-dashed shadow-sm bg-card/60 backdrop-blur-sm rounded-xl">

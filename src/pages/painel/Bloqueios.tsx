@@ -21,6 +21,7 @@ import { toast } from 'sonner';
 import { format, isBefore, startOfDay, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { SkeletonCard } from '@/components/ui/premium-skeleton';
 import {
   Dialog,
   DialogContent,
@@ -247,14 +248,22 @@ const Bloqueios = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="space-y-6 animate-page-enter">
+        <div className="flex justify-between items-center">
+          <div className="space-y-2">
+            <div className="h-7 w-48 bg-muted/50 rounded-lg animate-pulse" />
+            <div className="h-4 w-72 bg-muted/30 rounded-lg animate-pulse" />
+          </div>
+        </div>
+        {Array.from({ length: 3 }).map((_, i) => (
+          <SkeletonCard key={i} />
+        ))}
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-page-enter">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
