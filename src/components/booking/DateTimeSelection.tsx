@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { DAY_NAMES_SHORT } from '@/lib/supabase';
 import { useAvailability } from '@/hooks/useAvailability';
-import { Clock, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Clock, ChevronLeft, ChevronRight } from 'lucide-react';
+import { PremiumSkeleton } from '@/components/ui/premium-skeleton';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { format, addDays, startOfDay, isSameDay, isAfter, isBefore, setHours, setMinutes } from 'date-fns';
@@ -62,8 +63,21 @@ export function DateTimeSelection({ barberId, serviceDuration, onSelect }: DateT
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="space-y-8">
+        <div>
+          <PremiumSkeleton variant="text" className="w-52 h-6" />
+          <PremiumSkeleton variant="text" className="w-64 h-4 mt-2" />
+        </div>
+        <div className="grid grid-cols-7 gap-2">
+          {Array.from({ length: 7 }).map((_, i) => (
+            <PremiumSkeleton key={i} className="h-16 rounded-xl" />
+          ))}
+        </div>
+        <div className="grid grid-cols-4 sm:grid-cols-5 gap-2.5">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <PremiumSkeleton key={i} className="h-11 rounded-xl" />
+          ))}
+        </div>
       </div>
     );
   }

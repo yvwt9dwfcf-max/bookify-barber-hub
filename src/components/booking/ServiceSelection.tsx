@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { supabase, Service } from '@/lib/supabase';
-import { Scissors, Clock, Loader2 } from 'lucide-react';
+import { Scissors, Clock } from 'lucide-react';
+import { PremiumSkeleton, SkeletonCard } from '@/components/ui/premium-skeleton';
+import { EmptyState } from '@/components/ui/empty-state';
 import { cn } from '@/lib/utils';
 
 interface ServiceSelectionProps {
@@ -84,21 +86,27 @@ export function ServiceSelection({ barberId, onSelect }: ServiceSelectionProps) 
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="space-y-6">
+        <div>
+          <PremiumSkeleton variant="text" className="w-44 h-6" />
+          <PremiumSkeleton variant="text" className="w-56 h-4 mt-2" />
+        </div>
+        <div className="grid gap-3">
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+        </div>
       </div>
     );
   }
 
   if (services.length === 0) {
     return (
-      <div className="text-center py-12">
-        <Scissors className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-        <h3 className="text-lg font-medium">Nenhum serviço disponível</h3>
-        <p className="text-muted-foreground mt-2">
-          Este profissional ainda não possui serviços disponíveis.
-        </p>
-      </div>
+      <EmptyState
+        icon={Scissors}
+        title="Nenhum serviço disponível"
+        description="Este profissional ainda não possui serviços disponíveis."
+      />
     );
   }
 

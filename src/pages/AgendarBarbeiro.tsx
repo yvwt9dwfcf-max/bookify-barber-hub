@@ -3,7 +3,8 @@ import { useParams } from 'react-router-dom';
 import { supabase, Barber } from '@/lib/supabase';
 import { Logo } from '@/components/ui/Logo';
 import { BookingFlow } from '@/components/booking/BookingFlow';
-import { Loader2, UserX } from 'lucide-react';
+import { UserX } from 'lucide-react';
+import { PremiumSkeleton, SkeletonCard } from '@/components/ui/premium-skeleton';
 import { Card, CardContent } from '@/components/ui/card';
 
 const AgendarBarbeiro = () => {
@@ -44,8 +45,20 @@ const AgendarBarbeiro = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="min-h-screen bg-background animate-page-enter">
+        <div className="px-4 sm:px-6 py-4 border-b border-border/50 bg-card/80 backdrop-blur-xl">
+          <PremiumSkeleton className="w-28 h-8" />
+        </div>
+        <div className="max-w-2xl mx-auto px-4 py-10 space-y-6">
+          <div className="flex flex-col items-center gap-3">
+            <PremiumSkeleton variant="text" className="w-48 h-8" />
+            <PremiumSkeleton variant="text" className="w-64 h-4" />
+          </div>
+          <div className="space-y-3 mt-4">
+            <SkeletonCard />
+            <SkeletonCard />
+          </div>
+        </div>
       </div>
     );
   }

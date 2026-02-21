@@ -4,7 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { MapPin, MessageCircle, User, Clock, ChevronRight, Scissors, Instagram } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { PremiumSkeleton, SkeletonCard } from '@/components/ui/premium-skeleton';
+import { EmptyState } from '@/components/ui/empty-state';
 
 interface BarbershopData {
   id: string;
@@ -183,14 +184,24 @@ const BarbeariaPublica = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
-        <Skeleton className="w-full h-56" />
-        <div className="max-w-lg mx-auto px-4 py-6 space-y-4">
-          <Skeleton className="h-8 w-48 mx-auto" />
-          <Skeleton className="h-4 w-32 mx-auto" />
-          <div className="space-y-3 mt-8">
-            <Skeleton className="h-20 w-full rounded-xl" />
-            <Skeleton className="h-20 w-full rounded-xl" />
+      <div className="min-h-screen bg-background animate-page-enter">
+        <PremiumSkeleton className="w-full h-56 rounded-none" />
+        <div className="max-w-lg mx-auto px-4 py-6 space-y-5">
+          <div className="flex flex-col items-center gap-3">
+            <PremiumSkeleton variant="avatar" className="w-20 h-20 rounded-2xl" />
+            <PremiumSkeleton variant="text" className="w-48 h-7" />
+            <PremiumSkeleton variant="text" className="w-64 h-4" />
+            <PremiumSkeleton variant="text" className="w-32 h-4" />
+          </div>
+          <div className="flex justify-center gap-3 mt-2">
+            <PremiumSkeleton className="w-28 h-9 rounded-full" />
+            <PremiumSkeleton className="w-28 h-9 rounded-full" />
+          </div>
+          <div className="space-y-3 mt-4">
+            <PremiumSkeleton variant="text" className="w-40 h-5" />
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
           </div>
         </div>
       </div>
@@ -334,6 +345,13 @@ const BarbeariaPublica = () => {
         {/* Barbers Section */}
         <section>
           <h2 className="text-lg font-semibold mb-4">Nossos Profissionais</h2>
+          {barbers.length === 0 ? (
+            <EmptyState
+              icon={User}
+              title="Nenhum profissional disponível"
+              description="Esta barbearia ainda não possui profissionais cadastrados."
+            />
+          ) : (
           <div className="space-y-3">
             {barbers.map((barber, i) => (
               <Card
@@ -367,6 +385,7 @@ const BarbeariaPublica = () => {
               </Card>
             ))}
           </div>
+          )}
         </section>
 
         {/* Services + Booking after barber selection */}
@@ -393,9 +412,11 @@ const BarbeariaPublica = () => {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                Nenhum serviço cadastrado para este profissional.
-              </p>
+              <EmptyState
+                icon={Scissors}
+                title="Nenhum serviço disponível"
+                description="Este profissional ainda não possui serviços cadastrados."
+              />
             )}
 
             <Button
