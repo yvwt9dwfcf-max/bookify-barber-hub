@@ -32,6 +32,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Users, Plus, Loader2, Trash2, Settings, Mail, Lock, User, Crown, AlertTriangle, Copy, Link as LinkIcon, ExternalLink, Check, Camera } from 'lucide-react';
 import { toast } from 'sonner';
+import { SkeletonCard } from '@/components/ui/premium-skeleton';
 
 interface BarberWithPermissions extends Barber {
   permissions?: BarberPermissions;
@@ -228,14 +229,24 @@ const Barbeiros = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="space-y-6 animate-page-enter overflow-x-hidden max-w-full">
+        <div className="flex justify-between items-center">
+          <div className="space-y-2">
+            <div className="h-7 w-32 bg-muted/50 rounded-lg animate-pulse" />
+            <div className="h-4 w-64 bg-muted/30 rounded-lg animate-pulse" />
+          </div>
+        </div>
+        <div className="grid gap-4">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <SkeletonCard key={i} />
+          ))}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 overflow-x-hidden max-w-full">
+    <div className="space-y-6 overflow-x-hidden max-w-full animate-page-enter">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>

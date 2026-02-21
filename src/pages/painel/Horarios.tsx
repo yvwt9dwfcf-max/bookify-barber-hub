@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { PremiumSkeleton } from '@/components/ui/premium-skeleton';
 import { Clock, Loader2, Save } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -177,14 +178,31 @@ const Horarios = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="space-y-6 animate-page-enter">
+        <div className="flex justify-between items-center">
+          <div className="space-y-2">
+            <PremiumSkeleton className="h-7 w-48" />
+            <PremiumSkeleton className="h-4 w-72" />
+          </div>
+          <PremiumSkeleton className="h-10 w-36 rounded-lg" />
+        </div>
+        <div className="rounded-xl border border-border/30 bg-card/60 p-4 space-y-4">
+          {Array.from({ length: 7 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-4 p-4 rounded-xl bg-muted/20">
+              <PremiumSkeleton className="h-5 w-10 rounded-full" />
+              <PremiumSkeleton className="h-4 w-24" />
+              <div className="flex-1" />
+              <PremiumSkeleton className="h-8 w-20 rounded-lg" />
+              <PremiumSkeleton className="h-8 w-20 rounded-lg" />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-page-enter">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>

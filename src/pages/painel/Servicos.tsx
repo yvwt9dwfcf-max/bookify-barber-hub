@@ -18,6 +18,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Scissors, Plus, Pencil, Trash2, Loader2, Clock, Users } from 'lucide-react';
+import { SkeletonCard } from '@/components/ui/premium-skeleton';
 import { toast } from 'sonner';
 import {
   AlertDialog,
@@ -265,14 +266,24 @@ const Servicos = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="space-y-6 animate-page-enter">
+        <div className="flex justify-between items-center">
+          <div className="space-y-2">
+            <div className="h-7 w-32 bg-muted/50 rounded-lg animate-pulse" />
+            <div className="h-4 w-64 bg-muted/30 rounded-lg animate-pulse" />
+          </div>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <SkeletonCard key={i} />
+          ))}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-page-enter">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
