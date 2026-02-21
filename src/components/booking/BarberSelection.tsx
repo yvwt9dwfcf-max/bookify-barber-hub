@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { supabase, Barber } from '@/lib/supabase';
-import { User, Loader2 } from 'lucide-react';
+import { User } from 'lucide-react';
+import { PremiumSkeleton, SkeletonCard } from '@/components/ui/premium-skeleton';
+import { EmptyState } from '@/components/ui/empty-state';
 import { cn } from '@/lib/utils';
 
 interface BarberSelectionProps {
@@ -53,21 +55,27 @@ export function BarberSelection({ onSelect, barbershopId, availableBarbers }: Ba
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="space-y-6">
+        <div>
+          <PremiumSkeleton variant="text" className="w-48 h-6" />
+          <PremiumSkeleton variant="text" className="w-64 h-4 mt-2" />
+        </div>
+        <div className="grid gap-3">
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+        </div>
       </div>
     );
   }
 
   if (barbers.length === 0) {
     return (
-      <div className="text-center py-12">
-        <User className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-        <h3 className="text-lg font-medium">Nenhum profissional disponível</h3>
-        <p className="text-muted-foreground mt-2">
-          Por favor, tente novamente mais tarde.
-        </p>
-      </div>
+      <EmptyState
+        icon={User}
+        title="Nenhum profissional disponível"
+        description="Por favor, tente novamente mais tarde."
+      />
     );
   }
 
