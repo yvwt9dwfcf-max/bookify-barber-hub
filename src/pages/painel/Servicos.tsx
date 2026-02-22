@@ -57,6 +57,7 @@ const Servicos = () => {
   const [price, setPrice] = useState('');
   const [duration, setDuration] = useState('30');
   const [active, setActive] = useState(true);
+  const [isGlobal, setIsGlobal] = useState(true);
   const [selectedBarberIds, setSelectedBarberIds] = useState<string[]>([]);
 
   useEffect(() => {
@@ -118,6 +119,7 @@ const Servicos = () => {
     setPrice('');
     setDuration('30');
     setActive(true);
+    setIsGlobal(true);
     setSelectedBarberIds([]);
     setEditingService(null);
   };
@@ -128,6 +130,7 @@ const Servicos = () => {
     setPrice(String(service.price));
     setDuration(String(service.duration_minutes));
     setActive(service.active);
+    setIsGlobal(service.is_global);
     setSelectedBarberIds(service.assignedBarberIds);
     setDialogOpen(true);
   };
@@ -167,6 +170,7 @@ const Servicos = () => {
             price: Number(price),
             duration_minutes: Number(duration),
             active,
+            is_global: isGlobal,
           })
           .eq('id', editingService.id);
 
@@ -185,12 +189,13 @@ const Servicos = () => {
         const { data: newService, error } = await supabase
           .from('services')
           .insert({
-            barber_id: barber.id, // Mantém para compatibilidade com RLS existente
+            barber_id: barber.id,
             barbershop_id: barbershop.id,
             name: name.trim(),
             price: Number(price),
             duration_minutes: Number(duration),
             active,
+            is_global: isGlobal,
           })
           .select()
           .single();
@@ -200,8 +205,8 @@ const Servicos = () => {
         toast.success('Serviço criado');
       }
 
-      // Create barber_services associations
-      if (selectedBarberIds.length > 0) {
+      // Create barber_services associations only if NOT global
+      if (!isGlobal && selectedBarberIds.length > 0) {
         const associations = selectedBarberIds.map(barberId => ({
           barber_id: barberId,
           service_id: serviceId,
@@ -362,36 +367,55 @@ const Servicos = () => {
                   />
                 </div>
 
-                {/* Seleção de barbeiros */}
-                <div className="space-y-3">
-                  <Label className="flex items-center gap-2">
-                    <Users className="h-4 w-4" />
-                    Barbeiros que atendem este serviço
-                  </Label>
-                  <div className="border rounded-lg p-3 space-y-2 max-h-40 overflow-y-auto">
-                    {barbers.length === 0 ? (
-                      <p className="text-sm text-muted-foreground">
-                        Nenhum barbeiro cadastrado
+                {/* Global toggle */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label htmlFor="is_global">Serviço global</Label>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Disponível para todos os profissionais automaticamente
                       </p>
-                    ) : (
-                      barbers.map(b => (
-                        <div key={b.id} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`barber-${b.id}`}
-                            checked={selectedBarberIds.includes(b.id)}
-                            onCheckedChange={() => toggleBarber(b.id)}
-                          />
-                          <label
-                            htmlFor={`barber-${b.id}`}
-                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                          >
-                            {b.name}
-                          </label>
-                        </div>
-                      ))
-                    )}
+                    </div>
+                    <Switch
+                      id="is_global"
+                      checked={isGlobal}
+                      onCheckedChange={setIsGlobal}
+                    />
                   </div>
                 </div>
+
+                {/* Seleção de barbeiros - só mostra se NÃO for global */}
+                {!isGlobal && (
+                  <div className="space-y-3">
+                    <Label className="flex items-center gap-2">
+                      <Users className="h-4 w-4" />
+                      Barbeiros que atendem este serviço
+                    </Label>
+                    <div className="border rounded-lg p-3 space-y-2 max-h-40 overflow-y-auto">
+                      {barbers.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">
+                          Nenhum barbeiro cadastrado
+                        </p>
+                      ) : (
+                        barbers.map(b => (
+                          <div key={b.id} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={`barber-${b.id}`}
+                              checked={selectedBarberIds.includes(b.id)}
+                              onCheckedChange={() => toggleBarber(b.id)}
+                            />
+                            <label
+                              htmlFor={`barber-${b.id}`}
+                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                            >
+                              {b.name}
+                            </label>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
               <DialogFooter>
                 <DialogClose asChild>
@@ -460,13 +484,13 @@ const Servicos = () => {
                       )}
                       {/* Mostrar barbeiros associados */}
                       <div className="flex flex-wrap gap-1 mt-2">
-                        {service.assignedBarberIds.length === 0 ? (
+                        {service.is_global ? (
+                          <Badge variant="secondary" className="text-xs">
+                            🌐 Todos os barbeiros
+                          </Badge>
+                        ) : service.assignedBarberIds.length === 0 ? (
                           <Badge variant="outline" className="text-xs text-muted-foreground">
                             Nenhum barbeiro
-                          </Badge>
-                        ) : service.assignedBarberIds.length === barbers.length ? (
-                          <Badge variant="secondary" className="text-xs">
-                            Todos os barbeiros
                           </Badge>
                         ) : (
                           <Badge variant="outline" className="text-xs">

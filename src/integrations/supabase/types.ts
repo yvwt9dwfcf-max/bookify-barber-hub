@@ -504,6 +504,7 @@ export type Database = {
           created_at: string
           duration_minutes: number
           id: string
+          is_global: boolean
           name: string
           price: number
           updated_at: string
@@ -515,6 +516,7 @@ export type Database = {
           created_at?: string
           duration_minutes?: number
           id?: string
+          is_global?: boolean
           name: string
           price?: number
           updated_at?: string
@@ -526,6 +528,7 @@ export type Database = {
           created_at?: string
           duration_minutes?: number
           id?: string
+          is_global?: boolean
           name?: string
           price?: number
           updated_at?: string

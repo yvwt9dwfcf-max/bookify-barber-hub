@@ -126,6 +126,18 @@ const ManualAppointmentDialog = ({
         return;
       }
 
+      // 1. Fetch global services
+      const { data: globalServices, error: globalError } = await supabase
+        .from('services')
+        .select('*')
+        .eq('barbershop_id', targetBarber.barbershop_id!)
+        .eq('active', true)
+        .eq('is_global', true)
+        .order('name');
+
+      if (globalError) throw globalError;
+
+      // 2. Fetch specific services linked to this barber
       const { data: barberServicesData, error: bsError } = await supabase
         .from('barber_services')
         .select('service_id')
@@ -133,29 +145,26 @@ const ManualAppointmentDialog = ({
 
       if (bsError) throw bsError;
 
-      const serviceIds = (barberServicesData || []).map(bs => bs.service_id);
+      const specificIds = (barberServicesData || []).map(bs => bs.service_id);
+      let specificServices: Service[] = [];
 
-      if (serviceIds.length === 0) {
-        const { data: allServices, error: allError } = await supabase
+      if (specificIds.length > 0) {
+        const { data: linked, error: linkedError } = await supabase
           .from('services')
           .select('*')
-          .eq('barbershop_id', targetBarber.barbershop_id!)
+          .in('id', specificIds)
           .eq('active', true)
-          .order('name');
-
-        if (allError) throw allError;
-        setServices(allServices || []);
-      } else {
-        const { data: linkedServices, error: linkedError } = await supabase
-          .from('services')
-          .select('*')
-          .in('id', serviceIds)
-          .eq('active', true)
+          .eq('is_global', false)
           .order('name');
 
         if (linkedError) throw linkedError;
-        setServices(linkedServices || []);
+        specificServices = (linked || []) as Service[];
       }
+
+      // Merge and deduplicate
+      const all = [...(globalServices || []), ...specificServices] as Service[];
+      const unique = all.filter((s, i, arr) => arr.findIndex(x => x.id === s.id) === i);
+      setServices(unique);
     } catch (error) {
       console.error('Erro ao buscar serviços:', error);
       toast.error('Erro ao carregar serviços');

@@ -65,6 +65,7 @@ export interface Service {
   price: number;
   duration_minutes: number;
   active: boolean;
+  is_global: boolean;
   created_at: string;
   updated_at: string;
 }
