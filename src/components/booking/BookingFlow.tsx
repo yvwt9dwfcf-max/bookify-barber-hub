@@ -56,6 +56,11 @@ export function BookingFlow({ preselectedBarber, barbershopId, availableBarbers 
     setStep('datetime');
   };
 
+  const handleServiceAutoSelect = (service: Service) => {
+    setBookingData(prev => ({ ...prev, service }));
+    setStep('datetime');
+  };
+
   const handleDateTimeSelect = (dateTime: Date) => {
     setBookingData(prev => ({ ...prev, dateTime }));
     setStep('info');
@@ -182,6 +187,7 @@ export function BookingFlow({ preselectedBarber, barbershopId, availableBarbers 
               <ServiceSelection
                 barberId={bookingData.barber.id}
                 onSelect={handleServiceSelect}
+                onAutoSelect={handleServiceAutoSelect}
               />
             )}
 

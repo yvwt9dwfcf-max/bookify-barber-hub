@@ -8,9 +8,10 @@ import { cn } from '@/lib/utils';
 interface ServiceSelectionProps {
   barberId: string;
   onSelect: (service: Service) => void;
+  onAutoSelect?: (service: Service) => void;
 }
 
-export function ServiceSelection({ barberId, onSelect }: ServiceSelectionProps) {
+export function ServiceSelection({ barberId, onSelect, onAutoSelect }: ServiceSelectionProps) {
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<string | null>(null);
@@ -35,6 +36,18 @@ export function ServiceSelection({ barberId, onSelect }: ServiceSelectionProps) 
         return;
       }
 
+      // 1. Fetch all global services for the barbershop
+      const { data: globalServices, error: globalError } = await supabase
+        .from('services')
+        .select('*')
+        .eq('barbershop_id', barberData.barbershop_id)
+        .eq('active', true)
+        .eq('is_global', true)
+        .order('name');
+
+      if (globalError) throw globalError;
+
+      // 2. Fetch specific services linked to this barber via barber_services
       const { data: barberServicesData, error: bsError } = await supabase
         .from('barber_services')
         .select('service_id')
@@ -42,28 +55,33 @@ export function ServiceSelection({ barberId, onSelect }: ServiceSelectionProps) 
 
       if (bsError) throw bsError;
 
-      const serviceIds = (barberServicesData || []).map(bs => bs.service_id);
+      const specificServiceIds = (barberServicesData || []).map(bs => bs.service_id);
 
-      if (serviceIds.length === 0) {
-        const { data: allServices, error: allError } = await supabase
+      let specificServices: Service[] = [];
+      if (specificServiceIds.length > 0) {
+        const { data: linked, error: linkedError } = await supabase
           .from('services')
           .select('*')
-          .eq('barbershop_id', barberData.barbershop_id)
+          .in('id', specificServiceIds)
           .eq('active', true)
-          .order('name');
-
-        if (allError) throw allError;
-        setServices(allServices || []);
-      } else {
-        const { data: linkedServices, error: linkedError } = await supabase
-          .from('services')
-          .select('*')
-          .in('id', serviceIds)
-          .eq('active', true)
+          .eq('is_global', false)
           .order('name');
 
         if (linkedError) throw linkedError;
-        setServices(linkedServices || []);
+        specificServices = (linked || []) as Service[];
+      }
+
+      // Merge: global + specific (deduplicate by id)
+      const allServices = [...(globalServices || []), ...specificServices] as Service[];
+      const uniqueServices = allServices.filter(
+        (s, i, arr) => arr.findIndex(x => x.id === s.id) === i
+      );
+
+      setServices(uniqueServices);
+
+      // Auto-select if only 1 service
+      if (uniqueServices.length === 1 && onAutoSelect) {
+        onAutoSelect(uniqueServices[0]);
       }
     } catch (error) {
       console.error('Erro ao buscar serviços:', error);
@@ -105,7 +123,7 @@ export function ServiceSelection({ barberId, onSelect }: ServiceSelectionProps) 
       <EmptyState
         icon={Scissors}
         title="Nenhum serviço disponível"
-        description="Este profissional ainda não possui serviços disponíveis."
+        description="Este profissional ainda não possui serviços configurados."
       />
     );
   }

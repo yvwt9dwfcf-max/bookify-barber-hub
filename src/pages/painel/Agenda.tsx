@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useOutletContext, useNavigate } from 'react-router-dom';
+import { useOutletContext } from 'react-router-dom';
 import { supabase, Appointment, Barber, Barbershop } from '@/lib/supabase';
 import { useRealtimeAppointments } from '@/hooks/useRealtimeAppointments';
 import { useBarbershopBarbers } from '@/hooks/useBarbershopBarbers';
@@ -29,6 +29,7 @@ import ManualAppointmentDialog from '@/components/painel/ManualAppointmentDialog
 import FloatingActionButton from '@/components/painel/FloatingActionButton';
 import AppointmentDetailsSheet from '@/components/painel/AppointmentDetailsSheet';
 import EditAppointmentDialog from '@/components/painel/EditAppointmentDialog';
+import QuickBlockDialog from '@/components/painel/QuickBlockDialog';
 
 interface ContextType {
   barber: (Barber & { permissions?: { can_view_others_schedule?: boolean; can_edit_others_schedule?: boolean } }) | null;
@@ -88,7 +89,6 @@ const getInitials = (name: string) => {
 
 const Agenda = () => {
   const { barber, isMaster } = useOutletContext<ContextType>();
-  const navigate = useNavigate();
   const { barbers } = useBarbershopBarbers();
   const { checkCanPerformAction } = useSubscription();
 
@@ -100,11 +100,18 @@ const Agenda = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('daily');
   const [showManualDialog, setShowManualDialog] = useState(false);
   const [preselectedTime, setPreselectedTime] = useState<string | null>(null);
+  const [showQuickBlock, setShowQuickBlock] = useState(false);
+  const [blockTime, setBlockTime] = useState<string | null>(null);
 
   const handleOpenManualDialog = (time?: string) => {
     if (!checkCanPerformAction('create_appointment')) return;
     setPreselectedTime(time || null);
     setShowManualDialog(true);
+  };
+
+  const handleOpenQuickBlock = (time?: string) => {
+    setBlockTime(time || null);
+    setShowQuickBlock(true);
   };
   
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
@@ -742,10 +749,28 @@ const Agenda = () => {
         isMaster={isMaster}
       />
 
+      {/* Quick Block Dialog */}
+      {(selectedBarber || barber) && (
+        <QuickBlockDialog
+          open={showQuickBlock}
+          onOpenChange={(open) => {
+            setShowQuickBlock(open);
+            if (!open) setBlockTime(null);
+          }}
+          barber={selectedBarber || barber!}
+          selectedDate={selectedDate}
+          preselectedTime={blockTime}
+          onSuccess={() => {
+            fetchAppointments();
+            refetchAvailability();
+          }}
+        />
+      )}
+
       {/* Floating Action Button */}
       <FloatingActionButton
         onNewAppointment={() => handleOpenManualDialog()}
-        onNewBlock={() => navigate('/painel/bloqueios')}
+        onNewBlock={() => handleOpenQuickBlock()}
       />
     </div>
   );
