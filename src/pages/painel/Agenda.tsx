@@ -266,15 +266,25 @@ const Agenda = () => {
     return slots;
   }, [selectedDate, getOpeningHoursForDay]);
 
-  // Map appointments to their time slots
-  const appointmentsBySlot = useMemo(() => {
+  // Map appointments to their time slots, tracking covered slots for multi-slot appointments
+  const { appointmentsBySlot, coveredSlots } = useMemo(() => {
     const map: Record<string, Appointment> = {};
+    const covered = new Set<string>();
+    
     appointments.forEach(apt => {
       const startTime = new Date(apt.start_time);
+      const endTime = new Date(apt.end_time);
       const key = format(startTime, 'HH:mm');
       map[key] = apt;
+      
+      // Mark intermediate slots as covered
+      let slotTime = new Date(startTime.getTime() + 30 * 60 * 1000);
+      while (slotTime < endTime) {
+        covered.add(format(slotTime, 'HH:mm'));
+        slotTime = new Date(slotTime.getTime() + 30 * 60 * 1000);
+      }
     });
-    return map;
+    return { appointmentsBySlot: map, coveredSlots: covered };
   }, [appointments]);
 
   // Check if a time slot falls within a blocked period
@@ -546,8 +556,16 @@ const Agenda = () => {
                   const isBlocked = availability.reason === 'bloqueado';
                   
 
+                  // Skip slots covered by a multi-slot appointment
+                  if (coveredSlots.has(slot.time)) {
+                    return null;
+                  }
+
                   // If this slot has an appointment (occupied)
                   if (appointment && appointment.status !== 'cancelled') {
+                    const durationMin = appointment.service?.duration_minutes || 30;
+                    const slotsSpanned = Math.ceil(durationMin / 30);
+                    
                     return (
                       <Card
                         key={slot.time}
@@ -560,7 +578,7 @@ const Agenda = () => {
                         onClick={() => handleCardClick(appointment)}
                         style={{ animationDelay: `${index * 0.02}s` }}
                       >
-                        <CardContent className="p-3">
+                        <CardContent className={cn("p-3", slotsSpanned > 1 && "py-4")}>
                           <div className="flex items-center gap-3">
                             {/* Time */}
                             <div className="w-12 shrink-0 text-center">
@@ -573,7 +591,7 @@ const Agenda = () => {
                             </div>
 
                             {/* Divider */}
-                            <div className="w-px h-10 bg-border/50" />
+                            <div className={cn("w-px bg-border/50", slotsSpanned > 1 ? "h-14" : "h-10")} />
 
                             {/* Client Avatar */}
                             <div 
@@ -591,6 +609,11 @@ const Agenda = () => {
                               {appointment.service && (
                                 <p className="text-xs text-muted-foreground leading-tight mt-0.5 truncate">
                                   {appointment.service.name} • {appointment.service.duration_minutes}min
+                                </p>
+                              )}
+                              {slotsSpanned > 1 && (
+                                <p className="text-[10px] text-muted-foreground/60 mt-1">
+                                  {format(new Date(appointment.start_time), 'HH:mm')} — {format(new Date(appointment.end_time), 'HH:mm')}
                                 </p>
                               )}
                             </div>
