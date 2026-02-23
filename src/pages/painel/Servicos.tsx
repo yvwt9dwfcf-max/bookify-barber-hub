@@ -159,8 +159,8 @@ const Servicos = () => {
       toast.error('Digite um preço válido');
       return;
     }
-    if (!duration || Number(duration) < 5) {
-      toast.error('A duração mínima é 5 minutos');
+    if (!duration || Number(duration) < 15) {
+      toast.error('A duração mínima é 15 minutos');
       return;
     }
 
@@ -359,7 +359,7 @@ const Servicos = () => {
                         <SelectValue placeholder="Selecione" />
                       </SelectTrigger>
                       <SelectContent>
-                        {Array.from({ length: 24 }, (_, i) => (i + 1) * 5).map(min => (
+                        {Array.from({ length: 22 }, (_, i) => (i + 3) * 5).map(min => (
                           <SelectItem key={min} value={String(min)}>
                             {min} min
                           </SelectItem>
