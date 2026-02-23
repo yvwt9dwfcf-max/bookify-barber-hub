@@ -43,6 +43,7 @@ interface ServiceData {
   name: string;
   duration_minutes: number;
   barber_id: string;
+  is_global: boolean;
 }
 
 interface GalleryImage {
@@ -131,7 +132,7 @@ const BarbeariaPublica = () => {
           .order('name'),
         supabase
           .from('services')
-          .select('id, name, duration_minutes, barber_id')
+          .select('id, name, duration_minutes, barber_id, is_global')
           .eq('barbershop_id', shop.id)
           .eq('active', true),
         supabase
@@ -169,7 +170,7 @@ const BarbeariaPublica = () => {
   };
 
   const barberServices = selectedBarber
-    ? services.filter(s => s.barber_id === selectedBarber)
+    ? services.filter(s => s.is_global || s.barber_id === selectedBarber)
     : [];
 
   const displayCity = publicProfile?.cidade || barbershop?.city;
