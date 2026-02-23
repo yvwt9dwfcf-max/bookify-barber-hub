@@ -4,6 +4,13 @@ import { supabase, Service, Barber } from '@/lib/supabase';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -347,15 +354,18 @@ const Servicos = () => {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="duration">Duração (min)</Label>
-                    <Input
-                      id="duration"
-                      type="number"
-                      placeholder="30"
-                      value={duration}
-                      onChange={(e) => setDuration(e.target.value)}
-                      min="5"
-                      step="5"
-                    />
+                    <Select value={duration} onValueChange={setDuration}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: 24 }, (_, i) => (i + 1) * 5).map(min => (
+                          <SelectItem key={min} value={String(min)}>
+                            {min} min
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
