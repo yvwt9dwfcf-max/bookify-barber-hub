@@ -16,11 +16,14 @@ import {
   Menu,
   X,
   CalendarOff,
-    Users,
-    Crown,
-    MessageCircle,
-    BarChart3,
-    Globe
+  Users,
+  Crown,
+  MessageCircle,
+  BarChart3,
+  Globe,
+  DollarSign,
+  Gift,
+  Star
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
@@ -56,6 +59,9 @@ const Painel = () => {
     { icon: CalendarOff, label: 'Bloqueios', path: '/painel/bloqueios' },
     ...(isMaster ? [{ icon: Users, label: 'Equipe', path: '/painel/barbeiros' }] : []),
     ...(isMaster ? [{ icon: BarChart3, label: 'Relatórios', path: '/painel/relatorios' }] : []),
+    ...(isMaster ? [{ icon: DollarSign, label: 'Comissões', path: '/painel/comissoes' }] : []),
+    ...(isMaster ? [{ icon: Gift, label: 'Fidelidade', path: '/painel/fidelidade' }] : []),
+    ...(isMaster ? [{ icon: Star, label: 'Avaliações', path: '/painel/avaliacoes' }] : []),
     { icon: MessageCircle, label: 'WhatsApp', path: '/painel/whatsapp' },
     ...(isMaster ? [{ icon: Globe, label: 'Perfil Público', path: '/painel/perfil-publico' }] : []),
     { icon: Settings, label: 'Configurações', path: '/painel/configuracoes' },

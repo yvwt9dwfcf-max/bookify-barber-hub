@@ -5,10 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { BarChart3, TrendingUp, TrendingDown, Users, Scissors, Target, Download, Minus } from 'lucide-react';
+import { BarChart3, TrendingUp, TrendingDown, Users, Scissors, Target, Download, Minus, Clock, XCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, PieChart, Pie, Cell, Legend } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, PieChart, Pie, Cell } from 'recharts';
 import { format, startOfMonth, endOfMonth, startOfDay, endOfDay, subDays, subMonths, eachDayOfInterval } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -109,9 +109,9 @@ const Relatorios = () => {
     };
   }, [period]);
 
-  // Fetch completed appointments with services and barbers
-  const { data: appointments, isLoading } = useQuery({
-    queryKey: ['reports-appointments', barbershop?.id, dateRange],
+  // Fetch ALL appointments (not just completed) for richer metrics
+  const { data: allAppointments, isLoading } = useQuery({
+    queryKey: ['reports-all-appointments', barbershop?.id, dateRange],
     queryFn: async () => {
       if (!barbershop?.id) return [];
       
@@ -127,7 +127,6 @@ const Relatorios = () => {
           services(id, name, price)
         `)
         .eq('barbershop_id', barbershop.id)
-        .eq('status', 'completed')
         .gte('start_time', dateRange.start)
         .lte('start_time', dateRange.end);
 
@@ -136,6 +135,33 @@ const Relatorios = () => {
     },
     enabled: !!barbershop?.id && isMaster
   });
+
+  // Filter completed only for revenue calculations
+  const appointments = useMemo(() => 
+    allAppointments?.filter(a => a.status === 'completed') || [], 
+    [allAppointments]
+  );
+
+  // Cancellation rate
+  const cancellationRate = useMemo(() => {
+    if (!allAppointments?.length) return 0;
+    const cancelled = allAppointments.filter(a => a.status === 'cancelled').length;
+    return Math.round((cancelled / allAppointments.length) * 100);
+  }, [allAppointments]);
+
+  // Peak hours
+  const peakHours = useMemo(() => {
+    if (!allAppointments?.length) return [];
+    const hourCount: Record<number, number> = {};
+    allAppointments.filter(a => a.status !== 'cancelled').forEach(apt => {
+      const hour = new Date(apt.start_time).getHours();
+      hourCount[hour] = (hourCount[hour] || 0) + 1;
+    });
+    return Object.entries(hourCount)
+      .map(([hour, count]) => ({ hour: `${hour}h`, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+  }, [allAppointments]);
 
   // Fetch previous month appointments for comparison (only when period is '30days')
   const prevMonthRange = useMemo(() => {
@@ -658,6 +684,59 @@ const Relatorios = () => {
         </CardContent>
       </Card>
 
+      {/* New metrics row: Cancellation rate + Peak hours */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card>
+          <CardHeader className="pb-2 pt-4 px-4">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <XCircle className="h-4 w-4 text-destructive" />
+              Taxa de cancelamento
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-4 pb-4 pt-1">
+            {isLoading ? (
+              <Skeleton className="h-16 w-full" />
+            ) : (
+              <div className="flex items-center gap-4">
+                <div className="text-3xl font-bold text-destructive">{cancellationRate}%</div>
+                <div className="text-xs text-muted-foreground">
+                  {allAppointments?.filter(a => a.status === 'cancelled').length || 0} cancelados de {allAppointments?.length || 0} total
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2 pt-4 px-4">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Clock className="h-4 w-4 text-primary" />
+              Horários de pico
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-4 pb-4 pt-1">
+            {isLoading ? (
+              <Skeleton className="h-16 w-full" />
+            ) : peakHours.length > 0 ? (
+              <div className="space-y-1.5">
+                {peakHours.map((ph, i) => (
+                  <div key={ph.hour} className="flex items-center justify-between p-1.5 rounded-lg bg-muted/50">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-primary">#{i + 1}</span>
+                      <span className="text-sm font-medium">{ph.hour}</span>
+                    </div>
+                    <span className="text-xs text-muted-foreground">{ph.count} agend.</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="py-4 text-center text-muted-foreground text-sm">
+                Nenhum dado no período.
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Grid for services and barber performance */}
       <div className="grid gap-4 md:grid-cols-2">
         {/* Bloco 2 - Serviços mais vendidos */}
@@ -680,70 +759,45 @@ const Relatorios = () => {
               </div>
             ) : topServices.length > 0 ? (
               <>
-                {/* Pie Chart */}
                 <div className="h-[180px] mb-3">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
-                      <Pie
-                        data={pieChartData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={40}
-                        outerRadius={70}
-                        paddingAngle={3}
-                        dataKey="value"
-                      >
+                      <Pie data={pieChartData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} paddingAngle={3} dataKey="value">
                         {pieChartData.map((_, index) => (
                           <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                         ))}
                       </Pie>
                       <Tooltip
                         formatter={(value: number, name: string) => [`${value} atend.`, name]}
-                        contentStyle={{
-                          backgroundColor: 'hsl(var(--card))',
-                          border: '1px solid hsl(var(--border))',
-                          borderRadius: '8px',
-                          fontSize: '12px'
-                        }}
+                        contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }}
                       />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
-                {/* Legend list */}
                 <div className="space-y-1.5">
                   {pieChartData.map((service, index) => (
-                    <div 
-                      key={service.name}
-                      className="flex items-center justify-between p-2 rounded-lg bg-muted/50"
-                    >
+                    <div key={service.name} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
                       <div className="flex items-center gap-2">
-                        <span
-                          className="h-2.5 w-2.5 rounded-full shrink-0"
-                          style={{ backgroundColor: PIE_COLORS[index % PIE_COLORS.length] }}
-                        />
+                        <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: PIE_COLORS[index % PIE_COLORS.length] }} />
                         <span className="text-sm font-medium truncate">{service.name}</span>
                       </div>
-                      <span className="text-xs text-muted-foreground whitespace-nowrap ml-2">
-                        {service.percentage}% ({service.value})
-                      </span>
+                      <span className="text-xs text-muted-foreground whitespace-nowrap ml-2">{service.percentage}% ({service.value})</span>
                     </div>
                   ))}
                 </div>
               </>
             ) : (
-              <div className="py-6 text-center text-muted-foreground text-sm">
-                Nenhum serviço realizado no período.
-              </div>
+              <div className="py-6 text-center text-muted-foreground text-sm">Nenhum serviço realizado no período.</div>
             )}
           </CardContent>
         </Card>
 
-        {/* Bloco 3 - Desempenho dos barbeiros */}
+        {/* Bloco 3 - Ranking dos barbeiros */}
         <Card>
           <CardHeader className="pb-2 pt-4 px-4">
             <CardTitle className="flex items-center gap-2 text-base">
               <Users className="h-4 w-4 text-primary" />
-              Desempenho dos barbeiros
+              Ranking dos barbeiros
             </CardTitle>
           </CardHeader>
           <CardContent className="px-4 pb-4 pt-1">
@@ -758,27 +812,30 @@ const Relatorios = () => {
               </div>
             ) : barberPerformance.length > 0 ? (
               <div className="space-y-2">
-                {barberPerformance.map((barber, index) => (
-                  <div 
-                    key={barber.name}
-                    className="flex items-center justify-between p-2.5 rounded-lg bg-muted/50"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <span className="text-sm font-bold text-primary">
-                        #{index + 1}
+                {barberPerformance.map((barber, index) => {
+                  const barberRevenue = appointments
+                    .filter(a => (a.barbers as any)?.name === barber.name)
+                    .reduce((sum, a) => sum + Number(a.services?.price || 0), 0);
+                  return (
+                    <div key={barber.name} className="flex items-center justify-between p-2.5 rounded-lg bg-muted/50">
+                      <div className="flex items-center gap-2.5">
+                        <span className={`text-sm font-bold ${index === 0 ? 'text-yellow-500' : index === 1 ? 'text-gray-400' : index === 2 ? 'text-amber-700' : 'text-muted-foreground'}`}>
+                          {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
+                        </span>
+                        <div>
+                          <span className="text-sm font-medium">{barber.name}</span>
+                          <p className="text-[10px] text-muted-foreground">{formatCurrency(barberRevenue)}</p>
+                        </div>
+                      </div>
+                      <span className="text-xs text-muted-foreground">
+                        {barber.count} {barber.count === 1 ? 'atend.' : 'atend.'}
                       </span>
-                      <span className="text-sm font-medium">{barber.name}</span>
                     </div>
-                    <span className="text-xs text-muted-foreground">
-                      {barber.count} {barber.count === 1 ? 'atendimento' : 'atendimentos'}
-                    </span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
-              <div className="py-6 text-center text-muted-foreground text-sm">
-                Nenhum atendimento realizado no período.
-              </div>
+              <div className="py-6 text-center text-muted-foreground text-sm">Nenhum atendimento realizado no período.</div>
             )}
           </CardContent>
         </Card>
