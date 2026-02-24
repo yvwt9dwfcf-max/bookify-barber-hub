@@ -81,6 +81,48 @@ export type Database = {
           },
         ]
       }
+      barber_commissions: {
+        Row: {
+          barber_id: string
+          barbershop_id: string
+          created_at: string
+          default_percentage: number
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          barber_id: string
+          barbershop_id: string
+          created_at?: string
+          default_percentage?: number
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          barber_id?: string
+          barbershop_id?: string
+          created_at?: string
+          default_percentage?: number
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "barber_commissions_barber_id_fkey"
+            columns: ["barber_id"]
+            isOneToOne: true
+            referencedRelation: "barbers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "barber_commissions_barbershop_id_fkey"
+            columns: ["barbershop_id"]
+            isOneToOne: false
+            referencedRelation: "barbershops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       barber_permissions: {
         Row: {
           barber_id: string
@@ -374,6 +416,231 @@ export type Database = {
           },
         ]
       }
+      commission_overrides: {
+        Row: {
+          barber_id: string
+          barbershop_id: string
+          created_at: string
+          id: string
+          percentage: number
+          service_id: string
+        }
+        Insert: {
+          barber_id: string
+          barbershop_id: string
+          created_at?: string
+          id?: string
+          percentage: number
+          service_id: string
+        }
+        Update: {
+          barber_id?: string
+          barbershop_id?: string
+          created_at?: string
+          id?: string
+          percentage?: number
+          service_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commission_overrides_barber_id_fkey"
+            columns: ["barber_id"]
+            isOneToOne: false
+            referencedRelation: "barbers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commission_overrides_barbershop_id_fkey"
+            columns: ["barbershop_id"]
+            isOneToOne: false
+            referencedRelation: "barbershops"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commission_overrides_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      loyalty_cards: {
+        Row: {
+          barbershop_id: string
+          created_at: string
+          customer_name: string
+          customer_phone: string
+          id: string
+          total_points: number
+          total_visits: number
+          updated_at: string
+        }
+        Insert: {
+          barbershop_id: string
+          created_at?: string
+          customer_name: string
+          customer_phone: string
+          id?: string
+          total_points?: number
+          total_visits?: number
+          updated_at?: string
+        }
+        Update: {
+          barbershop_id?: string
+          created_at?: string
+          customer_name?: string
+          customer_phone?: string
+          id?: string
+          total_points?: number
+          total_visits?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loyalty_cards_barbershop_id_fkey"
+            columns: ["barbershop_id"]
+            isOneToOne: false
+            referencedRelation: "barbershops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      loyalty_config: {
+        Row: {
+          barbershop_id: string
+          created_at: string
+          id: string
+          is_active: boolean
+          points_per_visit: number
+          updated_at: string
+        }
+        Insert: {
+          barbershop_id: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          points_per_visit?: number
+          updated_at?: string
+        }
+        Update: {
+          barbershop_id?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          points_per_visit?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loyalty_config_barbershop_id_fkey"
+            columns: ["barbershop_id"]
+            isOneToOne: true
+            referencedRelation: "barbershops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      loyalty_rewards: {
+        Row: {
+          barbershop_id: string
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          points_required: number
+        }
+        Insert: {
+          barbershop_id: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          points_required: number
+        }
+        Update: {
+          barbershop_id?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          points_required?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loyalty_rewards_barbershop_id_fkey"
+            columns: ["barbershop_id"]
+            isOneToOne: false
+            referencedRelation: "barbershops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      loyalty_transactions: {
+        Row: {
+          appointment_id: string | null
+          barbershop_id: string
+          created_at: string
+          description: string | null
+          id: string
+          loyalty_card_id: string
+          points: number
+          reward_id: string | null
+          type: string
+        }
+        Insert: {
+          appointment_id?: string | null
+          barbershop_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          loyalty_card_id: string
+          points: number
+          reward_id?: string | null
+          type: string
+        }
+        Update: {
+          appointment_id?: string | null
+          barbershop_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          loyalty_card_id?: string
+          points?: number
+          reward_id?: string | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loyalty_transactions_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loyalty_transactions_barbershop_id_fkey"
+            columns: ["barbershop_id"]
+            isOneToOne: false
+            referencedRelation: "barbershops"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loyalty_transactions_loyalty_card_id_fkey"
+            columns: ["loyalty_card_id"]
+            isOneToOne: false
+            referencedRelation: "loyalty_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loyalty_transactions_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "loyalty_rewards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       opening_hours: {
         Row: {
           barber_id: string
@@ -491,6 +758,64 @@ export type Database = {
             foreignKeyName: "public_profiles_barbershop_id_fkey"
             columns: ["barbershop_id"]
             isOneToOne: true
+            referencedRelation: "barbershops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reviews: {
+        Row: {
+          appointment_id: string | null
+          barber_id: string
+          barbershop_id: string
+          comment: string | null
+          created_at: string
+          customer_name: string
+          customer_phone: string | null
+          id: string
+          rating: number
+        }
+        Insert: {
+          appointment_id?: string | null
+          barber_id: string
+          barbershop_id: string
+          comment?: string | null
+          created_at?: string
+          customer_name: string
+          customer_phone?: string | null
+          id?: string
+          rating: number
+        }
+        Update: {
+          appointment_id?: string | null
+          barber_id?: string
+          barbershop_id?: string
+          comment?: string | null
+          created_at?: string
+          customer_name?: string
+          customer_phone?: string | null
+          id?: string
+          rating?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_barber_id_fkey"
+            columns: ["barber_id"]
+            isOneToOne: false
+            referencedRelation: "barbers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_barbershop_id_fkey"
+            columns: ["barbershop_id"]
+            isOneToOne: false
             referencedRelation: "barbershops"
             referencedColumns: ["id"]
           },
