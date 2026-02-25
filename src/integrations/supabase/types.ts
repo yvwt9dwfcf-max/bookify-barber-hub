@@ -763,64 +763,6 @@ export type Database = {
           },
         ]
       }
-      reviews: {
-        Row: {
-          appointment_id: string | null
-          barber_id: string
-          barbershop_id: string
-          comment: string | null
-          created_at: string
-          customer_name: string
-          customer_phone: string | null
-          id: string
-          rating: number
-        }
-        Insert: {
-          appointment_id?: string | null
-          barber_id: string
-          barbershop_id: string
-          comment?: string | null
-          created_at?: string
-          customer_name: string
-          customer_phone?: string | null
-          id?: string
-          rating: number
-        }
-        Update: {
-          appointment_id?: string | null
-          barber_id?: string
-          barbershop_id?: string
-          comment?: string | null
-          created_at?: string
-          customer_name?: string
-          customer_phone?: string | null
-          id?: string
-          rating?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "reviews_appointment_id_fkey"
-            columns: ["appointment_id"]
-            isOneToOne: false
-            referencedRelation: "appointments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "reviews_barber_id_fkey"
-            columns: ["barber_id"]
-            isOneToOne: false
-            referencedRelation: "barbers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "reviews_barbershop_id_fkey"
-            columns: ["barbershop_id"]
-            isOneToOne: false
-            referencedRelation: "barbershops"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       services: {
         Row: {
           active: boolean

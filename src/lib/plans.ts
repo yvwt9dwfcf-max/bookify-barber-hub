@@ -17,7 +17,7 @@ export const PLANS: Plan[] = [
     label: '1 barbeiro',
     maxBarbers: 1,
     price: 29.9,
-    features: ['Agenda completa', 'Link de agendamento', 'Relatórios básicos'],
+    features: ['Agenda completa', 'Link de agendamento', 'Relatórios básicos', 'Programa de Fidelidade'],
   },
   {
     id: 'plus',
@@ -26,7 +26,7 @@ export const PLANS: Plan[] = [
     label: 'até 3 barbeiros',
     maxBarbers: 3,
     price: 59.9,
-    features: ['Tudo do Basic', 'Gestão de equipe', 'Permissões por barbeiro'],
+    features: ['Tudo do Basic', 'Gestão de equipe', 'Permissões por barbeiro', 'Gestão de Comissões'],
   },
   {
     id: 'pro',
@@ -36,7 +36,7 @@ export const PLANS: Plan[] = [
     maxBarbers: 6,
     price: 89.9,
     popular: true,
-    features: ['Tudo do Plus', 'Relatórios avançados', 'Bloqueios de horário'],
+    features: ['Tudo do Plus', 'Relatórios avançados', 'Bloqueios de horário', 'Comissões por serviço'],
   },
   {
     id: 'studio',
