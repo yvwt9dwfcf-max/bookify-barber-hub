@@ -6,12 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Gift, Star, Users, Plus, Trash2, Search, Award, History } from 'lucide-react';
+import { Gift, Users, Search, Award, Check } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 
 interface OutletContext {
   barber: { id: string; barbershop_id: string } | null;
@@ -22,9 +20,6 @@ interface OutletContext {
 const Fidelidade = () => {
   const { barbershop, isMaster } = useOutletContext<OutletContext>();
   const queryClient = useQueryClient();
-  const [rewardDialog, setRewardDialog] = useState(false);
-  const [rewardName, setRewardName] = useState('');
-  const [rewardPoints, setRewardPoints] = useState('');
   const [searchPhone, setSearchPhone] = useState('');
   const [selectedCard, setSelectedCard] = useState<any>(null);
   const [redeemDialog, setRedeemDialog] = useState(false);
@@ -44,22 +39,6 @@ const Fidelidade = () => {
     enabled: !!barbershop?.id && isMaster,
   });
 
-  // Rewards
-  const { data: rewards } = useQuery({
-    queryKey: ['loyalty-rewards', barbershop?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('loyalty_rewards')
-        .select('*')
-        .eq('barbershop_id', barbershop!.id)
-        .eq('is_active', true)
-        .order('points_required');
-      if (error) throw error;
-      return data || [];
-    },
-    enabled: !!barbershop?.id && isMaster,
-  });
-
   // Cards (customers)
   const { data: cards } = useQuery({
     queryKey: ['loyalty-cards', barbershop?.id, searchPhone],
@@ -69,7 +48,7 @@ const Fidelidade = () => {
         .select('*')
         .eq('barbershop_id', barbershop!.id)
         .order('total_points', { ascending: false })
-        .limit(20);
+        .limit(30);
       if (searchPhone) {
         query = query.or(`customer_phone.ilike.%${searchPhone}%,customer_name.ilike.%${searchPhone}%`);
       }
@@ -78,22 +57,6 @@ const Fidelidade = () => {
       return data || [];
     },
     enabled: !!barbershop?.id && isMaster,
-  });
-
-  // Transactions for selected card
-  const { data: transactions } = useQuery({
-    queryKey: ['loyalty-transactions', selectedCard?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('loyalty_transactions')
-        .select('*, loyalty_rewards(name)')
-        .eq('loyalty_card_id', selectedCard!.id)
-        .order('created_at', { ascending: false })
-        .limit(20);
-      if (error) throw error;
-      return data || [];
-    },
-    enabled: !!selectedCard?.id,
   });
 
   // Toggle active
@@ -120,83 +83,49 @@ const Fidelidade = () => {
 
   const updatePointsMutation = useMutation({
     mutationFn: async (points: number) => {
-      if (config) {
-        const { error } = await supabase
-          .from('loyalty_config')
-          .update({ points_per_visit: points, updated_at: new Date().toISOString() })
-          .eq('id', config.id);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from('loyalty_config')
-          .insert({ barbershop_id: barbershop!.id, points_per_visit: points });
-        if (error) throw error;
-      }
+      if (!config) return;
+      const { error } = await supabase
+        .from('loyalty_config')
+        .update({ points_per_visit: points, updated_at: new Date().toISOString() })
+        .eq('id', config.id);
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['loyalty-config'] });
-      toast.success('Pontos por visita atualizados!');
-    },
-  });
-
-  const addRewardMutation = useMutation({
-    mutationFn: async () => {
-      const { error } = await supabase
-        .from('loyalty_rewards')
-        .insert({ barbershop_id: barbershop!.id, name: rewardName, points_required: Number(rewardPoints) });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['loyalty-rewards'] });
-      setRewardDialog(false);
-      setRewardName('');
-      setRewardPoints('');
-      toast.success('Prêmio adicionado!');
-    },
-  });
-
-  const deleteRewardMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from('loyalty_rewards').update({ is_active: false }).eq('id', id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['loyalty-rewards'] });
-      toast.success('Prêmio removido!');
+      toast.success('Pontos atualizados!');
     },
   });
 
   const redeemMutation = useMutation({
-    mutationFn: async ({ cardId, rewardId, points }: { cardId: string; rewardId: string; points: number }) => {
-      // Create transaction
+    mutationFn: async ({ cardId, currentPoints, goalPoints }: { cardId: string; currentPoints: number; goalPoints: number }) => {
+      const newPoints = currentPoints - goalPoints;
       const { error: txError } = await supabase
         .from('loyalty_transactions')
         .insert({
           loyalty_card_id: cardId,
           barbershop_id: barbershop!.id,
           type: 'redeem',
-          points: -points,
-          reward_id: rewardId,
-          description: 'Resgate de prêmio',
+          points: -goalPoints,
+          description: 'Recompensa resgatada',
         });
       if (txError) throw txError;
-      // Update card points
       const { error: cardError } = await supabase
         .from('loyalty_cards')
-        .update({ total_points: (selectedCard?.total_points || 0) - points, updated_at: new Date().toISOString() })
+        .update({ total_points: newPoints, updated_at: new Date().toISOString() })
         .eq('id', cardId);
       if (cardError) throw cardError;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['loyalty-cards'] });
-      queryClient.invalidateQueries({ queryKey: ['loyalty-transactions'] });
       setRedeemDialog(false);
-      toast.success('Prêmio resgatado com sucesso!');
+      setSelectedCard(null);
+      toast.success('Recompensa resgatada!');
     },
   });
 
   const isActive = config?.is_active ?? false;
   const pointsPerVisit = config?.points_per_visit ?? 1;
+  const goalPoints = config?.points_per_visit ? (config as any).goal_points : undefined;
 
   if (!isMaster) {
     return (
@@ -213,70 +142,41 @@ const Fidelidade = () => {
           <Gift className="h-5 w-5 text-primary" />
           Programa de Fidelidade
         </h1>
-        <p className="text-sm text-muted-foreground">Fidelize seus clientes com pontos e recompensas</p>
+        <p className="text-sm text-muted-foreground">Sistema simples de pontos por serviço concluído</p>
       </div>
 
       {/* Config */}
       <Card>
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between mb-4">
+        <CardContent className="p-4 space-y-4">
+          <div className="flex items-center justify-between">
             <div>
               <p className="font-semibold text-sm">Programa ativo</p>
-              <p className="text-xs text-muted-foreground">Clientes acumulam pontos ao concluir atendimentos</p>
+              <p className="text-xs text-muted-foreground">Clientes com telefone acumulam pontos ao concluir serviços</p>
             </div>
             <Switch checked={isActive} onCheckedChange={(v) => toggleConfigMutation.mutate(v)} />
           </div>
           {isActive && (
-            <div className="flex items-center gap-3">
-              <p className="text-sm text-muted-foreground">Pontos por visita:</p>
-              <Input
-                type="number"
-                min={1}
-                value={pointsPerVisit}
-                onChange={(e) => updatePointsMutation.mutate(Number(e.target.value) || 1)}
-                className="w-20 h-8 text-sm text-center"
-              />
+            <div className="space-y-3 pt-2 border-t border-border/50">
+              <div className="flex items-center gap-3">
+                <p className="text-sm text-muted-foreground whitespace-nowrap">Pontos por serviço:</p>
+                <Input
+                  type="number"
+                  min={1}
+                  value={pointsPerVisit}
+                  onChange={(e) => {
+                    const v = Number(e.target.value);
+                    if (v >= 1) updatePointsMutation.mutate(v);
+                  }}
+                  className="w-20 h-8 text-sm text-center"
+                />
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                Pontos só são acumulados para clientes com número de telefone cadastrado.
+              </p>
             </div>
           )}
         </CardContent>
       </Card>
-
-      {/* Rewards */}
-      {isActive && (
-        <Card>
-          <CardHeader className="pb-2 pt-4 px-4">
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2 text-base">
-                <Award className="h-4 w-4 text-primary" />
-                Prêmios
-              </CardTitle>
-              <Button size="sm" className="h-7 px-2.5 text-xs btn-primary-gradient" onClick={() => setRewardDialog(true)}>
-                <Plus className="h-3.5 w-3.5 mr-1" />
-                Adicionar
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="px-4 pb-4 pt-1">
-            {rewards && rewards.length > 0 ? (
-              <div className="space-y-2">
-                {rewards.map(reward => (
-                  <div key={reward.id} className="flex items-center justify-between p-2.5 rounded-lg bg-muted/50">
-                    <div>
-                      <p className="text-sm font-medium">{reward.name}</p>
-                      <p className="text-xs text-muted-foreground">{reward.points_required} pontos</p>
-                    </div>
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => deleteRewardMutation.mutate(reward.id)}>
-                      <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-center text-sm text-muted-foreground py-4">Nenhum prêmio cadastrado.</p>
-            )}
-          </CardContent>
-        </Card>
-      )}
 
       {/* Customer Cards */}
       {isActive && (
@@ -284,7 +184,7 @@ const Fidelidade = () => {
           <CardHeader className="pb-2 pt-4 px-4">
             <CardTitle className="flex items-center gap-2 text-base">
               <Users className="h-4 w-4 text-primary" />
-              Cartões de Fidelidade
+              Clientes
             </CardTitle>
           </CardHeader>
           <CardContent className="px-4 pb-4 pt-2">
@@ -299,125 +199,74 @@ const Fidelidade = () => {
             </div>
             {cards && cards.length > 0 ? (
               <div className="space-y-2">
-                {cards.map(card => (
-                  <div
-                    key={card.id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-muted/50 cursor-pointer hover:bg-muted/80 transition-colors"
-                    onClick={() => { setSelectedCard(card); setRedeemDialog(true); }}
-                  >
-                    <div>
-                      <p className="text-sm font-medium">{card.customer_name}</p>
-                      <p className="text-xs text-muted-foreground">{card.customer_phone}</p>
+                {cards.map(card => {
+                  const reachedGoal = goalPoints && card.total_points >= goalPoints;
+                  return (
+                    <div
+                      key={card.id}
+                      className={`flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors ${
+                        reachedGoal ? 'bg-primary/10 border border-primary/30' : 'bg-muted/50 hover:bg-muted/80'
+                      }`}
+                      onClick={() => { setSelectedCard(card); setRedeemDialog(true); }}
+                    >
+                      <div>
+                        <p className="text-sm font-medium">{card.customer_name}</p>
+                        <p className="text-xs text-muted-foreground">{card.customer_phone}</p>
+                      </div>
+                      <div className="text-right flex items-center gap-2">
+                        <Badge variant="secondary" className="text-xs">
+                          {card.total_points} pts
+                        </Badge>
+                        {reachedGoal && (
+                          <Badge className="text-xs bg-primary text-primary-foreground">
+                            <Award className="h-3 w-3 mr-1" />
+                            Recompensa!
+                          </Badge>
+                        )}
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <Badge variant="secondary" className="text-xs">
-                        <Star className="h-3 w-3 mr-1" />
-                        {card.total_points} pts
-                      </Badge>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">{card.total_visits} visitas</p>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <p className="text-center text-sm text-muted-foreground py-4">
-                {searchPhone ? 'Nenhum cliente encontrado.' : 'Pontos serão acumulados automaticamente ao concluir atendimentos.'}
+                {searchPhone ? 'Nenhum cliente encontrado.' : 'Pontos serão acumulados ao concluir atendimentos com telefone cadastrado.'}
               </p>
             )}
           </CardContent>
         </Card>
       )}
 
-      {/* Add Reward Dialog */}
-      <Dialog open={rewardDialog} onOpenChange={setRewardDialog}>
+      {/* Redeem Dialog */}
+      <Dialog open={redeemDialog} onOpenChange={(open) => { setRedeemDialog(open); if (!open) setSelectedCard(null); }}>
         <DialogContent className="sm:max-w-[360px]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Award className="h-5 w-5 text-primary" />
-              Novo prêmio
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3 py-2">
-            <Input placeholder="Nome do prêmio (ex: Corte grátis)" value={rewardName} onChange={(e) => setRewardName(e.target.value)} />
-            <Input type="number" placeholder="Pontos necessários" value={rewardPoints} onChange={(e) => setRewardPoints(e.target.value)} />
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setRewardDialog(false)}>Cancelar</Button>
-            <Button
-              className="btn-primary-gradient"
-              disabled={!rewardName || !rewardPoints}
-              onClick={() => addRewardMutation.mutate()}
-            >
-              Salvar
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Redeem / Card Details Dialog */}
-      <Dialog open={redeemDialog} onOpenChange={(open) => { setRedeemDialog(open); if (!open) setSelectedCard(null); }}>
-        <DialogContent className="sm:max-w-[400px]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Star className="h-5 w-5 text-primary" />
+              <Gift className="h-5 w-5 text-primary" />
               {selectedCard?.customer_name}
             </DialogTitle>
           </DialogHeader>
           {selectedCard && (
             <div className="space-y-4">
+              <div className="text-sm text-muted-foreground">{selectedCard.customer_phone}</div>
               <div className="flex items-center justify-between p-3 rounded-lg bg-primary/5">
-                <span className="text-sm font-medium">Saldo atual</span>
-                <Badge className="text-sm btn-primary-gradient">{selectedCard.total_points} pontos</Badge>
+                <span className="text-sm font-medium">Pontos acumulados</span>
+                <Badge className="text-sm btn-primary-gradient">{selectedCard.total_points} pts</Badge>
               </div>
+              <p className="text-xs text-muted-foreground">{selectedCard.total_visits} visitas</p>
 
-              {rewards && rewards.length > 0 && (
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground mb-2">Resgatar prêmio:</p>
-                  <div className="space-y-2">
-                    {rewards.map(reward => (
-                      <div key={reward.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
-                        <div>
-                          <p className="text-sm">{reward.name}</p>
-                          <p className="text-xs text-muted-foreground">{reward.points_required} pts</p>
-                        </div>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-7 text-xs"
-                          disabled={selectedCard.total_points < reward.points_required}
-                          onClick={() => redeemMutation.mutate({
-                            cardId: selectedCard.id,
-                            rewardId: reward.id,
-                            points: reward.points_required,
-                          })}
-                        >
-                          Resgatar
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Transaction history */}
-              {transactions && transactions.length > 0 && (
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1">
-                    <History className="h-3 w-3" /> Histórico
-                  </p>
-                  <div className="space-y-1 max-h-40 overflow-y-auto">
-                    {transactions.map(tx => (
-                      <div key={tx.id} className="flex items-center justify-between py-1.5 text-xs">
-                        <span className="text-muted-foreground">
-                          {format(new Date(tx.created_at), 'dd/MM/yy HH:mm', { locale: ptBR })}
-                        </span>
-                        <span className={tx.type === 'earn' ? 'text-primary font-medium' : 'text-destructive font-medium'}>
-                          {tx.type === 'earn' ? '+' : ''}{tx.points} pts
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+              {goalPoints && selectedCard.total_points >= goalPoints && (
+                <Button
+                  className="w-full btn-primary-gradient"
+                  onClick={() => redeemMutation.mutate({
+                    cardId: selectedCard.id,
+                    currentPoints: selectedCard.total_points,
+                    goalPoints,
+                  })}
+                >
+                  <Check className="h-4 w-4 mr-2" />
+                  Resgatar recompensa ({goalPoints} pts)
+                </Button>
               )}
             </div>
           )}

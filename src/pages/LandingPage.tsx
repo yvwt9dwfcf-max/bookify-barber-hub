@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
   Calendar, Clock, Users, Smartphone, BarChart3, Shield, 
-  ArrowRight, CheckCircle, Zap, Globe
+  ArrowRight, CheckCircle, Zap, Globe, Gift, DollarSign
 } from 'lucide-react';
 import { PLANS } from '@/lib/plans';
 
@@ -38,6 +38,16 @@ const features = [
     icon: Shield,
     title: 'Seguro e Confiável',
     description: 'Seus dados protegidos com criptografia e backups automáticos.',
+  },
+  {
+    icon: Gift,
+    title: 'Programa de Fidelidade',
+    description: 'Fidelize seus clientes com um sistema de pontos simples e prático por serviço concluído.',
+  },
+  {
+    icon: DollarSign,
+    title: 'Gestão de Comissões',
+    description: 'Defina comissões por barbeiro e por serviço, com relatório mensal automático.',
   },
 ];
 

@@ -20,7 +20,7 @@ import Assinatura from "./pages/painel/Assinatura";
 import PerfilPublico from "./pages/painel/PerfilPublico";
 import Comissoes from "./pages/painel/Comissoes";
 import Fidelidade from "./pages/painel/Fidelidade";
-import Avaliacoes from "./pages/painel/Avaliacoes";
+
 import AgendarBarbearia from "./pages/AgendarBarbearia";
 import AgendarBarbeiro from "./pages/AgendarBarbeiro";
 import BarbeariaPublica from "./pages/BarbeariaPublica";
@@ -59,7 +59,7 @@ const App = () => (
             <Route path="perfil-publico" element={<PerfilPublico />} />
             <Route path="comissoes" element={<Comissoes />} />
             <Route path="fidelidade" element={<Fidelidade />} />
-            <Route path="avaliacoes" element={<Avaliacoes />} />
+            
             <Route path="configuracoes" element={<Configuracoes />} />
           </Route>
 
