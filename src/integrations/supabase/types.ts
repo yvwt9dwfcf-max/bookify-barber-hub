@@ -510,6 +510,7 @@ export type Database = {
         Row: {
           barbershop_id: string
           created_at: string
+          goal_points: number
           id: string
           is_active: boolean
           points_per_visit: number
@@ -518,6 +519,7 @@ export type Database = {
         Insert: {
           barbershop_id: string
           created_at?: string
+          goal_points?: number
           id?: string
           is_active?: boolean
           points_per_visit?: number
@@ -526,6 +528,7 @@ export type Database = {
         Update: {
           barbershop_id?: string
           created_at?: string
+          goal_points?: number
           id?: string
           is_active?: boolean
           points_per_visit?: number

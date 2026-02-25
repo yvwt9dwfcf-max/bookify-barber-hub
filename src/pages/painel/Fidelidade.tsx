@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Gift, Users, Search, Award, Check } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -82,17 +82,17 @@ const Fidelidade = () => {
   });
 
   const updatePointsMutation = useMutation({
-    mutationFn: async (points: number) => {
+    mutationFn: async ({ field, value }: { field: 'points_per_visit' | 'goal_points'; value: number }) => {
       if (!config) return;
       const { error } = await supabase
         .from('loyalty_config')
-        .update({ points_per_visit: points, updated_at: new Date().toISOString() })
+        .update({ [field]: value, updated_at: new Date().toISOString() } as any)
         .eq('id', config.id);
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['loyalty-config'] });
-      toast.success('Pontos atualizados!');
+      toast.success('Configuração atualizada!');
     },
   });
 
@@ -125,7 +125,7 @@ const Fidelidade = () => {
 
   const isActive = config?.is_active ?? false;
   const pointsPerVisit = config?.points_per_visit ?? 1;
-  const goalPoints = config?.points_per_visit ? (config as any).goal_points : undefined;
+  const goalPoints = (config as any)?.goal_points ?? 10;
 
   if (!isMaster) {
     return (
@@ -165,7 +165,20 @@ const Fidelidade = () => {
                   value={pointsPerVisit}
                   onChange={(e) => {
                     const v = Number(e.target.value);
-                    if (v >= 1) updatePointsMutation.mutate(v);
+                    if (v >= 1) updatePointsMutation.mutate({ field: 'points_per_visit', value: v });
+                  }}
+                  className="w-20 h-8 text-sm text-center"
+                />
+              </div>
+              <div className="flex items-center gap-3">
+                <p className="text-sm text-muted-foreground whitespace-nowrap">Pontos para recompensa:</p>
+                <Input
+                  type="number"
+                  min={1}
+                  value={goalPoints}
+                  onChange={(e) => {
+                    const v = Number(e.target.value);
+                    if (v >= 1) updatePointsMutation.mutate({ field: 'goal_points', value: v });
                   }}
                   className="w-20 h-8 text-sm text-center"
                 />
