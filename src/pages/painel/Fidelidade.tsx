@@ -25,6 +25,7 @@ const Fidelidade = () => {
   const [redeemDialog, setRedeemDialog] = useState(false);
   const [localPointsPerVisit, setLocalPointsPerVisit] = useState('1');
   const [localGoalPoints, setLocalGoalPoints] = useState('10');
+  const [localRewardName, setLocalRewardName] = useState('Corte grátis');
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   // Config
   const { data: config } = useQuery({
@@ -88,6 +89,7 @@ const Fidelidade = () => {
     if (config) {
       setLocalPointsPerVisit(String(config.points_per_visit ?? 1));
       setLocalGoalPoints(String((config as any)?.goal_points ?? 10));
+      setLocalRewardName((config as any)?.reward_name ?? 'Corte grátis');
       setHasUnsavedChanges(false);
     }
   }, [config]);
@@ -99,7 +101,7 @@ const Fidelidade = () => {
       const goalVal = Number(localGoalPoints) || 10;
       const { error } = await supabase
         .from('loyalty_config')
-        .update({ points_per_visit: pointsVal, goal_points: goalVal, updated_at: new Date().toISOString() } as any)
+        .update({ points_per_visit: pointsVal, goal_points: goalVal, reward_name: localRewardName.trim() || 'Corte grátis', updated_at: new Date().toISOString() } as any)
         .eq('id', config.id);
       if (error) throw error;
     },
@@ -139,6 +141,7 @@ const Fidelidade = () => {
 
   const isActive = config?.is_active ?? false;
   const goalPoints = Number(localGoalPoints) || 10;
+  const rewardName = localRewardName.trim() || 'Corte grátis';
 
   if (!isMaster) {
     return (
@@ -194,6 +197,19 @@ const Fidelidade = () => {
                     setHasUnsavedChanges(true);
                   }}
                   className="w-20 h-8 text-sm text-center"
+                />
+              </div>
+              <div className="flex items-center gap-3">
+                <p className="text-sm text-muted-foreground whitespace-nowrap">Prêmio:</p>
+                <Input
+                  type="text"
+                  placeholder="Ex: Corte grátis"
+                  value={localRewardName}
+                  onChange={(e) => {
+                    setLocalRewardName(e.target.value);
+                    setHasUnsavedChanges(true);
+                  }}
+                  className="h-8 text-sm"
                 />
               </div>
               {hasUnsavedChanges && (
@@ -257,7 +273,7 @@ const Fidelidade = () => {
                         {reachedGoal && (
                           <Badge className="text-xs bg-primary text-primary-foreground">
                             <Award className="h-3 w-3 mr-1" />
-                            Recompensa!
+                            {rewardName}
                           </Badge>
                         )}
                       </div>
@@ -293,17 +309,26 @@ const Fidelidade = () => {
               <p className="text-xs text-muted-foreground">{selectedCard.total_visits} visitas</p>
 
               {goalPoints && selectedCard.total_points >= goalPoints && (
-                <Button
-                  className="w-full btn-primary-gradient"
-                  onClick={() => redeemMutation.mutate({
-                    cardId: selectedCard.id,
-                    currentPoints: selectedCard.total_points,
-                    goalPoints,
-                  })}
-                >
-                  <Check className="h-4 w-4 mr-2" />
-                  Resgatar recompensa ({goalPoints} pts)
-                </Button>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 p-3 rounded-lg bg-primary/10 border border-primary/30">
+                    <Award className="h-5 w-5 text-primary shrink-0" />
+                    <div>
+                      <p className="text-sm font-semibold text-primary">Prêmio disponível!</p>
+                      <p className="text-xs text-muted-foreground">{rewardName}</p>
+                    </div>
+                  </div>
+                  <Button
+                    className="w-full btn-primary-gradient"
+                    onClick={() => redeemMutation.mutate({
+                      cardId: selectedCard.id,
+                      currentPoints: selectedCard.total_points,
+                      goalPoints,
+                    })}
+                  >
+                    <Check className="h-4 w-4 mr-2" />
+                    Resgatar "{rewardName}" ({goalPoints} pts)
+                  </Button>
+                </div>
               )}
             </div>
           )}

@@ -1,0 +1,1 @@
+ALTER TABLE public.loyalty_config ADD COLUMN IF NOT EXISTS reward_name text NOT NULL DEFAULT 'Corte grátis';
