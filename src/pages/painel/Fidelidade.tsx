@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Gift, Users, Search, Award, Check } from 'lucide-react';
+import { Gift, Users, Search, Award, Check, Save } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -23,7 +23,9 @@ const Fidelidade = () => {
   const [searchPhone, setSearchPhone] = useState('');
   const [selectedCard, setSelectedCard] = useState<any>(null);
   const [redeemDialog, setRedeemDialog] = useState(false);
-
+  const [localPointsPerVisit, setLocalPointsPerVisit] = useState('1');
+  const [localGoalPoints, setLocalGoalPoints] = useState('10');
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   // Config
   const { data: config } = useQuery({
     queryKey: ['loyalty-config', barbershop?.id],
@@ -81,18 +83,30 @@ const Fidelidade = () => {
     },
   });
 
-  const updatePointsMutation = useMutation({
-    mutationFn: async ({ field, value }: { field: 'points_per_visit' | 'goal_points'; value: number }) => {
+  // Sync local state from config
+  useEffect(() => {
+    if (config) {
+      setLocalPointsPerVisit(String(config.points_per_visit ?? 1));
+      setLocalGoalPoints(String((config as any)?.goal_points ?? 10));
+      setHasUnsavedChanges(false);
+    }
+  }, [config]);
+
+  const saveConfigMutation = useMutation({
+    mutationFn: async () => {
       if (!config) return;
+      const pointsVal = Number(localPointsPerVisit) || 1;
+      const goalVal = Number(localGoalPoints) || 10;
       const { error } = await supabase
         .from('loyalty_config')
-        .update({ [field]: value, updated_at: new Date().toISOString() } as any)
+        .update({ points_per_visit: pointsVal, goal_points: goalVal, updated_at: new Date().toISOString() } as any)
         .eq('id', config.id);
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['loyalty-config'] });
-      toast.success('Configuração atualizada!');
+      setHasUnsavedChanges(false);
+      toast.success('Configurações salvas com sucesso!');
     },
   });
 
@@ -124,8 +138,7 @@ const Fidelidade = () => {
   });
 
   const isActive = config?.is_active ?? false;
-  const pointsPerVisit = config?.points_per_visit ?? 1;
-  const goalPoints = (config as any)?.goal_points ?? 10;
+  const goalPoints = Number(localGoalPoints) || 10;
 
   if (!isMaster) {
     return (
@@ -160,12 +173,12 @@ const Fidelidade = () => {
               <div className="flex items-center gap-3">
                 <p className="text-sm text-muted-foreground whitespace-nowrap">Pontos por serviço:</p>
                 <Input
-                  type="number"
-                  min={1}
-                  value={pointsPerVisit}
+                  type="text"
+                  inputMode="numeric"
+                  value={localPointsPerVisit}
                   onChange={(e) => {
-                    const v = Number(e.target.value);
-                    if (v >= 1) updatePointsMutation.mutate({ field: 'points_per_visit', value: v });
+                    setLocalPointsPerVisit(e.target.value);
+                    setHasUnsavedChanges(true);
                   }}
                   className="w-20 h-8 text-sm text-center"
                 />
@@ -173,16 +186,27 @@ const Fidelidade = () => {
               <div className="flex items-center gap-3">
                 <p className="text-sm text-muted-foreground whitespace-nowrap">Pontos para recompensa:</p>
                 <Input
-                  type="number"
-                  min={1}
-                  value={goalPoints}
+                  type="text"
+                  inputMode="numeric"
+                  value={localGoalPoints}
                   onChange={(e) => {
-                    const v = Number(e.target.value);
-                    if (v >= 1) updatePointsMutation.mutate({ field: 'goal_points', value: v });
+                    setLocalGoalPoints(e.target.value);
+                    setHasUnsavedChanges(true);
                   }}
                   className="w-20 h-8 text-sm text-center"
                 />
               </div>
+              {hasUnsavedChanges && (
+                <Button
+                  onClick={() => saveConfigMutation.mutate()}
+                  disabled={saveConfigMutation.isPending}
+                  className="w-full btn-primary-gradient"
+                  size="sm"
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  Salvar configurações
+                </Button>
+              )}
               <p className="text-[11px] text-muted-foreground">
                 Pontos só são acumulados para clientes com número de telefone cadastrado.
               </p>
