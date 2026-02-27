@@ -158,8 +158,23 @@ const Fidelidade = () => {
           <Gift className="h-5 w-5 text-primary" />
           Programa de Fidelidade
         </h1>
-        <p className="text-sm text-muted-foreground">Sistema simples de pontos por serviço concluído</p>
+        <p className="text-sm text-muted-foreground">Recompense seus clientes fiéis de forma simples</p>
       </div>
+
+      {/* How it works */}
+      <Card>
+        <CardContent className="p-4">
+          <p className="text-sm font-semibold mb-2">Como funciona?</p>
+          <ul className="text-xs text-muted-foreground space-y-1.5 list-disc list-inside">
+            <li>Ative o programa e defina quantos pontos o cliente ganha por serviço concluído.</li>
+            <li>Defina a meta de pontos e o prêmio que o cliente receberá ao atingir.</li>
+            <li>Os pontos são acumulados <strong>automaticamente</strong> ao concluir um atendimento na agenda.</li>
+            <li>Apenas clientes com <strong>número de telefone</strong> cadastrado acumulam pontos.</li>
+            <li>Quando o cliente atingir a meta, você verá um destaque no card dele — basta clicar para resgatar o prêmio.</li>
+            <li>Após o resgate, os pontos usados são descontados e o ciclo recomeça.</li>
+          </ul>
+        </CardContent>
+      </Card>
 
       {/* Config */}
       <Card>
