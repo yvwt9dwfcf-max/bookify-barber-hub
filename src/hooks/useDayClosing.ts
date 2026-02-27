@@ -35,7 +35,7 @@ export function useDayClosing({ barbershopId, barberId }: UseDayClosingProps) {
       const pastStart = subDays(today, 30); // look back up to 30 days
       const { data: pastAppts, error: pastError } = await supabase
         .from('appointments')
-        .select('id, customer_name, start_time, service:services(name)')
+        .select('id, customer_name, customer_phone, barbershop_id, start_time, service:services(name)')
         .eq('barber_id', barberId)
         .eq('status', 'confirmed')
         .gte('start_time', pastStart.toISOString())
@@ -49,6 +49,8 @@ export function useDayClosing({ barbershopId, barberId }: UseDayClosingProps) {
           pastAppts.map((a: any) => ({
             id: a.id,
             customer_name: a.customer_name,
+            customer_phone: a.customer_phone,
+            barbershop_id: a.barbershop_id,
             start_time: a.start_time,
             service: a.service,
           }))
@@ -69,7 +71,7 @@ export function useDayClosing({ barbershopId, barberId }: UseDayClosingProps) {
 
       const { data: todayAppts, error: todayError } = await supabase
         .from('appointments')
-        .select('id, customer_name, start_time, service:services(name)')
+        .select('id, customer_name, customer_phone, barbershop_id, start_time, service:services(name)')
         .eq('barber_id', barberId)
         .eq('status', 'confirmed')
         .gte('start_time', today.toISOString())
@@ -83,6 +85,8 @@ export function useDayClosing({ barbershopId, barberId }: UseDayClosingProps) {
           todayAppts.map((a: any) => ({
             id: a.id,
             customer_name: a.customer_name,
+            customer_phone: a.customer_phone,
+            barbershop_id: a.barbershop_id,
             start_time: a.start_time,
             service: a.service,
           }))
