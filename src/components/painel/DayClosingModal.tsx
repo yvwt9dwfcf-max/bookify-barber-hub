@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { supabase } from '@/integrations/supabase/client';
+import { awardLoyaltyPoints } from '@/lib/loyaltyUtils';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Loader2, Moon } from 'lucide-react';
@@ -11,6 +12,8 @@ import { cn } from '@/lib/utils';
 export interface PendingAppointment {
   id: string;
   customer_name: string;
+  customer_phone: string;
+  barbershop_id: string | null;
   start_time: string;
   service?: { name: string } | null;
 }
@@ -97,6 +100,19 @@ const DayClosingModal = ({
         .in('id', ids);
 
       if (error) throw error;
+
+      // Award loyalty points for each completed appointment
+      const selectedApts = pendingAppointments.filter(a => ids.includes(a.id));
+      await Promise.allSettled(
+        selectedApts.map(apt =>
+          awardLoyaltyPoints({
+            id: apt.id,
+            customer_name: apt.customer_name,
+            customer_phone: apt.customer_phone,
+            barbershop_id: apt.barbershop_id,
+          })
+        )
+      );
 
       toast.success(
         `${ids.length} ${ids.length === 1 ? 'atendimento concluído' : 'atendimentos concluídos'}!`

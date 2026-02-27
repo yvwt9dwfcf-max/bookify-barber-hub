@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { supabase, Appointment, Barber, Barbershop } from '@/lib/supabase';
+import { awardLoyaltyPoints } from '@/lib/loyaltyUtils';
 import { useRealtimeAppointments } from '@/hooks/useRealtimeAppointments';
 import { useBarbershopBarbers } from '@/hooks/useBarbershopBarbers';
 import { useSubscription } from '@/hooks/useSubscription';
@@ -88,7 +89,7 @@ const getInitials = (name: string) => {
 };
 
 const Agenda = () => {
-  const { barber, isMaster } = useOutletContext<ContextType>();
+  const { barber, barbershop, isMaster } = useOutletContext<ContextType>();
   const { barbers } = useBarbershopBarbers();
   const { checkCanPerformAction } = useSubscription();
 
@@ -209,6 +210,20 @@ const Agenda = () => {
       toast.error('Erro ao atualizar status');
       throw error;
     }
+
+    // Award loyalty points when completing
+    if (status === 'completed') {
+      const apt = appointments.find(a => a.id === id);
+      if (apt && barbershop) {
+        awardLoyaltyPoints({
+          id: apt.id,
+          customer_name: apt.customer_name,
+          customer_phone: apt.customer_phone,
+          barbershop_id: barbershop.id,
+        }).catch(err => console.error('Erro ao pontuar fidelidade:', err));
+      }
+    }
+
     toast.success('Status atualizado');
     fetchAppointments();
   };
