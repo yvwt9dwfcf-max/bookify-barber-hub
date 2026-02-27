@@ -144,6 +144,12 @@ const Onboarding = () => {
 
     setSaving(true);
     try {
+      // Delete any existing opening_hours for this barber (in case of retry)
+      await supabase
+        .from('opening_hours')
+        .delete()
+        .eq('barber_id', barber.id);
+
       const toInsert = days.map(d => ({
         barber_id: barber.id,
         barbershop_id: barbershop.id,
@@ -278,8 +284,15 @@ const Onboarding = () => {
                         type="tel"
                         placeholder="(00) 00000-0000"
                         value={barbershopPhone}
-                        onChange={(e) => setBarbershopPhone(e.target.value)}
+                        onChange={(e) => {
+                          const numbers = e.target.value.replace(/\D/g, '');
+                          let formatted = numbers;
+                          if (numbers.length > 2) formatted = `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
+                          if (numbers.length > 7) formatted = `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
+                          setBarbershopPhone(formatted);
+                        }}
                         className="pl-10 h-11"
+                        maxLength={15}
                       />
                     </div>
                   </div>
