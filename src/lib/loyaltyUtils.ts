@@ -11,6 +11,7 @@ export async function awardLoyaltyPoints(appointment: {
   barbershop_id: string | null;
 }) {
   if (!appointment.barbershop_id) return;
+  if (!appointment.customer_phone || appointment.customer_phone.trim() === '') return;
 
   // Check if loyalty is active for this barbershop
   const { data: config } = await supabase
