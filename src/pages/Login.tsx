@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate, Link } from 'react-router-dom';
-import { Loader2, Mail, Lock, Scissors } from 'lucide-react';
+import { Loader2, Mail, Lock, Scissors, User } from 'lucide-react';
 import { toast } from 'sonner';
 import { lovable } from '@/integrations/lovable/index';
 
@@ -44,6 +44,7 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
   const [loginPassword, setLoginPassword] = useState('');
 
   // Signup form
+  const [signupName, setSignupName] = useState('');
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
   const [signupConfirmPassword, setSignupConfirmPassword] = useState('');
@@ -101,7 +102,9 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
 
     setIsLoading(true);
     try {
-      const { error } = await signUp(signupEmail, signupPassword);
+      const { error } = await signUp(signupEmail, signupPassword, {
+        name: signupName.trim() || undefined,
+      });
       if (error) {
         toast.error(error.message);
       } else {
@@ -284,6 +287,20 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
                   <form onSubmit={handleSignup} className="space-y-4">
                     <div className="rounded-lg bg-primary/10 text-primary text-sm p-3 text-center font-medium">
                       Teste grátis por 3 dias. Após isso, escolha um plano para continuar.
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-name">Seu nome</Label>
+                      <div className="relative">
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="signup-name"
+                          type="text"
+                          placeholder="Seu nome completo"
+                          value={signupName}
+                          onChange={(e) => setSignupName(e.target.value)}
+                          className="pl-10 h-11"
+                        />
+                      </div>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="signup-email">Email *</Label>
