@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,10 +6,11 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Gift, Users, Search, Award, Check, Save } from 'lucide-react';
+import { Gift, Users, Search, Award, Check, Save, ChevronDown, Info } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { PremiumSkeleton } from '@/components/ui/premium-skeleton';
 
 interface OutletContext {
   barber: { id: string; barbershop_id: string } | null;
@@ -17,18 +18,28 @@ interface OutletContext {
   isMaster: boolean;
 }
 
+const PAGE_SIZE = 30;
+
 const Fidelidade = () => {
   const { barbershop, isMaster } = useOutletContext<OutletContext>();
   const queryClient = useQueryClient();
   const [searchPhone, setSearchPhone] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedCard, setSelectedCard] = useState<any>(null);
   const [redeemDialog, setRedeemDialog] = useState(false);
   const [localPointsPerVisit, setLocalPointsPerVisit] = useState('1');
   const [localGoalPoints, setLocalGoalPoints] = useState('10');
   const [localRewardName, setLocalRewardName] = useState('Corte grátis');
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  // Config
-  const { data: config } = useQuery({
+
+  // Debounce search for performance with large datasets
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchPhone), 300);
+    return () => clearTimeout(timer);
+  }, [searchPhone]);
+
+  // Config - available to all roles
+  const { data: config, isLoading: configLoading } = useQuery({
     queryKey: ['loyalty-config', barbershop?.id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -39,30 +50,43 @@ const Fidelidade = () => {
       if (error) throw error;
       return data;
     },
-    enabled: !!barbershop?.id && isMaster,
+    enabled: !!barbershop?.id,
   });
 
-  // Cards (customers)
-  const { data: cards } = useQuery({
-    queryKey: ['loyalty-cards', barbershop?.id, searchPhone],
-    queryFn: async () => {
+  // Cards with infinite scroll for 10k+ clients
+  const {
+    data: cardsData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading: cardsLoading,
+  } = useInfiniteQuery({
+    queryKey: ['loyalty-cards', barbershop?.id, debouncedSearch],
+    queryFn: async ({ pageParam = 0 }) => {
       let query = supabase
         .from('loyalty_cards')
         .select('*')
         .eq('barbershop_id', barbershop!.id)
         .order('total_points', { ascending: false })
-        .limit(30);
-      if (searchPhone) {
-        query = query.or(`customer_phone.ilike.%${searchPhone}%,customer_name.ilike.%${searchPhone}%`);
+        .range(pageParam, pageParam + PAGE_SIZE - 1);
+      if (debouncedSearch) {
+        query = query.or(`customer_phone.ilike.%${debouncedSearch}%,customer_name.ilike.%${debouncedSearch}%`);
       }
       const { data, error } = await query;
       if (error) throw error;
       return data || [];
     },
-    enabled: !!barbershop?.id && isMaster,
+    getNextPageParam: (lastPage, allPages) => {
+      if (lastPage.length < PAGE_SIZE) return undefined;
+      return allPages.flat().length;
+    },
+    initialPageParam: 0,
+    enabled: !!barbershop?.id && (config?.is_active ?? false),
   });
 
-  // Toggle active
+  const cards = cardsData?.pages.flat() ?? [];
+
+  // Toggle active - master only
   const toggleConfigMutation = useMutation({
     mutationFn: async (isActive: boolean) => {
       if (config) {
@@ -143,10 +167,12 @@ const Fidelidade = () => {
   const goalPoints = Number(localGoalPoints) || 10;
   const rewardName = localRewardName.trim() || 'Corte grátis';
 
-  if (!isMaster) {
+  if (configLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <p className="text-muted-foreground">Acesso restrito ao administrador.</p>
+      <div className="space-y-4">
+        <PremiumSkeleton className="h-8 w-64" />
+        <PremiumSkeleton className="h-40 w-full" />
+        <PremiumSkeleton className="h-60 w-full" />
       </div>
     );
   }
@@ -158,35 +184,52 @@ const Fidelidade = () => {
           <Gift className="h-5 w-5 text-primary" />
           Programa de Fidelidade
         </h1>
-        <p className="text-sm text-muted-foreground">Recompense seus clientes fiéis de forma simples</p>
+        <p className="text-sm text-muted-foreground">
+          {isMaster ? 'Recompense seus clientes fiéis de forma simples' : 'Consulte e resgate prêmios dos clientes'}
+        </p>
       </div>
 
       {/* How it works */}
       <Card>
         <CardContent className="p-4">
-          <p className="text-sm font-semibold mb-2">Como funciona?</p>
+          <p className="text-sm font-semibold mb-2 flex items-center gap-1.5">
+            <Info className="h-4 w-4 text-primary" />
+            Como funciona?
+          </p>
           <ul className="text-xs text-muted-foreground space-y-1.5 list-disc list-inside">
-            <li>Ative o programa e defina quantos pontos o cliente ganha por serviço concluído.</li>
-            <li>Defina a meta de pontos e o prêmio que o cliente receberá ao atingir.</li>
             <li>Os pontos são acumulados <strong>automaticamente</strong> ao concluir um atendimento na agenda.</li>
             <li>Apenas clientes com <strong>número de telefone</strong> cadastrado acumulam pontos.</li>
-            <li>Quando o cliente atingir a meta, você verá um destaque no card dele — basta clicar para resgatar o prêmio.</li>
+            <li>Quando o cliente atingir a meta, um destaque aparece — clique para resgatar o prêmio.</li>
+            {isMaster && (
+              <>
+                <li>Ative o programa e defina quantos pontos o cliente ganha por serviço concluído.</li>
+                <li>Defina a meta de pontos e o prêmio que o cliente receberá ao atingir.</li>
+              </>
+            )}
             <li>Após o resgate, os pontos usados são descontados e o ciclo recomeça.</li>
           </ul>
         </CardContent>
       </Card>
 
-      {/* Config */}
+      {/* Config - Master only can edit, barbers see status */}
       <Card>
         <CardContent className="p-4 space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-semibold text-sm">Programa ativo</p>
-              <p className="text-xs text-muted-foreground">Clientes com telefone acumulam pontos ao concluir serviços</p>
+              <p className="font-semibold text-sm">Programa {isActive ? 'ativo' : 'inativo'}</p>
+              <p className="text-xs text-muted-foreground">
+                {isActive ? 'Clientes com telefone acumulam pontos ao concluir serviços' : 'O programa está desativado no momento'}
+              </p>
             </div>
-            <Switch checked={isActive} onCheckedChange={(v) => toggleConfigMutation.mutate(v)} />
+            {isMaster ? (
+              <Switch checked={isActive} onCheckedChange={(v) => toggleConfigMutation.mutate(v)} />
+            ) : (
+              <Badge variant={isActive ? 'default' : 'secondary'} className={isActive ? 'bg-primary text-primary-foreground' : ''}>
+                {isActive ? 'Ativo' : 'Inativo'}
+              </Badge>
+            )}
           </div>
-          {isActive && (
+          {isActive && isMaster && (
             <div className="space-y-3 pt-2 border-t border-border/50">
               <div className="flex items-center gap-3">
                 <p className="text-sm text-muted-foreground whitespace-nowrap">Pontos por serviço:</p>
@@ -243,16 +286,36 @@ const Fidelidade = () => {
               </p>
             </div>
           )}
+          {/* Barbers see read-only config summary */}
+          {isActive && !isMaster && config && (
+            <div className="pt-2 border-t border-border/50 grid grid-cols-3 gap-2">
+              <div className="text-center p-2 rounded-lg bg-muted/50">
+                <p className="text-lg font-bold text-primary">{(config as any).points_per_visit ?? 1}</p>
+                <p className="text-[10px] text-muted-foreground">pts/serviço</p>
+              </div>
+              <div className="text-center p-2 rounded-lg bg-muted/50">
+                <p className="text-lg font-bold text-primary">{(config as any).goal_points ?? 10}</p>
+                <p className="text-[10px] text-muted-foreground">meta</p>
+              </div>
+              <div className="text-center p-2 rounded-lg bg-muted/50">
+                <p className="text-xs font-bold text-primary truncate">{(config as any).reward_name ?? 'Corte grátis'}</p>
+                <p className="text-[10px] text-muted-foreground">prêmio</p>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {/* Customer Cards */}
+      {/* Customer Cards - available to all roles */}
       {isActive && (
         <Card>
           <CardHeader className="pb-2 pt-4 px-4">
             <CardTitle className="flex items-center gap-2 text-base">
               <Users className="h-4 w-4 text-primary" />
               Clientes
+              {cards.length > 0 && (
+                <Badge variant="secondary" className="text-[10px] ml-1">{cards.length}+</Badge>
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent className="px-4 pb-4 pt-2">
@@ -265,7 +328,11 @@ const Fidelidade = () => {
                 className="pl-9 h-9"
               />
             </div>
-            {cards && cards.length > 0 ? (
+            {cardsLoading ? (
+              <div className="space-y-2">
+                {[1, 2, 3].map(i => <PremiumSkeleton key={i} className="h-14 w-full" />)}
+              </div>
+            ) : cards.length > 0 ? (
               <div className="space-y-2">
                 {cards.map(card => {
                   const reachedGoal = goalPoints && card.total_points >= goalPoints;
@@ -277,11 +344,11 @@ const Fidelidade = () => {
                       }`}
                       onClick={() => { setSelectedCard(card); setRedeemDialog(true); }}
                     >
-                      <div>
-                        <p className="text-sm font-medium">{card.customer_name}</p>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium truncate">{card.customer_name}</p>
                         <p className="text-xs text-muted-foreground">{card.customer_phone}</p>
                       </div>
-                      <div className="text-right flex items-center gap-2">
+                      <div className="text-right flex items-center gap-2 shrink-0 ml-2">
                         <Badge variant="secondary" className="text-xs">
                           {card.total_points} pts
                         </Badge>
@@ -295,10 +362,22 @@ const Fidelidade = () => {
                     </div>
                   );
                 })}
+                {hasNextPage && (
+                  <Button
+                    variant="ghost"
+                    className="w-full text-muted-foreground"
+                    onClick={() => fetchNextPage()}
+                    disabled={isFetchingNextPage}
+                    size="sm"
+                  >
+                    <ChevronDown className="h-4 w-4 mr-1" />
+                    {isFetchingNextPage ? 'Carregando...' : 'Carregar mais'}
+                  </Button>
+                )}
               </div>
             ) : (
               <p className="text-center text-sm text-muted-foreground py-4">
-                {searchPhone ? 'Nenhum cliente encontrado.' : 'Pontos serão acumulados ao concluir atendimentos com telefone cadastrado.'}
+                {debouncedSearch ? 'Nenhum cliente encontrado.' : 'Pontos serão acumulados ao concluir atendimentos com telefone cadastrado.'}
               </p>
             )}
           </CardContent>
@@ -339,6 +418,7 @@ const Fidelidade = () => {
                       currentPoints: selectedCard.total_points,
                       goalPoints,
                     })}
+                    disabled={redeemMutation.isPending}
                   >
                     <Check className="h-4 w-4 mr-2" />
                     Resgatar "{rewardName}" ({goalPoints} pts)
