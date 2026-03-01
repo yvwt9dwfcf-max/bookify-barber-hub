@@ -1,13 +1,14 @@
-import { useState } from 'react';
-import { useOutletContext } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useOutletContext, useSearchParams } from 'react-router-dom';
 import { supabase, Barbershop, Barber } from '@/lib/supabase';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Check, Users, Sparkles, Loader2 } from 'lucide-react';
+import { Check, Users, Sparkles, Loader2, CreditCard, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { PLANS } from '@/lib/plans';
+import { STRIPE_PLANS, StripePlanId } from '@/lib/stripe';
 
 interface ContextType {
   barber: Barber | null;
@@ -18,33 +19,79 @@ interface ContextType {
 const Assinatura = () => {
   const { barbershop, isMaster } = useOutletContext<ContextType>();
   const [selecting, setSelecting] = useState<string | null>(null);
+  const [managingPortal, setManagingPortal] = useState(false);
+  const [subscriptionData, setSubscriptionData] = useState<{
+    subscribed: boolean;
+    plan_id: string | null;
+    subscription_end: string | null;
+  } | null>(null);
+  const [searchParams] = useSearchParams();
 
   const currentPlan = barbershop?.plan || 'basic';
 
-  const handleSelectPlan = async (planId: string, maxBarbers: number) => {
+  // Check subscription on mount and after successful checkout
+  useEffect(() => {
+    checkSubscription();
+  }, []);
+
+  useEffect(() => {
+    if (searchParams.get('success') === 'true') {
+      toast.success('Assinatura realizada com sucesso! 🎉');
+      // Re-check after a short delay to let Stripe process
+      setTimeout(checkSubscription, 2000);
+    }
+    if (searchParams.get('canceled') === 'true') {
+      toast.info('Checkout cancelado.');
+    }
+  }, [searchParams]);
+
+  const checkSubscription = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('check-subscription');
+      if (error) throw error;
+      setSubscriptionData(data);
+    } catch (err) {
+      console.error('Error checking subscription:', err);
+    }
+  };
+
+  const handleSelectPlan = async (planId: string) => {
     if (!barbershop || !isMaster) return;
+    
+    const stripePlan = STRIPE_PLANS[planId as StripePlanId];
+    if (!stripePlan) return;
 
     setSelecting(planId);
     try {
-      const { error } = await supabase
-        .from('barbershops')
-        .update({
-          plan: planId as any,
-          max_barbers: maxBarbers,
-        })
-        .eq('id', barbershop.id);
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { priceId: stripePlan.price_id },
+      });
 
       if (error) throw error;
-
-      toast.success(
-        'Plano selecionado.\nFinalize o pagamento para ativar sua assinatura.',
-        { duration: 5000 }
-      );
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      }
     } catch (error) {
-      console.error('Erro ao selecionar plano:', error);
-      toast.error('Erro ao selecionar plano');
+      console.error('Erro ao iniciar checkout:', error);
+      toast.error('Erro ao iniciar checkout. Tente novamente.');
     } finally {
       setSelecting(null);
+    }
+  };
+
+  const handleManageSubscription = async () => {
+    setManagingPortal(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('customer-portal');
+      if (error) throw error;
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      }
+    } catch (error) {
+      console.error('Erro ao abrir portal:', error);
+      toast.error('Erro ao abrir portal de gerenciamento.');
+    } finally {
+      setManagingPortal(false);
     }
   };
 
@@ -55,11 +102,11 @@ const Assinatura = () => {
 
   const trialDaysRemaining = (() => {
     if (!barbershop?.trial_ends_at) return 0;
-    const trialEnds = barbershop.trial_ends_at;
-    if (!trialEnds) return 0;
-    const diff = new Date(trialEnds).getTime() - Date.now();
+    const diff = new Date(barbershop.trial_ends_at).getTime() - Date.now();
     return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
   })();
+
+  const hasActiveStripeSubscription = subscriptionData?.subscribed === true;
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto pb-12">
@@ -75,17 +122,48 @@ const Assinatura = () => {
             {trialDaysRemaining} dia{trialDaysRemaining !== 1 ? 's' : ''} restante{trialDaysRemaining !== 1 ? 's' : ''} de teste grátis
           </Badge>
         )}
-        {!isTrialActive && !barbershop?.subscription_active && (
+        {!isTrialActive && !barbershop?.subscription_active && !hasActiveStripeSubscription && (
           <Badge variant="destructive" className="text-sm px-3 py-1">
             Teste expirado — escolha um plano para continuar
           </Badge>
         )}
+        {hasActiveStripeSubscription && subscriptionData?.subscription_end && (
+          <div className="flex flex-col items-center gap-2">
+            <Badge className="bg-green-600 text-white text-sm px-3 py-1">
+              <CreditCard className="h-3.5 w-3.5 mr-1.5" />
+              Assinatura ativa
+            </Badge>
+            <p className="text-xs text-muted-foreground">
+              Próxima cobrança: {new Date(subscriptionData.subscription_end).toLocaleDateString('pt-BR')}
+            </p>
+          </div>
+        )}
       </div>
+
+      {/* Manage subscription button */}
+      {hasActiveStripeSubscription && isMaster && (
+        <div className="flex justify-center">
+          <Button
+            variant="outline"
+            onClick={handleManageSubscription}
+            disabled={managingPortal}
+            className="gap-2"
+          >
+            {managingPortal ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <ExternalLink className="h-4 w-4" />
+            )}
+            Gerenciar assinatura
+          </Button>
+        </div>
+      )}
 
       {/* Plans Grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {PLANS.map((plan) => {
           const isCurrent = currentPlan === plan.id;
+          const isSubscribedToPlan = hasActiveStripeSubscription && subscriptionData?.plan_id === plan.id;
 
           return (
             <Card
@@ -93,7 +171,7 @@ const Assinatura = () => {
               className={cn(
                 'relative overflow-hidden transition-all duration-200 hover:shadow-lg',
                 plan.popular && 'ring-2 ring-primary shadow-lg',
-                isCurrent && 'border-primary bg-primary/5'
+                isSubscribedToPlan && 'border-green-500 bg-green-500/5'
               )}
             >
               {plan.popular && (
@@ -111,7 +189,12 @@ const Assinatura = () => {
                     {plan.popular && (
                       <Badge className="badge-gradient text-[10px]">Popular</Badge>
                     )}
-                    {isCurrent && (
+                    {isSubscribedToPlan && (
+                      <Badge className="bg-green-600 text-white text-[10px]">
+                        Seu Plano
+                      </Badge>
+                    )}
+                    {isCurrent && !isSubscribedToPlan && (
                       <Badge variant="outline" className="text-[10px] border-primary text-primary">
                         Atual
                       </Badge>
@@ -141,17 +224,21 @@ const Assinatura = () => {
                 <Button
                   className={cn(
                     'w-full',
-                    isCurrent ? 'btn-primary-gradient opacity-60 cursor-default' : 'btn-primary-gradient'
+                    isSubscribedToPlan
+                      ? 'bg-green-600 hover:bg-green-700 text-white opacity-60 cursor-default'
+                      : 'btn-primary-gradient'
                   )}
-                  disabled={isCurrent || selecting !== null}
-                  onClick={() => handleSelectPlan(plan.id, plan.maxBarbers)}
+                  disabled={isSubscribedToPlan || selecting !== null}
+                  onClick={() => handleSelectPlan(plan.id)}
                 >
                   {selecting === plan.id ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : isCurrent ? (
+                  ) : isSubscribedToPlan ? (
                     'Plano atual'
+                  ) : hasActiveStripeSubscription ? (
+                    'Trocar plano'
                   ) : (
-                    'Escolher plano'
+                    'Assinar agora'
                   )}
                 </Button>
               </CardContent>
