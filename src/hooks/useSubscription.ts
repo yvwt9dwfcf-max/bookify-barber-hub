@@ -1,11 +1,31 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useUserRole } from './useUserRole';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { supabase } from '@/lib/supabase';
 
 export function useSubscription() {
   const { barbershop, isMaster } = useUserRole();
   const navigate = useNavigate();
+  const [stripeSubscribed, setStripeSubscribed] = useState<boolean | null>(null);
+
+  // Check Stripe subscription on mount and periodically
+  useEffect(() => {
+    const check = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('check-subscription');
+        if (!error && data) {
+          setStripeSubscribed(data.subscribed === true);
+        }
+      } catch {
+        // Silent fail
+      }
+    };
+
+    check();
+    const interval = setInterval(check, 60000); // every minute
+    return () => clearInterval(interval);
+  }, []);
 
   const isTrialActive = useCallback(() => {
     if (!barbershop) return false;
@@ -16,14 +36,13 @@ export function useSubscription() {
   const isSubscriptionActive = useCallback(() => {
     if (!barbershop) return false;
     if (isTrialActive()) return true;
+    if (stripeSubscribed === true) return true;
     return barbershop.subscription_active === true;
-  }, [barbershop, isTrialActive]);
+  }, [barbershop, isTrialActive, stripeSubscribed]);
 
   const trialDaysRemaining = useCallback(() => {
     if (!barbershop?.trial_ends_at) return 0;
-    const trialEnds = barbershop.trial_ends_at;
-    if (!trialEnds) return 0;
-    const diff = new Date(trialEnds).getTime() - Date.now();
+    const diff = new Date(barbershop.trial_ends_at).getTime() - Date.now();
     return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
   }, [barbershop]);
 
