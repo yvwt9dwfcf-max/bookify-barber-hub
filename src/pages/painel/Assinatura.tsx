@@ -68,12 +68,15 @@ const Assinatura = () => {
       });
 
       if (error) throw error;
+      if (data?.error) throw new Error(data.error);
       if (data?.url) {
-        window.open(data.url, '_blank');
+        window.location.href = data.url;
+        return;
       }
-    } catch (error) {
+      throw new Error('URL de checkout não recebida');
+    } catch (error: any) {
       console.error('Erro ao iniciar checkout:', error);
-      toast.error('Erro ao iniciar checkout. Tente novamente.');
+      toast.error(error?.message || 'Erro ao iniciar checkout. Tente novamente.');
     } finally {
       setSelecting(null);
     }
@@ -84,12 +87,14 @@ const Assinatura = () => {
     try {
       const { data, error } = await supabase.functions.invoke('customer-portal');
       if (error) throw error;
+      if (data?.error) throw new Error(data.error);
       if (data?.url) {
-        window.open(data.url, '_blank');
+        window.location.href = data.url;
+        return;
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao abrir portal:', error);
-      toast.error('Erro ao abrir portal de gerenciamento.');
+      toast.error(error?.message || 'Erro ao abrir portal de gerenciamento.');
     } finally {
       setManagingPortal(false);
     }
