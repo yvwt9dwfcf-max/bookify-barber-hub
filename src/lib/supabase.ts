@@ -19,6 +19,7 @@ export interface Barbershop {
   max_barbers: number;
   onboarding_completed: boolean;
   subscription_active: boolean;
+  subscription_status: string;
   trial_started_at: string | null;
   trial_ends_at: string | null;
   created_at: string;

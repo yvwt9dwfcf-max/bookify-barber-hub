@@ -327,6 +327,7 @@ export type Database = {
           plan: Database["public"]["Enums"]["plan_type"]
           slug: string | null
           subscription_active: boolean
+          subscription_status: string
           trial_ends_at: string | null
           trial_started_at: string | null
           updated_at: string
@@ -346,6 +347,7 @@ export type Database = {
           plan?: Database["public"]["Enums"]["plan_type"]
           slug?: string | null
           subscription_active?: boolean
+          subscription_status?: string
           trial_ends_at?: string | null
           trial_started_at?: string | null
           updated_at?: string
@@ -365,6 +367,7 @@ export type Database = {
           plan?: Database["public"]["Enums"]["plan_type"]
           slug?: string | null
           subscription_active?: boolean
+          subscription_status?: string
           trial_ends_at?: string | null
           trial_started_at?: string | null
           updated_at?: string

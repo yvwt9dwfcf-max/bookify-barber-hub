@@ -35,7 +35,7 @@ export function useAuth() {
     return { data, error };
   };
 
-  const signUp = async (email: string, password: string, metadata?: { name?: string }) => {
+  const signUp = async (email: string, password: string, metadata?: { name?: string; selected_plan?: string }) => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,

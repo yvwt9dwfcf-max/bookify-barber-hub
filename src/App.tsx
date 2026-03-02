@@ -24,6 +24,7 @@ import Fidelidade from "./pages/painel/Fidelidade";
 import AgendarBarbearia from "./pages/AgendarBarbearia";
 import AgendarBarbeiro from "./pages/AgendarBarbeiro";
 import BarbeariaPublica from "./pages/BarbeariaPublica";
+import TrialExpirado from "./pages/TrialExpirado";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -45,6 +46,7 @@ const App = () => (
 
           {/* Onboarding */}
           <Route path="/onboarding" element={<Onboarding />} />
+          <Route path="/trial-expirado" element={<TrialExpirado />} />
 
           {/* Protected panel routes */}
           <Route path="/painel" element={<Painel />}>

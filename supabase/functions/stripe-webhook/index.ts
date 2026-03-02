@@ -105,6 +105,7 @@ serve(async (req) => {
           .from("barbershops")
           .update({
             subscription_active: true,
+            subscription_status: "active",
             plan,
             max_barbers: maxBarbers,
           })
@@ -147,6 +148,7 @@ serve(async (req) => {
             .from("barbershops")
             .update({
               subscription_active: false,
+              subscription_status: "expired",
               plan: "basic",
               max_barbers: 1,
             })
@@ -182,7 +184,7 @@ serve(async (req) => {
         if (barberData3?.barbershop_id) {
           await supabaseAdmin
             .from("barbershops")
-            .update({ subscription_active: false })
+            .update({ subscription_active: false, subscription_status: "expired" })
             .eq("id", barberData3.barbershop_id);
 
           logStep("Marked payment as failed/pending", { barbershopId: barberData3.barbershop_id });

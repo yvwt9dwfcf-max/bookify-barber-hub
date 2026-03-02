@@ -204,14 +204,16 @@ const LandingPage = () => {
                       </li>
                     ))}
                   </ul>
-                  <Link to="/register">
-                    <Button 
-                      className={`w-full rounded-lg ${plan.popular ? 'btn-primary-gradient' : ''}`}
-                      variant={plan.popular ? 'default' : 'outline'}
-                    >
-                      Começar teste grátis
-                    </Button>
-                  </Link>
+                  <Button 
+                    className={`w-full rounded-lg ${plan.popular ? 'btn-primary-gradient' : ''}`}
+                    variant={plan.popular ? 'default' : 'outline'}
+                    onClick={() => {
+                      localStorage.setItem('selected_plan', plan.id);
+                      window.location.href = '/register';
+                    }}
+                  >
+                    Começar teste grátis
+                  </Button>
                 </CardContent>
               </Card>
             ))}

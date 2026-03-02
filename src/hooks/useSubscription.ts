@@ -23,21 +23,23 @@ export function useSubscription() {
     };
 
     check();
-    const interval = setInterval(check, 60000); // every minute
+    const interval = setInterval(check, 60000);
     return () => clearInterval(interval);
   }, []);
 
   const isTrialActive = useCallback(() => {
     if (!barbershop) return false;
-    if (!barbershop?.trial_ends_at) return false;
+    if (barbershop.subscription_status !== 'trial') return false;
+    if (!barbershop.trial_ends_at) return false;
     return new Date(barbershop.trial_ends_at) > new Date();
   }, [barbershop]);
 
   const isSubscriptionActive = useCallback(() => {
     if (!barbershop) return false;
+    if (barbershop.subscription_status === 'active') return true;
     if (isTrialActive()) return true;
     if (stripeSubscribed === true) return true;
-    return barbershop.subscription_active === true;
+    return false;
   }, [barbershop, isTrialActive, stripeSubscribed]);
 
   const trialDaysRemaining = useCallback(() => {
@@ -56,7 +58,7 @@ export function useSubscription() {
     };
 
     toast.error(messages[action]);
-    navigate('/painel/assinatura');
+    navigate('/trial-expirado');
     return false;
   }, [isSubscriptionActive, navigate]);
 
