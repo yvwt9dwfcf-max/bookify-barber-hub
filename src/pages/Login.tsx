@@ -23,7 +23,15 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
   const { user, loading: authLoading, signIn, signUp } = useAuth();
   const navigate = useNavigate();
 
-  const handleGoogleLogin = async () => {
+  const handleGoogleLogin = async (isSignup = false) => {
+    if (isSignup) {
+      const selectedPlan = localStorage.getItem('selected_plan');
+      if (!selectedPlan) {
+        toast.error('Escolha um plano antes de criar sua conta.');
+        navigate('/#pricing');
+        return;
+      }
+    }
     setIsGoogleLoading(true);
     try {
       const { error } = await lovable.auth.signInWithOAuth('google', {
@@ -100,14 +108,23 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
       return;
     }
 
+    const selectedPlan = localStorage.getItem('selected_plan');
+    if (!selectedPlan) {
+      toast.error('Escolha um plano antes de criar sua conta.');
+      navigate('/#pricing');
+      return;
+    }
+
     setIsLoading(true);
     try {
       const { error } = await signUp(signupEmail, signupPassword, {
         name: signupName.trim() || undefined,
+        selected_plan: selectedPlan,
       });
       if (error) {
         toast.error(error.message);
       } else {
+        localStorage.removeItem('selected_plan');
         toast.success('Conta criada com sucesso! Você já pode acessar o painel.');
         navigate('/painel');
       }
@@ -177,7 +194,7 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
                       type="button"
                       variant="outline"
                       className="w-full h-11 rounded-xl"
-                      onClick={handleGoogleLogin}
+                      onClick={() => handleGoogleLogin(false)}
                       disabled={isGoogleLoading}
                     >
                       {isGoogleLoading ? (
@@ -261,7 +278,7 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
                       type="button"
                       variant="outline"
                       className="w-full h-11 rounded-xl"
-                      onClick={handleGoogleLogin}
+                      onClick={() => handleGoogleLogin(true)}
                       disabled={isGoogleLoading}
                     >
                       {isGoogleLoading ? (

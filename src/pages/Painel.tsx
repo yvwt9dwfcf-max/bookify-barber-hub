@@ -3,6 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useBarber } from '@/hooks/useBarber';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useNavigate, Outlet, Link, useLocation } from 'react-router-dom';
+import { supabase } from '@/lib/supabase';
 import { Logo } from '@/components/ui/Logo';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -75,9 +76,34 @@ const Painel = () => {
     }
   }, [user, authLoading, navigate]);
 
+  // Check subscription status - redirect if expired
   useEffect(() => {
-    if (!roleLoading && barbershop && !barbershop.onboarding_completed) {
-      navigate('/onboarding', { replace: true });
+    if (!roleLoading && barbershop) {
+      // Auto-expire trial
+      if (
+        barbershop.subscription_status === 'trial' &&
+        barbershop.trial_ends_at &&
+        new Date(barbershop.trial_ends_at) <= new Date()
+      ) {
+        // Update status in DB
+        supabase
+          .from('barbershops')
+          .update({ subscription_status: 'expired', subscription_active: false })
+          .eq('id', barbershop.id)
+          .then(() => {
+            navigate('/trial-expirado', { replace: true });
+          });
+        return;
+      }
+
+      if (barbershop.subscription_status === 'expired') {
+        navigate('/trial-expirado', { replace: true });
+        return;
+      }
+
+      if (!barbershop.onboarding_completed) {
+        navigate('/onboarding', { replace: true });
+      }
     }
   }, [barbershop, roleLoading, navigate]);
 
