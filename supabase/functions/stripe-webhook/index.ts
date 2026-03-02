@@ -85,31 +85,20 @@ serve(async (req) => {
           }
         }
 
-        // Find user by email via auth admin
-        const { data: users, error: usersError } = await supabaseAdmin.auth.admin.listUsers();
-        if (usersError) {
-          logStep("Error listing users", { error: usersError.message });
-          break;
-        }
-
-        const user = users.users.find((u) => u.email === customerEmail);
-        if (!user) {
-          logStep("User not found for email", { customerEmail });
-          break;
-        }
-
-        // Get barbershop_id from user_roles
-        const { data: roleData } = await supabaseAdmin
-          .from("user_roles")
+        // Find barbershop by email via barbers table (avoids listUsers pagination issue)
+        const { data: barberData, error: barberError } = await supabaseAdmin
+          .from("barbers")
           .select("barbershop_id")
-          .eq("user_id", user.id)
+          .eq("email", customerEmail)
           .limit(1)
           .single();
 
-        if (!roleData?.barbershop_id) {
-          logStep("No barbershop found for user", { userId: user.id });
+        if (barberError || !barberData?.barbershop_id) {
+          logStep("No barbershop found for email", { customerEmail, error: barberError?.message });
           break;
         }
+
+        const barbershopId = barberData.barbershop_id;
 
         // Activate subscription
         const { error: updateError } = await supabaseAdmin
@@ -119,12 +108,12 @@ serve(async (req) => {
             plan,
             max_barbers: maxBarbers,
           })
-          .eq("id", roleData.barbershop_id);
+          .eq("id", barbershopId);
 
         if (updateError) {
           logStep("Error updating barbershop", { error: updateError.message });
         } else {
-          logStep("Subscription activated", { barbershopId: roleData.barbershop_id, plan });
+          logStep("Subscription activated", { barbershopId, plan });
         }
         break;
       }
@@ -146,21 +135,14 @@ serve(async (req) => {
           break;
         }
 
-        const { data: users2 } = await supabaseAdmin.auth.admin.listUsers();
-        const user2 = users2?.users.find((u) => u.email === email);
-        if (!user2) {
-          logStep("User not found", { email });
-          break;
-        }
-
-        const { data: roleData2 } = await supabaseAdmin
-          .from("user_roles")
+        const { data: barberData2 } = await supabaseAdmin
+          .from("barbers")
           .select("barbershop_id")
-          .eq("user_id", user2.id)
+          .eq("email", email)
           .limit(1)
           .single();
 
-        if (roleData2?.barbershop_id) {
+        if (barberData2?.barbershop_id) {
           const { error: updateErr } = await supabaseAdmin
             .from("barbershops")
             .update({
@@ -168,12 +150,12 @@ serve(async (req) => {
               plan: "basic",
               max_barbers: 1,
             })
-            .eq("id", roleData2.barbershop_id);
+            .eq("id", barberData2.barbershop_id);
 
           if (updateErr) {
             logStep("Error deactivating", { error: updateErr.message });
           } else {
-            logStep("Subscription deactivated", { barbershopId: roleData2.barbershop_id });
+            logStep("Subscription deactivated", { barbershopId: barberData2.barbershop_id });
           }
         }
         break;
@@ -190,24 +172,20 @@ serve(async (req) => {
         const email = (customer as Stripe.Customer).email;
         if (!email) break;
 
-        const { data: users3 } = await supabaseAdmin.auth.admin.listUsers();
-        const user3 = users3?.users.find((u) => u.email === email);
-        if (!user3) break;
-
-        const { data: roleData3 } = await supabaseAdmin
-          .from("user_roles")
+        const { data: barberData3 } = await supabaseAdmin
+          .from("barbers")
           .select("barbershop_id")
-          .eq("user_id", user3.id)
+          .eq("email", email)
           .limit(1)
           .single();
 
-        if (roleData3?.barbershop_id) {
+        if (barberData3?.barbershop_id) {
           await supabaseAdmin
             .from("barbershops")
             .update({ subscription_active: false })
-            .eq("id", roleData3.barbershop_id);
+            .eq("id", barberData3.barbershop_id);
 
-          logStep("Marked payment as failed/pending", { barbershopId: roleData3.barbershop_id });
+          logStep("Marked payment as failed/pending", { barbershopId: barberData3.barbershop_id });
         }
         break;
       }
