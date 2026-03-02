@@ -60,7 +60,7 @@ const Painel = () => {
     ...(isMaster ? [{ icon: Users, label: 'Equipe', path: '/painel/barbeiros' }] : []),
     ...(isMaster ? [{ icon: BarChart3, label: 'Relatórios', path: '/painel/relatorios' }] : []),
     ...(isMaster ? [{ icon: DollarSign, label: 'Comissões', path: '/painel/comissoes' }] : []),
-    ...(isMaster ? [{ icon: Gift, label: 'Fidelidade', path: '/painel/fidelidade' }] : []),
+    { icon: Gift, label: 'Fidelidade', path: '/painel/fidelidade' },
     
     { icon: MessageCircle, label: 'WhatsApp', path: '/painel/whatsapp' },
     ...(isMaster ? [{ icon: Globe, label: 'Perfil Público', path: '/painel/perfil-publico' }] : []),
