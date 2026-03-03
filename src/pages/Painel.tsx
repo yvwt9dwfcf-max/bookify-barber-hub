@@ -119,8 +119,51 @@ const Painel = () => {
 
   if (authLoading || barberLoading || roleLoading || !onboardingChecked) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="min-h-screen bg-background flex">
+        {/* Skeleton sidebar - desktop */}
+        <aside className="hidden lg:block w-[270px] bg-sidebar border-r border-sidebar-border p-6 space-y-6">
+          <div className="h-8 w-28 rounded-lg bg-muted/50 animate-pulse" />
+          <div className="flex items-center gap-3 pt-2">
+            <div className="w-10 h-10 rounded-xl bg-muted/50 animate-pulse" />
+            <div className="flex-1 space-y-2">
+              <div className="h-4 w-24 rounded bg-muted/50 animate-pulse" />
+              <div className="h-3 w-16 rounded bg-muted/30 animate-pulse" />
+            </div>
+          </div>
+          <div className="space-y-2 pt-4">
+            {Array.from({ length: 7 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-3 px-4 py-3 rounded-xl">
+                <div className="w-5 h-5 rounded bg-muted/40 animate-pulse" />
+                <div className="h-4 rounded bg-muted/40 animate-pulse" style={{ width: `${60 + Math.random() * 40}%`, animationDelay: `${i * 0.08}s` }} />
+              </div>
+            ))}
+          </div>
+        </aside>
+        {/* Skeleton main content */}
+        <main className="flex-1 p-6 lg:p-8 pt-20 lg:pt-8 space-y-6">
+          <div className="space-y-2">
+            <div className="h-7 w-48 rounded-lg bg-muted/50 animate-pulse" />
+            <div className="h-4 w-72 rounded bg-muted/30 animate-pulse" />
+          </div>
+          <div className="grid grid-cols-3 gap-4">
+            {[0, 1, 2].map(i => (
+              <div key={i} className="rounded-xl border border-border/30 bg-card/60 p-4 space-y-3" style={{ animationDelay: `${i * 0.1}s` }}>
+                <div className="h-8 w-8 rounded-xl bg-muted/50 animate-pulse" />
+                <div className="h-6 w-12 rounded bg-muted/50 animate-pulse" />
+                <div className="h-3 w-20 rounded bg-muted/30 animate-pulse" />
+              </div>
+            ))}
+          </div>
+          <div className="space-y-2">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-3 px-4 py-3 rounded-xl border border-border/20 bg-card/40">
+                <div className="w-14 h-5 rounded bg-muted/50 animate-pulse" style={{ animationDelay: `${i * 0.06}s` }} />
+                <div className="w-px h-6 bg-border/20" />
+                <div className="flex-1 h-4 rounded bg-muted/30 animate-pulse" style={{ animationDelay: `${i * 0.06}s` }} />
+              </div>
+            ))}
+          </div>
+        </main>
       </div>
     );
   }

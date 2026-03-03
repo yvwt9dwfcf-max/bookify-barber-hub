@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Gift, Users, Search, Award, Check, Save, ChevronDown, Info } from 'lucide-react';
+import { Gift, Users, Search, Award, Check, Save, ChevronDown, Info, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -277,8 +277,17 @@ const Fidelidade = () => {
                   className="w-full btn-primary-gradient"
                   size="sm"
                 >
-                  <Save className="h-4 w-4 mr-2" />
-                  Salvar configurações
+                  {saveConfigMutation.isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Salvando...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4 mr-2" />
+                      Salvar configurações
+                    </>
+                  )}
                 </Button>
               )}
               <p className="text-[11px] text-muted-foreground">
@@ -420,8 +429,17 @@ const Fidelidade = () => {
                     })}
                     disabled={redeemMutation.isPending}
                   >
-                    <Check className="h-4 w-4 mr-2" />
-                    Resgatar "{rewardName}" ({goalPoints} pts)
+                    {redeemMutation.isPending ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Resgatando...
+                      </>
+                    ) : (
+                      <>
+                        <Check className="h-4 w-4 mr-2" />
+                        Resgatar "{rewardName}" ({goalPoints} pts)
+                      </>
+                    )}
                   </Button>
                 </div>
               )}
