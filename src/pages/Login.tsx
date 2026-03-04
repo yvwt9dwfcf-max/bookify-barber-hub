@@ -11,6 +11,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Loader2, Mail, Lock, Scissors, User } from 'lucide-react';
 import { toast } from 'sonner';
 import { lovable } from '@/integrations/lovable/index';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface LoginProps {
   initialTab?: 'login' | 'signup';
@@ -56,6 +57,7 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
   const [signupConfirmPassword, setSignupConfirmPassword] = useState('');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   // If already authenticated, redirect to panel
   useEffect(() => {
@@ -105,6 +107,11 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
 
     if (signupPassword.length < 6) {
       toast.error('A senha deve ter pelo menos 6 caracteres');
+      return;
+    }
+
+    if (!acceptedTerms) {
+      toast.error('Você precisa aceitar os Termos de Uso e Política de Privacidade');
       return;
     }
 
@@ -364,10 +371,37 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
                         />
                       </div>
                     </div>
+
+                    {/* Terms checkbox */}
+                    <div className="flex items-start gap-3 py-2">
+                      <Checkbox
+                        id="accept-terms"
+                        checked={acceptedTerms}
+                        onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
+                        className="mt-0.5 border-[#ff3b3b] data-[state=checked]:bg-[#ff3b3b] data-[state=checked]:border-[#ff3b3b]"
+                      />
+                      <label htmlFor="accept-terms" className="text-sm font-semibold cursor-pointer" style={{ color: '#ff3b3b' }}>
+                        Li e concordo com os{' '}
+                        <Link to="/termos-de-uso" target="_blank" className="underline hover:opacity-80" style={{ color: '#ff0000' }}>
+                          Termos de Uso
+                        </Link>{' '}
+                        e{' '}
+                        <Link to="/politica-de-privacidade" target="_blank" className="underline hover:opacity-80" style={{ color: '#ff0000' }}>
+                          Política de Privacidade
+                        </Link>.
+                      </label>
+                    </div>
+
+                    {!acceptedTerms && (
+                      <p className="text-xs font-semibold text-center" style={{ color: '#ff3b3b' }}>
+                        ⚠ É obrigatório aceitar os termos para continuar.
+                      </p>
+                    )}
+
                     <Button
                       type="submit"
                       className="w-full btn-primary-gradient h-11 rounded-xl"
-                      disabled={isLoading}
+                      disabled={isLoading || !acceptedTerms}
                     >
                       {isLoading ? (
                         <>

@@ -26,6 +26,8 @@ import AgendarBarbeiro from "./pages/AgendarBarbeiro";
 import BarbeariaPublica from "./pages/BarbeariaPublica";
 import TrialExpirado from "./pages/TrialExpirado";
 import NotFound from "./pages/NotFound";
+import PoliticaPrivacidade from "./pages/PoliticaPrivacidade";
+import TermosUso from "./pages/TermosUso";
 
 const queryClient = new QueryClient();
 
@@ -69,6 +71,10 @@ const App = () => (
           <Route path="/agendar/:slugOrId" element={<AgendarBarbearia />} />
           <Route path="/b/:barberId" element={<AgendarBarbeiro />} />
           <Route path="/barbearia/:slug" element={<BarbeariaPublica />} />
+
+          {/* Legal pages */}
+          <Route path="/politica-de-privacidade" element={<PoliticaPrivacidade />} />
+          <Route path="/termos-de-uso" element={<TermosUso />} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>
