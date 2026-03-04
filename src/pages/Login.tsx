@@ -373,28 +373,28 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
                     </div>
 
                     {/* Terms checkbox */}
-                    <div className="flex items-start gap-3 py-2">
+                    <div className="flex items-start gap-2 py-1">
                       <Checkbox
                         id="accept-terms"
                         checked={acceptedTerms}
                         onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
-                        className="mt-0.5"
+                        className="mt-0.5 h-3.5 w-3.5"
                       />
-                      <label htmlFor="accept-terms" className="text-xs text-muted-foreground cursor-pointer leading-relaxed">
-                        I agree to the{' '}
+                      <label htmlFor="accept-terms" className="text-[11px] text-muted-foreground/80 cursor-pointer leading-relaxed">
+                        Li e concordo com os{' '}
                         <Link to="/termos-de-uso" target="_blank" className="underline text-primary hover:text-primary/80">
-                          Terms of Use
+                          Termos de Uso
                         </Link>{' '}
-                        and{' '}
+                        e{' '}
                         <Link to="/politica-de-privacidade" target="_blank" className="underline text-primary hover:text-primary/80">
-                          Privacy Policy
+                          Política de Privacidade
                         </Link>.
                       </label>
                     </div>
 
                     {!acceptedTerms && signupEmail && signupPassword && (
-                      <p className="text-xs text-muted-foreground text-center">
-                        You must accept the Terms of Use and Privacy Policy to continue.
+                      <p className="text-[11px] text-muted-foreground/70 text-center">
+                        É necessário aceitar os termos para criar a conta.
                       </p>
                     )}
 
