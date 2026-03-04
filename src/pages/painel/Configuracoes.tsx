@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { User, Phone, Mail, Loader2, Save, Building2, Crown, Link2, Copy, CheckCircle, CreditCard, ChevronRight, Sun, Moon, Trash2, AlertTriangle } from 'lucide-react';
+import { User, Phone, Mail, Loader2, Save, Building2, Crown, Link2, Copy, CheckCircle, CreditCard, ChevronRight, Sun, Moon } from 'lucide-react';
 import { toast } from 'sonner';
 import { Switch } from '@/components/ui/switch';
 import { supabase } from '@/integrations/supabase/client';
@@ -288,79 +288,49 @@ const Configuracoes = () => {
         </CardContent>
       </Card>
 
-      {/* Legal */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Link2 className="h-5 w-5" />
-            Legal
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          <Button variant="ghost" className="w-full justify-start" onClick={() => window.open('/termos-de-uso', '_blank')}>
-            Terms of Use
-            <ChevronRight className="ml-auto h-4 w-4 text-muted-foreground" />
-          </Button>
-          <Button variant="ghost" className="w-full justify-start" onClick={() => window.open('/politica-de-privacidade', '_blank')}>
-            Privacy Policy
-            <ChevronRight className="ml-auto h-4 w-4 text-muted-foreground" />
-          </Button>
-        </CardContent>
-      </Card>
+      {/* Footer: Legal links + Delete account */}
+      <div className="pt-4 border-t border-border/40 space-y-6">
+        <div className="flex items-center justify-center gap-4">
+          <a href="/termos-de-uso" target="_blank" className="text-xs text-muted-foreground/70 hover:text-primary underline">
+            Termos de Uso
+          </a>
+          <span className="text-muted-foreground/30 text-xs">•</span>
+          <a href="/politica-de-privacidade" target="_blank" className="text-xs text-muted-foreground/70 hover:text-primary underline">
+            Política de Privacidade
+          </a>
+        </div>
 
-      {/* Delete Account */}
-      <Card className="border-border">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Trash2 className="h-5 w-5" />
-            Delete account
-          </CardTitle>
-          <CardDescription>
-            Permanently remove your account and all associated data.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+        <div className="text-center space-y-2">
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="outline" className="w-full" disabled={deleting}>
-                {deleting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Deleting...
-                  </>
-                ) : (
-                  <>
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete my account
-                  </>
-                )}
-              </Button>
+              <button className="text-xs text-destructive/70 hover:text-destructive underline cursor-pointer" disabled={deleting}>
+                {deleting ? 'Excluindo...' : 'Excluir conta'}
+              </button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Delete account</AlertDialogTitle>
+                <AlertDialogTitle>Excluir conta</AlertDialogTitle>
                 <AlertDialogDescription asChild>
                   <div className="space-y-3">
-                    <p>This action is permanent and cannot be undone.</p>
-                    <p>If you proceed with account deletion:</p>
+                    <p>Esta ação é permanente e não pode ser desfeita.</p>
+                    <p>Ao continuar:</p>
                     <ul className="space-y-1 text-sm">
-                      <li>• Your active subscription will be cancelled immediately</li>
-                      <li>• All appointments and stored data will be permanently removed</li>
-                      <li>• Your account will be permanently deleted from the system</li>
+                      <li>• Sua assinatura ativa será cancelada imediatamente</li>
+                      <li>• Todos os agendamentos e dados serão removidos</li>
+                      <li>• Sua conta será excluída permanentemente do sistema</li>
                     </ul>
-                    <p className="font-medium">This action cannot be reversed.</p>
                   </div>
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
                 <AlertDialogAction
                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                   onClick={async () => {
                     setDeleting(true);
                     try {
                       const { data: { session } } = await supabase.auth.getSession();
-                      if (!session) throw new Error('Not authenticated');
+                      if (!session) throw new Error('Não autenticado');
 
                       const { data, error } = await supabase.functions.invoke('delete-account', {
                         headers: { Authorization: `Bearer ${session.access_token}` },
@@ -369,23 +339,26 @@ const Configuracoes = () => {
                       if (error) throw error;
 
                       await supabase.auth.signOut();
-                      toast.success('Account deleted successfully.');
+                      toast.success('Conta excluída com sucesso.');
                       navigate('/');
                     } catch (err: any) {
-                      toast.error('Error deleting account. Please try again.');
+                      toast.error('Erro ao excluir conta. Tente novamente.');
                       console.error(err);
                     } finally {
                       setDeleting(false);
                     }
                   }}
                 >
-                  Delete account permanently
+                  Excluir conta permanentemente
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
-        </CardContent>
-      </Card>
+          <p className="text-[11px] text-muted-foreground/50">
+            Esta ação remove permanentemente sua conta e todos os dados associados.
+          </p>
+        </div>
+      </div>
     </div>
   );
 };
