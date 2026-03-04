@@ -378,23 +378,23 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
                         id="accept-terms"
                         checked={acceptedTerms}
                         onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
-                        className="mt-0.5 border-[#ff3b3b] data-[state=checked]:bg-[#ff3b3b] data-[state=checked]:border-[#ff3b3b]"
+                        className="mt-0.5"
                       />
-                      <label htmlFor="accept-terms" className="text-sm font-semibold cursor-pointer" style={{ color: '#ff3b3b' }}>
-                        Li e concordo com os{' '}
-                        <Link to="/termos-de-uso" target="_blank" className="underline hover:opacity-80" style={{ color: '#ff0000' }}>
-                          Termos de Uso
+                      <label htmlFor="accept-terms" className="text-xs text-muted-foreground cursor-pointer leading-relaxed">
+                        I agree to the{' '}
+                        <Link to="/termos-de-uso" target="_blank" className="underline text-primary hover:text-primary/80">
+                          Terms of Use
                         </Link>{' '}
-                        e{' '}
-                        <Link to="/politica-de-privacidade" target="_blank" className="underline hover:opacity-80" style={{ color: '#ff0000' }}>
-                          Política de Privacidade
+                        and{' '}
+                        <Link to="/politica-de-privacidade" target="_blank" className="underline text-primary hover:text-primary/80">
+                          Privacy Policy
                         </Link>.
                       </label>
                     </div>
 
-                    {!acceptedTerms && (
-                      <p className="text-xs font-semibold text-center" style={{ color: '#ff3b3b' }}>
-                        ⚠ É obrigatório aceitar os termos para continuar.
+                    {!acceptedTerms && signupEmail && signupPassword && (
+                      <p className="text-xs text-muted-foreground text-center">
+                        You must accept the Terms of Use and Privacy Policy to continue.
                       </p>
                     )}
 
