@@ -288,56 +288,79 @@ const Configuracoes = () => {
         </CardContent>
       </Card>
 
-      {/* Delete Account */}
-      <Card className="border-destructive/30">
+      {/* Legal */}
+      <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-destructive">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Link2 className="h-5 w-5" />
+            Legal
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <Button variant="ghost" className="w-full justify-start" onClick={() => window.open('/termos-de-uso', '_blank')}>
+            Terms of Use
+            <ChevronRight className="ml-auto h-4 w-4 text-muted-foreground" />
+          </Button>
+          <Button variant="ghost" className="w-full justify-start" onClick={() => window.open('/politica-de-privacidade', '_blank')}>
+            Privacy Policy
+            <ChevronRight className="ml-auto h-4 w-4 text-muted-foreground" />
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Delete Account */}
+      <Card className="border-border">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
             <Trash2 className="h-5 w-5" />
-            Excluir minha conta
+            Delete account
           </CardTitle>
           <CardDescription>
-            Esta ação é irreversível. Todos os seus dados, agendamentos e assinatura serão apagados permanentemente.
+            Permanently remove your account and all associated data.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="destructive" className="w-full" disabled={deleting}>
+              <Button variant="outline" className="w-full" disabled={deleting}>
                 {deleting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Excluindo conta...
+                    Deleting...
                   </>
                 ) : (
                   <>
                     <Trash2 className="mr-2 h-4 w-4" />
-                    Excluir minha conta
+                    Delete my account
                   </>
                 )}
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle className="flex items-center gap-2">
-                  <AlertTriangle className="h-5 w-5 text-destructive" />
-                  Tem certeza absoluta?
-                </AlertDialogTitle>
-                <AlertDialogDescription className="space-y-2">
-                  <span className="block">Esta ação não pode ser desfeita. Isso irá:</span>
-                  <span className="block">• Cancelar sua assinatura ativa no Stripe</span>
-                  <span className="block">• Apagar todos os seus dados e agendamentos</span>
-                  <span className="block">• Remover sua conta permanentemente</span>
+                <AlertDialogTitle>Delete account</AlertDialogTitle>
+                <AlertDialogDescription asChild>
+                  <div className="space-y-3">
+                    <p>This action is permanent and cannot be undone.</p>
+                    <p>If you proceed with account deletion:</p>
+                    <ul className="space-y-1 text-sm">
+                      <li>• Your active subscription will be cancelled immediately</li>
+                      <li>• All appointments and stored data will be permanently removed</li>
+                      <li>• Your account will be permanently deleted from the system</li>
+                    </ul>
+                    <p className="font-medium">This action cannot be reversed.</p>
+                  </div>
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
                 <AlertDialogAction
                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                   onClick={async () => {
                     setDeleting(true);
                     try {
                       const { data: { session } } = await supabase.auth.getSession();
-                      if (!session) throw new Error('Não autenticado');
+                      if (!session) throw new Error('Not authenticated');
 
                       const { data, error } = await supabase.functions.invoke('delete-account', {
                         headers: { Authorization: `Bearer ${session.access_token}` },
@@ -346,17 +369,17 @@ const Configuracoes = () => {
                       if (error) throw error;
 
                       await supabase.auth.signOut();
-                      toast.success('Conta excluída com sucesso.');
+                      toast.success('Account deleted successfully.');
                       navigate('/');
                     } catch (err: any) {
-                      toast.error('Erro ao excluir conta. Tente novamente.');
+                      toast.error('Error deleting account. Please try again.');
                       console.error(err);
                     } finally {
                       setDeleting(false);
                     }
                   }}
                 >
-                  Sim, excluir minha conta
+                  Delete account permanently
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
