@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { format, addMinutes, setHours, setMinutes } from 'date-fns';
+import { format, addMinutes, setHours, setMinutes, addDays, subDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { supabase, Barber, Service } from '@/lib/supabase';
 import { useAvailability } from '@/hooks/useAvailability';
 import { toast } from 'sonner';
-import { Loader2, Clock, Calendar, UserCircle, Scissors } from 'lucide-react';
+import { Loader2, Clock, Calendar, UserCircle, Scissors, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -33,7 +33,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils';
 
 const appointmentSchema = z.object({
   customer_name: z.string().trim().min(1, 'Nome é obrigatório').max(100, 'Nome muito longo'),
@@ -60,7 +66,7 @@ const ManualAppointmentDialog = ({
   open,
   onOpenChange,
   barber,
-  selectedDate,
+  selectedDate: initialDate,
   onSuccess,
   canCreateForOthers = false,
   barbers = [],
@@ -69,6 +75,8 @@ const ManualAppointmentDialog = ({
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingServices, setLoadingServices] = useState(true);
+  const [internalDate, setInternalDate] = useState<Date>(initialDate);
+  const [calendarOpen, setCalendarOpen] = useState(false);
   
   const [targetBarberId, setTargetBarberId] = useState<string>(barber.id);
   const effectiveBarberId = canCreateForOthers ? targetBarberId : barber.id;
@@ -76,10 +84,11 @@ const ManualAppointmentDialog = ({
 
   const { 
     checkSlotAvailability, 
+    getOpeningHoursForDay,
     refetch: refetchAvailability 
   } = useAvailability({ 
     barberId: targetBarber.id, 
-    selectedDate 
+    selectedDate: internalDate 
   });
 
   const form = useForm<AppointmentFormData>({
@@ -93,10 +102,11 @@ const ManualAppointmentDialog = ({
     },
   });
 
-  // Reset target barber when dialog opens
+  // Reset when dialog opens
   useEffect(() => {
     if (open) {
       setTargetBarberId(barber.id);
+      setInternalDate(initialDate);
       fetchServices();
       refetchAvailability();
       form.reset({
@@ -107,7 +117,7 @@ const ManualAppointmentDialog = ({
         notes: '',
       });
     }
-  }, [open, selectedDate, preselectedTime]);
+  }, [open, initialDate, preselectedTime]);
 
   // Refetch when effective target barber changes
   useEffect(() => {
@@ -118,6 +128,15 @@ const ManualAppointmentDialog = ({
     }
   }, [effectiveBarberId]);
 
+  // When internal date changes, clear time and refetch
+  useEffect(() => {
+    if (open) {
+      refetchAvailability();
+      // Only clear time if the date actually changed from initial
+      form.setValue('start_time', '');
+    }
+  }, [internalDate]);
+
   const fetchServices = async () => {
     setLoadingServices(true);
     try {
@@ -126,7 +145,6 @@ const ManualAppointmentDialog = ({
         return;
       }
 
-      // 1. Fetch global services
       const { data: globalServices, error: globalError } = await supabase
         .from('services')
         .select('*')
@@ -137,7 +155,6 @@ const ManualAppointmentDialog = ({
 
       if (globalError) throw globalError;
 
-      // 2. Fetch specific services linked to this barber
       const { data: barberServicesData, error: bsError } = await supabase
         .from('barber_services')
         .select('service_id')
@@ -161,7 +178,6 @@ const ManualAppointmentDialog = ({
         specificServices = (linked || []) as Service[];
       }
 
-      // Merge and deduplicate
       const all = [...(globalServices || []), ...specificServices] as Service[];
       const unique = all.filter((s, i, arr) => arr.findIndex(x => x.id === s.id) === i);
       setServices(unique);
@@ -174,22 +190,45 @@ const ManualAppointmentDialog = ({
   };
 
   const generateTimeSlots = () => {
+    const dayOfWeek = internalDate.getDay();
+    const dayHours = getOpeningHoursForDay(dayOfWeek);
+    
+    if (!dayHours) return [];
+
+    const [startHour, startMin] = dayHours.start_time.split(':').map(Number);
+    const [endHour, endMin] = dayHours.end_time.split(':').map(Number);
+
     const slots: string[] = [];
-    for (let hour = 6; hour < 22; hour++) {
-      for (let minute = 0; minute < 60; minute += 30) {
-        const time = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-        slots.push(time);
+    let currentHour = startHour;
+    let currentMin = startMin;
+
+    while (currentHour < endHour || (currentHour === endHour && currentMin < endMin)) {
+      const time = `${currentHour.toString().padStart(2, '0')}:${currentMin.toString().padStart(2, '0')}`;
+      slots.push(time);
+      
+      currentMin += 30;
+      if (currentMin >= 60) {
+        currentHour += 1;
+        currentMin -= 60;
       }
     }
+    
     return slots;
   };
 
   const getSlotStatus = (timeSlot: string, durationMinutes: number) => {
-    const availability = checkSlotAvailability(timeSlot, selectedDate, durationMinutes);
+    const availability = checkSlotAvailability(timeSlot, internalDate, durationMinutes);
     return {
       occupied: !availability.available,
       reason: availability.reason,
     };
+  };
+
+  const handleDateSelect = (date: Date | undefined) => {
+    if (date) {
+      setInternalDate(date);
+      setCalendarOpen(false);
+    }
   };
 
   const onSubmit = async (data: AppointmentFormData) => {
@@ -206,7 +245,7 @@ const ManualAppointmentDialog = ({
       const durationMinutes = selectedService.duration_minutes;
 
       const [hours, minutes] = data.start_time.split(':').map(Number);
-      const startTime = setMinutes(setHours(selectedDate, hours), minutes);
+      const startTime = setMinutes(setHours(internalDate, hours), minutes);
       const endTime = addMinutes(startTime, durationMinutes);
 
       const slotCheck = getSlotStatus(data.start_time, durationMinutes);
@@ -244,6 +283,7 @@ const ManualAppointmentDialog = ({
 
   const timeSlots = generateTimeSlots();
   const selectedService = services.find((s) => s.id === form.watch('service_id'));
+  const dayHours = getOpeningHoursForDay(internalDate.getDay());
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -255,25 +295,48 @@ const ManualAppointmentDialog = ({
           </DialogDescription>
         </DialogHeader>
 
-        {/* Context Banner */}
-        <div className="flex items-center gap-3 p-3 rounded-xl bg-primary/5 border border-primary/10">
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            <UserCircle className="h-4 w-4 text-primary shrink-0" />
-            <span className="text-sm font-medium truncate">{targetBarber.name}</span>
-          </div>
-          <div className="flex items-center gap-1.5 text-sm text-muted-foreground shrink-0">
-            <Calendar className="h-3.5 w-3.5" />
-            <span className="capitalize text-xs">
-              {format(selectedDate, "EEE, d MMM", { locale: ptBR })}
-            </span>
-          </div>
-          {(preselectedTime || form.watch('start_time')) && (
-            <div className="flex items-center gap-1.5 text-sm text-primary font-semibold shrink-0">
-              <Clock className="h-3.5 w-3.5" />
-              <span className="text-xs">{preselectedTime || form.watch('start_time')}</span>
-            </div>
-          )}
-        </div>
+        {/* Context Banner - clickable to change date */}
+        <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+          <PopoverTrigger asChild>
+            <button
+              type="button"
+              className="w-full flex items-center gap-3 p-3 rounded-xl bg-primary/5 border border-primary/10 hover:bg-primary/10 transition-colors cursor-pointer text-left"
+            >
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                <UserCircle className="h-4 w-4 text-primary shrink-0" />
+                <span className="text-sm font-medium truncate">{targetBarber.name}</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-sm text-muted-foreground shrink-0">
+                <Calendar className="h-3.5 w-3.5" />
+                <span className="capitalize text-xs">
+                  {format(internalDate, "EEE, d MMM", { locale: ptBR })}
+                </span>
+              </div>
+              {form.watch('start_time') && (
+                <div className="flex items-center gap-1.5 text-sm text-primary font-semibold shrink-0">
+                  <Clock className="h-3.5 w-3.5" />
+                  <span className="text-xs">{form.watch('start_time')}</span>
+                </div>
+              )}
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="center">
+            <CalendarComponent
+              mode="single"
+              selected={internalDate}
+              onSelect={handleDateSelect}
+              disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+              locale={ptBR}
+              className={cn("p-3 pointer-events-auto")}
+            />
+          </PopoverContent>
+        </Popover>
+
+        {!dayHours && (
+          <p className="text-xs text-destructive text-center">
+            O barbeiro não atende neste dia da semana.
+          </p>
+        )}
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -368,7 +431,7 @@ const ManualAppointmentDialog = ({
               )}
             />
 
-            {/* Time slot - hidden if preselected, otherwise show select */}
+            {/* Time slot */}
             <FormField
               control={form.control}
               name="start_time"
@@ -381,23 +444,29 @@ const ManualAppointmentDialog = ({
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Selecione o horário" />
+                          <SelectValue placeholder={timeSlots.length === 0 ? "Sem horários disponíveis" : "Selecione o horário"} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent className="max-h-[200px]">
-                        {timeSlots.map((time) => {
-                          const slotStatus = getSlotStatus(time, durationMinutes);
-                          return (
-                            <SelectItem 
-                              key={time} 
-                              value={time} 
-                              disabled={slotStatus.occupied}
-                              className={slotStatus.occupied ? 'text-muted-foreground line-through' : ''}
-                            >
-                              {time} {slotStatus.occupied && `(${slotStatus.reason})`}
-                            </SelectItem>
-                          );
-                        })}
+                        {timeSlots.length === 0 ? (
+                          <div className="text-center py-2 text-sm text-muted-foreground">
+                            Nenhum horário disponível
+                          </div>
+                        ) : (
+                          timeSlots.map((time) => {
+                            const slotStatus = getSlotStatus(time, durationMinutes);
+                            return (
+                              <SelectItem 
+                                key={time} 
+                                value={time} 
+                                disabled={slotStatus.occupied}
+                                className={slotStatus.occupied ? 'text-muted-foreground line-through' : ''}
+                              >
+                                {time} {slotStatus.occupied && `(${slotStatus.reason})`}
+                              </SelectItem>
+                            );
+                          })
+                        )}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -433,7 +502,7 @@ const ManualAppointmentDialog = ({
               >
                 Cancelar
               </Button>
-              <Button type="submit" disabled={loading || !form.watch('service_id')}>
+              <Button type="submit" disabled={loading || !form.watch('service_id') || !dayHours}>
                 {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 Confirmar Agendamento
               </Button>
