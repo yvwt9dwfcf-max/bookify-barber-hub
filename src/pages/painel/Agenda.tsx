@@ -31,6 +31,7 @@ import FloatingActionButton from '@/components/painel/FloatingActionButton';
 import AppointmentDetailsSheet from '@/components/painel/AppointmentDetailsSheet';
 import EditAppointmentDialog from '@/components/painel/EditAppointmentDialog';
 import QuickBlockDialog from '@/components/painel/QuickBlockDialog';
+import DashboardCards from '@/components/painel/DashboardCards';
 
 interface ContextType {
   barber: (Barber & { permissions?: { can_view_others_schedule?: boolean; can_edit_others_schedule?: boolean } }) | null;
@@ -346,6 +347,9 @@ const Agenda = () => {
 
   return (
     <div className="space-y-4 pb-24 animate-page-enter">
+      {/* Dashboard Cards */}
+      <DashboardCards barbershopId={barbershop?.id} />
+
       {/* Premium Header */}
       <div className="animate-fade-in">
         <div className="flex items-start justify-between gap-3">
