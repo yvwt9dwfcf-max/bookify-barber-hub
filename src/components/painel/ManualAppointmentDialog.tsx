@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { supabase, Barber, Service } from '@/lib/supabase';
 import { useAvailability } from '@/hooks/useAvailability';
 import { toast } from 'sonner';
-import { Loader2, Clock, Calendar, UserCircle, Scissors, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Loader2, Clock, Calendar, UserCircle, Scissors, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -318,6 +318,7 @@ const ManualAppointmentDialog = ({
                   <span className="text-xs">{form.watch('start_time')}</span>
                 </div>
               )}
+              <ChevronDown className="h-3.5 w-3.5 text-muted-foreground/60 shrink-0" />
             </button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="center">
