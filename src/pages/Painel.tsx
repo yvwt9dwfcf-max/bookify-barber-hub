@@ -35,7 +35,7 @@ import DayClosingModal from '@/components/painel/DayClosingModal';
 const Painel = () => {
   const { user, loading: authLoading, signOut } = useAuth();
   const { barber, loading: barberLoading } = useBarber();
-  const { barbershop, isMaster, loading: roleLoading } = useUserRole();
+  const { barbershop, isMaster, loading: roleLoading, refetch: refetchRole } = useUserRole();
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -289,7 +289,7 @@ const Painel = () => {
       {/* Main Content */}
       <main className="lg:ml-[270px] pt-16 lg:pt-0 min-h-screen">
         <div className="p-4 md:p-6 lg:p-8 max-w-6xl">
-          <Outlet context={{ barber, barbershop, isMaster }} />
+          <Outlet context={{ barber, barbershop, isMaster, refetchRole }} />
         </div>
       </main>
 
