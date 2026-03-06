@@ -3,15 +3,15 @@ import { useOutletContext, useNavigate } from 'react-router-dom';
 import { Barber, Barbershop } from '@/lib/supabase';
 import { useBarber } from '@/hooks/useBarber';
 import { useUserRole } from '@/hooks/useUserRole';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { User, Phone, Mail, Loader2, Save, Building2, Crown, Link2, Copy, CheckCircle, CreditCard, ChevronRight, Sun, Moon } from 'lucide-react';
+import { User, Phone, Mail, Loader2, Save, Building2, Crown, Link2, Copy, CheckCircle, CreditCard, ChevronRight, Sun, Moon, AlertTriangle, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Switch } from '@/components/ui/switch';
 import { supabase } from '@/integrations/supabase/client';
+import { Separator } from '@/components/ui/separator';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -36,7 +36,8 @@ const Configuracoes = () => {
   const { barbershop, isMaster } = useUserRole();
   const navigate = useNavigate();
   
-  const [saving, setSaving] = useState(false);
+  const [savingAccount, setSavingAccount] = useState(false);
+  const [savingBarbershop, setSavingBarbershop] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -59,6 +60,7 @@ const Configuracoes = () => {
 
   const [name, setName] = useState(barber?.name || '');
   const [phone, setPhone] = useState(barber?.phone || '');
+  const [barbershopName, setBarbershopName] = useState(barbershop?.name || '');
 
   const publicLink = barbershop
     ? `${window.location.origin}/barbearia/${barbershop.slug || barbershop.id}`
@@ -89,13 +91,13 @@ const Configuracoes = () => {
     setPhone(formatted);
   };
 
-  const handleSave = async () => {
+  const handleSaveAccount = async () => {
     if (!name.trim()) {
       toast.error('Digite seu nome');
       return;
     }
 
-    setSaving(true);
+    setSavingAccount(true);
     try {
       const { error } = await updateBarber({
         name: name.trim(),
@@ -103,262 +105,319 @@ const Configuracoes = () => {
       });
 
       if (error) throw error;
-      toast.success('Perfil atualizado com sucesso!');
+      toast.success('Dados da conta atualizados!');
     } catch (error) {
-      toast.error('Erro ao atualizar perfil');
+      toast.error('Erro ao atualizar dados');
     } finally {
-      setSaving(false);
+      setSavingAccount(false);
     }
   };
 
+  const handleSaveBarbershop = async () => {
+    if (!barbershopName.trim()) {
+      toast.error('Digite o nome da barbearia');
+      return;
+    }
+
+    setSavingBarbershop(true);
+    try {
+      const { error } = await supabase
+        .from('barbershops')
+        .update({ name: barbershopName.trim() })
+        .eq('id', barbershop!.id);
+
+      if (error) throw error;
+      toast.success('Nome da barbearia atualizado!');
+    } catch (error) {
+      toast.error('Erro ao atualizar barbearia');
+    } finally {
+      setSavingBarbershop(false);
+    }
+  };
+
+  const planLabel = barbershop?.plan
+    ? barbershop.plan.charAt(0).toUpperCase() + barbershop.plan.slice(1)
+    : 'Basic';
+
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="space-y-8 max-w-2xl pb-12">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold">Configurações</h1>
-        <p className="text-muted-foreground">
-          Gerencie suas informações de perfil
-        </p>
-      </div>
-
-      {/* Role Badge */}
-      <div className="flex items-center gap-2">
-        {isMaster ? (
-          <Badge className="flex items-center gap-1">
-            <Crown className="h-3 w-3" />
-            Administrador
-          </Badge>
-        ) : (
-          <Badge variant="secondary" className="flex items-center gap-1">
-            <User className="h-3 w-3" />
-            Barbeiro
-          </Badge>
-        )}
         {barbershop && (
-          <Badge variant="outline" className="flex items-center gap-1">
-            <Building2 className="h-3 w-3" />
-            {barbershop.name}
-          </Badge>
+          <div className="flex items-center gap-2 mt-1">
+            <span className="text-muted-foreground text-sm">{barbershop.name}</span>
+            <span className="text-muted-foreground/40">·</span>
+            <Badge variant="outline" className="text-xs font-medium">
+              Plano {planLabel}
+            </Badge>
+          </div>
         )}
       </div>
 
       {/* Public Booking Link */}
       {publicLink && (
-        <Card className="border-primary/20 bg-primary/5">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Link2 className="h-5 w-5 text-primary" />
-              Link Público de Agendamento
-            </CardTitle>
-            <CardDescription>
-              Compartilhe este link com seus clientes para que agendem online
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex gap-2">
-              <Input
-                value={publicLink}
-                readOnly
-                className="font-mono text-sm bg-background"
-              />
-              <Button
-                onClick={handleCopyLink}
-                variant={copied ? 'default' : 'outline'}
-                className={copied ? 'btn-primary-gradient' : ''}
-                size="icon"
-              >
-                {copied ? (
-                  <CheckCircle className="h-4 w-4" />
-                ) : (
-                  <Copy className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Subscription */}
-      {isMaster && (
-        <Card 
-          className="cursor-pointer hover:shadow-md transition-all duration-200 active:scale-[0.99]"
-          onClick={() => navigate('/painel/assinatura')}
-        >
-          <CardContent className="p-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'var(--primary-gradient)' }}>
-              <CreditCard className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-medium">Assinatura</h3>
-              <p className="text-sm text-muted-foreground">Gerencie seu plano</p>
-            </div>
-            <ChevronRight className="h-5 w-5 text-muted-foreground" />
-          </CardContent>
-        </Card>
+        <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-2">
+          <div className="flex items-center gap-2 text-sm font-medium">
+            <Link2 className="h-4 w-4 text-primary" />
+            Link público de agendamento
+          </div>
+          <div className="flex gap-2">
+            <Input
+              value={publicLink}
+              readOnly
+              className="font-mono text-xs bg-background"
+            />
+            <Button
+              onClick={handleCopyLink}
+              variant={copied ? 'default' : 'outline'}
+              size="icon"
+              className="shrink-0"
+            >
+              {copied ? <CheckCircle className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+            </Button>
+          </div>
+        </div>
       )}
 
       {/* Theme Toggle */}
-      <Card>
-        <CardContent className="p-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-accent">
-            {isDarkMode ? <Moon className="h-5 w-5 text-accent-foreground" /> : <Sun className="h-5 w-5 text-accent-foreground" />}
+      <div className="flex items-center justify-between rounded-lg border p-4">
+        <div className="flex items-center gap-3">
+          {isDarkMode ? <Moon className="h-4 w-4 text-muted-foreground" /> : <Sun className="h-4 w-4 text-muted-foreground" />}
+          <div>
+            <p className="text-sm font-medium">Tema</p>
+            <p className="text-xs text-muted-foreground">{isDarkMode ? 'Modo escuro' : 'Modo claro'}</p>
           </div>
-          <div className="flex-1">
-            <h3 className="font-medium">Tema</h3>
-            <p className="text-sm text-muted-foreground">{isDarkMode ? 'Modo escuro' : 'Modo claro'}</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Moon className="h-4 w-4 text-muted-foreground" />
-            <Switch checked={!isDarkMode} onCheckedChange={handleToggleTheme} />
-            <Sun className="h-4 w-4 text-muted-foreground" />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Profile Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <User className="h-5 w-5" />
-            Dados do perfil
-          </CardTitle>
-          <CardDescription>
-            Essas informações serão exibidas para os clientes
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Nome</Label>
-            <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                id="name"
-                placeholder="Seu nome"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                id="email"
-                value={barber?.email || ''}
-                disabled
-                className="pl-10 bg-muted"
-              />
-            </div>
-            <p className="text-xs text-muted-foreground">
-              O email não pode ser alterado
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="phone">Telefone</Label>
-            <div className="relative">
-              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                id="phone"
-                placeholder="(00) 00000-0000"
-                value={phone}
-                onChange={handlePhoneChange}
-                className="pl-10"
-                maxLength={15}
-              />
-            </div>
-          </div>
-
-          <Button onClick={handleSave} disabled={saving} className="w-full btn-primary-gradient">
-            {saving ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Salvando...
-              </>
-            ) : (
-              <>
-                <Save className="mr-2 h-4 w-4" />
-                Salvar alterações
-              </>
-            )}
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* Footer: Legal links + Delete account */}
-      <div className="pt-4 border-t border-border/40 space-y-6">
-        <div className="flex items-center justify-center gap-4">
-          <a href="/termos-de-uso" target="_blank" className="text-xs text-muted-foreground/70 hover:text-primary underline">
-            Termos de Uso
-          </a>
-          <span className="text-muted-foreground/30 text-xs">•</span>
-          <a href="/politica-de-privacidade" target="_blank" className="text-xs text-muted-foreground/70 hover:text-primary underline">
-            Política de Privacidade
-          </a>
         </div>
-
-        <div className="text-center space-y-2">
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <button className="text-xs text-destructive/70 hover:text-destructive underline cursor-pointer" disabled={deleting}>
-                {deleting ? 'Excluindo...' : 'Excluir conta'}
-              </button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Excluir conta</AlertDialogTitle>
-                <AlertDialogDescription asChild>
-                  <div className="space-y-3">
-                    <p>Esta ação é permanente e não pode ser desfeita.</p>
-                    <p>Ao continuar:</p>
-                    <ul className="space-y-1 text-sm">
-                      <li>• Sua assinatura ativa será cancelada imediatamente</li>
-                      <li>• Todos os agendamentos e dados serão removidos</li>
-                      <li>• Sua conta será excluída permanentemente do sistema</li>
-                    </ul>
-                  </div>
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                <AlertDialogAction
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                  onClick={async () => {
-                    setDeleting(true);
-                    try {
-                      const { data: { session } } = await supabase.auth.getSession();
-                      if (!session) throw new Error('Não autenticado');
-
-                      const { data, error } = await supabase.functions.invoke('delete-account', {
-                        headers: { Authorization: `Bearer ${session.access_token}` },
-                      });
-
-                      if (error) throw error;
-
-                      await supabase.auth.signOut();
-                      toast.success('Conta excluída com sucesso.');
-                      navigate('/');
-                    } catch (err: any) {
-                      toast.error('Erro ao excluir conta. Tente novamente.');
-                      console.error(err);
-                    } finally {
-                      setDeleting(false);
-                    }
-                  }}
-                >
-                  Excluir conta permanentemente
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-          <p className="text-[11px] text-muted-foreground/50">
-            Esta ação remove permanentemente sua conta e todos os dados associados.
-          </p>
+        <div className="flex items-center gap-2">
+          <Moon className="h-3.5 w-3.5 text-muted-foreground/60" />
+          <Switch checked={!isDarkMode} onCheckedChange={handleToggleTheme} />
+          <Sun className="h-3.5 w-3.5 text-muted-foreground/60" />
         </div>
       </div>
+
+      {/* Seção Conta */}
+      <section className="space-y-4">
+        <div>
+          <h2 className="text-lg font-semibold flex items-center gap-2">
+            <User className="h-4 w-4" />
+            Conta
+          </h2>
+          <p className="text-xs text-muted-foreground">Informações pessoais da sua conta</p>
+        </div>
+
+        <div className="rounded-lg border p-4 space-y-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="name" className="text-xs">Nome</Label>
+            <Input
+              id="name"
+              placeholder="Seu nome"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="phone" className="text-xs">Telefone</Label>
+            <Input
+              id="phone"
+              placeholder="(00) 00000-0000"
+              value={phone}
+              onChange={handlePhoneChange}
+              maxLength={15}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="email" className="text-xs">Email</Label>
+            <Input
+              id="email"
+              value={barber?.email || ''}
+              disabled
+              className="bg-muted/50 text-muted-foreground"
+            />
+            <p className="text-[11px] text-muted-foreground/60">O email não pode ser alterado</p>
+          </div>
+
+          <div className="flex justify-end pt-1">
+            <Button
+              onClick={handleSaveAccount}
+              disabled={savingAccount}
+              size="sm"
+              variant="outline"
+              className="gap-1.5 text-xs"
+            >
+              {savingAccount ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Save className="h-3.5 w-3.5" />
+              )}
+              Salvar alterações
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Seção Barbearia */}
+      {isMaster && (
+        <section className="space-y-4">
+          <div>
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <Building2 className="h-4 w-4" />
+              Barbearia
+            </h2>
+            <p className="text-xs text-muted-foreground">Configurações da sua barbearia</p>
+          </div>
+
+          <div className="rounded-lg border p-4 space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="barbershop-name" className="text-xs">Nome da barbearia</Label>
+              <Input
+                id="barbershop-name"
+                placeholder="Nome da barbearia"
+                value={barbershopName}
+                onChange={(e) => setBarbershopName(e.target.value)}
+              />
+            </div>
+
+            <div className="flex justify-end pt-1">
+              <Button
+                onClick={handleSaveBarbershop}
+                disabled={savingBarbershop}
+                size="sm"
+                variant="outline"
+                className="gap-1.5 text-xs"
+              >
+                {savingBarbershop ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Save className="h-3.5 w-3.5" />
+                )}
+                Salvar alterações
+              </Button>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Seção Assinatura */}
+      {isMaster && (
+        <section className="space-y-4">
+          <div>
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <CreditCard className="h-4 w-4" />
+              Assinatura
+            </h2>
+            <p className="text-xs text-muted-foreground">Gerencie seu plano atual</p>
+          </div>
+
+          <div
+            className="rounded-lg border p-4 flex items-center justify-between cursor-pointer hover:bg-accent/50 transition-colors"
+            onClick={() => navigate('/painel/assinatura')}
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-primary/10">
+                <Crown className="h-4 w-4 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm font-medium">Plano {planLabel}</p>
+                <p className="text-xs text-muted-foreground">Clique para alterar seu plano</p>
+              </div>
+            </div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </div>
+        </section>
+      )}
+
+      {/* Termos e Política */}
+      <div className="flex items-center justify-center gap-3 pt-2">
+        <a href="/termos-de-uso" target="_blank" className="text-xs text-muted-foreground/60 hover:text-primary transition-colors">
+          Termos de uso
+        </a>
+        <span className="text-muted-foreground/30 text-xs">•</span>
+        <a href="/politica-de-privacidade" target="_blank" className="text-xs text-muted-foreground/60 hover:text-primary transition-colors">
+          Política de privacidade
+        </a>
+      </div>
+
+      {/* Zona de Risco */}
+      <section className="space-y-3">
+        <Separator className="opacity-30" />
+        <div>
+          <h2 className="text-xs font-medium text-destructive/70 flex items-center gap-1.5 uppercase tracking-wider">
+            <AlertTriangle className="h-3 w-3" />
+            Zona de risco
+          </h2>
+        </div>
+
+        <div className="rounded-lg border border-destructive/15 p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium">Excluir conta</p>
+              <p className="text-xs text-muted-foreground">Remove permanentemente sua conta e todos os dados</p>
+            </div>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive text-xs gap-1.5"
+                  disabled={deleting}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  {deleting ? 'Excluindo...' : 'Excluir'}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Excluir conta</AlertDialogTitle>
+                  <AlertDialogDescription asChild>
+                    <div className="space-y-3">
+                      <p>Esta ação é permanente e não pode ser desfeita.</p>
+                      <p>Ao continuar:</p>
+                      <ul className="space-y-1 text-sm">
+                        <li>• Sua assinatura ativa será cancelada imediatamente</li>
+                        <li>• Todos os agendamentos e dados serão removidos</li>
+                        <li>• Sua conta será excluída permanentemente do sistema</li>
+                      </ul>
+                    </div>
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    onClick={async () => {
+                      setDeleting(true);
+                      try {
+                        const { data: { session } } = await supabase.auth.getSession();
+                        if (!session) throw new Error('Não autenticado');
+
+                        const { data, error } = await supabase.functions.invoke('delete-account', {
+                          headers: { Authorization: `Bearer ${session.access_token}` },
+                        });
+
+                        if (error) throw error;
+
+                        await supabase.auth.signOut();
+                        toast.success('Conta excluída com sucesso.');
+                        navigate('/');
+                      } catch (err: any) {
+                        toast.error('Erro ao excluir conta. Tente novamente.');
+                        console.error(err);
+                      } finally {
+                        setDeleting(false);
+                      }
+                    }}
+                  >
+                    Excluir conta permanentemente
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };
