@@ -28,10 +28,11 @@ interface ContextType {
   barber: Barber | null;
   barbershop: Barbershop | null;
   isMaster: boolean;
+  refetchRole: () => Promise<void>;
 }
 
 const Configuracoes = () => {
-  const { barber } = useOutletContext<ContextType>();
+  const { barber, refetchRole } = useOutletContext<ContextType>();
   const { updateBarber } = useBarber();
   const { barbershop, isMaster, refetch: refetchUserRole } = useUserRole();
   const navigate = useNavigate();
@@ -166,6 +167,7 @@ const Configuracoes = () => {
 
       setPhotoUrl(newUrl);
       await refetchUserRole();
+      await refetchRole();
       toast.success('Foto atualizada!');
     } catch (err) {
       toast.error('Erro ao enviar foto');
@@ -191,6 +193,7 @@ const Configuracoes = () => {
 
       if (error) throw error;
       await refetchUserRole();
+      await refetchRole();
       toast.success('Nome da barbearia atualizado!');
     } catch (error) {
       toast.error('Erro ao atualizar barbearia');
