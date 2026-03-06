@@ -220,7 +220,9 @@ const Painel = () => {
           {/* User Info */}
           <div className="p-4 border-b border-sidebar-border">
             <div className="flex items-center gap-3">
-              {barber?.photo_url ? (
+              {barbershop?.photo_url ? (
+                <img src={barbershop.photo_url} alt={barbershop.name} className="w-10 h-10 rounded-xl object-cover" />
+              ) : barber?.photo_url ? (
                 <img src={barber.photo_url} alt={barber.name} className="w-10 h-10 rounded-xl object-cover" />
               ) : (
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'var(--primary-gradient)' }}>

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useOutletContext, useNavigate } from 'react-router-dom';
 import { Barber, Barbershop } from '@/lib/supabase';
 import { useBarber } from '@/hooks/useBarber';
@@ -33,7 +33,7 @@ interface ContextType {
 const Configuracoes = () => {
   const { barber } = useOutletContext<ContextType>();
   const { updateBarber } = useBarber();
-  const { barbershop, isMaster } = useUserRole();
+  const { barbershop, isMaster, refetch: refetchUserRole } = useUserRole();
   const navigate = useNavigate();
   
   const [savingAccount, setSavingAccount] = useState(false);
@@ -41,7 +41,7 @@ const Configuracoes = () => {
   const [deleting, setDeleting] = useState(false);
   const [copied, setCopied] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
-  const [photoUrl, setPhotoUrl] = useState(barbershop?.photo_url || '');
+  const [photoUrl, setPhotoUrl] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const saved = localStorage.getItem('bookify-theme');
@@ -64,6 +64,21 @@ const Configuracoes = () => {
   const [name, setName] = useState(barber?.name || '');
   const [phone, setPhone] = useState(barber?.phone || '');
   const [barbershopName, setBarbershopName] = useState(barbershop?.name || '');
+
+  // Sync state when barbershop/barber data loads or changes
+  useEffect(() => {
+    if (barbershop) {
+      setBarbershopName(barbershop.name || '');
+      setPhotoUrl(barbershop.photo_url || '');
+    }
+  }, [barbershop]);
+
+  useEffect(() => {
+    if (barber) {
+      setName(barber.name || '');
+      setPhone(barber.phone || '');
+    }
+  }, [barber]);
 
   const publicLink = barbershop
     ? `${window.location.origin}/barbearia/${barbershop.slug || barbershop.id}`
@@ -150,6 +165,7 @@ const Configuracoes = () => {
       if (error) throw error;
 
       setPhotoUrl(newUrl);
+      await refetchUserRole();
       toast.success('Foto atualizada!');
     } catch (err) {
       toast.error('Erro ao enviar foto');
@@ -174,6 +190,7 @@ const Configuracoes = () => {
         .eq('id', barbershop!.id);
 
       if (error) throw error;
+      await refetchUserRole();
       toast.success('Nome da barbearia atualizado!');
     } catch (error) {
       toast.error('Erro ao atualizar barbearia');
