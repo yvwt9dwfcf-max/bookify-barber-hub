@@ -99,6 +99,7 @@ const Agenda = () => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(startOfDay(new Date()));
+  const [dashboardRefreshKey, setDashboardRefreshKey] = useState(0);
   const [viewMode, setViewMode] = useState<ViewMode>('daily');
   const [showManualDialog, setShowManualDialog] = useState(false);
   const [preselectedTime, setPreselectedTime] = useState<string | null>(null);
