@@ -120,16 +120,6 @@ const DashboardCards = ({ barbershopId }: DashboardCardsProps) => {
         </Card>
       </div>
 
-      {/* Plan info */}
-      <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-card/40 border border-border/20 text-xs text-muted-foreground">
-        <div className="flex items-center gap-1.5">
-          <Crown className="h-3.5 w-3.5 text-primary" />
-          <span>Plano atual: <strong className="text-foreground">{planLabel}</strong></span>
-        </div>
-        <span>
-          Equipe: <strong className="text-foreground">{activeBarbers} / {maxBarbers}</strong>
-        </span>
-      </div>
     </div>
   );
 };
