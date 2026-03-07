@@ -380,8 +380,8 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
                                 ))}
                               </div>
                             </button>
-                          );
-                        })}
+                        ))}
+                      </div>
                       </div>
                     </div>
                   ) : (
