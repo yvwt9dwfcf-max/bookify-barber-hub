@@ -372,6 +372,7 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
                                 onClick={() => {
                                   localStorage.setItem('selected_plan', plan.id);
                                   setSelectedPlan(plan.id);
+                                  setHasExplicitPlanSelection(true);
                                   setShowPlanSelection(false);
                                 }}
                                 className={`w-full text-left p-3 rounded-xl border transition-all duration-200 hover:border-primary/50 ${
