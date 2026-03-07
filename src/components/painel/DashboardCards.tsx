@@ -52,13 +52,6 @@ const DashboardCards = ({ barbershopId, refreshKey }: DashboardCardsProps) => {
     return () => clearInterval(interval);
   }, [barbershopId, refreshKey]);
 
-  const planLabel = barbershop?.plan
-    ? barbershop.plan.charAt(0).toUpperCase() + barbershop.plan.slice(1)
-    : '—';
-
-  const activeBarbers = barbers.filter(b => b.is_active).length;
-  const maxBarbers = barbershop?.max_barbers ?? 1;
-
   const trialExpired = barbershop?.subscription_status === 'trial' && !isTrialActive;
 
   return (
