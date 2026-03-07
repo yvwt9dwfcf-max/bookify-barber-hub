@@ -142,7 +142,7 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
       return;
     }
 
-    if (!selectedPlan) {
+    if (!selectedPlan || !hasExplicitPlanSelection) {
       toast.error('Escolha um plano antes de criar sua conta.');
       setShowPlanSelection(true);
       return;
