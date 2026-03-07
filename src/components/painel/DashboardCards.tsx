@@ -4,7 +4,7 @@ import { CalendarCheck, DollarSign, Users, AlertCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { startOfDay, addDays } from 'date-fns';
 import { useSubscription } from '@/hooks/useSubscription';
-import { useBarbershopBarbers } from '@/hooks/useBarbershopBarbers';
+import { Link } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 
 interface DashboardCardsProps {

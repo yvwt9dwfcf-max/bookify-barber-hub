@@ -382,7 +382,6 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
                             </button>
                         ))}
                       </div>
-                      </div>
                     </div>
                   ) : (
                   <div className="space-y-4">
