@@ -24,12 +24,17 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
   const [isAppleLoading, setIsAppleLoading] = useState(false);
   const [activeTab, setActiveTab] = useState(initialTab);
   const [showPlanSelection, setShowPlanSelection] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<string | null>(() => localStorage.getItem('selected_plan'));
+  const [selectedPlan, setSelectedPlan] = useState<string | null>(() =>
+    initialTab === 'signup' ? localStorage.getItem('selected_plan') : null
+  );
+  const [hasExplicitPlanSelection, setHasExplicitPlanSelection] = useState(() =>
+    initialTab === 'signup' && Boolean(localStorage.getItem('selected_plan'))
+  );
   const { user, loading: authLoading, signIn, signUp } = useAuth();
   const navigate = useNavigate();
 
   const handleGoogleLogin = async (isSignup = false) => {
-    if (isSignup && !selectedPlan) {
+    if (isSignup && (!selectedPlan || !hasExplicitPlanSelection)) {
       toast.error('Escolha um plano antes de criar sua conta.');
       setShowPlanSelection(true);
       return;
@@ -50,7 +55,7 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
   };
 
   const handleAppleLogin = async (isSignup = false) => {
-    if (isSignup && !selectedPlan) {
+    if (isSignup && (!selectedPlan || !hasExplicitPlanSelection)) {
       toast.error('Escolha um plano antes de criar sua conta.');
       setShowPlanSelection(true);
       return;
@@ -137,7 +142,7 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
       return;
     }
 
-    if (!selectedPlan) {
+    if (!selectedPlan || !hasExplicitPlanSelection) {
       toast.error('Escolha um plano antes de criar sua conta.');
       setShowPlanSelection(true);
       return;
@@ -154,6 +159,7 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
       } else {
         localStorage.removeItem('selected_plan');
         setSelectedPlan(null);
+        setHasExplicitPlanSelection(false);
         setShowPlanSelection(false);
         toast.success('Conta criada com sucesso! Você já pode acessar o painel.');
         navigate('/painel');
@@ -217,8 +223,10 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
               <Tabs value={activeTab} onValueChange={(v) => {
                 const tab = v as 'login' | 'signup';
                 setActiveTab(tab);
-                if (tab === 'signup') {
-                  setSelectedPlan(localStorage.getItem('selected_plan'));
+                if (tab === 'signup' && activeTab !== 'signup') {
+                  setSelectedPlan(null);
+                  setHasExplicitPlanSelection(false);
+                  localStorage.removeItem('selected_plan');
                 }
                 setShowPlanSelection(false);
               }}>
@@ -364,6 +372,7 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
                                 onClick={() => {
                                   localStorage.setItem('selected_plan', plan.id);
                                   setSelectedPlan(plan.id);
+                                  setHasExplicitPlanSelection(true);
                                   setShowPlanSelection(false);
                                 }}
                                 className={`w-full text-left p-3 rounded-xl border transition-all duration-200 hover:border-primary/50 ${
