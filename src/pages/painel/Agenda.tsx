@@ -228,6 +228,7 @@ const Agenda = () => {
 
     toast.success('Status atualizado');
     fetchAppointments();
+    setDashboardRefreshKey(k => k + 1);
   };
 
   const handleCardClick = (appointment: Appointment) => {
