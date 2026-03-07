@@ -22,6 +22,7 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isAppleLoading, setIsAppleLoading] = useState(false);
   const [activeTab, setActiveTab] = useState(initialTab);
+  const [showPlanSelection, setShowPlanSelection] = useState(false);
   const { user, loading: authLoading, signIn, signUp } = useAuth();
   const navigate = useNavigate();
 
