@@ -350,7 +350,7 @@ const Agenda = () => {
   return (
     <div className="space-y-4 pb-24 animate-page-enter">
       {/* Dashboard Cards */}
-      <DashboardCards barbershopId={barbershop?.id} />
+      <DashboardCards barbershopId={barbershop?.id} refreshKey={dashboardRefreshKey} />
 
       {/* Premium Header */}
       <div className="animate-fade-in">

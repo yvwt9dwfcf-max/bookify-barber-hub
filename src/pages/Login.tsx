@@ -346,7 +346,7 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
                       </div>
                       <div className="space-y-2 max-h-[360px] overflow-y-auto pr-1">
                         {PLANS.map((plan) => {
-                          const isSelected = localStorage.getItem('selected_plan') === plan.id;
+                          return (
                           return (
                             <button
                               key={plan.id}

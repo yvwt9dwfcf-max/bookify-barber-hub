@@ -17,7 +17,6 @@ const DashboardCards = ({ barbershopId, refreshKey }: DashboardCardsProps) => {
   const [todayRevenue, setTodayRevenue] = useState(0);
   const [todayClients, setTodayClients] = useState(0);
   const { isTrialActive, trialDaysRemaining, barbershop } = useSubscription();
-  const { barbers } = useBarbershopBarbers();
 
   useEffect(() => {
     if (!barbershopId) return;
