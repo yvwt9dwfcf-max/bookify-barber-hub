@@ -174,6 +174,8 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
     );
   }
 
+  const selectedPlanData = selectedPlan ? PLANS.find((plan) => plan.id === selectedPlan) : null;
+
   return (
     <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
       {/* Background effects */}
