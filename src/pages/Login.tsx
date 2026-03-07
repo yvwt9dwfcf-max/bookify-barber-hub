@@ -153,6 +153,8 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
         toast.error(error.message);
       } else {
         localStorage.removeItem('selected_plan');
+        setSelectedPlan(null);
+        setShowPlanSelection(false);
         toast.success('Conta criada com sucesso! Você já pode acessar o painel.');
         navigate('/painel');
       }
