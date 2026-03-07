@@ -12,7 +12,25 @@ interface BookingConfirmationProps {
   preselectedBarber?: Barber | null;
 }
 
-export function BookingConfirmation({ appointment, onNewBooking }: BookingConfirmationProps) {
+export function BookingConfirmation({ appointment, onNewBooking, barbershopId, preselectedBarber }: BookingConfirmationProps) {
+  const navigate = useNavigate();
+
+  const handleBackToStart = () => {
+    if (barbershopId) {
+      // Find the barbershop slug from the current URL or navigate by ID
+      const currentPath = window.location.pathname;
+      if (currentPath.includes('/agendar/')) {
+        // Already on the booking page, just reload
+        window.location.reload();
+      } else {
+        navigate(`/agendar/${barbershopId}`);
+      }
+    } else if (preselectedBarber) {
+      navigate(`/barbeiro/${preselectedBarber.id}`);
+    } else {
+      window.location.reload();
+    }
+  };
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
