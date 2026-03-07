@@ -1,22 +1,21 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { CalendarCheck, DollarSign, Users, Crown, AlertCircle } from 'lucide-react';
+import { CalendarCheck, DollarSign, Users, AlertCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { startOfDay, addDays } from 'date-fns';
 import { useSubscription } from '@/hooks/useSubscription';
-import { useBarbershopBarbers } from '@/hooks/useBarbershopBarbers';
 import { Link } from 'react-router-dom';
 
 interface DashboardCardsProps {
   barbershopId: string | undefined;
+  refreshKey?: number;
 }
 
-const DashboardCards = ({ barbershopId }: DashboardCardsProps) => {
+const DashboardCards = ({ barbershopId, refreshKey }: DashboardCardsProps) => {
   const [todayAppointments, setTodayAppointments] = useState(0);
   const [todayRevenue, setTodayRevenue] = useState(0);
   const [todayClients, setTodayClients] = useState(0);
   const { isTrialActive, trialDaysRemaining, barbershop } = useSubscription();
-  const { barbers } = useBarbershopBarbers();
 
   useEffect(() => {
     if (!barbershopId) return;
@@ -49,14 +48,7 @@ const DashboardCards = ({ barbershopId }: DashboardCardsProps) => {
     fetchTodayStats();
     const interval = setInterval(fetchTodayStats, 30000);
     return () => clearInterval(interval);
-  }, [barbershopId]);
-
-  const planLabel = barbershop?.plan
-    ? barbershop.plan.charAt(0).toUpperCase() + barbershop.plan.slice(1)
-    : '—';
-
-  const activeBarbers = barbers.filter(b => b.is_active).length;
-  const maxBarbers = barbershop?.max_barbers ?? 1;
+  }, [barbershopId, refreshKey]);
 
   const trialExpired = barbershop?.subscription_status === 'trial' && !isTrialActive;
 
@@ -120,16 +112,6 @@ const DashboardCards = ({ barbershopId }: DashboardCardsProps) => {
         </Card>
       </div>
 
-      {/* Plan info */}
-      <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-card/40 border border-border/20 text-xs text-muted-foreground">
-        <div className="flex items-center gap-1.5">
-          <Crown className="h-3.5 w-3.5 text-primary" />
-          <span>Plano atual: <strong className="text-foreground">{planLabel}</strong></span>
-        </div>
-        <span>
-          Equipe: <strong className="text-foreground">{activeBarbers} / {maxBarbers}</strong>
-        </span>
-      </div>
     </div>
   );
 };

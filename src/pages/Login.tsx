@@ -8,10 +8,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate, Link } from 'react-router-dom';
-import { Loader2, Mail, Lock, Scissors, User } from 'lucide-react';
+import { Loader2, Mail, Lock, Scissors, User, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { lovable } from '@/integrations/lovable/index';
 import { Checkbox } from '@/components/ui/checkbox';
+import { PLANS } from '@/lib/plans';
 
 interface LoginProps {
   initialTab?: 'login' | 'signup';
@@ -22,6 +23,7 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isAppleLoading, setIsAppleLoading] = useState(false);
   const [activeTab, setActiveTab] = useState(initialTab);
+  const [showPlanSelection, setShowPlanSelection] = useState(false);
   const { user, loading: authLoading, signIn, signUp } = useAuth();
   const navigate = useNavigate();
 
@@ -214,7 +216,18 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'login' | 'signup')}>
+              <Tabs value={activeTab} onValueChange={(v) => {
+                const tab = v as 'login' | 'signup';
+                setActiveTab(tab);
+                if (tab === 'signup') {
+                  const selectedPlan = localStorage.getItem('selected_plan');
+                  if (!selectedPlan) {
+                    setShowPlanSelection(true);
+                  }
+                } else {
+                  setShowPlanSelection(false);
+                }
+              }}>
                 <TabsList className="grid w-full grid-cols-2 mb-6">
                   <TabsTrigger value="login">Entrar</TabsTrigger>
                   <TabsTrigger value="signup">Criar conta</TabsTrigger>
@@ -322,7 +335,69 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
                 </TabsContent>
 
                 <TabsContent value="signup">
+                  {showPlanSelection ? (
+                    <div className="space-y-4 animate-fade-in">
+                      <div className="text-center space-y-1 mb-2">
+                        <h3 className="text-base font-semibold">Escolha o plano ideal para sua barbearia</h3>
+                        <p className="text-xs text-muted-foreground">
+                          Todos os planos incluem 3 dias de teste gratuito.{' '}
+                          Sem necessidade de cartão de crédito para começar.
+                        </p>
+                      </div>
+                      <div className="space-y-2 max-h-[360px] overflow-y-auto pr-1">
+                        {PLANS.map((plan) => (
+                            <button
+                              key={plan.id}
+                              onClick={() => {
+                                localStorage.setItem('selected_plan', plan.id);
+                                setShowPlanSelection(false);
+                              }}
+                              className={`w-full text-left p-3 rounded-xl border transition-all duration-200 hover:border-primary/50 ${
+                                plan.popular ? 'border-primary/40 bg-primary/5' : 'border-border/50 bg-card/60'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between mb-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-semibold text-sm">{plan.name}</span>
+                                  {plan.popular && (
+                                    <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">
+                                      Popular
+                                    </span>
+                                  )}
+                                </div>
+                                <span className="text-sm font-bold">
+                                  R$ {plan.price.toFixed(2).replace('.', ',')}
+                                  <span className="text-[10px] text-muted-foreground font-normal">/mês</span>
+                                </span>
+                              </div>
+                              <p className="text-[11px] text-muted-foreground">{plan.label}</p>
+                              <div className="flex flex-wrap gap-1.5 mt-2">
+                                {plan.features.slice(0, 3).map((f) => (
+                                  <span key={f} className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                                    <Check className="h-2.5 w-2.5 text-primary" />
+                                    {f}
+                                  </span>
+                                ))}
+                              </div>
+                            </button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
                   <div className="space-y-4">
+                    {/* Show selected plan */}
+                    {localStorage.getItem('selected_plan') && (
+                      <button
+                        onClick={() => setShowPlanSelection(true)}
+                        className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-primary/10 border border-primary/20 text-xs hover:bg-primary/15 transition-colors"
+                      >
+                        <span className="text-primary font-medium">
+                          Plano: {PLANS.find(p => p.id === localStorage.getItem('selected_plan'))?.name || 'Selecionado'}
+                        </span>
+                        <span className="text-primary/70 text-[10px]">Alterar plano</span>
+                      </button>
+                    )}
+
                     <Button
                       type="button"
                       variant="outline"
@@ -473,6 +548,7 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
                     </Button>
                   </form>
                   </div>
+                  )}
                 </TabsContent>
               </Tabs>
             </CardContent>

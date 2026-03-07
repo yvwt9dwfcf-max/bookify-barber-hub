@@ -1,15 +1,36 @@
 import { CheckCircle, Calendar, User, Scissors } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Appointment } from '@/lib/supabase';
+import { Appointment, Barber } from '@/lib/supabase';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useNavigate } from 'react-router-dom';
 
 interface BookingConfirmationProps {
   appointment: Appointment;
   onNewBooking: () => void;
+  barbershopId?: string;
+  preselectedBarber?: Barber | null;
 }
 
-export function BookingConfirmation({ appointment, onNewBooking }: BookingConfirmationProps) {
+export function BookingConfirmation({ appointment, onNewBooking, barbershopId, preselectedBarber }: BookingConfirmationProps) {
+  const navigate = useNavigate();
+
+  const handleBackToStart = () => {
+    if (barbershopId) {
+      // Find the barbershop slug from the current URL or navigate by ID
+      const currentPath = window.location.pathname;
+      if (currentPath.includes('/agendar/')) {
+        // Already on the booking page, just reload
+        window.location.reload();
+      } else {
+        navigate(`/agendar/${barbershopId}`);
+      }
+    } else if (preselectedBarber) {
+      navigate(`/barbeiro/${preselectedBarber.id}`);
+    } else {
+      window.location.reload();
+    }
+  };
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -126,6 +147,14 @@ export function BookingConfirmation({ appointment, onNewBooking }: BookingConfir
           size="lg"
         >
           Fazer novo agendamento
+        </Button>
+        <Button 
+          onClick={handleBackToStart} 
+          variant="outline"
+          className="w-full active:scale-[0.98] transition-transform duration-150" 
+          size="lg"
+        >
+          Voltar ao início
         </Button>
       </div>
     </div>
