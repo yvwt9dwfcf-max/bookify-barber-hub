@@ -9,9 +9,10 @@ import { Link } from 'react-router-dom';
 
 interface DashboardCardsProps {
   barbershopId: string | undefined;
+  refreshKey?: number;
 }
 
-const DashboardCards = ({ barbershopId }: DashboardCardsProps) => {
+const DashboardCards = ({ barbershopId, refreshKey }: DashboardCardsProps) => {
   const [todayAppointments, setTodayAppointments] = useState(0);
   const [todayRevenue, setTodayRevenue] = useState(0);
   const [todayClients, setTodayClients] = useState(0);
