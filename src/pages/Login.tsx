@@ -329,67 +329,84 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
                 </TabsContent>
 
                 <TabsContent value="signup">
-                  {showPlanSelection ? (
-                    <div className="space-y-4 animate-fade-in">
-                      <div className="text-center space-y-1 mb-2">
-                        <h3 className="text-base font-semibold">Escolha o plano ideal para sua barbearia</h3>
-                        <p className="text-xs text-muted-foreground">
-                          Todos os planos incluem 3 dias de teste gratuito.{' '}
-                          Sem necessidade de cartão de crédito para começar.
-                        </p>
-                      </div>
-                      <div className="space-y-2 max-h-[360px] overflow-y-auto pr-1">
-                        {PLANS.map((plan) => (
-                            <button
-                              key={plan.id}
-                              onClick={() => {
-                                localStorage.setItem('selected_plan', plan.id);
-                                setShowPlanSelection(false);
-                              }}
-                              className={`w-full text-left p-3 rounded-xl border transition-all duration-200 hover:border-primary/50 ${
-                                plan.popular ? 'border-primary/40 bg-primary/5' : 'border-border/50 bg-card/60'
-                              }`}
-                            >
-                              <div className="flex items-center justify-between mb-1">
-                                <div className="flex items-center gap-2">
-                                  <span className="font-semibold text-sm">{plan.name}</span>
-                                  {plan.popular && (
-                                    <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">
-                                      Popular
-                                    </span>
-                                  )}
-                                </div>
-                                <span className="text-sm font-bold">
-                                  R$ {plan.price.toFixed(2).replace('.', ',')}
-                                  <span className="text-[10px] text-muted-foreground font-normal">/mês</span>
-                                </span>
-                              </div>
-                              <p className="text-[11px] text-muted-foreground">{plan.label}</p>
-                              <div className="flex flex-wrap gap-1.5 mt-2">
-                                {plan.features.slice(0, 3).map((f) => (
-                                  <span key={f} className="text-[10px] text-muted-foreground flex items-center gap-0.5">
-                                    <Check className="h-2.5 w-2.5 text-primary" />
-                                    {f}
-                                  </span>
-                                ))}
-                              </div>
-                            </button>
-                        ))}
-                      </div>
-                    </div>
-                  ) : (
                   <div className="space-y-4">
-                    {/* Show selected plan */}
-                    {localStorage.getItem('selected_plan') && (
-                      <button
-                        onClick={() => setShowPlanSelection(true)}
-                        className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-primary/10 border border-primary/20 text-xs hover:bg-primary/15 transition-colors"
-                      >
-                        <span className="text-primary font-medium">
-                          Plano: {PLANS.find(p => p.id === localStorage.getItem('selected_plan'))?.name || 'Selecionado'}
-                        </span>
-                        <span className="text-primary/70 text-[10px]">Alterar plano</span>
-                      </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowPlanSelection((prev) => !prev)}
+                      className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-primary/10 border border-primary/20 text-xs hover:bg-primary/15 transition-colors"
+                    >
+                      <span className="text-primary font-medium">
+                        Plano: {selectedPlanData?.name || 'Escolher plano'}
+                      </span>
+                      <span className="text-primary/70 text-[10px]">
+                        {selectedPlan ? 'Alterar plano' : 'Selecionar agora'}
+                      </span>
+                    </button>
+
+                    {showPlanSelection && (
+                      <div className="space-y-3 animate-fade-in rounded-xl border border-border/50 bg-card/60 p-3">
+                        <div className="text-center space-y-1">
+                          <h3 className="text-base font-semibold">Escolha o plano ideal para sua barbearia</h3>
+                          <p className="text-xs text-muted-foreground">
+                            Todos os planos incluem 3 dias de teste gratuito.{' '}
+                            Sem necessidade de cartão de crédito para começar.
+                          </p>
+                        </div>
+
+                        <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
+                          {PLANS.map((plan) => {
+                            const isSelected = selectedPlan === plan.id;
+
+                            return (
+                              <button
+                                type="button"
+                                key={plan.id}
+                                onClick={() => {
+                                  localStorage.setItem('selected_plan', plan.id);
+                                  setSelectedPlan(plan.id);
+                                  setShowPlanSelection(false);
+                                }}
+                                className={`w-full text-left p-3 rounded-xl border transition-all duration-200 hover:border-primary/50 ${
+                                  isSelected
+                                    ? 'border-primary/40 bg-primary/10'
+                                    : plan.popular
+                                      ? 'border-primary/40 bg-primary/5'
+                                      : 'border-border/50 bg-card/60'
+                                }`}
+                              >
+                                <div className="flex items-center justify-between mb-1">
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-semibold text-sm">{plan.name}</span>
+                                    {isSelected && (
+                                      <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">
+                                        Selecionado
+                                      </span>
+                                    )}
+                                    {!isSelected && plan.popular && (
+                                      <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">
+                                        Popular
+                                      </span>
+                                    )}
+                                  </div>
+                                  <span className="text-sm font-bold">
+                                    R$ {plan.price.toFixed(2).replace('.', ',')}
+                                    <span className="text-[10px] text-muted-foreground font-normal">/mês</span>
+                                  </span>
+                                </div>
+                                <p className="text-[11px] text-muted-foreground">{plan.label}</p>
+                                <div className="flex flex-wrap gap-1.5 mt-2">
+                                  {plan.features.slice(0, 3).map((feature) => (
+                                    <span key={feature} className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                                      <Check className="h-2.5 w-2.5 text-primary" />
+                                      {feature}
+                                    </span>
+                                  ))}
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
                     )}
 
                     <Button
@@ -436,113 +453,112 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
                       </span>
                     </div>
 
-                  <form onSubmit={handleSignup} className="space-y-4">
-                    <div className="rounded-lg bg-primary/10 text-primary text-sm p-3 text-center font-medium">
-                      Teste grátis por 3 dias. Após isso, escolha um plano para continuar.
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-name">Seu nome</Label>
-                      <div className="relative">
-                        <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="signup-name"
-                          type="text"
-                          placeholder="Seu nome completo"
-                          value={signupName}
-                          onChange={(e) => setSignupName(e.target.value)}
-                          className="pl-10 h-11"
-                        />
+                    <form onSubmit={handleSignup} className="space-y-4">
+                      <div className="rounded-lg bg-primary/10 text-primary text-sm p-3 text-center font-medium">
+                        Teste grátis por 3 dias. Após isso, escolha um plano para continuar.
                       </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-email">Email *</Label>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="signup-email"
-                          type="email"
-                          placeholder="seu@email.com"
-                          value={signupEmail}
-                          onChange={(e) => setSignupEmail(e.target.value)}
-                          className="pl-10 h-11"
-                          required
-                        />
+                      <div className="space-y-2">
+                        <Label htmlFor="signup-name">Seu nome</Label>
+                        <div className="relative">
+                          <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            id="signup-name"
+                            type="text"
+                            placeholder="Seu nome completo"
+                            value={signupName}
+                            onChange={(e) => setSignupName(e.target.value)}
+                            className="pl-10 h-11"
+                          />
+                        </div>
                       </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-password">Senha *</Label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="signup-password"
-                          type="password"
-                          placeholder="Mínimo 6 caracteres"
-                          value={signupPassword}
-                          onChange={(e) => setSignupPassword(e.target.value)}
-                          className="pl-10 h-11"
-                          required
-                        />
+                      <div className="space-y-2">
+                        <Label htmlFor="signup-email">Email *</Label>
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            id="signup-email"
+                            type="email"
+                            placeholder="seu@email.com"
+                            value={signupEmail}
+                            onChange={(e) => setSignupEmail(e.target.value)}
+                            className="pl-10 h-11"
+                            required
+                          />
+                        </div>
                       </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-confirm">Confirmar senha *</Label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="signup-confirm"
-                          type="password"
-                          placeholder="••••••••"
-                          value={signupConfirmPassword}
-                          onChange={(e) => setSignupConfirmPassword(e.target.value)}
-                          className="pl-10 h-11"
-                          required
-                        />
+                      <div className="space-y-2">
+                        <Label htmlFor="signup-password">Senha *</Label>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            id="signup-password"
+                            type="password"
+                            placeholder="Mínimo 6 caracteres"
+                            value={signupPassword}
+                            onChange={(e) => setSignupPassword(e.target.value)}
+                            className="pl-10 h-11"
+                            required
+                          />
+                        </div>
                       </div>
-                    </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="signup-confirm">Confirmar senha *</Label>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            id="signup-confirm"
+                            type="password"
+                            placeholder="••••••••"
+                            value={signupConfirmPassword}
+                            onChange={(e) => setSignupConfirmPassword(e.target.value)}
+                            className="pl-10 h-11"
+                            required
+                          />
+                        </div>
+                      </div>
 
-                    {/* Terms checkbox */}
-                    <div className="flex items-start gap-2 py-1">
-                      <Checkbox
-                        id="accept-terms"
-                        checked={acceptedTerms}
-                        onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
-                        className="mt-0.5 h-3.5 w-3.5"
-                      />
-                      <label htmlFor="accept-terms" className="text-[11px] text-muted-foreground/80 cursor-pointer leading-relaxed">
-                        Li e concordo com os{' '}
-                        <Link to="/termos-de-uso" target="_blank" className="underline text-primary hover:text-primary/80">
-                          Termos de Uso
-                        </Link>{' '}
-                        e{' '}
-                        <Link to="/politica-de-privacidade" target="_blank" className="underline text-primary hover:text-primary/80">
-                          Política de Privacidade
-                        </Link>.
-                      </label>
-                    </div>
+                      {/* Terms checkbox */}
+                      <div className="flex items-start gap-2 py-1">
+                        <Checkbox
+                          id="accept-terms"
+                          checked={acceptedTerms}
+                          onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
+                          className="mt-0.5 h-3.5 w-3.5"
+                        />
+                        <label htmlFor="accept-terms" className="text-[11px] text-muted-foreground/80 cursor-pointer leading-relaxed">
+                          Li e concordo com os{' '}
+                          <Link to="/termos-de-uso" target="_blank" className="underline text-primary hover:text-primary/80">
+                            Termos de Uso
+                          </Link>{' '}
+                          e{' '}
+                          <Link to="/politica-de-privacidade" target="_blank" className="underline text-primary hover:text-primary/80">
+                            Política de Privacidade
+                          </Link>.
+                        </label>
+                      </div>
 
-                    {!acceptedTerms && signupEmail && signupPassword && (
-                      <p className="text-[11px] text-muted-foreground/70 text-center">
-                        É necessário aceitar os termos para criar a conta.
-                      </p>
-                    )}
-
-                    <Button
-                      type="submit"
-                      className="w-full btn-primary-gradient h-11 rounded-xl"
-                      disabled={isLoading || !acceptedTerms}
-                    >
-                      {isLoading ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Criando conta...
-                        </>
-                      ) : (
-                        'Criar conta'
+                      {!acceptedTerms && signupEmail && signupPassword && (
+                        <p className="text-[11px] text-muted-foreground/70 text-center">
+                          É necessário aceitar os termos para criar a conta.
+                        </p>
                       )}
-                    </Button>
-                  </form>
+
+                      <Button
+                        type="submit"
+                        className="w-full btn-primary-gradient h-11 rounded-xl"
+                        disabled={isLoading || !acceptedTerms}
+                      >
+                        {isLoading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Criando conta...
+                          </>
+                        ) : (
+                          'Criar conta'
+                        )}
+                      </Button>
+                    </form>
                   </div>
-                  )}
                 </TabsContent>
               </Tabs>
             </CardContent>
