@@ -137,10 +137,9 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
       return;
     }
 
-    const selectedPlan = localStorage.getItem('selected_plan');
     if (!selectedPlan) {
       toast.error('Escolha um plano antes de criar sua conta.');
-      navigate('/#pricing');
+      setShowPlanSelection(true);
       return;
     }
 
