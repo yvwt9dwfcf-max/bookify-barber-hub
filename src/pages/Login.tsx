@@ -551,6 +551,7 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
                     </Button>
                   </form>
                   </div>
+                  )}
                 </TabsContent>
               </Tabs>
             </CardContent>

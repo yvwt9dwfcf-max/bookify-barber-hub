@@ -148,6 +148,14 @@ export function BookingConfirmation({ appointment, onNewBooking, barbershopId, p
         >
           Fazer novo agendamento
         </Button>
+        <Button 
+          onClick={handleBackToStart} 
+          variant="outline"
+          className="w-full active:scale-[0.98] transition-transform duration-150" 
+          size="lg"
+        >
+          Voltar ao início
+        </Button>
       </div>
     </div>
   );

@@ -146,6 +146,8 @@ export function BookingFlow({ preselectedBarber, barbershopId, availableBarbers 
       <BookingConfirmation
         appointment={createdAppointment}
         onNewBooking={resetBooking}
+        barbershopId={barbershopId}
+        preselectedBarber={preselectedBarber}
       />
     );
   }

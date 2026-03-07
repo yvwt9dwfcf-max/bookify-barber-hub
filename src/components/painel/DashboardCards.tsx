@@ -50,7 +50,7 @@ const DashboardCards = ({ barbershopId, refreshKey }: DashboardCardsProps) => {
     fetchTodayStats();
     const interval = setInterval(fetchTodayStats, 30000);
     return () => clearInterval(interval);
-  }, [barbershopId]);
+  }, [barbershopId, refreshKey]);
 
   const planLabel = barbershop?.plan
     ? barbershop.plan.charAt(0).toUpperCase() + barbershop.plan.slice(1)

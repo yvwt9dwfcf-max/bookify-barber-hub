@@ -144,9 +144,6 @@ const AgendarBarbearia = () => {
             <h1 className="text-2xl md:text-3xl font-bold mb-2">
               {barbershop?.name}
             </h1>
-            <p className="text-muted-foreground">
-              Escolha um profissional para agendar seu horário
-            </p>
           </div>
           <BookingFlow 
             barbershopId={barbershop?.id} 
