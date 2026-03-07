@@ -1,12 +1,15 @@
 import { CheckCircle, Calendar, User, Scissors } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Appointment } from '@/lib/supabase';
+import { Appointment, Barber } from '@/lib/supabase';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useNavigate } from 'react-router-dom';
 
 interface BookingConfirmationProps {
   appointment: Appointment;
   onNewBooking: () => void;
+  barbershopId?: string;
+  preselectedBarber?: Barber | null;
 }
 
 export function BookingConfirmation({ appointment, onNewBooking }: BookingConfirmationProps) {
