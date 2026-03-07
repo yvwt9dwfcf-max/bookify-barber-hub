@@ -17,18 +17,21 @@ export function BookingConfirmation({ appointment, onNewBooking, barbershopId, p
 
   const handleBackToStart = () => {
     if (barbershopId) {
-      // Find the barbershop slug from the current URL or navigate by ID
       const currentPath = window.location.pathname;
-      if (currentPath.includes('/agendar/')) {
-        // Already on the booking page, just reload
-        window.location.reload();
+      // Extract the base booking URL (e.g. /agendar/slug or /b/slug)
+      const match = currentPath.match(/^(\/(?:agendar|b)\/[^/]+)/);
+      if (match) {
+        // Navigate to the base URL and force full reload to reset all state
+        window.location.href = match[1];
       } else {
         navigate(`/agendar/${barbershopId}`);
+        window.location.reload();
       }
     } else if (preselectedBarber) {
       navigate(`/barbeiro/${preselectedBarber.id}`);
-    } else {
       window.location.reload();
+    } else {
+      navigate('/');
     }
   };
   const formatPrice = (price: number) => {
