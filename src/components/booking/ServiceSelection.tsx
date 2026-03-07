@@ -133,7 +133,7 @@ export function ServiceSelection({ barberId, onSelect, onAutoSelect }: ServiceSe
       <div>
         <h2 className="text-xl font-bold">Escolha o serviço</h2>
         <p className="text-muted-foreground text-sm mt-1">
-          Selecione o serviço que deseja
+          Selecione o serviço que deseja agendar
         </p>
       </div>
 
