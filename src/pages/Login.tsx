@@ -24,6 +24,7 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
   const [isAppleLoading, setIsAppleLoading] = useState(false);
   const [activeTab, setActiveTab] = useState(initialTab);
   const [showPlanSelection, setShowPlanSelection] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<string | null>(() => localStorage.getItem('selected_plan'));
   const { user, loading: authLoading, signIn, signUp } = useAuth();
   const navigate = useNavigate();
 
