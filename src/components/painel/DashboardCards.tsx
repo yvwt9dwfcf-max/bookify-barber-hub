@@ -5,7 +5,6 @@ import { supabase } from '@/lib/supabase';
 import { startOfDay, addDays } from 'date-fns';
 import { useSubscription } from '@/hooks/useSubscription';
 import { Link } from 'react-router-dom';
-import { Link } from 'react-router-dom';
 
 interface DashboardCardsProps {
   barbershopId: string | undefined;
