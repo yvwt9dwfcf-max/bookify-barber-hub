@@ -55,7 +55,7 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
   };
 
   const handleAppleLogin = async (isSignup = false) => {
-    if (isSignup && !selectedPlan) {
+    if (isSignup && (!selectedPlan || !hasExplicitPlanSelection)) {
       toast.error('Escolha um plano antes de criar sua conta.');
       setShowPlanSelection(true);
       return;
