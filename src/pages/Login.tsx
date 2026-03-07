@@ -50,13 +50,10 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
   };
 
   const handleAppleLogin = async (isSignup = false) => {
-    if (isSignup) {
-      const selectedPlan = localStorage.getItem('selected_plan');
-      if (!selectedPlan) {
-        toast.error('Escolha um plano antes de criar sua conta.');
-        navigate('/#pricing');
-        return;
-      }
+    if (isSignup && !selectedPlan) {
+      toast.error('Escolha um plano antes de criar sua conta.');
+      setShowPlanSelection(true);
+      return;
     }
     setIsAppleLoading(true);
     try {
