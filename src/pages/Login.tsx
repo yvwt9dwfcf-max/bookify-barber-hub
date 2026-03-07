@@ -345,9 +345,7 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
                         </p>
                       </div>
                       <div className="space-y-2 max-h-[360px] overflow-y-auto pr-1">
-                        {PLANS.map((plan) => {
-                          return (
-                          return (
+                        {PLANS.map((plan) => (
                             <button
                               key={plan.id}
                               onClick={() => {
