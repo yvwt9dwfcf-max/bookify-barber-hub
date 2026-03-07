@@ -216,7 +216,18 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'login' | 'signup')}>
+              <Tabs value={activeTab} onValueChange={(v) => {
+                const tab = v as 'login' | 'signup';
+                setActiveTab(tab);
+                if (tab === 'signup') {
+                  const selectedPlan = localStorage.getItem('selected_plan');
+                  if (!selectedPlan) {
+                    setShowPlanSelection(true);
+                  }
+                } else {
+                  setShowPlanSelection(false);
+                }
+              }}>
                 <TabsList className="grid w-full grid-cols-2 mb-6">
                   <TabsTrigger value="login">Entrar</TabsTrigger>
                   <TabsTrigger value="signup">Criar conta</TabsTrigger>
