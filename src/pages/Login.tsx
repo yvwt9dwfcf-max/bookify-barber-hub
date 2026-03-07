@@ -223,8 +223,10 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
               <Tabs value={activeTab} onValueChange={(v) => {
                 const tab = v as 'login' | 'signup';
                 setActiveTab(tab);
-                if (tab === 'signup') {
-                  setSelectedPlan(localStorage.getItem('selected_plan'));
+                if (tab === 'signup' && activeTab !== 'signup') {
+                  setSelectedPlan(null);
+                  setHasExplicitPlanSelection(false);
+                  localStorage.removeItem('selected_plan');
                 }
                 setShowPlanSelection(false);
               }}>
