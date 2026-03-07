@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { CalendarCheck, DollarSign, Users, Crown, AlertCircle } from 'lucide-react';
+import { CalendarCheck, DollarSign, Users, AlertCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { startOfDay, addDays } from 'date-fns';
 import { useSubscription } from '@/hooks/useSubscription';
