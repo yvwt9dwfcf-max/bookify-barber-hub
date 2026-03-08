@@ -379,7 +379,7 @@ const Configuracoes = () => {
             <div className="flex items-center gap-4">
               <div
                 className="relative w-16 h-16 rounded-xl border-2 border-dashed border-border hover:border-primary/50 transition-colors cursor-pointer overflow-hidden shrink-0 flex items-center justify-center bg-muted/30"
-                onClick={() => fileInputRef.current?.click()}
+                onClick={() => barbershopFileInputRef.current?.click()}
               >
                 {uploadingPhoto ? (
                   <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
@@ -389,11 +389,11 @@ const Configuracoes = () => {
                   <Camera className="h-5 w-5 text-muted-foreground/60" />
                 )}
                 <input
-                  ref={fileInputRef}
+                  ref={barbershopFileInputRef}
                   type="file"
                   accept="image/*"
                   className="hidden"
-                  onChange={handlePhotoUpload}
+                  onChange={handleBarbershopPhotoUpload}
                 />
               </div>
               <div>
