@@ -70,14 +70,16 @@ const Configuracoes = () => {
     }
   }, [barber]);
 
-  const publicLink = barbershop
-    ? `${window.location.origin}/barbearia/${barbershop.slug || barbershop.id}`
+  const barbershopSlug = barbershop?.slug || barbershop?.id || '';
+  const publicLinkReal = barbershop
+    ? `${window.location.origin}/barbearia/${barbershopSlug}`
     : '';
+  const publicLinkDisplay = barbershopSlug ? `bookify.app/${barbershopSlug}` : '';
 
   const handleCopyLink = async () => {
-    if (!publicLink) return;
+    if (!publicLinkReal) return;
     try {
-      await navigator.clipboard.writeText(publicLink);
+      await navigator.clipboard.writeText(publicLinkReal);
       setCopied(true);
       toast.success('Link copiado!');
       setTimeout(() => setCopied(false), 2000);
@@ -269,7 +271,7 @@ const Configuracoes = () => {
       </div>
 
       {/* Public Booking Link */}
-      {publicLink && (
+      {publicLinkDisplay && (
         <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-2">
           <div className="flex items-center gap-2 text-sm font-medium">
             <Link2 className="h-4 w-4 text-primary" />
@@ -277,7 +279,7 @@ const Configuracoes = () => {
           </div>
           <div className="flex gap-2">
             <Input
-              value={publicLink}
+              value={publicLinkDisplay}
               readOnly
               className="font-mono text-xs bg-background"
             />
