@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { User, Phone, Mail, Loader2, Save, Building2, Crown, Link2, Copy, CheckCircle, CreditCard, ChevronRight, Sun, Moon, AlertTriangle, Trash2, Camera } from 'lucide-react';
+import { User, Phone, Mail, Loader2, Save, Building2, Crown, Link2, Copy, CheckCircle, CreditCard, ChevronRight, Sun, Moon, AlertTriangle, Trash2, Camera, HelpCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Switch } from '@/components/ui/switch';
 import { supabase } from '@/integrations/supabase/client';
@@ -433,6 +433,33 @@ const Configuracoes = () => {
           Política de privacidade
         </a>
       </div>
+
+      {/* Seção Suporte */}
+      <section className="space-y-4">
+        <div>
+          <h2 className="text-lg font-semibold flex items-center gap-2">
+            <HelpCircle className="h-4 w-4" />
+            Suporte
+          </h2>
+          <p className="text-xs text-muted-foreground">Precisa de ajuda? Acesse nossa central de suporte</p>
+        </div>
+
+        <div
+          className="rounded-lg border p-4 flex items-center justify-between cursor-pointer hover:bg-accent/50 transition-colors"
+          onClick={() => navigate('/painel/suporte')}
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-primary/10">
+              <HelpCircle className="h-4 w-4 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm font-medium">Central de Suporte</p>
+              <p className="text-xs text-muted-foreground">FAQ, contato por e-mail e reporte de problemas</p>
+            </div>
+          </div>
+          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        </div>
+      </section>
 
       {/* Zona de Risco */}
       <section className="space-y-3">
