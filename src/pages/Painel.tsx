@@ -263,7 +263,7 @@ const Painel = () => {
 
           {/* Navigation with scroll indicator */}
           <div className="flex-1 relative overflow-hidden">
-            <nav className="h-full p-3 space-y-1 overflow-y-auto overscroll-contain">
+            <nav className="h-full p-3 space-y-1 overflow-y-auto overscroll-contain" style={{ touchAction: 'pan-y' }}>
               {menuItems.map((item, index) => {
                 const isActive = location.pathname === item.path;
                 return (
