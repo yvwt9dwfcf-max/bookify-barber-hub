@@ -1,4 +1,4 @@
-import { CheckCircle, Calendar, User, Scissors } from 'lucide-react';
+import { CircleCheck as CheckCircle, CalendarDays as Calendar, UserRound as User, Sparkles as Scissors } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Appointment, Barber } from '@/lib/supabase';
 import { format } from 'date-fns';

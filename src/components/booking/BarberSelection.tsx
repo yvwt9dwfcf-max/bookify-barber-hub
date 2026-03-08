@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase, Barber } from '@/lib/supabase';
-import { User } from 'lucide-react';
+import { UserRound as User } from 'lucide-react';
 import { PremiumSkeleton, SkeletonCard } from '@/components/ui/premium-skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
 import { cn } from '@/lib/utils';

@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { supabase, Barber, Service } from '@/lib/supabase';
 import { useAvailability } from '@/hooks/useAvailability';
 import { toast } from 'sonner';
-import { Loader2, Clock, Calendar, UserCircle, Scissors, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
+import { Loader2, Timer as Clock, CalendarDays as Calendar, UserCircle, Sparkles as Scissors, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 import {
   Dialog,
   DialogContent,

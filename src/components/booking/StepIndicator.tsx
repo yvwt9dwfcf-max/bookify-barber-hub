@@ -1,4 +1,4 @@
-import { User, Scissors, Calendar, FileText, Check } from 'lucide-react';
+import { UserRound as User, Sparkles as Scissors, CalendarDays as Calendar, FileText, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BookingStep } from './BookingFlow';
 

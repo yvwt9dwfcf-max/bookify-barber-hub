@@ -3,7 +3,7 @@ import { format, setHours, setMinutes } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { supabase, Barber } from '@/lib/supabase';
 import { toast } from 'sonner';
-import { Ban, Loader2, Clock, Calendar } from 'lucide-react';
+import { CircleSlash as Ban, Loader2, Timer as Clock, CalendarDays as Calendar } from 'lucide-react';
 import {
   Dialog,
   DialogContent,

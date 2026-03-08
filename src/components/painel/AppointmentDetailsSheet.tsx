@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { User, Phone, Clock, Scissors, Calendar, Pencil, Check, Trash2, Loader2 } from 'lucide-react';
+import { UserRound as User, Phone, Timer as Clock, Sparkles as Scissors, CalendarDays as Calendar, PenLine as Pencil, Check, Trash2, Loader2 } from 'lucide-react';
 import { Appointment } from '@/lib/supabase';
 import {
   Sheet,

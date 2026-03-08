@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { DAY_NAMES_SHORT } from '@/lib/supabase';
 import { useAvailability } from '@/hooks/useAvailability';
-import { Clock, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Timer as Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 import { PremiumSkeleton } from '@/components/ui/premium-skeleton';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';

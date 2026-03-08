@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Calendar, Ban } from 'lucide-react';
+import { Plus, CalendarPlus as Calendar, CircleSlash as Ban } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
