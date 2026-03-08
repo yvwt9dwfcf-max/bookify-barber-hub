@@ -273,7 +273,29 @@ const Configuracoes = () => {
           <p className="text-xs text-muted-foreground">Informações pessoais da sua conta</p>
         </div>
 
-        <div className="rounded-lg border p-4 space-y-4">
+        <div className="rounded-lg border p-4 space-y-5">
+          {/* Profile Photo */}
+          <div className="flex flex-col items-center gap-2">
+            <div
+              className="relative w-20 h-20 rounded-full border-2 border-dashed border-border hover:border-primary/50 transition-colors cursor-pointer overflow-hidden flex items-center justify-center bg-muted/30"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {uploadingPhoto ? (
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              ) : barber?.photo_url ? (
+                <img src={barber.photo_url} alt="Perfil" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-lg font-semibold text-muted-foreground">
+                  {name ? name.charAt(0).toUpperCase() : <Camera className="h-5 w-5" />}
+                </span>
+              )}
+              <div className="absolute bottom-0 right-0 w-6 h-6 rounded-full bg-background border border-border flex items-center justify-center">
+                <Camera className="h-3 w-3 text-muted-foreground" />
+              </div>
+            </div>
+            <p className="text-[11px] text-muted-foreground/60">Toque para alterar</p>
+          </div>
+
           <div className="space-y-1.5">
             <Label htmlFor="name" className="text-xs">Nome</Label>
             <Input
@@ -282,28 +304,6 @@ const Configuracoes = () => {
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="phone" className="text-xs">Telefone</Label>
-            <Input
-              id="phone"
-              placeholder="(00) 00000-0000"
-              value={phone}
-              onChange={handlePhoneChange}
-              maxLength={15}
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="email" className="text-xs">Email</Label>
-            <Input
-              id="email"
-              value={barber?.email || ''}
-              disabled
-              className="bg-muted/50 text-muted-foreground"
-            />
-            <p className="text-[11px] text-muted-foreground/60">O email não pode ser alterado</p>
           </div>
 
           <div className="flex justify-end pt-1">
