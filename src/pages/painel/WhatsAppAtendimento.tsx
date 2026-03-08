@@ -17,7 +17,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { 
-  Send as MessageCircle, 
+  MessageCircle, 
   Phone, 
   Loader2, 
   Save, 
