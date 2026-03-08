@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase, Service } from '@/lib/supabase';
-import { Scissors, Clock } from 'lucide-react';
+import { Sparkles as Scissors, Timer as Clock } from 'lucide-react';
 import { PremiumSkeleton, SkeletonCard } from '@/components/ui/premium-skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
 import { cn } from '@/lib/utils';

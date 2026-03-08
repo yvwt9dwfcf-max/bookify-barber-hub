@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { PremiumSkeleton } from '@/components/ui/premium-skeleton';
-import { Clock, Loader2, Save } from 'lucide-react';
+import { Timer as Clock, Loader2, Save } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface ContextType {

@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { 
-  Loader2, Building2, Clock, Calendar, CheckCircle, ArrowRight, ArrowLeft, User, Phone
+  Loader2, Building2, Timer as Clock, CalendarDays as Calendar, CircleCheck as CheckCircle, ArrowRight, ArrowLeft, UserRound as User, Phone
 } from 'lucide-react';
 import { toast } from 'sonner';
 

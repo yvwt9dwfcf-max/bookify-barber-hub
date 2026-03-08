@@ -10,9 +10,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PremiumSkeleton, SkeletonSlot, SkeletonStats } from '@/components/ui/premium-skeleton';
 import { 
-  Calendar, CalendarDays, ChevronLeft, ChevronRight, 
-  User, CheckCircle2, Clock, CalendarPlus,
-  Ban
+  CalendarRange as Calendar, CalendarDays, ChevronLeft, ChevronRight, 
+  UserRound as User, CircleCheck as CheckCircle2, Timer as Clock, CalendarPlus,
+  CircleSlash as Ban
 } from 'lucide-react';
 import { format, addDays, startOfDay, isSameDay, setHours, setMinutes } from 'date-fns';
 import { ptBR } from 'date-fns/locale';

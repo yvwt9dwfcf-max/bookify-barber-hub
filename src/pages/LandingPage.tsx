@@ -3,8 +3,8 @@ import { Logo } from '@/components/ui/Logo';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
-  Calendar, Clock, Users, Smartphone, BarChart3, Shield, 
-  ArrowRight, CheckCircle, Zap, Globe, Gift, DollarSign
+  CalendarDays as Calendar, Timer as Clock, UsersRound as Users, Smartphone, PieChart as BarChart3, ShieldCheck as Shield, 
+  ArrowRight, CircleCheck as CheckCircle, Zap, Share2 as Globe, Stamp as Gift, Coins as DollarSign
 } from 'lucide-react';
 import { PLANS } from '@/lib/plans';
 

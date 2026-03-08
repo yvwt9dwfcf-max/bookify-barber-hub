@@ -8,22 +8,22 @@ import { Logo } from '@/components/ui/Logo';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
-  Calendar, 
-  Scissors, 
-  Clock, 
+  CalendarDays, 
+  Sparkles, 
+  Timer, 
   User, 
-  Settings, 
+  SlidersHorizontal, 
   LogOut, 
   Menu,
   X,
-  CalendarOff,
-  Users,
+  CalendarX2,
+  UsersRound,
   Crown,
-  MessageCircle,
-  BarChart3,
-  Globe,
-  DollarSign,
-  Gift,
+  Send,
+  PieChart,
+  Share2,
+  Coins,
+  Stamp,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
@@ -68,18 +68,18 @@ const Painel = () => {
 
   // Build menu items based on role
   const menuItems = [
-    { icon: Calendar, label: 'Agenda', path: '/painel' },
-    { icon: Scissors, label: 'Serviços', path: '/painel/servicos' },
-    { icon: Clock, label: 'Horários', path: '/painel/horarios' },
-    { icon: CalendarOff, label: 'Bloqueios', path: '/painel/bloqueios' },
-    ...(isMaster ? [{ icon: Users, label: 'Equipe', path: '/painel/barbeiros' }] : []),
-    ...(isMaster ? [{ icon: BarChart3, label: 'Relatórios', path: '/painel/relatorios' }] : []),
-    ...(isMaster ? [{ icon: DollarSign, label: 'Comissões', path: '/painel/comissoes' }] : []),
-    { icon: Gift, label: 'Fidelidade', path: '/painel/fidelidade' },
+    { icon: CalendarDays, label: 'Agenda', path: '/painel' },
+    { icon: Sparkles, label: 'Serviços', path: '/painel/servicos' },
+    { icon: Timer, label: 'Horários', path: '/painel/horarios' },
+    { icon: CalendarX2, label: 'Bloqueios', path: '/painel/bloqueios' },
+    ...(isMaster ? [{ icon: UsersRound, label: 'Equipe', path: '/painel/barbeiros' }] : []),
+    ...(isMaster ? [{ icon: PieChart, label: 'Relatórios', path: '/painel/relatorios' }] : []),
+    ...(isMaster ? [{ icon: Coins, label: 'Comissões', path: '/painel/comissoes' }] : []),
+    { icon: Stamp, label: 'Fidelidade', path: '/painel/fidelidade' },
     
-    { icon: MessageCircle, label: 'WhatsApp', path: '/painel/whatsapp' },
-    ...(isMaster ? [{ icon: Globe, label: 'Perfil Público', path: '/painel/perfil-publico' }] : []),
-    { icon: Settings, label: 'Configurações', path: '/painel/configuracoes' },
+    { icon: Send, label: 'WhatsApp', path: '/painel/whatsapp' },
+    ...(isMaster ? [{ icon: Share2, label: 'Perfil Público', path: '/painel/perfil-publico' }] : []),
+    { icon: SlidersHorizontal, label: 'Configurações', path: '/painel/configuracoes' },
   ];
 
   // Check onboarding status using the flag

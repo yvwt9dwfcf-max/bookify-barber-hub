@@ -4,7 +4,7 @@ import { supabase, Barbershop, Barber } from '@/lib/supabase';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Check, Users, Sparkles, Loader2, CreditCard, ExternalLink } from 'lucide-react';
+import { Check, UsersRound as Users, Sparkles, Loader2, CreditCard, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { PLANS } from '@/lib/plans';
