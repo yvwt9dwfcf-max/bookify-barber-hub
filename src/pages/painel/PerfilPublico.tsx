@@ -276,7 +276,7 @@ const PerfilPublico = () => {
               <Button
                 variant="outline"
                 size="icon"
-                onClick={() => window.open(publicLink, '_blank')}
+                onClick={() => window.open(publicLinkReal, '_blank')}
               >
                 <ExternalLink className="h-4 w-4" />
               </Button>
