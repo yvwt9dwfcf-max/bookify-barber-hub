@@ -81,7 +81,6 @@ const Painel = () => {
     ...(isMaster ? [{ icon: Globe, label: 'Perfil Público', path: '/painel/perfil-publico' }] : []),
     { icon: Settings, label: 'Configurações', path: '/painel/configuracoes' },
   ];
-  ];
 
   // Check onboarding status using the flag
   const onboardingChecked = !roleLoading && barbershop?.onboarding_completed === true;
