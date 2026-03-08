@@ -19,7 +19,7 @@ import {
   CalendarX2,
   UsersRound,
   Crown,
-  Send,
+   MessageCircle,
   PieChart,
   Share2,
   Coins,
