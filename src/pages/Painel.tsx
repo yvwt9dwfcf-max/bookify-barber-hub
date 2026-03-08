@@ -245,32 +245,36 @@ const Painel = () => {
             )}
           </div>
 
-          {/* Navigation */}
-          <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-            {menuItems.map((item, index) => {
-              const isActive = location.pathname === item.path;
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  onClick={() => setSidebarOpen(false)}
-                  className={cn(
-                    'flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative',
-                    isActive
-                      ? 'bg-primary/10 text-primary font-semibold sidebar-active-indicator'
-                      : 'hover:bg-secondary active:scale-[0.98] text-sidebar-foreground/70 hover:text-sidebar-foreground'
-                  )}
-                  style={{
-                    animationDelay: sidebarOpen ? `${index * 0.05}s` : '0s',
-                    animation: sidebarOpen ? 'fade-in 0.3s ease-out backwards' : 'none'
-                  }}
-                >
-                  <item.icon className={cn("h-5 w-5 transition-transform duration-200", isActive ? "text-primary" : "group-hover:scale-110")} />
-                  <span className="text-sm">{item.label}</span>
-                </Link>
-              );
-            })}
-          </nav>
+          {/* Navigation with scroll indicator */}
+          <div className="flex-1 relative overflow-hidden">
+            <nav className="h-full p-3 space-y-1 overflow-y-auto overscroll-contain">
+              {menuItems.map((item, index) => {
+                const isActive = location.pathname === item.path;
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    onClick={() => setSidebarOpen(false)}
+                    className={cn(
+                      'flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative',
+                      isActive
+                        ? 'bg-primary/10 text-primary font-semibold sidebar-active-indicator'
+                        : 'hover:bg-secondary active:scale-[0.98] text-sidebar-foreground/70 hover:text-sidebar-foreground'
+                    )}
+                    style={{
+                      animationDelay: sidebarOpen ? `${index * 0.05}s` : '0s',
+                      animation: sidebarOpen ? 'fade-in 0.3s ease-out backwards' : 'none'
+                    }}
+                  >
+                    <item.icon className={cn("h-5 w-5 transition-transform duration-200", isActive ? "text-primary" : "group-hover:scale-110")} />
+                    <span className="text-sm">{item.label}</span>
+                  </Link>
+                );
+              })}
+            </nav>
+            {/* Bottom fade indicator for scroll */}
+            <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-sidebar to-transparent" />
+          </div>
 
           {/* Logout Button */}
           <div className="p-3 border-t border-sidebar-border">
