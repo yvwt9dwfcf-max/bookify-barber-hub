@@ -12,17 +12,6 @@ import { toast } from 'sonner';
 import { Switch } from '@/components/ui/switch';
 import { supabase } from '@/integrations/supabase/client';
 import { Separator } from '@/components/ui/separator';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
 
 interface ContextType {
   barber: Barber | null;
@@ -39,7 +28,6 @@ const Configuracoes = () => {
   
   const [savingAccount, setSavingAccount] = useState(false);
   const [savingBarbershop, setSavingBarbershop] = useState(false);
-  const [deleting, setDeleting] = useState(false);
   const [copied, setCopied] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [photoUrl, setPhotoUrl] = useState('');
@@ -463,72 +451,18 @@ const Configuracoes = () => {
           </h2>
         </div>
 
-        <div className="rounded-lg border border-destructive/15 p-4">
-          <div className="flex items-center justify-between">
+        <div
+          className="rounded-lg border border-destructive/15 p-4 flex items-center justify-between cursor-pointer hover:bg-destructive/5 transition-colors"
+          onClick={() => navigate('/painel/excluir-conta')}
+        >
+          <div className="flex items-center gap-3">
+            <Trash2 className="h-4 w-4 text-destructive/70" />
             <div>
-              <p className="text-sm font-medium">Excluir conta</p>
+              <p className="text-sm font-medium">Exclusão de conta</p>
               <p className="text-xs text-muted-foreground">Remove permanentemente sua conta e todos os dados</p>
             </div>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive text-xs gap-1.5"
-                  disabled={deleting}
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                  {deleting ? 'Excluindo...' : 'Excluir'}
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Excluir conta</AlertDialogTitle>
-                  <AlertDialogDescription asChild>
-                    <div className="space-y-3">
-                      <p>Esta ação é permanente e não pode ser desfeita.</p>
-                      <p>Ao continuar:</p>
-                      <ul className="space-y-1 text-sm">
-                        <li>• Sua assinatura ativa será cancelada imediatamente</li>
-                        <li>• Todos os agendamentos e dados serão removidos</li>
-                        <li>• Sua conta será excluída permanentemente do sistema</li>
-                      </ul>
-                    </div>
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                  <AlertDialogAction
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                    onClick={async () => {
-                      setDeleting(true);
-                      try {
-                        const { data: { session } } = await supabase.auth.getSession();
-                        if (!session) throw new Error('Não autenticado');
-
-                        const { data, error } = await supabase.functions.invoke('delete-account', {
-                          headers: { Authorization: `Bearer ${session.access_token}` },
-                        });
-
-                        if (error) throw error;
-
-                        await supabase.auth.signOut();
-                        toast.success('Conta excluída com sucesso.');
-                        navigate('/');
-                      } catch (err: any) {
-                        toast.error('Erro ao excluir conta. Tente novamente.');
-                        console.error(err);
-                      } finally {
-                        setDeleting(false);
-                      }
-                    }}
-                  >
-                    Excluir conta permanentemente
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
           </div>
+          <ChevronRight className="h-4 w-4 text-muted-foreground" />
         </div>
       </section>
     </div>
