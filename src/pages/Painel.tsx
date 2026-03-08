@@ -8,22 +8,22 @@ import { Logo } from '@/components/ui/Logo';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
-  Calendar, 
-  Scissors, 
-  Clock, 
+  CalendarDays, 
+  Sparkles, 
+  Timer, 
   User, 
-  Settings, 
+  SlidersHorizontal, 
   LogOut, 
   Menu,
   X,
-  CalendarOff,
-  Users,
+  CalendarX2,
+  UsersRound,
   Crown,
-  MessageCircle,
-  BarChart3,
-  Globe,
-  DollarSign,
-  Gift,
+  Send,
+  PieChart,
+  Share2,
+  Coins,
+  Stamp,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
