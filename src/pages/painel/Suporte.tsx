@@ -1,9 +1,6 @@
-import { useState } from 'react';
-import { Mail, HelpCircle, AlertTriangle, ChevronDown, ChevronUp, Send, ExternalLink } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Mail, HelpCircle, MessageCircle, ChevronRight } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { toast } from 'sonner';
 import {
   Accordion,
   AccordionContent,
@@ -31,108 +28,81 @@ const faqItems = [
 ];
 
 const Suporte = () => {
-  const [reportText, setReportText] = useState('');
-  const [sending, setSending] = useState(false);
-
-  const handleSendReport = () => {
-    if (!reportText.trim()) {
-      toast.error('Descreva o problema antes de enviar.');
-      return;
-    }
-    const subject = encodeURIComponent('Relatório de Problema - Bookify');
-    const body = encodeURIComponent(reportText);
-    window.open(`mailto:suporte.bookifybarber@gmail.com?subject=${subject}&body=${body}`, '_self');
-    toast.success('Seu aplicativo de e-mail será aberto para enviar o relatório.');
-    setReportText('');
-  };
-
   const handleSendEmail = () => {
-    window.open('mailto:suporte.bookifybarber@gmail.com', '_self');
+    window.open('mailto:suporte.bookifybarber@gmail.com?subject=Suporte%20Bookify', '_self');
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 max-w-2xl">
+      {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-foreground">Central de Suporte</h1>
-        <p className="text-sm text-muted-foreground">
-          Tire suas dúvidas, encontre soluções ou entre em contato com nossa equipe.
+        <p className="text-sm text-muted-foreground mt-1">
+          Encontre respostas rápidas ou fale com nossa equipe.
         </p>
       </div>
 
-      {/* Seção 1: Contato por e-mail */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Mail className="h-5 w-5 text-primary" />
-            Contato por E-mail
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            Precisa de ajuda com o Bookify? Entre em contato com nossa equipe.
-          </p>
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 rounded-md bg-muted/50 px-3 py-2 text-sm font-medium text-foreground">
-              <Mail className="h-4 w-4 text-muted-foreground" />
-              suporte.bookifybarber@gmail.com
-            </div>
-            <div className="flex items-center gap-2 rounded-md bg-muted/50 px-3 py-2 text-sm font-medium text-foreground">
-              <Mail className="h-4 w-4 text-muted-foreground" />
-              bookifybarber@gmail.com
-            </div>
-          </div>
-          <Button onClick={handleSendEmail} className="w-full sm:w-auto">
-            <ExternalLink className="mr-2 h-4 w-4" />
-            Enviar e-mail
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* Seção 2: Problemas frequentes */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <HelpCircle className="h-5 w-5 text-primary" />
+      {/* FAQ Section */}
+      <section className="space-y-3">
+        <div className="flex items-center gap-2 px-1">
+          <HelpCircle className="h-4 w-4 text-muted-foreground" />
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Problemas Frequentes
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Accordion type="single" collapsible className="w-full">
-            {faqItems.map((item, index) => (
-              <AccordionItem key={index} value={`item-${index}`}>
-                <AccordionTrigger className="text-sm text-left">
-                  {item.question}
-                </AccordionTrigger>
-                <AccordionContent className="text-sm text-muted-foreground">
-                  {item.answer}
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </CardContent>
-      </Card>
+          </h2>
+        </div>
+        <Card>
+          <CardContent className="p-0">
+            <Accordion type="single" collapsible className="w-full">
+              {faqItems.map((item, index) => (
+                <AccordionItem
+                  key={index}
+                  value={`item-${index}`}
+                  className="border-b last:border-b-0 px-4"
+                >
+                  <AccordionTrigger className="text-sm text-left py-4 hover:no-underline">
+                    {item.question}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-sm text-muted-foreground pb-4">
+                    {item.answer}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </CardContent>
+        </Card>
+      </section>
 
-      {/* Seção 3: Reportar problema */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <AlertTriangle className="h-5 w-5 text-primary" />
-            Reportar Problema
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Textarea
-            placeholder="Descreva o problema que você está enfrentando..."
-            value={reportText}
-            onChange={(e) => setReportText(e.target.value)}
-            rows={5}
-          />
-          <Button onClick={handleSendReport} className="w-full sm:w-auto">
-            <Send className="mr-2 h-4 w-4" />
-            Enviar relatório
-          </Button>
-        </CardContent>
-      </Card>
+      {/* Contact Section */}
+      <section className="space-y-3">
+        <div className="flex items-center gap-2 px-1">
+          <MessageCircle className="h-4 w-4 text-muted-foreground" />
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Contato com Suporte
+          </h2>
+        </div>
+        <Card>
+          <CardContent className="p-5 space-y-4">
+            <div>
+              <p className="text-sm text-foreground font-medium">
+                Precisa de ajuda? Entre em contato com nossa equipe.
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Responderemos em até 24 horas úteis.
+              </p>
+            </div>
+            <div className="flex items-center gap-2.5 rounded-lg bg-muted/50 px-3.5 py-2.5">
+              <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
+              <span className="text-sm font-medium text-foreground">
+                suporte.bookifybarber@gmail.com
+              </span>
+            </div>
+            <Button onClick={handleSendEmail} className="w-full">
+              <Mail className="mr-2 h-4 w-4" />
+              Enviar e-mail
+            </Button>
+          </CardContent>
+        </Card>
+      </section>
     </div>
   );
 };
