@@ -3,7 +3,7 @@ import { Logo } from '@/components/ui/Logo';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Check, Users, Loader2, LogOut, AlertTriangle } from 'lucide-react';
+import { Check, UsersRound as Users, Loader2, LogOut, TriangleAlert as AlertTriangle } from 'lucide-react';
 import { PLANS } from '@/lib/plans';
 import { STRIPE_PLANS, StripePlanId } from '@/lib/stripe';
 import { supabase } from '@/lib/supabase';

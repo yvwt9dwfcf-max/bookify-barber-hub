@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { MapPin, MessageCircle, User, Clock, ChevronRight, Scissors, Instagram } from 'lucide-react';
+import { MapPin, Send as MessageCircle, UserRound as User, Timer as Clock, ChevronRight, Sparkles as Scissors, Instagram } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { PremiumSkeleton, SkeletonCard } from '@/components/ui/premium-skeleton';
