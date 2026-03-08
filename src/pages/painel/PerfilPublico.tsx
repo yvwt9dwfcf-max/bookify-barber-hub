@@ -257,7 +257,7 @@ const PerfilPublico = () => {
       </div>
 
       {/* Public Link Preview */}
-      {publicLink && (
+      {publicLinkDisplay && (
         <Card className="border-primary/20 bg-primary/5">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-2">
@@ -265,7 +265,7 @@ const PerfilPublico = () => {
               <span className="text-sm font-medium">Seu link público</span>
             </div>
             <div className="flex gap-2">
-              <Input value={publicLink} readOnly className="font-mono text-sm bg-background" />
+              <Input value={publicLinkDisplay} readOnly className="font-mono text-xs bg-background" />
               <Button
                 onClick={handleCopyLink}
                 variant={copied ? 'default' : 'outline'}
