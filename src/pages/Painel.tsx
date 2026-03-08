@@ -19,7 +19,7 @@ import {
   CalendarX2,
   UsersRound,
   Crown,
-  Send,
+   MessageCircle,
   PieChart,
   Share2,
   Coins,
@@ -77,7 +77,7 @@ const Painel = () => {
     ...(isMaster ? [{ icon: Coins, label: 'Comissões', path: '/painel/comissoes' }] : []),
     { icon: Stamp, label: 'Fidelidade', path: '/painel/fidelidade' },
     
-    { icon: Send, label: 'WhatsApp', path: '/painel/whatsapp' },
+    { icon: MessageCircle, label: 'WhatsApp', path: '/painel/whatsapp' },
     ...(isMaster ? [{ icon: Share2, label: 'Perfil Público', path: '/painel/perfil-publico' }] : []),
     { icon: SlidersHorizontal, label: 'Configurações', path: '/painel/configuracoes' },
   ];
