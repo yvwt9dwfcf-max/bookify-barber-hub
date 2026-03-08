@@ -134,6 +134,44 @@ const Configuracoes = () => {
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    if (!file || !barber) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Selecione uma imagem válida');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Imagem deve ter no máximo 5MB');
+      return;
+    }
+
+    setUploadingPhoto(true);
+    try {
+      const ext = file.name.split('.').pop();
+      const fileName = `barbers/${barber.id}/${Date.now()}.${ext}`;
+      const { error: uploadErr } = await supabase.storage
+        .from('barbershop-photos')
+        .upload(fileName, file, { upsert: true });
+      if (uploadErr) throw uploadErr;
+
+      const { data: urlData } = supabase.storage
+        .from('barbershop-photos')
+        .getPublicUrl(fileName);
+
+      const newUrl = urlData.publicUrl;
+      await updateBarber({ photo_url: newUrl });
+      toast.success('Foto atualizada!');
+    } catch (err) {
+      toast.error('Erro ao enviar foto');
+      console.error(err);
+    } finally {
+      setUploadingPhoto(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleBarbershopPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (!file || !barbershop) return;
 
     if (!file.type.startsWith('image/')) {
@@ -174,7 +212,6 @@ const Configuracoes = () => {
       console.error(err);
     } finally {
       setUploadingPhoto(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
