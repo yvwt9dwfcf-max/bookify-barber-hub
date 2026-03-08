@@ -213,6 +213,7 @@ const Painel = () => {
           sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
         )}
         onClick={() => setSidebarOpen(false)}
+        onTouchMove={(e) => e.preventDefault()}
       />
 
       {/* Sidebar */}
