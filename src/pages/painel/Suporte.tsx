@@ -1,4 +1,4 @@
-import { HelpCircle } from 'lucide-react';
+import { CircleHelp as HelpCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import {
   Accordion,
