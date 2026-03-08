@@ -24,7 +24,7 @@ import {
   DialogClose,
   DialogDescription,
 } from '@/components/ui/dialog';
-import { Sparkles, Plus, PenLine, Trash2, Loader2, Timer, UsersRound } from 'lucide-react';
+import { Sparkles as Scissors, Plus, PenLine as Pencil, Trash2, Loader2, Timer as Clock, UsersRound as Users } from 'lucide-react';
 import { SkeletonCard } from '@/components/ui/premium-skeleton';
 import { toast } from 'sonner';
 import {

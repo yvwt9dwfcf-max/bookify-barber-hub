@@ -17,14 +17,14 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { 
-  Send, 
+  Send as MessageCircle, 
   Phone, 
   Loader2, 
   Save, 
   Copy,
-  CircleCheck,
+  CircleCheck as CheckCircle2,
   Building2,
-  UserRound,
+  UserRound as User,
   Smartphone,
   ChevronRight
 } from 'lucide-react';

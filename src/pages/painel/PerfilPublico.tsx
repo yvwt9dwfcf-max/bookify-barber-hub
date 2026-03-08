@@ -8,8 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 
 import {
-  ImageIcon, Upload, MapPin, Instagram, Send, Link2, Save, Loader2,
-  Camera, Copy, CircleCheck, TriangleAlert, ExternalLink, Trash2
+  ImageIcon as Image, Upload, MapPin, Instagram, Send as MessageCircle, Link2, Save, Loader2,
+  Camera, Copy, CircleCheck as CheckCircle, TriangleAlert as AlertTriangle, ExternalLink, Trash2
 } from 'lucide-react';
 import { toast } from 'sonner';
 
