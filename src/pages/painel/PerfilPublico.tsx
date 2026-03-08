@@ -213,16 +213,16 @@ const PerfilPublico = () => {
     }
   };
 
-  const publicLink = slugPersonalizado
-    ? `${window.location.origin}/barbearia/${slugPersonalizado}`
-    : barbershop?.slug
-    ? `${window.location.origin}/barbearia/${barbershop.slug}`
+  const publicSlug = slugPersonalizado || barbershop?.slug || '';
+  const publicLinkReal = publicSlug
+    ? `${window.location.origin}/barbearia/${publicSlug}`
     : '';
+  const publicLinkDisplay = publicSlug ? `bookify.app/${publicSlug}` : '';
 
   const handleCopyLink = async () => {
-    if (!publicLink) return;
+    if (!publicLinkReal) return;
     try {
-      await navigator.clipboard.writeText(publicLink);
+      await navigator.clipboard.writeText(publicLinkReal);
       setCopied(true);
       toast.success('Link copiado!');
       setTimeout(() => setCopied(false), 2000);
@@ -257,7 +257,7 @@ const PerfilPublico = () => {
       </div>
 
       {/* Public Link Preview */}
-      {publicLink && (
+      {publicLinkDisplay && (
         <Card className="border-primary/20 bg-primary/5">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-2">
@@ -265,7 +265,7 @@ const PerfilPublico = () => {
               <span className="text-sm font-medium">Seu link público</span>
             </div>
             <div className="flex gap-2">
-              <Input value={publicLink} readOnly className="font-mono text-sm bg-background" />
+              <Input value={publicLinkDisplay} readOnly className="font-mono text-xs bg-background" />
               <Button
                 onClick={handleCopyLink}
                 variant={copied ? 'default' : 'outline'}
@@ -276,7 +276,7 @@ const PerfilPublico = () => {
               <Button
                 variant="outline"
                 size="icon"
-                onClick={() => window.open(publicLink, '_blank')}
+                onClick={() => window.open(publicLinkReal, '_blank')}
               >
                 <ExternalLink className="h-4 w-4" />
               </Button>
