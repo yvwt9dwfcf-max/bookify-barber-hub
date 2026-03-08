@@ -20,6 +20,7 @@ import Assinatura from "./pages/painel/Assinatura";
 import PerfilPublico from "./pages/painel/PerfilPublico";
 import Comissoes from "./pages/painel/Comissoes";
 import Fidelidade from "./pages/painel/Fidelidade";
+import Suporte from "./pages/painel/Suporte";
 
 import AgendarBarbearia from "./pages/AgendarBarbearia";
 import AgendarBarbeiro from "./pages/AgendarBarbeiro";
@@ -63,8 +64,8 @@ const App = () => (
             <Route path="perfil-publico" element={<PerfilPublico />} />
             <Route path="comissoes" element={<Comissoes />} />
             <Route path="fidelidade" element={<Fidelidade />} />
-            
             <Route path="configuracoes" element={<Configuracoes />} />
+            <Route path="suporte" element={<Suporte />} />
           </Route>
 
           {/* Public booking routes */}

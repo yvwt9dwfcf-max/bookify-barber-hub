@@ -24,6 +24,7 @@ import {
   Globe,
   DollarSign,
   Gift,
+  HelpCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
@@ -80,6 +81,7 @@ const Painel = () => {
     { icon: MessageCircle, label: 'WhatsApp', path: '/painel/whatsapp' },
     ...(isMaster ? [{ icon: Globe, label: 'Perfil Público', path: '/painel/perfil-publico' }] : []),
     { icon: Settings, label: 'Configurações', path: '/painel/configuracoes' },
+    { icon: HelpCircle, label: 'Suporte', path: '/painel/suporte' },
   ];
 
   // Check onboarding status using the flag
