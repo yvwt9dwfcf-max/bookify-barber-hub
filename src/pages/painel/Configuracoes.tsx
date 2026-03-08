@@ -70,14 +70,16 @@ const Configuracoes = () => {
     }
   }, [barber]);
 
-  const publicLink = barbershop
-    ? `${window.location.origin}/barbearia/${barbershop.slug || barbershop.id}`
+  const barbershopSlug = barbershop?.slug || barbershop?.id || '';
+  const publicLinkReal = barbershop
+    ? `${window.location.origin}/barbearia/${barbershopSlug}`
     : '';
+  const publicLinkDisplay = barbershopSlug ? `bookify.app/${barbershopSlug}` : '';
 
   const handleCopyLink = async () => {
-    if (!publicLink) return;
+    if (!publicLinkReal) return;
     try {
-      await navigator.clipboard.writeText(publicLink);
+      await navigator.clipboard.writeText(publicLinkReal);
       setCopied(true);
       toast.success('Link copiado!');
       setTimeout(() => setCopied(false), 2000);
