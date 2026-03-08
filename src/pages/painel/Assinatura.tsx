@@ -117,9 +117,9 @@ const Assinatura = () => {
     <div className="space-y-6 max-w-4xl mx-auto pb-12">
       {/* Header */}
       <div className="text-center space-y-2">
-        <h1 className="text-2xl font-bold">Escolha seu plano</h1>
+        <h1 className="text-2xl font-bold">Escolha o plano ideal para sua barbearia</h1>
         <p className="text-muted-foreground text-sm">
-          Selecione o plano ideal para o tamanho da sua barbearia
+          Todos os planos incluem 3 dias de teste gratuito. Cancele quando quiser.
         </p>
         {isTrialActive && (
           <Badge className="badge-gradient text-sm px-3 py-1">

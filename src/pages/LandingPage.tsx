@@ -167,7 +167,7 @@ const LandingPage = () => {
               Planos simples e transparentes
             </h2>
             <p className="text-muted-foreground text-lg max-w-xl mx-auto leading-relaxed">
-              Escolha o plano ideal para o tamanho da sua barbearia. Teste grátis por 3 dias.
+              Todos os planos incluem 3 dias de teste gratuito. Cancele quando quiser.
             </p>
           </div>
 
