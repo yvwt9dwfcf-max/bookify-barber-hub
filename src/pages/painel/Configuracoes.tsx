@@ -12,7 +12,6 @@ import { toast } from 'sonner';
 import { Switch } from '@/components/ui/switch';
 import { supabase } from '@/integrations/supabase/client';
 import { Separator } from '@/components/ui/separator';
-import { Separator } from '@/components/ui/separator';
 
 interface ContextType {
   barber: Barber | null;
