@@ -282,7 +282,12 @@ const Painel = () => {
                       animation: sidebarOpen ? 'fade-in 0.3s ease-out backwards' : 'none'
                     }}
                   >
-                    <item.icon className={cn("h-5 w-5 transition-transform duration-200", isActive ? "text-primary" : "group-hover:scale-110")} />
+                    <item.icon className={cn(
+                      "h-5 w-5 transition-all duration-200 ease-out",
+                      isActive
+                        ? "text-primary scale-110"
+                        : "group-hover:scale-125 group-hover:-rotate-6 group-active:scale-95"
+                    )} />
                     <span className="text-sm">{item.label}</span>
                   </Link>
                 );
