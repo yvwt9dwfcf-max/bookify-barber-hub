@@ -44,6 +44,7 @@ const Configuracoes = () => {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [photoUrl, setPhotoUrl] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const barbershopFileInputRef = useRef<HTMLInputElement>(null);
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const saved = localStorage.getItem('bookify-theme');
     if (saved) return saved === 'dark';
