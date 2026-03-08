@@ -220,9 +220,9 @@ const PerfilPublico = () => {
   const publicLinkDisplay = publicSlug ? `bookify.app/${publicSlug}` : '';
 
   const handleCopyLink = async () => {
-    if (!publicLink) return;
+    if (!publicLinkReal) return;
     try {
-      await navigator.clipboard.writeText(publicLink);
+      await navigator.clipboard.writeText(publicLinkReal);
       setCopied(true);
       toast.success('Link copiado!');
       setTimeout(() => setCopied(false), 2000);
