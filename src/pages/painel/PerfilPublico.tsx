@@ -213,11 +213,11 @@ const PerfilPublico = () => {
     }
   };
 
-  const publicLink = slugPersonalizado
-    ? `${window.location.origin}/barbearia/${slugPersonalizado}`
-    : barbershop?.slug
-    ? `${window.location.origin}/barbearia/${barbershop.slug}`
+  const publicSlug = slugPersonalizado || barbershop?.slug || '';
+  const publicLinkReal = publicSlug
+    ? `${window.location.origin}/barbearia/${publicSlug}`
     : '';
+  const publicLinkDisplay = publicSlug ? `bookify.app/${publicSlug}` : '';
 
   const handleCopyLink = async () => {
     if (!publicLink) return;
