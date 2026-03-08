@@ -10,7 +10,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PremiumSkeleton, SkeletonSlot, SkeletonStats } from '@/components/ui/premium-skeleton';
 import { 
-  CalendarDays, ChevronLeft, ChevronRight, 
+  CalendarRange, CalendarDays, ChevronLeft, ChevronRight, 
   UserRound, CircleCheck, Timer, CalendarPlus,
   CircleSlash
 } from 'lucide-react';
