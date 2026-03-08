@@ -423,6 +423,43 @@ const Configuracoes = () => {
         </section>
       )}
 
+      {/* Seção Ajuda */}
+      <section className="space-y-4">
+        <h2 className="text-lg font-semibold flex items-center gap-2">
+          <HelpCircle className="h-4 w-4" />
+          Ajuda
+        </h2>
+
+        <div className="rounded-lg border divide-y">
+          <div
+            className="flex items-center gap-3 p-4 cursor-pointer hover:bg-accent/50 transition-colors"
+            onClick={() => navigate('/painel/suporte')}
+          >
+            <HelpCircle className="h-4 w-4 text-muted-foreground shrink-0" />
+            <span className="text-sm font-medium flex-1">Central de ajuda</span>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </div>
+
+          <div
+            className="flex items-center gap-3 p-4 cursor-pointer hover:bg-accent/50 transition-colors"
+            onClick={() => window.open('mailto:suporte.bookifybarber@gmail.com?subject=Reportar%20problema%20-%20Bookify', '_self')}
+          >
+            <AlertTriangle className="h-4 w-4 text-muted-foreground shrink-0" />
+            <span className="text-sm font-medium flex-1">Reportar problema</span>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </div>
+
+          <div
+            className="flex items-center gap-3 p-4 cursor-pointer hover:bg-accent/50 transition-colors"
+            onClick={() => window.open('mailto:suporte.bookifybarber@gmail.com?subject=Contato%20Suporte%20-%20Bookify', '_self')}
+          >
+            <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
+            <span className="text-sm font-medium flex-1">Contatar suporte</span>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </div>
+        </div>
+      </section>
+
       {/* Termos e Política */}
       <div className="flex items-center justify-center gap-3 pt-2">
         <a href="/termos-de-uso" target="_blank" className="text-xs text-muted-foreground/60 hover:text-primary transition-colors">
@@ -433,33 +470,6 @@ const Configuracoes = () => {
           Política de privacidade
         </a>
       </div>
-
-      {/* Seção Suporte */}
-      <section className="space-y-4">
-        <div>
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <HelpCircle className="h-4 w-4" />
-            Suporte
-          </h2>
-          <p className="text-xs text-muted-foreground">Precisa de ajuda? Acesse nossa central de suporte</p>
-        </div>
-
-        <div
-          className="rounded-lg border p-4 flex items-center justify-between cursor-pointer hover:bg-accent/50 transition-colors"
-          onClick={() => navigate('/painel/suporte')}
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-primary/10">
-              <HelpCircle className="h-4 w-4 text-primary" />
-            </div>
-            <div>
-              <p className="text-sm font-medium">Central de Suporte</p>
-              <p className="text-xs text-muted-foreground">FAQ, contato por e-mail e reporte de problemas</p>
-            </div>
-          </div>
-          <ChevronRight className="h-4 w-4 text-muted-foreground" />
-        </div>
-      </section>
 
       {/* Zona de Risco */}
       <section className="space-y-3">
