@@ -246,18 +246,38 @@ const Configuracoes = () => {
 
   return (
     <div className="space-y-8 max-w-2xl pb-12">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold">Configurações</h1>
-        {barbershop && (
-          <div className="flex items-center gap-2 mt-1">
-            <span className="text-muted-foreground text-sm">{barbershop.name}</span>
-            <span className="text-muted-foreground/40">·</span>
-            <Badge variant="outline" className="text-xs font-medium">
+      {/* Header com foto e nome da barbearia */}
+      <div className="flex flex-col items-center gap-3 pt-2">
+        <div
+          className="relative w-20 h-20 rounded-xl border-2 border-dashed border-border hover:border-primary/50 transition-colors cursor-pointer overflow-hidden flex items-center justify-center bg-muted/30"
+          onClick={() => barbershopFileInputRef.current?.click()}
+        >
+          {uploadingPhoto ? (
+            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+          ) : photoUrl ? (
+            <img src={photoUrl} alt="Logo" className="w-full h-full object-cover" />
+          ) : (
+            <Camera className="h-5 w-5 text-muted-foreground/60" />
+          )}
+          <input
+            ref={barbershopFileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleBarbershopPhotoUpload}
+          />
+          <div className="absolute bottom-0 right-0 w-5 h-5 rounded-full bg-background border border-border flex items-center justify-center">
+            <Camera className="h-2.5 w-2.5 text-muted-foreground" />
+          </div>
+        </div>
+        <div className="text-center">
+          <h1 className="text-xl font-bold">{barbershop?.name || 'Configurações'}</h1>
+          {barbershop && (
+            <Badge variant="outline" className="text-xs font-medium mt-1">
               Plano {planLabel}
             </Badge>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Public Booking Link */}
@@ -301,68 +321,6 @@ const Configuracoes = () => {
         </div>
       </div>
 
-      {/* Seção Conta */}
-      <section className="space-y-4">
-        <div>
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <User className="h-4 w-4" />
-            Conta
-          </h2>
-          <p className="text-xs text-muted-foreground">Informações pessoais da sua conta</p>
-        </div>
-
-        <div className="rounded-lg border p-4 space-y-5">
-          {/* Profile Photo */}
-          <div className="flex flex-col items-center gap-2">
-            <div
-              className="relative w-20 h-20 rounded-full border-2 border-dashed border-border hover:border-primary/50 transition-colors cursor-pointer overflow-hidden flex items-center justify-center bg-muted/30"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              {uploadingPhoto ? (
-                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-              ) : barber?.photo_url ? (
-                <img src={barber.photo_url} alt="Perfil" className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-lg font-semibold text-muted-foreground">
-                  {name ? name.charAt(0).toUpperCase() : <Camera className="h-5 w-5" />}
-                </span>
-              )}
-              <div className="absolute bottom-0 right-0 w-6 h-6 rounded-full bg-background border border-border flex items-center justify-center">
-                <Camera className="h-3 w-3 text-muted-foreground" />
-              </div>
-            </div>
-            <p className="text-[11px] text-muted-foreground/60">Toque para alterar</p>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="name" className="text-xs">Nome</Label>
-            <Input
-              id="name"
-              placeholder="Seu nome"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </div>
-
-          <div className="flex justify-end pt-1">
-            <Button
-              onClick={handleSaveAccount}
-              disabled={savingAccount}
-              size="sm"
-              variant="outline"
-              className="gap-1.5 text-xs"
-            >
-              {savingAccount ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <Save className="h-3.5 w-3.5" />
-              )}
-              Salvar alterações
-            </Button>
-          </div>
-        </div>
-      </section>
-
       {/* Seção Barbearia */}
       {isMaster && (
         <section className="space-y-4">
@@ -375,33 +333,6 @@ const Configuracoes = () => {
           </div>
 
           <div className="rounded-lg border p-4 space-y-4">
-            {/* Photo Upload */}
-            <div className="flex items-center gap-4">
-              <div
-                className="relative w-16 h-16 rounded-xl border-2 border-dashed border-border hover:border-primary/50 transition-colors cursor-pointer overflow-hidden shrink-0 flex items-center justify-center bg-muted/30"
-                onClick={() => barbershopFileInputRef.current?.click()}
-              >
-                {uploadingPhoto ? (
-                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                ) : photoUrl ? (
-                  <img src={photoUrl} alt="Logo" className="w-full h-full object-cover" />
-                ) : (
-                  <Camera className="h-5 w-5 text-muted-foreground/60" />
-                )}
-                <input
-                  ref={barbershopFileInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleBarbershopPhotoUpload}
-                />
-              </div>
-              <div>
-                <p className="text-sm font-medium">Logo da barbearia</p>
-                <p className="text-[11px] text-muted-foreground/60">JPG ou PNG, máximo 5MB</p>
-              </div>
-            </div>
-
             <div className="space-y-1.5">
               <Label htmlFor="barbershop-name" className="text-xs">Nome da barbearia</Label>
               <Input
@@ -412,15 +343,28 @@ const Configuracoes = () => {
               />
             </div>
 
-            <div className="flex justify-end pt-1">
+            <div className="space-y-1.5">
+              <Label htmlFor="name" className="text-xs">Seu nome</Label>
+              <Input
+                id="name"
+                placeholder="Seu nome"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 pt-1">
               <Button
-                onClick={handleSaveBarbershop}
-                disabled={savingBarbershop}
+                onClick={async () => {
+                  await handleSaveAccount();
+                  await handleSaveBarbershop();
+                }}
+                disabled={savingAccount || savingBarbershop}
                 size="sm"
                 variant="outline"
                 className="gap-1.5 text-xs"
               >
-                {savingBarbershop ? (
+                {(savingAccount || savingBarbershop) ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
                 ) : (
                   <Save className="h-3.5 w-3.5" />
