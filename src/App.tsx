@@ -64,8 +64,8 @@ const App = () => (
             <Route path="perfil-publico" element={<PerfilPublico />} />
             <Route path="comissoes" element={<Comissoes />} />
             <Route path="fidelidade" element={<Fidelidade />} />
-            
             <Route path="configuracoes" element={<Configuracoes />} />
+            <Route path="suporte" element={<Suporte />} />
           </Route>
 
           {/* Public booking routes */}
