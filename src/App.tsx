@@ -21,6 +21,7 @@ import PerfilPublico from "./pages/painel/PerfilPublico";
 import Comissoes from "./pages/painel/Comissoes";
 import Fidelidade from "./pages/painel/Fidelidade";
 import Suporte from "./pages/painel/Suporte";
+import ExcluirConta from "./pages/painel/ExcluirConta";
 
 import AgendarBarbearia from "./pages/AgendarBarbearia";
 import AgendarBarbeiro from "./pages/AgendarBarbeiro";
