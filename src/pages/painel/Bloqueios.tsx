@@ -9,13 +9,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { 
-  CalendarOff, 
+  CalendarX2, 
   Loader2, 
   Plus, 
   Trash2, 
   CalendarIcon,
-  Clock,
-  AlertTriangle
+  Timer,
+  TriangleAlert
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, isBefore, startOfDay, parseISO } from 'date-fns';

@@ -30,7 +30,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Users, Plus, Loader2, Trash2, Settings, Mail, Lock, User, Crown, AlertTriangle, Copy, Link as LinkIcon, ExternalLink, Check, Camera } from 'lucide-react';
+import { UsersRound, Plus, Loader2, Trash2, SlidersHorizontal, Mail, Lock, UserRound, Crown, TriangleAlert, Copy, Link as LinkIcon, ExternalLink, Check, Camera } from 'lucide-react';
 import { toast } from 'sonner';
 import { SkeletonCard } from '@/components/ui/premium-skeleton';
 
