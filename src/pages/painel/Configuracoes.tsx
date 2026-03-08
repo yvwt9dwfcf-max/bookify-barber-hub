@@ -29,7 +29,7 @@ const Configuracoes = () => {
   
   const [savingAccount, setSavingAccount] = useState(false);
   const [savingBarbershop, setSavingBarbershop] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+  const [savingBarbershop, setSavingBarbershop] = useState(false);
   const [copied, setCopied] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [photoUrl, setPhotoUrl] = useState('');
