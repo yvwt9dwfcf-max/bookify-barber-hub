@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { User, Phone, Mail, Loader2, Save, Building2, Crown, Link2, Copy, CheckCircle, CreditCard, ChevronRight, Sun, Moon, AlertTriangle, Trash2, Camera, HelpCircle } from 'lucide-react';
+import { User, Mail, Loader2, Save, Building2, Crown, Link2, Copy, CheckCircle, CreditCard, ChevronRight, Sun, Moon, AlertTriangle, Trash2, Camera, HelpCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Switch } from '@/components/ui/switch';
 import { supabase } from '@/integrations/supabase/client';
@@ -44,6 +44,7 @@ const Configuracoes = () => {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [photoUrl, setPhotoUrl] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const barbershopFileInputRef = useRef<HTMLInputElement>(null);
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const saved = localStorage.getItem('bookify-theme');
     if (saved) return saved === 'dark';
@@ -134,6 +135,44 @@ const Configuracoes = () => {
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    if (!file || !barber) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Selecione uma imagem válida');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Imagem deve ter no máximo 5MB');
+      return;
+    }
+
+    setUploadingPhoto(true);
+    try {
+      const ext = file.name.split('.').pop();
+      const fileName = `barbers/${barber.id}/${Date.now()}.${ext}`;
+      const { error: uploadErr } = await supabase.storage
+        .from('barbershop-photos')
+        .upload(fileName, file, { upsert: true });
+      if (uploadErr) throw uploadErr;
+
+      const { data: urlData } = supabase.storage
+        .from('barbershop-photos')
+        .getPublicUrl(fileName);
+
+      const newUrl = urlData.publicUrl;
+      await updateBarber({ photo_url: newUrl });
+      toast.success('Foto atualizada!');
+    } catch (err) {
+      toast.error('Erro ao enviar foto');
+      console.error(err);
+    } finally {
+      setUploadingPhoto(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleBarbershopPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (!file || !barbershop) return;
 
     if (!file.type.startsWith('image/')) {
@@ -174,7 +213,6 @@ const Configuracoes = () => {
       console.error(err);
     } finally {
       setUploadingPhoto(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
@@ -273,7 +311,29 @@ const Configuracoes = () => {
           <p className="text-xs text-muted-foreground">Informações pessoais da sua conta</p>
         </div>
 
-        <div className="rounded-lg border p-4 space-y-4">
+        <div className="rounded-lg border p-4 space-y-5">
+          {/* Profile Photo */}
+          <div className="flex flex-col items-center gap-2">
+            <div
+              className="relative w-20 h-20 rounded-full border-2 border-dashed border-border hover:border-primary/50 transition-colors cursor-pointer overflow-hidden flex items-center justify-center bg-muted/30"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {uploadingPhoto ? (
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              ) : barber?.photo_url ? (
+                <img src={barber.photo_url} alt="Perfil" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-lg font-semibold text-muted-foreground">
+                  {name ? name.charAt(0).toUpperCase() : <Camera className="h-5 w-5" />}
+                </span>
+              )}
+              <div className="absolute bottom-0 right-0 w-6 h-6 rounded-full bg-background border border-border flex items-center justify-center">
+                <Camera className="h-3 w-3 text-muted-foreground" />
+              </div>
+            </div>
+            <p className="text-[11px] text-muted-foreground/60">Toque para alterar</p>
+          </div>
+
           <div className="space-y-1.5">
             <Label htmlFor="name" className="text-xs">Nome</Label>
             <Input
@@ -282,28 +342,6 @@ const Configuracoes = () => {
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="phone" className="text-xs">Telefone</Label>
-            <Input
-              id="phone"
-              placeholder="(00) 00000-0000"
-              value={phone}
-              onChange={handlePhoneChange}
-              maxLength={15}
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="email" className="text-xs">Email</Label>
-            <Input
-              id="email"
-              value={barber?.email || ''}
-              disabled
-              className="bg-muted/50 text-muted-foreground"
-            />
-            <p className="text-[11px] text-muted-foreground/60">O email não pode ser alterado</p>
           </div>
 
           <div className="flex justify-end pt-1">
@@ -341,7 +379,7 @@ const Configuracoes = () => {
             <div className="flex items-center gap-4">
               <div
                 className="relative w-16 h-16 rounded-xl border-2 border-dashed border-border hover:border-primary/50 transition-colors cursor-pointer overflow-hidden shrink-0 flex items-center justify-center bg-muted/30"
-                onClick={() => fileInputRef.current?.click()}
+                onClick={() => barbershopFileInputRef.current?.click()}
               >
                 {uploadingPhoto ? (
                   <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
@@ -351,11 +389,11 @@ const Configuracoes = () => {
                   <Camera className="h-5 w-5 text-muted-foreground/60" />
                 )}
                 <input
-                  ref={fileInputRef}
+                  ref={barbershopFileInputRef}
                   type="file"
                   accept="image/*"
                   className="hidden"
-                  onChange={handlePhotoUpload}
+                  onChange={handleBarbershopPhotoUpload}
                 />
               </div>
               <div>
