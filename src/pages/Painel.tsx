@@ -80,6 +80,7 @@ const Painel = () => {
     { icon: MessageCircle, label: 'WhatsApp', path: '/painel/whatsapp' },
     ...(isMaster ? [{ icon: Globe, label: 'Perfil Público', path: '/painel/perfil-publico' }] : []),
     { icon: Settings, label: 'Configurações', path: '/painel/configuracoes' },
+    { icon: HelpCircle, label: 'Suporte', path: '/painel/suporte' },
   ];
 
   // Check onboarding status using the flag
