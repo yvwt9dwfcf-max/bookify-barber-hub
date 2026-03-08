@@ -84,9 +84,12 @@ const LandingPage = () => {
 
         <div className="relative max-w-4xl mx-auto text-center">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-10 animate-fade-in">
-            <Zap className="h-4 w-4" />
-            <span>Teste grátis por 3 dias. Sem cartão de crédito.</span>
+          <div className="inline-flex flex-col items-center gap-1 px-6 py-3 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-10 animate-fade-in">
+            <div className="flex items-center gap-2">
+              <Zap className="h-4 w-4" />
+              <span className="font-semibold">Teste gratuito por 3 dias</span>
+            </div>
+            <span className="text-xs text-primary/80">Comece agora e experimente todas as funcionalidades do Bookify. Sem necessidade de cartão de crédito.</span>
           </div>
 
           {/* Heading */}
@@ -164,7 +167,7 @@ const LandingPage = () => {
               Planos simples e transparentes
             </h2>
             <p className="text-muted-foreground text-lg max-w-xl mx-auto leading-relaxed">
-              Escolha o plano ideal para o tamanho da sua barbearia. Teste grátis por 3 dias.
+              Todos os planos incluem 3 dias de teste gratuito. Cancele quando quiser.
             </p>
           </div>
 
