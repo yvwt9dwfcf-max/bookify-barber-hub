@@ -57,13 +57,13 @@ const DashboardCards = ({ barbershopId, selectedDate, refreshKey }: DashboardCar
       .select('id, status, start_time, service:services(price)')
       .eq('barbershop_id', barbershopId!)
       .gte('start_time', weekStart)
-      .lt('start_time', tomorrow);
+      .lt('start_time', nextDay);
 
     if (!data) return;
 
     const dayMap = new Map<string, DayData>();
     for (let i = 6; i >= 0; i--) {
-      const date = format(subDays(now, i), 'yyyy-MM-dd');
+      const date = format(subDays(anchorDay, i), 'yyyy-MM-dd');
       dayMap.set(date, { appointments: 0, revenue: 0, clients: 0 });
     }
 
