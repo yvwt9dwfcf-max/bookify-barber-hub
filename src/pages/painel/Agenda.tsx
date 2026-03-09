@@ -334,9 +334,6 @@ const Agenda = () => {
   }
 
   const days = getDaysToShow();
-  const confirmedCount = appointments.filter(a => a.status === 'confirmed').length;
-  const completedCount = appointments.filter(a => a.status === 'completed').length;
-  const totalCount = appointments.length;
 
   const handleDateSelectFromCalendar = (date: Date) => {
     setSelectedDate(date);
