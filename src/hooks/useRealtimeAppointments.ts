@@ -88,7 +88,7 @@ export function useRealtimeAppointments({ barberId, onNewAppointment }: UseRealt
           if (updatedAppointment.status === 'cancelled') {
             toast.info('Agendamento cancelado', {
               description: `O agendamento de ${updatedAppointment.customer_name} foi cancelado`,
-              duration: 5000,
+              duration: 2200,
             });
             onNewAppointment?.();
           }
