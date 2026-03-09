@@ -16,15 +16,17 @@ const Toaster = ({ ...props }: ToasterProps) => {
       offset={16}
       richColors
       toastOptions={{
-        duration: 2200,
+        duration: 2500,
         classNames: {
           toast:
-            "group toast group-[.toaster]:bg-card group-[.toaster]:text-foreground group-[.toaster]:border-border/50 group-[.toaster]:shadow-xl group-[.toaster]:backdrop-blur-xl group-[.toaster]:rounded-xl",
-          description: "group-[.toast]:text-muted-foreground",
-          actionButton: "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground group-[.toast]:rounded-lg",
-          cancelButton: "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground group-[.toast]:rounded-lg",
-          success: "group-[.toaster]:!bg-primary/10 group-[.toaster]:!border-primary/20 group-[.toaster]:!text-foreground",
-          error: "group-[.toaster]:!bg-destructive/10 group-[.toaster]:!border-destructive/20 group-[.toaster]:!text-foreground",
+            "group toast group-[.toaster]:bg-card/90 group-[.toaster]:text-foreground group-[.toaster]:border-border/30 group-[.toaster]:shadow-2xl group-[.toaster]:backdrop-blur-2xl group-[.toaster]:rounded-2xl group-[.toaster]:px-4 group-[.toaster]:py-3",
+          description: "group-[.toast]:text-muted-foreground group-[.toast]:text-xs",
+          title: "group-[.toast]:text-sm group-[.toast]:font-semibold",
+          actionButton: "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground group-[.toast]:rounded-lg group-[.toast]:text-xs",
+          cancelButton: "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground group-[.toast]:rounded-lg group-[.toast]:text-xs",
+          success: "group-[.toaster]:!bg-primary/15 group-[.toaster]:!border-primary/25 group-[.toaster]:!text-foreground",
+          error: "group-[.toaster]:!bg-destructive/15 group-[.toaster]:!border-destructive/25 group-[.toaster]:!text-foreground",
+          info: "group-[.toaster]:!bg-blue-500/15 group-[.toaster]:!border-blue-500/25 group-[.toaster]:!text-foreground",
         },
       }}
       {...props}
