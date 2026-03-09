@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { MapPin, Send as MessageCircle, UserRound as User, Timer as Clock, ChevronRight, Sparkles as Scissors, Instagram } from 'lucide-react';
+import { MapPin, Send as MessageCircle, UserRound as User, Timer as Clock, Sparkles as Scissors, Instagram } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { PremiumSkeleton, SkeletonCard } from '@/components/ui/premium-skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from '@/components/ui/drawer';
+import { motion } from 'framer-motion';
 
 interface BarbershopData {
   id: string;
@@ -42,6 +44,7 @@ interface ServiceData {
   id: string;
   name: string;
   duration_minutes: number;
+  price: number;
   barber_id: string;
   is_global: boolean;
 }
@@ -51,6 +54,16 @@ interface GalleryImage {
   image_url: string;
   sort_order: number;
 }
+
+const containerVariants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.07 } },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 10 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.3, ease: 'easeOut' as const } },
+};
 
 const BarbeariaPublica = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -62,7 +75,8 @@ const BarbeariaPublica = () => {
   const [gallery, setGallery] = useState<GalleryImage[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [selectedBarber, setSelectedBarber] = useState<string | null>(null);
+  const [selectedBarber, setSelectedBarber] = useState<BarberData | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [fadeIn, setFadeIn] = useState(false);
 
   useEffect(() => {
@@ -77,10 +91,8 @@ const BarbeariaPublica = () => {
 
   const fetchData = async () => {
     try {
-      // Find barbershop by slug or custom slug from public_profiles
       let shop: BarbershopData | null = null;
 
-      // Try barbershop slug first
       const { data: bySlug } = await supabase
         .from('barbershops')
         .select('id, name, slug, phone, photo_url, city, google_maps_url')
@@ -90,7 +102,6 @@ const BarbeariaPublica = () => {
       if (bySlug) {
         shop = bySlug;
       } else {
-        // Try custom slug from public_profiles
         const { data: byCustomSlug } = await supabase
           .from('public_profiles')
           .select('barbershop_id')
@@ -105,7 +116,6 @@ const BarbeariaPublica = () => {
             .maybeSingle();
           shop = byId;
         } else {
-          // Try by ID
           const { data: byId } = await supabase
             .from('barbershops')
             .select('id, name, slug, phone, photo_url, city, google_maps_url')
@@ -122,7 +132,6 @@ const BarbeariaPublica = () => {
 
       setBarbershop(shop);
 
-      // Fetch everything in parallel
       const [barbersRes, servicesRes, galleryRes, profileRes] = await Promise.all([
         supabase
           .from('barbers')
@@ -132,7 +141,7 @@ const BarbeariaPublica = () => {
           .order('name'),
         supabase
           .from('services')
-          .select('id, name, duration_minutes, barber_id, is_global')
+          .select('id, name, duration_minutes, price, barber_id, is_global')
           .eq('barbershop_id', shop.id)
           .eq('active', true),
         supabase
@@ -159,18 +168,19 @@ const BarbeariaPublica = () => {
     }
   };
 
-  const handleSelectBarber = (barberId: string) => {
-    setSelectedBarber(prev => prev === barberId ? null : barberId);
+  const handleSelectBarber = (barber: BarberData) => {
+    setSelectedBarber(barber);
+    setDrawerOpen(true);
   };
 
-  const handleAgendar = (barberId: string) => {
-    if (barbershop) {
-      navigate(`/agendar/${barbershop.slug || barbershop.id}?barber=${barberId}`);
+  const handleAgendar = () => {
+    if (barbershop && selectedBarber) {
+      navigate(`/agendar/${barbershop.slug || barbershop.id}?barber=${selectedBarber.id}`);
     }
   };
 
   const barberServices = selectedBarber
-    ? services.filter(s => s.is_global || s.barber_id === selectedBarber)
+    ? services.filter(s => s.is_global || s.barber_id === selectedBarber.id)
     : [];
 
   const displayCity = publicProfile?.cidade || barbershop?.city;
@@ -252,7 +262,6 @@ const BarbeariaPublica = () => {
         )}
 
         <div className="relative -mt-16 sm:-mt-20 px-4 sm:px-6 pb-6 max-w-lg mx-auto text-center">
-          {/* Logo */}
           {publicProfile?.logo_url ? (
             <img
               src={publicProfile.logo_url}
@@ -267,12 +276,10 @@ const BarbeariaPublica = () => {
 
           <h1 className="text-2xl sm:text-3xl font-bold">{barbershop?.name}</h1>
 
-          {/* Description */}
           {publicProfile?.descricao && (
             <p className="text-muted-foreground text-sm mt-2 max-w-md mx-auto">{publicProfile.descricao}</p>
           )}
 
-          {/* Location */}
           {(displayCity || displayState) && (
             <p className="flex items-center justify-center gap-1.5 text-muted-foreground text-sm mt-2">
               <MapPin className="h-3.5 w-3.5" />
@@ -280,7 +287,6 @@ const BarbeariaPublica = () => {
             </p>
           )}
 
-          {/* Action Buttons */}
           <div className="flex gap-3 justify-center mt-5 flex-wrap">
             {publicProfile?.instagram_url && (
               <Button
@@ -353,81 +359,41 @@ const BarbeariaPublica = () => {
               description="Esta barbearia ainda não possui profissionais cadastrados."
             />
           ) : (
-          <div className="space-y-3">
-            {barbers.map((barber, i) => (
-              <Card
-                key={barber.id}
-                className={`cursor-pointer transition-all duration-300 hover:shadow-lg ${
-                  selectedBarber === barber.id
-                    ? 'ring-2 ring-primary shadow-lg'
-                    : ''
-                }`}
-                style={{ animationDelay: `${i * 0.05}s` }}
-                onClick={() => handleSelectBarber(barber.id)}
-              >
-                <CardContent className="p-4 flex items-center gap-4">
-                  {barber.photo_url ? (
-                    <img
-                      src={barber.photo_url}
-                      alt={barber.name}
-                      className="w-14 h-14 rounded-full object-cover ring-2 ring-border"
-                    />
-                  ) : (
-                    <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center ring-2 ring-border">
-                      <User className="h-6 w-6 text-muted-foreground" />
-                    </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold truncate">{barber.name}</h3>
-                    <p className="text-sm text-muted-foreground">Profissional</p>
-                  </div>
-                  <ChevronRight className={`h-5 w-5 text-muted-foreground transition-transform duration-300 ${selectedBarber === barber.id ? 'rotate-90' : ''}`} />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-          )}
-        </section>
-
-        {/* Services + Booking after barber selection */}
-        {selectedBarber && (
-          <section className="animate-in fade-in slide-in-from-bottom-4 duration-300">
-            <h2 className="text-lg font-semibold mb-4">Serviços</h2>
-            {barberServices.length > 0 ? (
-              <div className="space-y-2">
-                {barberServices.map(service => (
-                  <Card key={service.id} className="transition-all duration-200 hover:shadow-md">
-                    <CardContent className="p-4 flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-primary/10">
-                        <Scissors className="h-4 w-4 text-primary" />
-                      </div>
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              animate="show"
+              className="space-y-3"
+            >
+              {barbers.map((barber) => (
+                <motion.div key={barber.id} variants={itemVariants}>
+                  <Card
+                    className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-primary/30 active:scale-[0.98]"
+                    onClick={() => handleSelectBarber(barber)}
+                  >
+                    <CardContent className="p-4 flex items-center gap-4">
+                      {barber.photo_url ? (
+                        <img
+                          src={barber.photo_url}
+                          alt={barber.name}
+                          className="w-14 h-14 rounded-full object-cover ring-2 ring-border"
+                        />
+                      ) : (
+                        <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center ring-2 ring-border">
+                          <User className="h-6 w-6 text-muted-foreground" />
+                        </div>
+                      )}
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-medium truncate">{service.name}</h3>
-                        <p className="text-sm text-muted-foreground flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          {service.duration_minutes} min
-                        </p>
+                        <h3 className="font-semibold truncate">{barber.name}</h3>
+                        <p className="text-sm text-muted-foreground">Toque para ver serviços</p>
                       </div>
                     </CardContent>
                   </Card>
-                ))}
-              </div>
-            ) : (
-              <EmptyState
-                icon={Scissors}
-                title="Nenhum serviço disponível"
-                description="Este profissional ainda não possui serviços cadastrados."
-              />
-            )}
-
-            <Button
-              className="w-full mt-6 btn-primary-gradient h-12 text-base rounded-xl transition-all duration-200 hover:shadow-lg active:scale-[0.98]"
-              onClick={() => handleAgendar(selectedBarber)}
-            >
-              Agendar com este profissional
-            </Button>
-          </section>
-        )}
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
+        </section>
 
         {/* Gallery Section */}
         {gallery.length > 0 && (
@@ -455,6 +421,78 @@ const BarbeariaPublica = () => {
           </p>
         </footer>
       </main>
+
+      {/* Bottom Drawer for Barber Services */}
+      <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
+        <DrawerContent className="max-h-[85vh] rounded-t-2xl">
+          <DrawerHeader className="text-center pb-2">
+            {selectedBarber && (
+              <div className="flex flex-col items-center gap-3">
+                {selectedBarber.photo_url ? (
+                  <img
+                    src={selectedBarber.photo_url}
+                    alt={selectedBarber.name}
+                    className="w-16 h-16 rounded-full object-cover ring-2 ring-primary/30"
+                  />
+                ) : (
+                  <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center ring-2 ring-primary/30">
+                    <User className="h-7 w-7 text-muted-foreground" />
+                  </div>
+                )}
+                <div>
+                  <DrawerTitle className="text-lg">{selectedBarber.name}</DrawerTitle>
+                  <p className="text-sm text-muted-foreground">Profissional</p>
+                </div>
+              </div>
+            )}
+          </DrawerHeader>
+
+          <div className="flex-1 overflow-y-auto px-4 pb-4">
+            <h3 className="text-sm font-medium text-muted-foreground mb-3">Serviços disponíveis</h3>
+            {barberServices.length > 0 ? (
+              <div className="space-y-2">
+                {barberServices.map(service => (
+                  <div
+                    key={service.id}
+                    className="flex items-center gap-3 p-3 rounded-xl bg-secondary/50 border border-border/30"
+                  >
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-primary/10 shrink-0">
+                      <Scissors className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-medium text-sm truncate">{service.name}</h4>
+                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {service.duration_minutes} min
+                      </p>
+                    </div>
+                    <span className="text-sm font-semibold text-primary shrink-0">
+                      {service.price > 0 ? `R$ ${service.price.toFixed(2).replace('.', ',')}` : 'Grátis'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <EmptyState
+                icon={Scissors}
+                title="Nenhum serviço"
+                description="Este profissional ainda não possui serviços cadastrados."
+                className="py-8"
+              />
+            )}
+          </div>
+
+          <DrawerFooter className="pt-2">
+            <Button
+              onClick={handleAgendar}
+              className="btn-primary-gradient h-12 text-base rounded-xl w-full"
+              disabled={barberServices.length === 0}
+            >
+              Agendar agora
+            </Button>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
 
       {/* Floating WhatsApp Button */}
       {whatsappLink && (
