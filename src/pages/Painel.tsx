@@ -22,7 +22,7 @@ import {
    MessageCircle,
   PieChart,
   Share2,
-  Coins,
+  Percent,
   Stamp,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
