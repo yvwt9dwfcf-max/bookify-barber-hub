@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { supabase, Service, Barber } from '@/lib/supabase';
 import { Card, CardContent } from '@/components/ui/card';
@@ -24,7 +24,7 @@ import {
   DialogClose,
   DialogDescription,
 } from '@/components/ui/dialog';
-import { Sparkles as Scissors, Plus, PenLine as Pencil, Trash2, Loader2, Timer as Clock, UsersRound as Users } from 'lucide-react';
+import { Sparkles as Scissors, Plus, PenLine as Pencil, Trash2, Loader2, Timer as Clock, UsersRound as Users, Camera, X } from 'lucide-react';
 import { SkeletonCard } from '@/components/ui/premium-skeleton';
 import { toast } from 'sonner';
 import {
@@ -39,6 +39,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 interface ContextType {
   barber: Barber | null;
@@ -66,6 +67,10 @@ const Servicos = () => {
   const [active, setActive] = useState(true);
   const [isGlobal, setIsGlobal] = useState(true);
   const [selectedBarberIds, setSelectedBarberIds] = useState<string[]>([]);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (barbershop) {
@@ -77,7 +82,6 @@ const Servicos = () => {
     if (!barbershop) return;
 
     try {
-      // Fetch services da barbearia
       const { data: servicesData, error: servicesError } = await supabase
         .from('services')
         .select('*')
@@ -86,7 +90,6 @@ const Servicos = () => {
 
       if (servicesError) throw servicesError;
 
-      // Fetch barbers da barbearia
       const { data: barbersData, error: barbersError } = await supabase
         .from('barbers')
         .select('*')
@@ -96,14 +99,12 @@ const Servicos = () => {
 
       if (barbersError) throw barbersError;
 
-      // Fetch barber_services associations
       const { data: barberServicesData, error: bsError } = await supabase
         .from('barber_services')
         .select('barber_id, service_id');
 
       if (bsError) throw bsError;
 
-      // Map services with their assigned barbers
       const servicesWithBarbers = (servicesData || []).map(service => ({
         ...service,
         assignedBarberIds: (barberServicesData || [])
@@ -129,6 +130,8 @@ const Servicos = () => {
     setIsGlobal(true);
     setSelectedBarberIds([]);
     setEditingService(null);
+    setPhotoFile(null);
+    setPhotoPreview(null);
   };
 
   const openEditDialog = (service: ServiceWithBarbers) => {
@@ -139,14 +142,58 @@ const Servicos = () => {
     setActive(service.active);
     setIsGlobal(service.is_global);
     setSelectedBarberIds(service.assignedBarberIds);
+    setPhotoFile(null);
+    setPhotoPreview(service.photo_url || null);
     setDialogOpen(true);
   };
 
   const openNewDialog = () => {
     resetForm();
-    // Por padrão, todos os barbeiros ativos são selecionados para novos serviços
     setSelectedBarberIds(barbers.map(b => b.id));
     setDialogOpen(true);
+  };
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('A imagem deve ter no máximo 5MB');
+      return;
+    }
+    setPhotoFile(file);
+    setPhotoPreview(URL.createObjectURL(file));
+  };
+
+  const removePhoto = () => {
+    setPhotoFile(null);
+    setPhotoPreview(null);
+  };
+
+  const uploadPhoto = async (serviceId: string): Promise<string | null> => {
+    if (!photoFile) return null;
+    setUploadingPhoto(true);
+    try {
+      const fileExt = photoFile.name.split('.').pop();
+      const filePath = `${barbershop!.id}/${serviceId}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('service-photos')
+        .upload(filePath, photoFile, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage
+        .from('service-photos')
+        .getPublicUrl(filePath);
+
+      return urlData.publicUrl + '?t=' + Date.now();
+    } catch (error) {
+      console.error('Erro ao fazer upload:', error);
+      toast.error('Erro ao enviar foto');
+      return null;
+    } finally {
+      setUploadingPhoto(false);
+    }
   };
 
   const handleSubmit = async () => {
@@ -169,7 +216,6 @@ const Servicos = () => {
       let serviceId: string;
 
       if (editingService) {
-        // Update existing service
         const { error } = await supabase
           .from('services')
           .update({
@@ -184,7 +230,6 @@ const Servicos = () => {
         if (error) throw error;
         serviceId = editingService.id;
 
-        // Remove old associations
         await supabase
           .from('barber_services')
           .delete()
@@ -192,7 +237,6 @@ const Servicos = () => {
 
         toast.success('Serviço atualizado');
       } else {
-        // Create new service - belongs to barbershop
         const { data: newService, error } = await supabase
           .from('services')
           .insert({
@@ -210,6 +254,23 @@ const Servicos = () => {
         if (error) throw error;
         serviceId = newService.id;
         toast.success('Serviço criado');
+      }
+
+      // Upload photo if selected
+      if (photoFile) {
+        const photoUrl = await uploadPhoto(serviceId);
+        if (photoUrl) {
+          await supabase
+            .from('services')
+            .update({ photo_url: photoUrl })
+            .eq('id', serviceId);
+        }
+      } else if (!photoPreview && editingService?.photo_url) {
+        // Photo was removed
+        await supabase
+          .from('services')
+          .update({ photo_url: null })
+          .eq('id', serviceId);
       }
 
       // Create barber_services associations only if NOT global
@@ -241,13 +302,11 @@ const Servicos = () => {
 
   const handleDelete = async (id: string) => {
     try {
-      // Delete associations first
       await supabase
         .from('barber_services')
         .delete()
         .eq('service_id', id);
 
-      // Delete service
       const { error } = await supabase
         .from('services')
         .delete()
@@ -318,7 +377,7 @@ const Servicos = () => {
                 Novo serviço
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-lg">
+            <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>
                   {editingService ? 'Editar serviço' : 'Novo serviço'}
@@ -330,6 +389,51 @@ const Servicos = () => {
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
+                {/* Photo upload */}
+                <div className="space-y-2">
+                  <Label>Foto do serviço</Label>
+                  <div className="flex items-center gap-4">
+                    <div className="relative">
+                      <Avatar className="h-20 w-20 rounded-xl">
+                        {photoPreview ? (
+                          <AvatarImage src={photoPreview} alt="Foto do serviço" className="object-cover" />
+                        ) : null}
+                        <AvatarFallback className="rounded-xl bg-primary/10">
+                          <Scissors className="h-8 w-8 text-primary" />
+                        </AvatarFallback>
+                      </Avatar>
+                      {photoPreview && (
+                        <button
+                          type="button"
+                          onClick={removePhoto}
+                          className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/90 transition-colors"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      )}
+                    </div>
+                    <div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        <Camera className="mr-2 h-4 w-4" />
+                        {photoPreview ? 'Trocar foto' : 'Adicionar foto'}
+                      </Button>
+                      <p className="text-xs text-muted-foreground mt-1">JPG ou PNG, até 5MB</p>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        onChange={handlePhotoChange}
+                        className="hidden"
+                      />
+                    </div>
+                  </div>
+                </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="name">Nome do serviço</Label>
                   <Input
@@ -394,7 +498,7 @@ const Servicos = () => {
                   </div>
                 </div>
 
-                {/* Seleção de barbeiros - só mostra se NÃO for global */}
+                {/* Seleção de barbeiros */}
                 {!isGlobal && (
                   <div className="space-y-3">
                     <Label className="flex items-center gap-2">
@@ -431,8 +535,8 @@ const Servicos = () => {
                 <DialogClose asChild>
                   <Button variant="outline">Cancelar</Button>
                 </DialogClose>
-                <Button onClick={handleSubmit} disabled={saving}>
-                  {saving ? (
+                <Button onClick={handleSubmit} disabled={saving || uploadingPhoto}>
+                  {saving || uploadingPhoto ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Salvando...
@@ -473,9 +577,14 @@ const Servicos = () => {
               <CardContent className="p-4">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <Scissors className="h-5 w-5 text-primary" />
-                    </div>
+                    <Avatar className="h-10 w-10 rounded-xl flex-shrink-0">
+                      {service.photo_url ? (
+                        <AvatarImage src={service.photo_url} alt={service.name} className="object-cover" />
+                      ) : null}
+                      <AvatarFallback className="rounded-xl bg-primary/10">
+                        <Scissors className="h-5 w-5 text-primary" />
+                      </AvatarFallback>
+                    </Avatar>
                     <div>
                       <h3 className="font-semibold">{service.name}</h3>
                       <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
@@ -492,7 +601,6 @@ const Servicos = () => {
                           Inativo
                         </span>
                       )}
-                      {/* Mostrar barbeiros associados */}
                       <div className="flex flex-wrap gap-1 mt-2">
                         {service.is_global ? (
                           <Badge variant="secondary" className="text-xs">

@@ -3,6 +3,7 @@ import { supabase, Service } from '@/lib/supabase';
 import { Sparkles as Scissors, Timer as Clock } from 'lucide-react';
 import { PremiumSkeleton, SkeletonCard } from '@/components/ui/premium-skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 
 interface ServiceSelectionProps {
@@ -36,7 +37,6 @@ export function ServiceSelection({ barberId, onSelect, onAutoSelect }: ServiceSe
         return;
       }
 
-      // 1. Fetch all global services for the barbershop
       const { data: globalServices, error: globalError } = await supabase
         .from('services')
         .select('*')
@@ -47,7 +47,6 @@ export function ServiceSelection({ barberId, onSelect, onAutoSelect }: ServiceSe
 
       if (globalError) throw globalError;
 
-      // 2. Fetch specific services linked to this barber via barber_services
       const { data: barberServicesData, error: bsError } = await supabase
         .from('barber_services')
         .select('service_id')
@@ -71,7 +70,6 @@ export function ServiceSelection({ barberId, onSelect, onAutoSelect }: ServiceSe
         specificServices = (linked || []) as Service[];
       }
 
-      // Merge: global + specific (deduplicate by id)
       const allServices = [...(globalServices || []), ...specificServices] as Service[];
       const uniqueServices = allServices.filter(
         (s, i, arr) => arr.findIndex(x => x.id === s.id) === i
@@ -79,7 +77,6 @@ export function ServiceSelection({ barberId, onSelect, onAutoSelect }: ServiceSe
 
       setServices(uniqueServices);
 
-      // Auto-select if only 1 service
       if (uniqueServices.length === 1 && onAutoSelect) {
         onAutoSelect(uniqueServices[0]);
       }
@@ -150,16 +147,22 @@ export function ServiceSelection({ barberId, onSelect, onAutoSelect }: ServiceSe
                 : 'border-border/40 hover:border-primary/40 bg-card/60 dark:bg-card/60'
             )}
           >
-            <div className={cn(
-              "w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 transition-all",
-              selected === service.id
-                ? "text-primary-foreground"
-                : "bg-primary/10"
-            )}
-              style={selected === service.id ? { background: 'var(--primary-gradient)' } : undefined}
-            >
-              <Scissors className={cn("h-5 w-5", selected === service.id ? "text-primary-foreground" : "text-primary")} />
-            </div>
+            <Avatar className={cn(
+              "h-12 w-12 rounded-xl flex-shrink-0 transition-all",
+            )}>
+              {service.photo_url ? (
+                <AvatarImage src={service.photo_url} alt={service.name} className="object-cover" />
+              ) : null}
+              <AvatarFallback
+                className={cn(
+                  "rounded-xl",
+                  selected === service.id ? "text-primary-foreground" : "bg-primary/10"
+                )}
+                style={selected === service.id ? { background: 'var(--primary-gradient)' } : undefined}
+              >
+                <Scissors className={cn("h-5 w-5", selected === service.id ? "text-primary-foreground" : "text-primary")} />
+              </AvatarFallback>
+            </Avatar>
             <div className="flex-1 min-w-0">
               <h3 className="font-bold text-sm">{service.name}</h3>
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-1">
