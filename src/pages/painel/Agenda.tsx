@@ -552,8 +552,6 @@ const Agenda = () => {
 
                   // If this slot has an appointment (occupied)
                     if (appointment && appointment.status !== 'cancelled') {
-                      const durationMin = appointment.service?.duration_minutes || 30;
-                      const slotsSpanned = Math.ceil(durationMin / 30);
                       const cfg = getStatusConfig(appointment.status);
                       
                       return (
