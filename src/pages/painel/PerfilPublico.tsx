@@ -337,9 +337,12 @@ const PerfilPublico = () => {
             {logoUrl ? (
               <div className="relative group">
                 <img src={logoUrl} alt="Logo" className="w-20 h-20 rounded-2xl object-cover ring-2 ring-border" />
-                <div className="absolute inset-0 bg-black/40 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <div className="absolute inset-0 bg-black/40 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
                   <Button size="icon" variant="secondary" className="h-8 w-8" onClick={() => logoInputRef.current?.click()}>
                     <Upload className="h-3 w-3" />
+                  </Button>
+                  <Button size="icon" variant="destructive" className="h-8 w-8" onClick={() => setLogoUrl(null)}>
+                    <Trash2 className="h-3 w-3" />
                   </Button>
                 </div>
               </div>

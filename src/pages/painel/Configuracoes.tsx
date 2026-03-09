@@ -238,27 +238,52 @@ const Configuracoes = () => {
     <div className="space-y-8 max-w-2xl pb-12">
       {/* Header com foto e nome da barbearia */}
       <div className="flex flex-col items-center gap-3 pt-2">
-        <div
-          className="relative w-20 h-20 rounded-xl border-2 border-dashed border-border hover:border-primary/50 transition-colors cursor-pointer overflow-hidden flex items-center justify-center bg-muted/30"
-          onClick={() => barbershopFileInputRef.current?.click()}
-        >
-          {uploadingPhoto ? (
-            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-          ) : photoUrl ? (
-            <img src={photoUrl} alt="Logo" className="w-full h-full object-cover" />
-          ) : (
-            <Camera className="h-5 w-5 text-muted-foreground/60" />
-          )}
-          <input
-            ref={barbershopFileInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleBarbershopPhotoUpload}
-          />
-          <div className="absolute bottom-0 right-0 w-5 h-5 rounded-full bg-background border border-border flex items-center justify-center">
-            <Camera className="h-2.5 w-2.5 text-muted-foreground" />
+        <div className="relative group">
+          <div
+            className="relative w-20 h-20 rounded-xl border-2 border-dashed border-border hover:border-primary/50 transition-colors cursor-pointer overflow-hidden flex items-center justify-center bg-muted/30"
+            onClick={() => barbershopFileInputRef.current?.click()}
+          >
+            {uploadingPhoto ? (
+              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+            ) : photoUrl ? (
+              <img src={photoUrl} alt="Logo" className="w-full h-full object-cover" />
+            ) : (
+              <Camera className="h-5 w-5 text-muted-foreground/60" />
+            )}
+            <input
+              ref={barbershopFileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleBarbershopPhotoUpload}
+            />
+            <div className="absolute bottom-0 right-0 w-5 h-5 rounded-full bg-background border border-border flex items-center justify-center">
+              <Camera className="h-2.5 w-2.5 text-muted-foreground" />
+            </div>
           </div>
+          {photoUrl && (
+            <button
+              className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-destructive border-2 border-background flex items-center justify-center shadow-sm opacity-0 group-hover:opacity-100 transition-opacity z-10"
+              onClick={async (e) => {
+                e.stopPropagation();
+                try {
+                  const { error } = await supabase
+                    .from('barbershops')
+                    .update({ photo_url: null })
+                    .eq('id', barbershop!.id);
+                  if (error) throw error;
+                  setPhotoUrl('');
+                  await refetchUserRole();
+                  await refetchRole();
+                  toast.success('Foto removida!');
+                } catch {
+                  toast.error('Erro ao remover foto');
+                }
+              }}
+            >
+              <Trash2 className="h-2.5 w-2.5 text-destructive-foreground" />
+            </button>
+          )}
         </div>
         <div className="text-center">
           <h1 className="text-xl font-bold">{barbershop?.name || 'Configurações'}</h1>

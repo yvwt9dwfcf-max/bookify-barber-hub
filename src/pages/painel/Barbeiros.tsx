@@ -415,6 +415,27 @@ const Barbeiros = () => {
                       }
                     }}
                   />
+                  {/* Remove photo button */}
+                  {barber.photo_url && (
+                    <button
+                      className="absolute -top-1 -left-1 w-5 h-5 rounded-full bg-destructive border-2 border-background flex items-center justify-center shadow-sm opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        try {
+                          await supabase
+                            .from('barbers')
+                            .update({ photo_url: null })
+                            .eq('id', barber.id);
+                          toast.success('Foto removida!');
+                          refetch();
+                        } catch {
+                          toast.error('Erro ao remover foto');
+                        }
+                      }}
+                    >
+                      <Trash2 className="h-2.5 w-2.5 text-destructive-foreground" />
+                    </button>
+                  )}
                 </div>
                 
                 <div className="flex-1 min-w-0 overflow-hidden">
