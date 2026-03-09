@@ -358,7 +358,7 @@ const Agenda = () => {
     );
   }
 
-  const days = getDaysToShow();
+  
 
   const handleDateSelectFromCalendar = (date: Date) => {
     setSelectedDate(date);
