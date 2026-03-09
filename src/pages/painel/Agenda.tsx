@@ -653,6 +653,7 @@ const Agenda = () => {
                 </div>
               </div>
             ) : (
+              <div className="space-y-1.5">
                 {daySlots.map((slot, index) => {
                   const appointment = appointmentsBySlot[slot.time];
                   const availability = checkSlotAvailability(slot.time, selectedDate, 30);
