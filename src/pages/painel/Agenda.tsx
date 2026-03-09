@@ -112,16 +112,16 @@ const Agenda = () => {
   const [showQuickBlock, setShowQuickBlock] = useState(false);
   const [blockTime, setBlockTime] = useState<string | null>(null);
 
-  const handleOpenManualDialog = (time?: string) => {
+  const handleOpenManualDialog = useCallback((time?: string) => {
     if (!checkCanPerformAction('create_appointment')) return;
     setPreselectedTime(time || null);
     setShowManualDialog(true);
-  };
+  }, [checkCanPerformAction]);
 
-  const handleOpenQuickBlock = (time?: string) => {
+  const handleOpenQuickBlock = useCallback((time?: string) => {
     setBlockTime(time || null);
     setShowQuickBlock(true);
-  };
+  }, []);
   
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [showDetailsSheet, setShowDetailsSheet] = useState(false);
