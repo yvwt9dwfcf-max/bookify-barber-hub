@@ -12,7 +12,7 @@ import { PremiumSkeleton, SkeletonSlot, SkeletonStats } from '@/components/ui/pr
 import { 
   CalendarRange as Calendar, CalendarDays, ChevronLeft, ChevronRight, 
   UserRound as User, Timer as Clock, CalendarPlus,
-  CircleSlash as Ban
+  CircleSlash as Ban, Copy, Share2, CalendarX
 } from 'lucide-react';
 import { format, addDays, startOfDay, isSameDay, setHours, setMinutes } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -532,6 +532,126 @@ const Agenda = () => {
                   </p>
                 </CardContent>
               </Card>
+            ) : appointments.filter(a => a.status !== 'cancelled').length === 0 && !loading ? (
+              <div className="space-y-1.5">
+                {/* Empty state - no appointments */}
+                <Card className="border-border/40 border-dashed shadow-sm bg-card/60 backdrop-blur-sm rounded-xl">
+                  <CardContent className="text-center py-10 px-6">
+                    <div className="relative mb-5 inline-flex">
+                      <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl scale-125" />
+                      <div className="relative w-16 h-16 rounded-2xl bg-muted/50 border border-border/40 flex items-center justify-center">
+                        <CalendarX className="h-7 w-7 text-primary/80" />
+                      </div>
+                    </div>
+                    <h3 className="text-base font-semibold mb-1.5">Nenhum agendamento hoje</h3>
+                    <p className="text-sm text-muted-foreground max-w-xs mx-auto mb-2 leading-relaxed">
+                      Ainda não há clientes marcados para hoje.
+                    </p>
+                    <p className="text-xs text-muted-foreground/70 max-w-xs mx-auto mb-6 leading-relaxed">
+                      Compartilhe seu link de agendamento para que seus clientes possam marcar um horário facilmente.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                      <Button
+                        variant="default"
+                        className="btn-primary-gradient px-5"
+                        onClick={() => {
+                          const slug = barbershop?.slug;
+                          if (slug) {
+                            const link = `${window.location.origin}/b/${slug}`;
+                            navigator.clipboard.writeText(link);
+                            toast.success('Link copiado!');
+                          } else {
+                            toast.error('Configure o perfil público primeiro');
+                          }
+                        }}
+                      >
+                        <Copy className="h-4 w-4 mr-1.5" />
+                        Copiar link de agendamento
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="px-5"
+                        onClick={() => {
+                          const slug = barbershop?.slug;
+                          if (slug) {
+                            const link = `${window.location.origin}/b/${slug}`;
+                            if (navigator.share) {
+                              navigator.share({ title: barbershop?.name, url: link });
+                            } else {
+                              navigator.clipboard.writeText(link);
+                              toast.success('Link copiado!');
+                            }
+                          } else {
+                            toast.error('Configure o perfil público primeiro');
+                          }
+                        }}
+                      >
+                        <Share2 className="h-4 w-4 mr-1.5" />
+                        Compartilhar link
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Still show the time slots below */}
+                <div className="space-y-1.5">
+                  {daySlots.map((slot, index) => {
+                    const availability = checkSlotAvailability(slot.time, selectedDate, 30);
+                    const blockedReason = getBlockedReason(slot.time);
+                    const isCurrentSlot = isToday && slot.hour === currentHour && 
+                      currentMinute >= slot.minute && currentMinute < slot.minute + 30;
+                    const isPast = availability.reason === 'passado';
+                    const isBreak = availability.reason === 'intervalo';
+                    const isBlocked = availability.reason === 'bloqueado';
+
+                    if (isBlocked) {
+                      return (
+                        <div key={slot.time} className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-muted/30 border border-border/30 opacity-60">
+                          <div className="w-12 shrink-0 text-center"><p className="text-sm font-medium tabular-nums text-muted-foreground">{slot.time}</p></div>
+                          <div className="w-px h-6 bg-border/30" />
+                          <Ban className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                          <span className="text-xs text-muted-foreground">{blockedReason || 'Bloqueado'}</span>
+                        </div>
+                      );
+                    }
+                    if (isBreak) {
+                      return (
+                        <div key={slot.time} className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-amber-500/5 border border-amber-500/10 opacity-50">
+                          <div className="w-12 shrink-0 text-center"><p className="text-sm font-medium tabular-nums text-muted-foreground">{slot.time}</p></div>
+                          <div className="w-px h-6 bg-border/30" />
+                          <Clock className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                          <span className="text-xs text-amber-500/80">Intervalo</span>
+                        </div>
+                      );
+                    }
+                    if (isPast) {
+                      return (
+                        <div key={slot.time} className="flex items-center gap-3 px-4 py-2 rounded-xl opacity-30">
+                          <div className="w-12 shrink-0 text-center"><p className="text-sm font-medium tabular-nums text-muted-foreground">{slot.time}</p></div>
+                          <div className="w-px h-6 bg-border/20" />
+                          <div className="flex-1 h-px bg-border/20" />
+                        </div>
+                      );
+                    }
+                    return (
+                      <button key={slot.time} onClick={() => handleOpenManualDialog(slot.time)} className={cn(
+                        "w-full flex items-center gap-3 px-4 py-2.5 rounded-xl border border-transparent transition-all duration-200",
+                        "hover:bg-primary/5 hover:border-primary/20 hover:shadow-sm active:scale-[0.99] active:bg-primary/10 group",
+                        isCurrentSlot && "bg-primary/5 border-primary/15 ring-1 ring-primary/20"
+                      )}>
+                        <div className="w-12 shrink-0 text-center">
+                          <p className={cn("text-sm font-medium tabular-nums", isCurrentSlot ? "text-primary font-bold" : "text-muted-foreground")}>{slot.time}</p>
+                        </div>
+                        <div className="w-px h-6 bg-border/30 group-hover:bg-primary/30 transition-colors" />
+                        <div className="flex-1 flex items-center justify-between">
+                          <span className="text-xs text-muted-foreground/50 group-hover:text-primary/70 transition-colors">Horário disponível</span>
+                          <CalendarPlus className="h-3.5 w-3.5 text-muted-foreground/0 group-hover:text-primary/60 transition-all duration-200" />
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             ) : (
               <div className="space-y-1.5">
                 {daySlots.map((slot, index) => {
