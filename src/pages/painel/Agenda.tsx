@@ -41,42 +41,48 @@ interface ContextType {
 
 type ViewMode = 'daily' | 'monthly';
 
-const getStatusColor = (status: string) => {
+const getStatusConfig = (status: string) => {
   switch (status) {
     case 'confirmed':
-      return 'border-l-primary bg-primary/5';
+      return {
+        borderColor: 'border-l-primary/70',
+        bg: 'bg-card/90',
+        dot: 'bg-primary',
+        label: 'Confirmado',
+        labelColor: 'text-primary',
+        avatarBg: 'bg-primary/15',
+        avatarText: 'text-primary',
+      };
     case 'completed':
-      return 'border-l-success bg-success/5';
+      return {
+        borderColor: 'border-l-success/70',
+        bg: 'bg-card/90',
+        dot: 'bg-success',
+        label: 'Concluído',
+        labelColor: 'text-success',
+        avatarBg: 'bg-success/15',
+        avatarText: 'text-success',
+      };
     case 'cancelled':
-      return 'border-l-destructive bg-destructive/5';
+      return {
+        borderColor: 'border-l-destructive/50',
+        bg: 'bg-card/60',
+        dot: 'bg-destructive',
+        label: 'Cancelado',
+        labelColor: 'text-destructive',
+        avatarBg: 'bg-muted/30',
+        avatarText: 'text-muted-foreground',
+      };
     default:
-      return 'border-l-amber-500 bg-amber-500/5';
-  }
-};
-
-const getStatusBadgeColor = (status: string) => {
-  switch (status) {
-    case 'confirmed':
-      return 'bg-primary/10 text-primary border border-primary/20';
-    case 'completed':
-      return 'bg-success/10 text-success border border-success/20';
-    case 'cancelled':
-      return 'bg-destructive/10 text-destructive border border-destructive/20';
-    default:
-      return 'bg-amber-500/10 text-amber-600 border border-amber-500/20';
-  }
-};
-
-const getStatusLabel = (status: string) => {
-  switch (status) {
-    case 'confirmed':
-      return 'Confirmado';
-    case 'completed':
-      return 'Concluído';
-    case 'cancelled':
-      return 'Cancelado';
-    default:
-      return 'Pendente';
+      return {
+        borderColor: 'border-l-amber-500/60',
+        bg: 'bg-card/90',
+        dot: 'bg-amber-500',
+        label: 'Pendente',
+        labelColor: 'text-amber-500',
+        avatarBg: 'bg-amber-500/15',
+        avatarText: 'text-amber-500',
+      };
   }
 };
 
