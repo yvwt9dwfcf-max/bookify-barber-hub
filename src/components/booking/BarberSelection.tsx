@@ -101,17 +101,30 @@ export function BarberSelection({ onSelect, barbershopId, availableBarbers }: Ba
                 : 'border-border/40 hover:border-primary/40 bg-card/60 dark:bg-card/60'
             )}
           >
-            {/* Avatar circular */}
-            <div className={cn(
-              "w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0 transition-all",
-              selected === barber.id
-                ? "text-primary-foreground"
-                : "bg-primary/10"
+            {/* Avatar circular com foto */}
+            {barber.photo_url ? (
+              <img 
+                src={barber.photo_url} 
+                alt={barber.name}
+                className={cn(
+                  "w-14 h-14 rounded-full object-cover flex-shrink-0 transition-all ring-2",
+                  selected === barber.id
+                    ? "ring-primary shadow-lg"
+                    : "ring-border/50"
+                )}
+              />
+            ) : (
+              <div className={cn(
+                "w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0 transition-all",
+                selected === barber.id
+                  ? "text-primary-foreground"
+                  : "bg-primary/10"
+              )}
+                style={selected === barber.id ? { background: 'var(--primary-gradient)' } : undefined}
+              >
+                <User className={cn("h-7 w-7", selected === barber.id ? "text-primary-foreground" : "text-primary")} />
+              </div>
             )}
-              style={selected === barber.id ? { background: 'var(--primary-gradient)' } : undefined}
-            >
-              <User className={cn("h-7 w-7", selected === barber.id ? "text-primary-foreground" : "text-primary")} />
-            </div>
             <div className="flex-1 min-w-0">
               <h3 className="font-bold text-base">{barber.name}</h3>
               <p className="text-xs text-muted-foreground mt-0.5">
