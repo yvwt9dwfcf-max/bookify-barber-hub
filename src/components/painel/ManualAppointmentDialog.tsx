@@ -287,245 +287,250 @@ const ManualAppointmentDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[440px]">
-        <DialogHeader>
-          <DialogTitle className="text-lg">Novo Agendamento</DialogTitle>
+      <DialogContent className="sm:max-w-[440px] max-h-[85vh] flex flex-col p-0">
+        <DialogHeader className="px-4 pt-4 pb-2">
+          <DialogTitle className="text-base">Novo Agendamento</DialogTitle>
           <DialogDescription className="sr-only">
             Criar novo agendamento manual
           </DialogDescription>
         </DialogHeader>
 
-        {/* Context Banner - clickable to change date */}
-        <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
-          <PopoverTrigger asChild>
-            <button
-              type="button"
-              className="w-full flex items-center gap-3 p-3 rounded-xl bg-primary/5 border border-primary/10 hover:bg-primary/10 transition-colors cursor-pointer text-left"
-            >
-              <div className="flex items-center gap-2 flex-1 min-w-0">
-                <UserCircle className="h-4 w-4 text-primary shrink-0" />
-                <span className="text-sm font-medium truncate">{targetBarber.name}</span>
-              </div>
-              <div className="flex items-center gap-1.5 text-sm text-muted-foreground shrink-0">
-                <Calendar className="h-3.5 w-3.5" />
-                <span className="capitalize text-xs">
-                  {format(internalDate, "EEE, d MMM", { locale: ptBR })}
-                </span>
-              </div>
-              {form.watch('start_time') && (
-                <div className="flex items-center gap-1.5 text-sm text-primary font-semibold shrink-0">
-                  <Clock className="h-3.5 w-3.5" />
-                  <span className="text-xs">{form.watch('start_time')}</span>
+        <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-3">
+          {/* Context Banner */}
+          <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                className="w-full flex items-center gap-2 p-2.5 rounded-lg bg-primary/5 border border-primary/10 hover:bg-primary/10 transition-colors cursor-pointer text-left"
+              >
+                <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                  <UserCircle className="h-3.5 w-3.5 text-primary shrink-0" />
+                  <span className="text-xs font-medium truncate">{targetBarber.name}</span>
                 </div>
-              )}
-              <ChevronDown className="h-3.5 w-3.5 text-muted-foreground/60 shrink-0" />
-            </button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="center">
-            <CalendarComponent
-              mode="single"
-              selected={internalDate}
-              onSelect={handleDateSelect}
-              disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
-              locale={ptBR}
-              className={cn("p-3 pointer-events-auto")}
-            />
-          </PopoverContent>
-        </Popover>
+                <div className="flex items-center gap-1 text-muted-foreground shrink-0">
+                  <Calendar className="h-3 w-3" />
+                  <span className="capitalize text-[11px]">
+                    {format(internalDate, "EEE, d MMM", { locale: ptBR })}
+                  </span>
+                </div>
+                {form.watch('start_time') && (
+                  <div className="flex items-center gap-1 text-primary font-semibold shrink-0">
+                    <Clock className="h-3 w-3" />
+                    <span className="text-[11px]">{form.watch('start_time')}</span>
+                  </div>
+                )}
+                <ChevronDown className="h-3 w-3 text-muted-foreground/60 shrink-0" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="center">
+              <CalendarComponent
+                mode="single"
+                selected={internalDate}
+                onSelect={handleDateSelect}
+                disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                locale={ptBR}
+                className={cn("p-3 pointer-events-auto")}
+              />
+            </PopoverContent>
+          </Popover>
 
-        {!dayHours && (
-          <p className="text-xs text-destructive text-center">
-            O barbeiro não atende neste dia da semana.
-          </p>
-        )}
+          {!dayHours && (
+            <p className="text-xs text-destructive text-center">
+              O barbeiro não atende neste dia da semana.
+            </p>
+          )}
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            {/* Barber selector */}
-            {canCreateForOthers && barbers.length > 1 && (
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Profissional</label>
-                <Select
-                  value={targetBarberId}
-                  onValueChange={setTargetBarberId}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o profissional" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {barbers.map((b) => (
-                      <SelectItem key={b.id} value={b.id}>
-                        {b.name} {b.id === barber.id ? '(você)' : ''}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
-            <FormField
-              control={form.control}
-              name="customer_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nome do cliente</FormLabel>
-                  <FormControl>
-                    <Input placeholder="João Silva" {...field} autoFocus />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="customer_phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Telefone (opcional)</FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder="(11) 99999-9999" 
-                      {...field}
-                      onChange={(e) => {
-                        let value = e.target.value.replace(/\D/g, '');
-                        if (value.length > 11) value = value.slice(0, 11);
-                        if (value.length > 7) {
-                          value = `(${value.slice(0, 2)}) ${value.slice(2, 7)}-${value.slice(7)}`;
-                        } else if (value.length > 2) {
-                          value = `(${value.slice(0, 2)}) ${value.slice(2)}`;
-                        } else if (value.length > 0) {
-                          value = `(${value}`;
-                        }
-                        field.onChange(value);
-                      }}
-                      maxLength={16}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="service_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Serviço <span className="text-destructive">*</span></FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione um serviço" />
-                      </SelectTrigger>
-                    </FormControl>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
+              {/* Barber selector */}
+              {canCreateForOthers && barbers.length > 1 && (
+                <div className="space-y-1">
+                  <label className="text-xs font-medium">Profissional</label>
+                  <Select
+                    value={targetBarberId}
+                    onValueChange={setTargetBarberId}
+                  >
+                    <SelectTrigger className="h-9 text-sm">
+                      <SelectValue placeholder="Selecione o profissional" />
+                    </SelectTrigger>
                     <SelectContent>
-                      {loadingServices ? (
-                        <div className="flex items-center justify-center py-2">
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        </div>
-                      ) : services.length === 0 ? (
-                        <div className="text-center py-2 text-sm text-muted-foreground">
-                          Nenhum serviço cadastrado
-                        </div>
-                      ) : (
-                        services.map((service) => (
-                          <SelectItem key={service.id} value={service.id}>
-                            {service.name} - R$ {Number(service.price).toFixed(2)} ({service.duration_minutes}min)
-                          </SelectItem>
-                        ))
-                      )}
+                      {barbers.map((b) => (
+                        <SelectItem key={b.id} value={b.id}>
+                          {b.name} {b.id === barber.id ? '(você)' : ''}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
-                  {selectedService && (
-                    <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground">
-                      <Scissors className="h-3 w-3" />
-                      <span>{selectedService.duration_minutes} minutos • R$ {Number(selectedService.price).toFixed(2)}</span>
-                    </div>
-                  )}
-                  <FormMessage />
-                </FormItem>
+                </div>
               )}
-            />
 
-            {/* Time slot */}
-            <FormField
-              control={form.control}
-              name="start_time"
-              render={({ field }) => {
-                const durationMinutes = selectedService?.duration_minutes || 30;
-                
-                return (
-                  <FormItem>
-                    <FormLabel>Horário</FormLabel>
+              <FormField
+                control={form.control}
+                name="customer_name"
+                render={({ field }) => (
+                  <FormItem className="space-y-1">
+                    <FormLabel className="text-xs">Nome do cliente</FormLabel>
+                    <FormControl>
+                      <Input placeholder="João Silva" className="h-9 text-sm" {...field} autoFocus />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="customer_phone"
+                render={({ field }) => (
+                  <FormItem className="space-y-1">
+                    <FormLabel className="text-xs">Telefone (opcional)</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="(11) 99999-9999"
+                        className="h-9 text-sm"
+                        {...field}
+                        onChange={(e) => {
+                          let value = e.target.value.replace(/\D/g, '');
+                          if (value.length > 11) value = value.slice(0, 11);
+                          if (value.length > 7) {
+                            value = `(${value.slice(0, 2)}) ${value.slice(2, 7)}-${value.slice(7)}`;
+                          } else if (value.length > 2) {
+                            value = `(${value.slice(0, 2)}) ${value.slice(2)}`;
+                          } else if (value.length > 0) {
+                            value = `(${value}`;
+                          }
+                          field.onChange(value);
+                        }}
+                        maxLength={16}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="service_id"
+                render={({ field }) => (
+                  <FormItem className="space-y-1">
+                    <FormLabel className="text-xs">Serviço <span className="text-destructive">*</span></FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder={timeSlots.length === 0 ? "Sem horários disponíveis" : "Selecione o horário"} />
+                        <SelectTrigger className="h-9 text-sm">
+                          <SelectValue placeholder="Selecione um serviço" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="max-h-[200px]">
-                        {timeSlots.length === 0 ? (
+                      <SelectContent>
+                        {loadingServices ? (
+                          <div className="flex items-center justify-center py-2">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          </div>
+                        ) : services.length === 0 ? (
                           <div className="text-center py-2 text-sm text-muted-foreground">
-                            Nenhum horário disponível
+                            Nenhum serviço cadastrado
                           </div>
                         ) : (
-                          timeSlots.map((time) => {
-                            const slotStatus = getSlotStatus(time, durationMinutes);
-                            return (
-                              <SelectItem 
-                                key={time} 
-                                value={time} 
-                                disabled={slotStatus.occupied}
-                                className={slotStatus.occupied ? 'text-muted-foreground line-through' : ''}
-                              >
-                                {time} {slotStatus.occupied && `(${slotStatus.reason})`}
-                              </SelectItem>
-                            );
-                          })
+                          services.map((service) => (
+                            <SelectItem key={service.id} value={service.id}>
+                              {service.name} - R$ {Number(service.price).toFixed(2)} ({service.duration_minutes}min)
+                            </SelectItem>
+                          ))
                         )}
                       </SelectContent>
                     </Select>
+                    {selectedService && (
+                      <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                        <Scissors className="h-2.5 w-2.5" />
+                        <span>{selectedService.duration_minutes}min • R$ {Number(selectedService.price).toFixed(2)}</span>
+                      </div>
+                    )}
                     <FormMessage />
                   </FormItem>
-                );
-              }}
-            />
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="notes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Observações (opcional)</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Alguma observação sobre o agendamento..."
-                      className="resize-none"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              {/* Time slot */}
+              <FormField
+                control={form.control}
+                name="start_time"
+                render={({ field }) => {
+                  const durationMinutes = selectedService?.duration_minutes || 30;
+                  
+                  return (
+                    <FormItem className="space-y-1">
+                      <FormLabel className="text-xs">Horário</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger className="h-9 text-sm">
+                            <SelectValue placeholder={timeSlots.length === 0 ? "Sem horários" : "Selecione o horário"} />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="max-h-[200px]">
+                          {timeSlots.length === 0 ? (
+                            <div className="text-center py-2 text-sm text-muted-foreground">
+                              Nenhum horário disponível
+                            </div>
+                          ) : (
+                            timeSlots.map((time) => {
+                              const slotStatus = getSlotStatus(time, durationMinutes);
+                              return (
+                                <SelectItem 
+                                  key={time} 
+                                  value={time} 
+                                  disabled={slotStatus.occupied}
+                                  className={slotStatus.occupied ? 'text-muted-foreground line-through' : ''}
+                                >
+                                  {time} {slotStatus.occupied && `(${slotStatus.reason})`}
+                                </SelectItem>
+                              );
+                            })
+                          )}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
+              />
 
-            <div className="flex justify-end gap-3 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={loading}
-              >
-                Cancelar
-              </Button>
-              <Button type="submit" disabled={loading || !form.watch('service_id') || !dayHours}>
-                {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                Confirmar Agendamento
-              </Button>
-            </div>
-          </form>
-        </Form>
+              <FormField
+                control={form.control}
+                name="notes"
+                render={({ field }) => (
+                  <FormItem className="space-y-1">
+                    <FormLabel className="text-xs">Observações (opcional)</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Alguma observação..."
+                        className="resize-none min-h-[60px] text-sm"
+                        rows={2}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="flex justify-end gap-2 pt-2 sticky bottom-0 bg-background pb-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onOpenChange(false)}
+                  disabled={loading}
+                >
+                  Cancelar
+                </Button>
+                <Button type="submit" size="sm" disabled={loading || !form.watch('service_id') || !dayHours}>
+                  {loading && <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />}
+                  Confirmar
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </div>
       </DialogContent>
     </Dialog>
   );
