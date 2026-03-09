@@ -199,34 +199,6 @@ const Agenda = () => {
     }
   }, [fetchAppointments, selectedBarberId]);
 
-  const fetchAppointments = async () => {
-    if (!selectedBarberId) return;
-
-    try {
-      const startOfSelectedDay = startOfDay(selectedDate);
-      const endOfSelectedDay = addDays(startOfSelectedDay, 1);
-
-      const { data, error } = await supabase
-        .from('appointments')
-        .select(`
-          *,
-          service:services(*),
-          barber:barbers(*)
-        `)
-        .eq('barber_id', selectedBarberId)
-        .gte('start_time', startOfSelectedDay.toISOString())
-        .lt('start_time', endOfSelectedDay.toISOString())
-        .order('start_time');
-
-      if (error) throw error;
-      setAppointments((data as Appointment[]) || []);
-    } catch (error) {
-      console.error('Erro ao buscar agendamentos:', error);
-      toast.error('Erro ao carregar agendamentos');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleDeleteAppointment = async (id: string) => {
     const { error } = await supabase
