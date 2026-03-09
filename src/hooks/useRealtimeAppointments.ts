@@ -54,18 +54,9 @@ export function useRealtimeAppointments({ barberId, onNewAppointment }: UseRealt
 
           // Show toast notification
           toast.success('Novo agendamento!', {
-            description: `${newAppointment.customer_name} agendou ${serviceName} para ${formattedDate}`,
-            duration: 2200,
+            description: `${newAppointment.customer_name} • ${serviceName} • ${formattedDate}`,
+            duration: 2500,
           });
-
-          // Play notification sound (optional - browser might block)
-          try {
-            const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2teleimV7f+jnG9LPmOq1dSVUBgGO5vt8ayLXCg1d7fP4qR3SDdOp9Tko39IKUGc4fOvm10sMn3V5q+GWioub7rZ46OGTTJJn+DqsYdhLix+1OsungA=');
-            audio.volume = 0.5;
-            audio.play().catch(() => {});
-          } catch {
-            // Ignore audio errors
-          }
 
           // Callback for additional actions
           onNewAppointment?.();
