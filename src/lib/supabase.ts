@@ -67,6 +67,7 @@ export interface Service {
   duration_minutes: number;
   active: boolean;
   is_global: boolean;
+  photo_url: string | null;
   created_at: string;
   updated_at: string;
 }
