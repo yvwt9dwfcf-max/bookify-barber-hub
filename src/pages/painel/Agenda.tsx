@@ -148,10 +148,45 @@ const Agenda = () => {
     }
   }, [barber, selectedBarberId]);
 
-  const handleNewAppointment = useCallback(() => {
-    fetchAppointments();
-    refetchAvailability();
+  const fetchAppointments = useCallback(async () => {
+    if (!selectedBarberId) return;
+
+    try {
+      const startOfSelectedDay = startOfDay(selectedDate);
+      const endOfSelectedDay = addDays(startOfSelectedDay, 1);
+
+      const { data, error } = await supabase
+        .from('appointments')
+        .select(`
+          *,
+          service:services(*),
+          barber:barbers(*)
+        `)
+        .eq('barber_id', selectedBarberId)
+        .gte('start_time', startOfSelectedDay.toISOString())
+        .lt('start_time', endOfSelectedDay.toISOString())
+        .order('start_time');
+
+      if (error) throw error;
+      setAppointments((data as Appointment[]) || []);
+    } catch (error) {
+      console.error('Erro ao buscar agendamentos:', error);
+      toast.error('Erro ao carregar agendamentos');
+    } finally {
+      setLoading(false);
+    }
   }, [selectedBarberId, selectedDate]);
+
+  // Stable ref for realtime callback to avoid channel resubscriptions
+  const fetchRef = useRef(fetchAppointments);
+  const refetchAvailabilityRef = useRef(refetchAvailability);
+  useEffect(() => { fetchRef.current = fetchAppointments; }, [fetchAppointments]);
+  useEffect(() => { refetchAvailabilityRef.current = refetchAvailability; }, [refetchAvailability]);
+
+  const handleNewAppointment = useCallback(() => {
+    fetchRef.current();
+    refetchAvailabilityRef.current();
+  }, []);
 
   useRealtimeAppointments({
     barberId: selectedBarberId || undefined,
@@ -162,7 +197,7 @@ const Agenda = () => {
     if (selectedBarberId) {
       fetchAppointments();
     }
-  }, [selectedBarberId, selectedDate]);
+  }, [fetchAppointments, selectedBarberId]);
 
   const fetchAppointments = async () => {
     if (!selectedBarberId) return;
