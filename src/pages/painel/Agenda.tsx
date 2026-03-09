@@ -552,6 +552,10 @@ const Agenda = () => {
 
                   // If this slot has an appointment (occupied)
                     if (appointment && appointment.status !== 'cancelled') {
+                      const durationMin = appointment.service?.duration_minutes || 30;
+                      const slotsSpanned = Math.ceil(durationMin / 30);
+                      // Each slot row is ~52px tall + 6px gap
+                      const cardMinHeight = slotsSpanned > 1 ? slotsSpanned * 52 + (slotsSpanned - 1) * 6 : undefined;
                       const cfg = getStatusConfig(appointment.status);
                       
                       return (
@@ -559,17 +563,22 @@ const Agenda = () => {
                           key={slot.time}
                           className={cn(
                             "relative flex items-center gap-0 rounded-2xl overflow-hidden cursor-pointer",
-                            "border border-border/20 border-l-[3px]",
-                            "transition-all duration-200 hover:border-border/40 hover:shadow-lg active:scale-[0.99]",
+                            "border border-l-[3px]",
+                            "transition-all duration-200 active:scale-[0.99]",
+                            "backdrop-blur-sm shadow-sm",
                             cfg.bg,
                             cfg.borderColor,
-                            "backdrop-blur-sm shadow-sm"
+                            appointment.status === 'confirmed' && "border-primary/20 shadow-[0_0_0_1px_hsl(var(--primary)/0.08),0_4px_16px_-4px_hsl(var(--primary)/0.15)] hover:shadow-[0_0_0_1px_hsl(var(--primary)/0.18),0_6px_20px_-4px_hsl(var(--primary)/0.25)]",
+                            appointment.status === 'completed' && "border-success/20 shadow-[0_0_0_1px_hsl(var(--success)/0.08),0_4px_16px_-4px_hsl(var(--success)/0.15)] hover:shadow-[0_0_0_1px_hsl(var(--success)/0.18),0_6px_20px_-4px_hsl(var(--success)/0.25)]",
                           )}
                           onClick={() => handleCardClick(appointment)}
-                          style={{ animationDelay: `${index * 0.02}s` }}
+                          style={{ 
+                            animationDelay: `${index * 0.02}s`,
+                            minHeight: cardMinHeight ? `${cardMinHeight}px` : undefined,
+                          }}
                         >
                           {/* Time column */}
-                          <div className="w-14 shrink-0 flex flex-col items-center justify-center py-3.5 px-1 border-r border-border/15">
+                          <div className="w-14 shrink-0 flex flex-col items-center justify-center self-stretch py-3.5 px-1 border-r border-border/15">
                             <p className="text-[13px] font-bold tabular-nums leading-none">
                               {format(new Date(appointment.start_time), 'HH:mm')}
                             </p>
@@ -580,7 +589,8 @@ const Agenda = () => {
 
                           {/* Avatar */}
                           <div className={cn(
-                            "w-8 h-8 rounded-xl flex items-center justify-center text-[11px] font-bold shrink-0 ml-3",
+                            "rounded-xl flex items-center justify-center text-[11px] font-bold shrink-0 ml-3",
+                            slotsSpanned > 1 ? "w-9 h-9" : "w-8 h-8",
                             cfg.avatarBg, cfg.avatarText
                           )}>
                             {getInitials(appointment.customer_name)}
@@ -595,6 +605,11 @@ const Agenda = () => {
                               <p className="text-[11px] text-muted-foreground/70 leading-tight mt-0.5 truncate">
                                 {appointment.service.name}
                                 <span className="text-muted-foreground/40"> · {appointment.service.duration_minutes}min</span>
+                              </p>
+                            )}
+                            {slotsSpanned > 1 && (
+                              <p className="text-[10px] text-muted-foreground/40 mt-1.5">
+                                {format(new Date(appointment.start_time), 'HH:mm')} — {format(new Date(appointment.end_time), 'HH:mm')}
                               </p>
                             )}
                           </div>
