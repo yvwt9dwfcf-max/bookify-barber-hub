@@ -41,42 +41,48 @@ interface ContextType {
 
 type ViewMode = 'daily' | 'monthly';
 
-const getStatusColor = (status: string) => {
+const getStatusConfig = (status: string) => {
   switch (status) {
     case 'confirmed':
-      return 'border-l-primary bg-primary/5';
+      return {
+        borderColor: 'border-l-primary/70',
+        bg: 'bg-card/90',
+        dot: 'bg-primary',
+        label: 'Confirmado',
+        labelColor: 'text-primary',
+        avatarBg: 'bg-primary/15',
+        avatarText: 'text-primary',
+      };
     case 'completed':
-      return 'border-l-success bg-success/5';
+      return {
+        borderColor: 'border-l-success/70',
+        bg: 'bg-card/90',
+        dot: 'bg-success',
+        label: 'Concluído',
+        labelColor: 'text-success',
+        avatarBg: 'bg-success/15',
+        avatarText: 'text-success',
+      };
     case 'cancelled':
-      return 'border-l-destructive bg-destructive/5';
+      return {
+        borderColor: 'border-l-destructive/50',
+        bg: 'bg-card/60',
+        dot: 'bg-destructive',
+        label: 'Cancelado',
+        labelColor: 'text-destructive',
+        avatarBg: 'bg-muted/30',
+        avatarText: 'text-muted-foreground',
+      };
     default:
-      return 'border-l-amber-500 bg-amber-500/5';
-  }
-};
-
-const getStatusBadgeColor = (status: string) => {
-  switch (status) {
-    case 'confirmed':
-      return 'bg-primary/10 text-primary border border-primary/20';
-    case 'completed':
-      return 'bg-success/10 text-success border border-success/20';
-    case 'cancelled':
-      return 'bg-destructive/10 text-destructive border border-destructive/20';
-    default:
-      return 'bg-amber-500/10 text-amber-600 border border-amber-500/20';
-  }
-};
-
-const getStatusLabel = (status: string) => {
-  switch (status) {
-    case 'confirmed':
-      return 'Confirmado';
-    case 'completed':
-      return 'Concluído';
-    case 'cancelled':
-      return 'Cancelado';
-    default:
-      return 'Pendente';
+      return {
+        borderColor: 'border-l-amber-500/60',
+        bg: 'bg-card/90',
+        dot: 'bg-amber-500',
+        label: 'Pendente',
+        labelColor: 'text-amber-500',
+        avatarBg: 'bg-amber-500/15',
+        avatarText: 'text-amber-500',
+      };
   }
 };
 
@@ -545,76 +551,66 @@ const Agenda = () => {
                   }
 
                   // If this slot has an appointment (occupied)
-                  if (appointment && appointment.status !== 'cancelled') {
-                    const durationMin = appointment.service?.duration_minutes || 30;
-                    const slotsSpanned = Math.ceil(durationMin / 30);
-                    
-                    return (
-                      <Card
-                        key={slot.time}
-                        className={cn(
-                          "border-l-[3px] rounded-xl overflow-hidden cursor-pointer",
-                          "transition-all duration-200 hover:shadow-lg hover:border-primary/20 active:scale-[0.99]",
-                          "border-border/30 shadow-sm bg-card/90 backdrop-blur-sm",
-                          getStatusColor(appointment.status),
-                        )}
-                        onClick={() => handleCardClick(appointment)}
-                        style={{ animationDelay: `${index * 0.02}s` }}
-                      >
-                        <CardContent className={cn("p-3", slotsSpanned > 1 && "py-4")}>
-                          <div className="flex items-center gap-3">
-                            {/* Time */}
-                            <div className="w-12 shrink-0 text-center">
-                              <p className="text-base font-bold tabular-nums leading-tight">
-                                {format(new Date(appointment.start_time), 'HH:mm')}
-                              </p>
-                              <p className="text-[10px] text-muted-foreground tabular-nums">
-                                {format(new Date(appointment.end_time), 'HH:mm')}
-                              </p>
-                            </div>
-
-                            {/* Divider */}
-                            <div className={cn("w-px bg-border/50", slotsSpanned > 1 ? "h-14" : "h-10")} />
-
-                            {/* Client Avatar */}
-                            <div 
-                              className="w-10 h-10 rounded-xl flex items-center justify-center text-xs font-bold shrink-0 text-primary-foreground"
-                              style={{ background: 'var(--primary-gradient)' }}
-                            >
-                              {getInitials(appointment.customer_name)}
-                            </div>
-
-                            {/* Info */}
-                            <div className="flex-1 min-w-0">
-                              <span className="font-bold text-sm truncate block leading-tight">
-                                {appointment.customer_name}
-                              </span>
-                              {appointment.service && (
-                                <p className="text-xs text-muted-foreground leading-tight mt-0.5 truncate">
-                                  {appointment.service.name} • {appointment.service.duration_minutes}min
-                                </p>
-                              )}
-                              {slotsSpanned > 1 && (
-                                <p className="text-[10px] text-muted-foreground/60 mt-1">
-                                  {format(new Date(appointment.start_time), 'HH:mm')} — {format(new Date(appointment.end_time), 'HH:mm')}
-                                </p>
-                              )}
-                            </div>
-
-                            {/* Status Badge */}
-                            <span
-                              className={cn(
-                                'px-2 py-0.5 rounded-full text-[10px] font-semibold shrink-0',
-                                getStatusBadgeColor(appointment.status)
-                              )}
-                            >
-                              {getStatusLabel(appointment.status)}
-                            </span>
+                    if (appointment && appointment.status !== 'cancelled') {
+                      const cfg = getStatusConfig(appointment.status);
+                      
+                      return (
+                        <div
+                          key={slot.time}
+                          className={cn(
+                            "relative flex items-center gap-0 rounded-2xl overflow-hidden cursor-pointer",
+                            "border border-border/20 border-l-[3px]",
+                            "transition-all duration-200 hover:border-border/40 hover:shadow-lg active:scale-[0.99]",
+                            cfg.bg,
+                            cfg.borderColor,
+                            "backdrop-blur-sm shadow-sm"
+                          )}
+                          onClick={() => handleCardClick(appointment)}
+                          style={{ animationDelay: `${index * 0.02}s` }}
+                        >
+                          {/* Time column */}
+                          <div className="w-14 shrink-0 flex flex-col items-center justify-center py-3.5 px-1 border-r border-border/15">
+                            <p className="text-[13px] font-bold tabular-nums leading-none">
+                              {format(new Date(appointment.start_time), 'HH:mm')}
+                            </p>
+                            <p className="text-[9px] text-muted-foreground/50 tabular-nums mt-1 leading-none">
+                              {format(new Date(appointment.end_time), 'HH:mm')}
+                            </p>
                           </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  }
+
+                          {/* Avatar */}
+                          <div className={cn(
+                            "w-8 h-8 rounded-xl flex items-center justify-center text-[11px] font-bold shrink-0 ml-3",
+                            cfg.avatarBg, cfg.avatarText
+                          )}>
+                            {getInitials(appointment.customer_name)}
+                          </div>
+
+                          {/* Info */}
+                          <div className="flex-1 min-w-0 py-3 px-2.5">
+                            <p className="font-semibold text-[13px] leading-tight truncate">
+                              {appointment.customer_name}
+                            </p>
+                            {appointment.service && (
+                              <p className="text-[11px] text-muted-foreground/70 leading-tight mt-0.5 truncate">
+                                {appointment.service.name}
+                                <span className="text-muted-foreground/40"> · {appointment.service.duration_minutes}min</span>
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Status dot + label */}
+                          <div className="flex flex-col items-end gap-1 pr-3.5 shrink-0">
+                            <div className="flex items-center gap-1.5">
+                              <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", cfg.dot)} />
+                              <span className={cn("text-[11px] font-medium", cfg.labelColor)}>
+                                {cfg.label}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    }
 
                   // Blocked slot
                   if (isBlocked) {
