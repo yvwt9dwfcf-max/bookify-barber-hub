@@ -376,44 +376,45 @@ const Barbeiros = () => {
                       <User className="h-5 w-5 text-primary" />
                     </div>
                   )}
-                  <label className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
+                  {/* Camera overlay - always visible on mobile, hover on desktop */}
+                  <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-muted border-2 border-background flex items-center justify-center cursor-pointer shadow-sm">
                     {uploadingPhoto === barber.id ? (
-                      <Loader2 className="h-4 w-4 animate-spin text-white" />
+                      <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
                     ) : (
-                      <Camera className="h-4 w-4 text-white" />
+                      <Camera className="h-3.5 w-3.5 text-muted-foreground" />
                     )}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={async (e) => {
-                        const file = e.target.files?.[0];
-                        if (!file) return;
-                        setUploadingPhoto(barber.id);
-                        try {
-                          const ext = file.name.split('.').pop();
-                          const fileName = `${barber.id}/${Date.now()}.${ext}`;
-                          const { error: uploadErr } = await supabase.storage
-                            .from('barber-photos')
-                            .upload(fileName, file, { upsert: true });
-                          if (uploadErr) throw uploadErr;
-                          const { data: urlData } = supabase.storage
-                            .from('barber-photos')
-                            .getPublicUrl(fileName);
-                          await supabase
-                            .from('barbers')
-                            .update({ photo_url: urlData.publicUrl })
-                            .eq('id', barber.id);
-                          toast.success('Foto atualizada!');
-                          refetch();
-                        } catch {
-                          toast.error('Erro ao enviar foto');
-                        } finally {
-                          setUploadingPhoto(null);
-                        }
-                      }}
-                    />
-                  </label>
+                  </div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setUploadingPhoto(barber.id);
+                      try {
+                        const ext = file.name.split('.').pop();
+                        const fileName = `${barber.id}/${Date.now()}.${ext}`;
+                        const { error: uploadErr } = await supabase.storage
+                          .from('barber-photos')
+                          .upload(fileName, file, { upsert: true });
+                        if (uploadErr) throw uploadErr;
+                        const { data: urlData } = supabase.storage
+                          .from('barber-photos')
+                          .getPublicUrl(fileName);
+                        await supabase
+                          .from('barbers')
+                          .update({ photo_url: urlData.publicUrl })
+                          .eq('id', barber.id);
+                        toast.success('Foto atualizada!');
+                        refetch();
+                      } catch {
+                        toast.error('Erro ao enviar foto');
+                      } finally {
+                        setUploadingPhoto(null);
+                      }
+                    }}
+                  />
                 </div>
                 
                 <div className="flex-1 min-w-0 overflow-hidden">
