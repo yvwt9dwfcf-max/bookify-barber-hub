@@ -10,6 +10,7 @@ import { motion } from 'framer-motion';
 
 interface DashboardCardsProps {
   barbershopId: string | undefined;
+  selectedDate: Date;
   refreshKey?: number;
 }
 
@@ -29,7 +30,7 @@ const itemVariants = {
   show: { opacity: 1, y: 0, transition: { duration: 0.3, ease: 'easeOut' as const } },
 };
 
-const DashboardCards = ({ barbershopId, refreshKey }: DashboardCardsProps) => {
+const DashboardCards = ({ barbershopId, selectedDate, refreshKey }: DashboardCardsProps) => {
   const [weekData, setWeekData] = useState<DayData[]>(
     Array.from({ length: 7 }, () => ({ appointments: 0, revenue: 0, clients: 0 }))
   );
@@ -44,25 +45,25 @@ const DashboardCards = ({ barbershopId, refreshKey }: DashboardCardsProps) => {
     const interval = setInterval(fetchStats, 30000);
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [barbershopId, refreshKey]);
+  }, [barbershopId, selectedDate, refreshKey]);
 
   const fetchStats = async () => {
-    const now = new Date();
-    const weekStart = startOfDay(subDays(now, 6)).toISOString();
-    const tomorrow = addDays(startOfDay(now), 1).toISOString();
+    const anchorDay = startOfDay(selectedDate);
+    const weekStart = startOfDay(subDays(anchorDay, 6)).toISOString();
+    const nextDay = addDays(anchorDay, 1).toISOString();
 
     const { data } = await supabase
       .from('appointments')
       .select('id, status, start_time, service:services(price)')
       .eq('barbershop_id', barbershopId!)
       .gte('start_time', weekStart)
-      .lt('start_time', tomorrow);
+      .lt('start_time', nextDay);
 
     if (!data) return;
 
     const dayMap = new Map<string, DayData>();
     for (let i = 6; i >= 0; i--) {
-      const date = format(subDays(now, i), 'yyyy-MM-dd');
+      const date = format(subDays(anchorDay, i), 'yyyy-MM-dd');
       dayMap.set(date, { appointments: 0, revenue: 0, clients: 0 });
     }
 
