@@ -782,6 +782,7 @@ export type Database = {
           id: string
           is_global: boolean
           name: string
+          photo_url: string | null
           price: number
           updated_at: string
         }
@@ -794,6 +795,7 @@ export type Database = {
           id?: string
           is_global?: boolean
           name: string
+          photo_url?: string | null
           price?: number
           updated_at?: string
         }
@@ -806,6 +808,7 @@ export type Database = {
           id?: string
           is_global?: boolean
           name?: string
+          photo_url?: string | null
           price?: number
           updated_at?: string
         }
