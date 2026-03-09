@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { CalendarCheck, Coins as DollarSign, UsersRound as Users, CircleAlert as AlertCircle, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
@@ -39,15 +39,8 @@ const DashboardCards = ({ barbershopId, selectedDate, refreshKey }: DashboardCar
   const todayStats = weekData[6];
   const yesterdayStats = weekData[5];
 
-  useEffect(() => {
+  const fetchStats = useCallback(async () => {
     if (!barbershopId) return;
-    fetchStats();
-    const interval = setInterval(fetchStats, 30000);
-    return () => clearInterval(interval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [barbershopId, selectedDate, refreshKey]);
-
-  const fetchStats = async () => {
     const anchorDay = startOfDay(selectedDate);
     const weekStart = startOfDay(subDays(anchorDay, 6)).toISOString();
     const nextDay = addDays(anchorDay, 1).toISOString();
@@ -55,7 +48,7 @@ const DashboardCards = ({ barbershopId, selectedDate, refreshKey }: DashboardCar
     const { data } = await supabase
       .from('appointments')
       .select('id, status, start_time, service:services(price)')
-      .eq('barbershop_id', barbershopId!)
+      .eq('barbershop_id', barbershopId)
       .gte('start_time', weekStart)
       .lt('start_time', nextDay);
 
@@ -79,7 +72,13 @@ const DashboardCards = ({ barbershopId, selectedDate, refreshKey }: DashboardCar
     });
 
     setWeekData(Array.from(dayMap.values()));
-  };
+  }, [barbershopId, selectedDate]);
+
+  useEffect(() => {
+    fetchStats();
+    const interval = setInterval(fetchStats, 30000);
+    return () => clearInterval(interval);
+  }, [fetchStats, refreshKey]);
 
   const getGrowth = (today: number, yesterday: number) => {
     if (yesterday === 0) return today > 0 ? 100 : 0;

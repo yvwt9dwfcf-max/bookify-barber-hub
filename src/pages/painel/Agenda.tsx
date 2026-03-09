@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { supabase, Appointment, Barber, Barbershop } from '@/lib/supabase';
 import { awardLoyaltyPoints } from '@/lib/loyaltyUtils';
@@ -112,16 +112,16 @@ const Agenda = () => {
   const [showQuickBlock, setShowQuickBlock] = useState(false);
   const [blockTime, setBlockTime] = useState<string | null>(null);
 
-  const handleOpenManualDialog = (time?: string) => {
+  const handleOpenManualDialog = useCallback((time?: string) => {
     if (!checkCanPerformAction('create_appointment')) return;
     setPreselectedTime(time || null);
     setShowManualDialog(true);
-  };
+  }, [checkCanPerformAction]);
 
-  const handleOpenQuickBlock = (time?: string) => {
+  const handleOpenQuickBlock = useCallback((time?: string) => {
     setBlockTime(time || null);
     setShowQuickBlock(true);
-  };
+  }, []);
   
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [showDetailsSheet, setShowDetailsSheet] = useState(false);
@@ -148,23 +148,7 @@ const Agenda = () => {
     }
   }, [barber, selectedBarberId]);
 
-  const handleNewAppointment = useCallback(() => {
-    fetchAppointments();
-    refetchAvailability();
-  }, [selectedBarberId, selectedDate]);
-
-  useRealtimeAppointments({
-    barberId: selectedBarberId || undefined,
-    onNewAppointment: handleNewAppointment,
-  });
-
-  useEffect(() => {
-    if (selectedBarberId) {
-      fetchAppointments();
-    }
-  }, [selectedBarberId, selectedDate]);
-
-  const fetchAppointments = async () => {
+  const fetchAppointments = useCallback(async () => {
     if (!selectedBarberId) return;
 
     try {
@@ -191,7 +175,30 @@ const Agenda = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedBarberId, selectedDate]);
+
+  // Stable ref for realtime callback to avoid channel resubscriptions
+  const fetchRef = useRef(fetchAppointments);
+  const refetchAvailabilityRef = useRef(refetchAvailability);
+  useEffect(() => { fetchRef.current = fetchAppointments; }, [fetchAppointments]);
+  useEffect(() => { refetchAvailabilityRef.current = refetchAvailability; }, [refetchAvailability]);
+
+  const handleNewAppointment = useCallback(() => {
+    fetchRef.current();
+    refetchAvailabilityRef.current();
+  }, []);
+
+  useRealtimeAppointments({
+    barberId: selectedBarberId || undefined,
+    onNewAppointment: handleNewAppointment,
+  });
+
+  useEffect(() => {
+    if (selectedBarberId) {
+      fetchAppointments();
+    }
+  }, [fetchAppointments, selectedBarberId]);
+
 
   const handleDeleteAppointment = async (id: string) => {
     const { error } = await supabase
@@ -237,28 +244,40 @@ const Agenda = () => {
     setDashboardRefreshKey(k => k + 1);
   };
 
-  const handleCardClick = (appointment: Appointment) => {
+  const handleCardClick = useCallback((appointment: Appointment) => {
     setSelectedAppointment(appointment);
     setShowDetailsSheet(true);
-  };
+  }, []);
 
-  const handleEditAppointment = (appointment: Appointment) => {
+  const handleEditAppointment = useCallback((appointment: Appointment) => {
     setSelectedAppointment(appointment);
     setShowEditDialog(true);
-  };
+  }, []);
 
-  const getDaysToShow = () => {
-    const days: Date[] = [];
+  // Memoize days array - only recalculate when selectedDate changes
+  const days = useMemo(() => {
+    const result: Date[] = [];
+    const today = startOfDay(new Date());
     for (let i = -3; i <= 3; i++) {
-      days.push(addDays(startOfDay(new Date()), i));
+      result.push(addDays(today, i));
     }
-    return days;
-  };
+    return result;
+  }, []);
 
-  // Current time
-  const currentHour = new Date().getHours();
-  const currentMinute = new Date().getMinutes();
-  const isToday = isSameDay(selectedDate, new Date());
+  // Current time - use ref to avoid re-renders, update via interval
+  const [currentTime, setCurrentTime] = useState(() => new Date());
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 60000);
+    return () => clearInterval(timer);
+  }, []);
+  const currentHour = currentTime.getHours();
+  const currentMinute = currentTime.getMinutes();
+  const isToday = isSameDay(selectedDate, currentTime);
+
+  const hasAppointments = useMemo(() => 
+    appointments.some(a => a.status !== 'cancelled'), 
+    [appointments]
+  );
 
   // Generate all time slots for the day based on opening hours
   const daySlots = useMemo(() => {
@@ -339,7 +358,7 @@ const Agenda = () => {
     );
   }
 
-  const days = getDaysToShow();
+  
 
   const handleDateSelectFromCalendar = (date: Date) => {
     setSelectedDate(date);
@@ -532,128 +551,70 @@ const Agenda = () => {
                   </p>
                 </CardContent>
               </Card>
-            ) : appointments.filter(a => a.status !== 'cancelled').length === 0 && !loading ? (
-              <div className="space-y-1.5">
-                {/* Empty state - no appointments */}
-                <Card className="border-border/40 border-dashed shadow-sm bg-card/60 backdrop-blur-sm rounded-xl">
-                  <CardContent className="text-center py-10 px-6">
-                    <div className="relative mb-5 inline-flex">
-                      <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl scale-125" />
-                      <div className="relative w-16 h-16 rounded-2xl bg-muted/50 border border-border/40 flex items-center justify-center">
-                        <CalendarX className="h-7 w-7 text-primary/80" />
-                      </div>
-                    </div>
-                    <h3 className="text-base font-semibold mb-1.5">Nenhum agendamento hoje</h3>
-                    <p className="text-sm text-muted-foreground max-w-xs mx-auto mb-2 leading-relaxed">
-                      Ainda não há clientes marcados para hoje.
-                    </p>
-                    <p className="text-xs text-muted-foreground/70 max-w-xs mx-auto mb-6 leading-relaxed">
-                      Compartilhe seu link de agendamento para que seus clientes possam marcar um horário facilmente.
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-2 justify-center">
-                      <Button
-                        variant="default"
-                        className="btn-primary-gradient px-5"
-                        onClick={() => {
-                          const slug = barbershop?.slug;
-                          if (slug) {
-                            const link = `${window.location.origin}/b/${slug}`;
-                            navigator.clipboard.writeText(link);
-                            toast.success('Link copiado!');
-                          } else {
-                            toast.error('Configure o perfil público primeiro');
-                          }
-                        }}
-                      >
-                        <Copy className="h-4 w-4 mr-1.5" />
-                        Copiar link de agendamento
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="px-5"
-                        onClick={() => {
-                          const slug = barbershop?.slug;
-                          if (slug) {
-                            const link = `${window.location.origin}/b/${slug}`;
-                            if (navigator.share) {
-                              navigator.share({ title: barbershop?.name, url: link });
-                            } else {
-                              navigator.clipboard.writeText(link);
-                              toast.success('Link copiado!');
-                            }
-                          } else {
-                            toast.error('Configure o perfil público primeiro');
-                          }
-                        }}
-                      >
-                        <Share2 className="h-4 w-4 mr-1.5" />
-                        Compartilhar link
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Still show the time slots below */}
-                <div className="space-y-1.5">
-                  {daySlots.map((slot, index) => {
-                    const availability = checkSlotAvailability(slot.time, selectedDate, 30);
-                    const blockedReason = getBlockedReason(slot.time);
-                    const isCurrentSlot = isToday && slot.hour === currentHour && 
-                      currentMinute >= slot.minute && currentMinute < slot.minute + 30;
-                    const isPast = availability.reason === 'passado';
-                    const isBreak = availability.reason === 'intervalo';
-                    const isBlocked = availability.reason === 'bloqueado';
-
-                    if (isBlocked) {
-                      return (
-                        <div key={slot.time} className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-muted/30 border border-border/30 opacity-60">
-                          <div className="w-12 shrink-0 text-center"><p className="text-sm font-medium tabular-nums text-muted-foreground">{slot.time}</p></div>
-                          <div className="w-px h-6 bg-border/30" />
-                          <Ban className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                          <span className="text-xs text-muted-foreground">{blockedReason || 'Bloqueado'}</span>
-                        </div>
-                      );
-                    }
-                    if (isBreak) {
-                      return (
-                        <div key={slot.time} className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-amber-500/5 border border-amber-500/10 opacity-50">
-                          <div className="w-12 shrink-0 text-center"><p className="text-sm font-medium tabular-nums text-muted-foreground">{slot.time}</p></div>
-                          <div className="w-px h-6 bg-border/30" />
-                          <Clock className="h-3.5 w-3.5 text-amber-500 shrink-0" />
-                          <span className="text-xs text-amber-500/80">Intervalo</span>
-                        </div>
-                      );
-                    }
-                    if (isPast) {
-                      return (
-                        <div key={slot.time} className="flex items-center gap-3 px-4 py-2 rounded-xl opacity-30">
-                          <div className="w-12 shrink-0 text-center"><p className="text-sm font-medium tabular-nums text-muted-foreground">{slot.time}</p></div>
-                          <div className="w-px h-6 bg-border/20" />
-                          <div className="flex-1 h-px bg-border/20" />
-                        </div>
-                      );
-                    }
-                    return (
-                      <button key={slot.time} onClick={() => handleOpenManualDialog(slot.time)} className={cn(
-                        "w-full flex items-center gap-3 px-4 py-2.5 rounded-xl border border-transparent transition-all duration-200",
-                        "hover:bg-primary/5 hover:border-primary/20 hover:shadow-sm active:scale-[0.99] active:bg-primary/10 group",
-                        isCurrentSlot && "bg-primary/5 border-primary/15 ring-1 ring-primary/20"
-                      )}>
-                        <div className="w-12 shrink-0 text-center">
-                          <p className={cn("text-sm font-medium tabular-nums", isCurrentSlot ? "text-primary font-bold" : "text-muted-foreground")}>{slot.time}</p>
-                        </div>
-                        <div className="w-px h-6 bg-border/30 group-hover:bg-primary/30 transition-colors" />
-                        <div className="flex-1 flex items-center justify-between">
-                          <span className="text-xs text-muted-foreground/50 group-hover:text-primary/70 transition-colors">Horário disponível</span>
-                          <CalendarPlus className="h-3.5 w-3.5 text-muted-foreground/0 group-hover:text-primary/60 transition-all duration-200" />
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
             ) : (
               <div className="space-y-1.5">
+                {/* Empty state when no appointments */}
+                {!hasAppointments && !loading && (
+                  <Card className="border-border/40 border-dashed shadow-sm bg-card/60 backdrop-blur-sm rounded-xl mb-3">
+                    <CardContent className="text-center py-10 px-6">
+                      <div className="relative mb-5 inline-flex">
+                        <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl scale-125" />
+                        <div className="relative w-16 h-16 rounded-2xl bg-muted/50 border border-border/40 flex items-center justify-center">
+                          <CalendarX className="h-7 w-7 text-primary/80" />
+                        </div>
+                      </div>
+                      <h3 className="text-base font-semibold mb-1.5">Nenhum agendamento hoje</h3>
+                      <p className="text-sm text-muted-foreground max-w-xs mx-auto mb-2 leading-relaxed">
+                        Ainda não há clientes marcados para hoje.
+                      </p>
+                      <p className="text-xs text-muted-foreground/70 max-w-xs mx-auto mb-6 leading-relaxed">
+                        Compartilhe seu link de agendamento para que seus clientes possam marcar um horário facilmente.
+                      </p>
+                      <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                        <Button
+                          variant="default"
+                          className="btn-primary-gradient px-5"
+                          onClick={() => {
+                            const slug = barbershop?.slug;
+                            if (slug) {
+                              const link = `${window.location.origin}/b/${slug}`;
+                              navigator.clipboard.writeText(link);
+                              toast.success('Link copiado!');
+                            } else {
+                              toast.error('Configure o perfil público primeiro');
+                            }
+                          }}
+                        >
+                          <Copy className="h-4 w-4 mr-1.5" />
+                          Copiar link de agendamento
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="px-5"
+                          onClick={() => {
+                            const slug = barbershop?.slug;
+                            if (slug) {
+                              const link = `${window.location.origin}/b/${slug}`;
+                              if (navigator.share) {
+                                navigator.share({ title: barbershop?.name, url: link });
+                              } else {
+                                navigator.clipboard.writeText(link);
+                                toast.success('Link copiado!');
+                              }
+                            } else {
+                              toast.error('Configure o perfil público primeiro');
+                            }
+                          }}
+                        >
+                          <Share2 className="h-4 w-4 mr-1.5" />
+                          Compartilhar link
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Slot grid - always rendered */}
                 {daySlots.map((slot, index) => {
                   const appointment = appointmentsBySlot[slot.time];
                   const availability = checkSlotAvailability(slot.time, selectedDate, 30);
