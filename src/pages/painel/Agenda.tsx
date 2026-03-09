@@ -554,7 +554,6 @@ const Agenda = () => {
                     if (appointment && appointment.status !== 'cancelled') {
                       const durationMin = appointment.service?.duration_minutes || 30;
                       const slotsSpanned = Math.ceil(durationMin / 30);
-                      // Each slot row is ~52px tall + 6px gap
                       const cardMinHeight = slotsSpanned > 1 ? slotsSpanned * 52 + (slotsSpanned - 1) * 6 : undefined;
                       const cfg = getStatusConfig(appointment.status);
                       
@@ -562,14 +561,14 @@ const Agenda = () => {
                         <div
                           key={slot.time}
                           className={cn(
-                            "relative flex items-center gap-0 rounded-2xl overflow-hidden cursor-pointer",
-                            "border border-l-[3px]",
+                            "relative flex items-center gap-3 rounded-2xl overflow-hidden cursor-pointer",
+                            "border border-l-[3px] p-3",
                             "transition-all duration-200 active:scale-[0.99]",
-                            "backdrop-blur-sm shadow-sm",
+                            "backdrop-blur-sm",
                             cfg.bg,
                             cfg.borderColor,
-                            appointment.status === 'confirmed' && "border-primary/20 shadow-[0_0_0_1px_hsl(var(--primary)/0.08),0_4px_16px_-4px_hsl(var(--primary)/0.15)] hover:shadow-[0_0_0_1px_hsl(var(--primary)/0.18),0_6px_20px_-4px_hsl(var(--primary)/0.25)]",
-                            appointment.status === 'completed' && "border-success/20 shadow-[0_0_0_1px_hsl(var(--success)/0.08),0_4px_16px_-4px_hsl(var(--success)/0.15)] hover:shadow-[0_0_0_1px_hsl(var(--success)/0.18),0_6px_20px_-4px_hsl(var(--success)/0.25)]",
+                            appointment.status === 'confirmed' && "border-primary/25 shadow-[0_0_12px_-2px_hsl(var(--primary)/0.2)]",
+                            appointment.status === 'completed' && "border-success/25 shadow-[0_0_12px_-2px_hsl(var(--success)/0.2)]",
                           )}
                           onClick={() => handleCardClick(appointment)}
                           style={{ 
@@ -577,52 +576,50 @@ const Agenda = () => {
                             minHeight: cardMinHeight ? `${cardMinHeight}px` : undefined,
                           }}
                         >
-                          {/* Time column */}
-                          <div className="w-14 shrink-0 flex flex-col items-center justify-center self-stretch py-3.5 px-1 border-r border-border/15">
-                            <p className="text-[13px] font-bold tabular-nums leading-none">
+                          {/* Time */}
+                          <div className="shrink-0 text-left">
+                            <p className="text-base font-bold tabular-nums leading-tight">
                               {format(new Date(appointment.start_time), 'HH:mm')}
                             </p>
-                            <p className="text-[9px] text-muted-foreground/50 tabular-nums mt-1 leading-none">
+                            <p className="text-[10px] text-muted-foreground/50 tabular-nums leading-none mt-0.5">
                               {format(new Date(appointment.end_time), 'HH:mm')}
                             </p>
                           </div>
 
                           {/* Avatar */}
                           <div className={cn(
-                            "rounded-xl flex items-center justify-center text-[11px] font-bold shrink-0 ml-3",
-                            slotsSpanned > 1 ? "w-9 h-9" : "w-8 h-8",
-                            cfg.avatarBg, cfg.avatarText
-                          )}>
+                            "w-10 h-10 rounded-xl flex items-center justify-center text-xs font-bold shrink-0 text-primary-foreground",
+                          )}
+                            style={{ background: 'var(--primary-gradient)' }}
+                          >
                             {getInitials(appointment.customer_name)}
                           </div>
 
                           {/* Info */}
-                          <div className="flex-1 min-w-0 py-3 px-2.5">
-                            <p className="font-semibold text-[13px] leading-tight truncate">
+                          <div className="flex-1 min-w-0">
+                            <p className="font-bold text-sm leading-tight truncate">
                               {appointment.customer_name}
                             </p>
                             {appointment.service && (
-                              <p className="text-[11px] text-muted-foreground/70 leading-tight mt-0.5 truncate">
-                                {appointment.service.name}
-                                <span className="text-muted-foreground/40"> · {appointment.service.duration_minutes}min</span>
+                              <p className="text-xs text-muted-foreground leading-tight mt-0.5 truncate">
+                                {appointment.service.name} • {appointment.service.duration_minutes}min
                               </p>
                             )}
                             {slotsSpanned > 1 && (
-                              <p className="text-[10px] text-muted-foreground/40 mt-1.5">
+                              <p className="text-[10px] text-muted-foreground/50 mt-1">
                                 {format(new Date(appointment.start_time), 'HH:mm')} — {format(new Date(appointment.end_time), 'HH:mm')}
                               </p>
                             )}
                           </div>
 
-                          {/* Status dot + label */}
-                          <div className="flex flex-col items-end gap-1 pr-3.5 shrink-0">
-                            <div className="flex items-center gap-1.5">
-                              <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", cfg.dot)} />
-                              <span className={cn("text-[11px] font-medium", cfg.labelColor)}>
-                                {cfg.label}
-                              </span>
-                            </div>
-                          </div>
+                          {/* Status Badge */}
+                          <span className={cn(
+                            "px-2.5 py-1 rounded-full text-[10px] font-semibold shrink-0 border",
+                            appointment.status === 'confirmed' && "bg-primary/10 text-primary border-primary/25",
+                            appointment.status === 'completed' && "bg-success/10 text-success border-success/25",
+                          )}>
+                            {cfg.label}
+                          </span>
                         </div>
                       );
                     }
