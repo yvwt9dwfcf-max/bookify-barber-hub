@@ -244,28 +244,40 @@ const Agenda = () => {
     setDashboardRefreshKey(k => k + 1);
   };
 
-  const handleCardClick = (appointment: Appointment) => {
+  const handleCardClick = useCallback((appointment: Appointment) => {
     setSelectedAppointment(appointment);
     setShowDetailsSheet(true);
-  };
+  }, []);
 
-  const handleEditAppointment = (appointment: Appointment) => {
+  const handleEditAppointment = useCallback((appointment: Appointment) => {
     setSelectedAppointment(appointment);
     setShowEditDialog(true);
-  };
+  }, []);
 
-  const getDaysToShow = () => {
-    const days: Date[] = [];
+  // Memoize days array - only recalculate when selectedDate changes
+  const days = useMemo(() => {
+    const result: Date[] = [];
+    const today = startOfDay(new Date());
     for (let i = -3; i <= 3; i++) {
-      days.push(addDays(startOfDay(new Date()), i));
+      result.push(addDays(today, i));
     }
-    return days;
-  };
+    return result;
+  }, []);
 
-  // Current time
-  const currentHour = new Date().getHours();
-  const currentMinute = new Date().getMinutes();
-  const isToday = isSameDay(selectedDate, new Date());
+  // Current time - use ref to avoid re-renders, update via interval
+  const [currentTime, setCurrentTime] = useState(() => new Date());
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 60000);
+    return () => clearInterval(timer);
+  }, []);
+  const currentHour = currentTime.getHours();
+  const currentMinute = currentTime.getMinutes();
+  const isToday = isSameDay(selectedDate, currentTime);
+
+  const hasAppointments = useMemo(() => 
+    appointments.some(a => a.status !== 'cancelled'), 
+    [appointments]
+  );
 
   // Generate all time slots for the day based on opening hours
   const daySlots = useMemo(() => {
