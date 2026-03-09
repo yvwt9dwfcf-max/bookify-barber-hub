@@ -568,10 +568,8 @@ const Agenda = () => {
                             "backdrop-blur-sm shadow-sm",
                             cfg.bg,
                             cfg.borderColor,
-                            // subtle glow ring on the status color
                             appointment.status === 'confirmed' && "border-primary/20 shadow-[0_0_0_1px_hsl(var(--primary)/0.08),0_4px_16px_-4px_hsl(var(--primary)/0.15)] hover:shadow-[0_0_0_1px_hsl(var(--primary)/0.18),0_6px_20px_-4px_hsl(var(--primary)/0.25)]",
                             appointment.status === 'completed' && "border-success/20 shadow-[0_0_0_1px_hsl(var(--success)/0.08),0_4px_16px_-4px_hsl(var(--success)/0.15)] hover:shadow-[0_0_0_1px_hsl(var(--success)/0.18),0_6px_20px_-4px_hsl(var(--success)/0.25)]",
-                            appointment.status === 'cancelled' && "border-destructive/15 opacity-60",
                           )}
                           onClick={() => handleCardClick(appointment)}
                           style={{ 
