@@ -74,7 +74,7 @@ const Painel = () => {
     { icon: CalendarX2, label: 'Bloqueios', path: '/painel/bloqueios' },
     ...(isMaster ? [{ icon: UsersRound, label: 'Equipe', path: '/painel/barbeiros' }] : []),
     ...(isMaster ? [{ icon: PieChart, label: 'Relatórios', path: '/painel/relatorios' }] : []),
-    ...(isMaster ? [{ icon: Coins, label: 'Comissões', path: '/painel/comissoes' }] : []),
+    ...(isMaster ? [{ icon: Percent, label: 'Comissões', path: '/painel/comissoes' }] : []),
     { icon: Stamp, label: 'Fidelidade', path: '/painel/fidelidade' },
     
     { icon: MessageCircle, label: 'WhatsApp', path: '/painel/whatsapp' },
