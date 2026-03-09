@@ -506,41 +506,6 @@ const Agenda = () => {
             </CardContent>
           </Card>
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-3 gap-3 animate-fade-in" style={{ animationDelay: '0.12s' }}>
-            <Card className="border-border/50 shadow-sm bg-card/80 backdrop-blur-sm overflow-hidden relative group hover:shadow-md transition-all duration-200 rounded-xl">
-              <div className="absolute top-0 left-0 right-0 h-0.5 bg-muted-foreground/20" />
-              <CardContent className="p-3 text-center">
-                <div className="w-8 h-8 rounded-xl mx-auto mb-1.5 flex items-center justify-center bg-muted/60">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                </div>
-                <p className="text-2xl font-bold">{totalCount}</p>
-                <p className="text-[10px] text-muted-foreground font-medium">Total</p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-border/50 shadow-sm bg-card/80 backdrop-blur-sm overflow-hidden relative group hover:shadow-md transition-all duration-200 rounded-xl">
-              <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: 'var(--primary-gradient)' }} />
-              <CardContent className="p-3 text-center">
-                <div className="w-8 h-8 rounded-xl mx-auto mb-1.5 flex items-center justify-center bg-primary/10">
-                  <Clock className="h-4 w-4 text-primary" />
-                </div>
-                <p className="text-2xl font-bold text-primary">{confirmedCount}</p>
-                <p className="text-[10px] text-muted-foreground font-medium">Confirmados</p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-border/50 shadow-sm bg-card/80 backdrop-blur-sm overflow-hidden relative group hover:shadow-md transition-all duration-200 rounded-xl">
-              <div className="absolute top-0 left-0 right-0 h-0.5 bg-success" />
-              <CardContent className="p-3 text-center">
-                <div className="w-8 h-8 rounded-xl mx-auto mb-1.5 flex items-center justify-center bg-success/10">
-                  <CheckCircle2 className="h-4 w-4 text-success" />
-                </div>
-                <p className="text-2xl font-bold text-success">{completedCount}</p>
-                <p className="text-[10px] text-muted-foreground font-medium">Concluídos</p>
-              </CardContent>
-            </Card>
-          </div>
 
           {/* Slot Grid View */}
           <div className="animate-fade-in" style={{ animationDelay: '0.16s' }}>
