@@ -134,15 +134,33 @@ const AppointmentDetailsSheet = ({
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <Phone className="h-5 w-5 text-primary" />
+              {appointment.customer_phone && (
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <Phone className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium truncate">{appointment.customer_phone}</p>
+                    <p className="text-sm text-muted-foreground">Telefone</p>
+                  </div>
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <a
+                      href={`https://wa.me/55${appointment.customer_phone.replace(/\D/g, '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="h-9 w-9 rounded-full bg-[#25D366]/10 hover:bg-[#25D366]/20 flex items-center justify-center transition-colors"
+                    >
+                      <MessageCircle className="h-4 w-4 text-[#25D366]" />
+                    </a>
+                    <a
+                      href={`tel:+55${appointment.customer_phone.replace(/\D/g, '')}`}
+                      className="h-9 w-9 rounded-full bg-primary/10 hover:bg-primary/20 flex items-center justify-center transition-colors"
+                    >
+                      <Phone className="h-4 w-4 text-primary" />
+                    </a>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <p className="font-medium truncate">{appointment.customer_phone || 'Não informado'}</p>
-                  <p className="text-sm text-muted-foreground">Telefone</p>
-                </div>
-              </div>
+              )}
 
               <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
                 <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
