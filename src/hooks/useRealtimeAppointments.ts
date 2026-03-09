@@ -10,12 +10,12 @@ interface UseRealtimeAppointmentsOptions {
 }
 
 export function useRealtimeAppointments({ barberId, onNewAppointment }: UseRealtimeAppointmentsOptions) {
-  const isSubscribedRef = useRef(false);
+  // Use ref for callback to avoid resubscribing channel on callback changes
+  const callbackRef = useRef(onNewAppointment);
+  useEffect(() => { callbackRef.current = onNewAppointment; }, [onNewAppointment]);
 
   useEffect(() => {
-    if (!barberId || isSubscribedRef.current) return;
-
-    isSubscribedRef.current = true;
+    if (!barberId) return;
 
     const channel = supabase
       .channel(`appointments-${barberId}`)
@@ -35,7 +35,6 @@ export function useRealtimeAppointments({ barberId, onNewAppointment }: UseRealt
             service_id: string | null;
           };
 
-          // Fetch service name if available
           let serviceName = 'Serviço';
           if (newAppointment.service_id) {
             const { data: service } = await supabase
@@ -52,14 +51,12 @@ export function useRealtimeAppointments({ barberId, onNewAppointment }: UseRealt
           const appointmentDate = new Date(newAppointment.start_time);
           const formattedDate = format(appointmentDate, "d 'de' MMMM 'às' HH:mm", { locale: ptBR });
 
-          // Show toast notification
           toast.success('Novo agendamento!', {
             description: `${newAppointment.customer_name} • ${serviceName} • ${formattedDate}`,
             duration: 2500,
           });
 
-          // Callback for additional actions
-          onNewAppointment?.();
+          callbackRef.current?.();
         }
       )
       .on(
@@ -81,15 +78,14 @@ export function useRealtimeAppointments({ barberId, onNewAppointment }: UseRealt
               description: `O agendamento de ${updatedAppointment.customer_name} foi cancelado`,
               duration: 2200,
             });
-            onNewAppointment?.();
+            callbackRef.current?.();
           }
         }
       )
       .subscribe();
 
     return () => {
-      isSubscribedRef.current = false;
       supabase.removeChannel(channel);
     };
-  }, [barberId, onNewAppointment]);
+  }, [barberId]);
 }
