@@ -55,13 +55,7 @@ export function useRealtimeAppointments({ barberId, onNewAppointment }: UseRealt
           // Show toast notification
           toast.success('Novo agendamento!', {
             description: `${newAppointment.customer_name} agendou ${serviceName} para ${formattedDate}`,
-            duration: 8000,
-            action: {
-              label: 'Ver agenda',
-              onClick: () => {
-                window.location.href = '/painel';
-              },
-            },
+            duration: 2200,
           });
 
           // Play notification sound (optional - browser might block)
