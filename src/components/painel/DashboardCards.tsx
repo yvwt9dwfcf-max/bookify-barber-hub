@@ -39,13 +39,45 @@ const DashboardCards = ({ barbershopId, selectedDate, refreshKey }: DashboardCar
   const todayStats = weekData[6];
   const yesterdayStats = weekData[5];
 
-  useEffect(() => {
+  const fetchStats = useCallback(async () => {
     if (!barbershopId) return;
+    const anchorDay = startOfDay(selectedDate);
+    const weekStart = startOfDay(subDays(anchorDay, 6)).toISOString();
+    const nextDay = addDays(anchorDay, 1).toISOString();
+
+    const { data } = await supabase
+      .from('appointments')
+      .select('id, status, start_time, service:services(price)')
+      .eq('barbershop_id', barbershopId)
+      .gte('start_time', weekStart)
+      .lt('start_time', nextDay);
+
+    if (!data) return;
+
+    const dayMap = new Map<string, DayData>();
+    for (let i = 6; i >= 0; i--) {
+      const date = format(subDays(anchorDay, i), 'yyyy-MM-dd');
+      dayMap.set(date, { appointments: 0, revenue: 0, clients: 0 });
+    }
+
+    data.forEach((a: any) => {
+      const dateStr = format(new Date(a.start_time), 'yyyy-MM-dd');
+      const dayData = dayMap.get(dateStr);
+      if (!dayData) return;
+      dayData.appointments++;
+      if (a.status === 'completed') {
+        dayData.clients++;
+        dayData.revenue += Number(a.service?.price ?? 0);
+      }
+    });
+
+    setWeekData(Array.from(dayMap.values()));
+  }, [barbershopId, selectedDate]);
+
+  useEffect(() => {
     fetchStats();
     const interval = setInterval(fetchStats, 30000);
     return () => clearInterval(interval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [barbershopId, selectedDate, refreshKey]);
 
   const fetchStats = async () => {
     const anchorDay = startOfDay(selectedDate);
