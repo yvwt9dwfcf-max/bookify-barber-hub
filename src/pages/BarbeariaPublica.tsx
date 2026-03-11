@@ -173,6 +173,11 @@ const BarbeariaPublica = () => {
     setDrawerOpen(true);
   };
 
+  const prefetchBooking = () => {
+    import('@/pages/AgendarBarbearia');
+    import('@/components/booking/BookingFlow');
+  };
+
   const handleAgendar = () => {
     if (barbershop && selectedBarber) {
       navigate(`/agendar/${barbershop.slug || barbershop.id}?barber=${selectedBarber.id}`);
@@ -485,6 +490,8 @@ const BarbeariaPublica = () => {
           <DrawerFooter className="pt-2">
             <Button
               onClick={handleAgendar}
+              onMouseEnter={prefetchBooking}
+              onTouchStart={prefetchBooking}
               className="btn-primary-gradient h-12 text-base rounded-xl w-full"
               disabled={barberServices.length === 0}
             >
