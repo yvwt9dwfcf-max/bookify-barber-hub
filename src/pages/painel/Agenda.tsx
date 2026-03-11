@@ -25,13 +25,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import MonthlyCalendar from '@/components/painel/MonthlyCalendar';
-import ManualAppointmentDialog from '@/components/painel/ManualAppointmentDialog';
+import { lazy, Suspense } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 import FloatingActionButton from '@/components/painel/FloatingActionButton';
-import AppointmentDetailsSheet from '@/components/painel/AppointmentDetailsSheet';
-import EditAppointmentDialog from '@/components/painel/EditAppointmentDialog';
-import QuickBlockDialog from '@/components/painel/QuickBlockDialog';
-import DashboardCards from '@/components/painel/DashboardCards';
+
+const MonthlyCalendar = lazy(() => import('@/components/painel/MonthlyCalendar'));
+const ManualAppointmentDialog = lazy(() => import('@/components/painel/ManualAppointmentDialog'));
+const AppointmentDetailsSheet = lazy(() => import('@/components/painel/AppointmentDetailsSheet'));
+const EditAppointmentDialog = lazy(() => import('@/components/painel/EditAppointmentDialog'));
+const QuickBlockDialog = lazy(() => import('@/components/painel/QuickBlockDialog'));
+const DashboardCards = lazy(() => import('@/components/painel/DashboardCards'));
 
 interface ContextType {
   barber: (Barber & { permissions?: { can_view_others_schedule?: boolean; can_edit_others_schedule?: boolean } }) | null;
