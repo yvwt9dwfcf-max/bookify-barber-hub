@@ -490,6 +490,8 @@ const BarbeariaPublica = () => {
           <DrawerFooter className="pt-2">
             <Button
               onClick={handleAgendar}
+              onMouseEnter={prefetchBooking}
+              onTouchStart={prefetchBooking}
               className="btn-primary-gradient h-12 text-base rounded-xl w-full"
               disabled={barberServices.length === 0}
             >
