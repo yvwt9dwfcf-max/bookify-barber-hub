@@ -257,15 +257,30 @@ const Agenda = () => {
     setShowEditDialog(true);
   }, []);
 
-  // Memoize days array - only recalculate when selectedDate changes
+  // Memoize days array - generate ±21 days from today for swipeable strip
   const days = useMemo(() => {
     const result: Date[] = [];
     const today = startOfDay(new Date());
-    for (let i = -3; i <= 3; i++) {
+    for (let i = -21; i <= 21; i++) {
       result.push(addDays(today, i));
     }
     return result;
   }, []);
+
+  // Ref for scrollable days container
+  const daysScrollRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to selected day
+  useEffect(() => {
+    const container = daysScrollRef.current;
+    if (!container) return;
+    const selectedIndex = days.findIndex(d => isSameDay(d, selectedDate));
+    if (selectedIndex === -1) return;
+    const child = container.children[selectedIndex] as HTMLElement;
+    if (!child) return;
+    const scrollLeft = child.offsetLeft - container.offsetWidth / 2 + child.offsetWidth / 2;
+    container.scrollTo({ left: scrollLeft, behavior: 'smooth' });
+  }, [selectedDate, days]);
 
   // Current time - use ref to avoid re-renders, update via interval
   const [currentTime, setCurrentTime] = useState(() => new Date());
@@ -498,28 +513,16 @@ const Agenda = () => {
           {/* Date Navigation - Sticky */}
           <Card className="border-border/50 shadow-sm bg-card/80 backdrop-blur-sm overflow-hidden animate-fade-in rounded-xl sticky top-0 z-20" style={{ animationDelay: '0.08s' }}>
             <CardContent className="p-3">
-              <div className="flex items-center justify-between mb-3">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setSelectedDate(addDays(selectedDate, -7))}
-                  className="h-7 w-7 min-h-[28px] min-w-[28px] transition-all hover:-translate-y-0.5 active:scale-95"
-                >
-                  <ChevronLeft className="h-3.5 w-3.5" />
-                </Button>
+              <div className="text-center mb-2">
                 <span className="text-xs font-medium text-muted-foreground capitalize">
                   {format(selectedDate, "MMMM 'de' yyyy", { locale: ptBR })}
                 </span>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setSelectedDate(addDays(selectedDate, 7))}
-                  className="h-7 w-7 min-h-[28px] min-w-[28px] transition-all hover:-translate-y-0.5 active:scale-95"
-                >
-                  <ChevronRight className="h-3.5 w-3.5" />
-                </Button>
               </div>
-              <div className="grid grid-cols-7 gap-1.5">
+              <div
+                ref={daysScrollRef}
+                className="flex gap-1.5 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-1"
+                style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              >
                 {days.map((day) => {
                   const isSelected = isSameDay(day, selectedDate);
                   const isDayToday = isSameDay(day, new Date());
@@ -529,13 +532,14 @@ const Agenda = () => {
                       key={day.toISOString()}
                       onClick={() => setSelectedDate(day)}
                       className={cn(
-                        'flex flex-col items-center py-1.5 px-1 rounded-xl transition-all duration-200',
+                        'flex flex-col items-center py-1.5 px-2.5 rounded-xl transition-all duration-200 snap-center shrink-0',
                         'hover:bg-accent/50 active:scale-95',
                         isSelected && 'text-primary-foreground hover:bg-primary shadow-md',
                         isDayToday && !isSelected && 'ring-1 ring-primary/50'
                       )}
                       style={{
                         background: isSelected ? 'var(--primary-gradient)' : undefined,
+                        minWidth: '48px',
                       }}
                     >
                       <span className="text-[9px] font-medium uppercase opacity-70">

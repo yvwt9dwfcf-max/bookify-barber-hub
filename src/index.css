@@ -301,6 +301,13 @@
 }
 
 @layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
   .transition-interactive {
     transition-property: transform, box-shadow, background-color, border-color, opacity;
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
