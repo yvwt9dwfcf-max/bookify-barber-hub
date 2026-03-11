@@ -381,7 +381,7 @@ const Agenda = () => {
       <DashboardCards barbershopId={barbershop?.id} selectedDate={selectedDate} refreshKey={dashboardRefreshKey} />
 
       {/* Premium Header */}
-      <div className="animate-fade-in">
+      <div className="animate-fade-in space-y-2">
         <div className="flex items-center justify-between gap-3">
           <Button
             variant="ghost"
@@ -408,31 +408,29 @@ const Agenda = () => {
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
-          
-          <div className="flex items-center gap-1 shrink-0">
-            <Button
-              variant={viewMode === 'daily' ? 'default' : 'ghost'}
-              size="icon"
-              onClick={() => setViewMode('daily')}
-              className={cn(
-                "h-9 w-9 rounded-xl transition-all active:scale-95",
-                viewMode === 'daily' && 'btn-primary-gradient shadow-md'
-              )}
-            >
-              <Calendar className="h-4 w-4" />
-            </Button>
-            <Button
-              variant={viewMode === 'monthly' ? 'default' : 'ghost'}
-              size="icon"
-              onClick={() => setViewMode('monthly')}
-              className={cn(
-                "h-9 w-9 rounded-xl transition-all active:scale-95",
-                viewMode === 'monthly' && 'btn-primary-gradient shadow-md'
-              )}
-            >
-              <CalendarDays className="h-4 w-4" />
-            </Button>
-          </div>
+        <div className="flex items-center justify-center gap-1">
+          <Button
+            variant={viewMode === 'daily' ? 'default' : 'ghost'}
+            size="icon"
+            onClick={() => setViewMode('daily')}
+            className={cn(
+              "h-9 w-9 rounded-xl transition-all active:scale-95",
+              viewMode === 'daily' && 'btn-primary-gradient shadow-md'
+            )}
+          >
+            <Calendar className="h-4 w-4" />
+          </Button>
+          <Button
+            variant={viewMode === 'monthly' ? 'default' : 'ghost'}
+            size="icon"
+            onClick={() => setViewMode('monthly')}
+            className={cn(
+              "h-9 w-9 rounded-xl transition-all active:scale-95",
+              viewMode === 'monthly' && 'btn-primary-gradient shadow-md'
+            )}
+          >
+            <CalendarDays className="h-4 w-4" />
+          </Button>
         </div>
       </div>
 
