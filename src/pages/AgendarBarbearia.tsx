@@ -146,11 +146,13 @@ const AgendarBarbearia = () => {
               {barbershop?.name}
             </h1>
           </div>
-          <BookingFlow 
-            barbershopId={barbershop?.id} 
-            availableBarbers={barbers}
-            preselectedBarber={preselectedBarber}
-          />
+          <Suspense fallback={<SkeletonCard />}>
+            <BookingFlow 
+              barbershopId={barbershop?.id} 
+              availableBarbers={barbers}
+              preselectedBarber={preselectedBarber}
+            />
+          </Suspense>
         </div>
       </main>
     </div>

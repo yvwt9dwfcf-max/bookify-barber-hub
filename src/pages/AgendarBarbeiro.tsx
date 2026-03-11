@@ -112,7 +112,9 @@ const AgendarBarbeiro = () => {
               Escolha o serviço e horário para seu atendimento
             </p>
           </div>
-          <BookingFlow preselectedBarber={barber} />
+          <Suspense fallback={<SkeletonCard />}>
+            <BookingFlow preselectedBarber={barber} />
+          </Suspense>
         </div>
       </main>
     </div>
