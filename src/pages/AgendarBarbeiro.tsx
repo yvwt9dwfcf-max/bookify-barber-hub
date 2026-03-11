@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase, Barber } from '@/lib/supabase';
 import { Logo } from '@/components/ui/Logo';
-import { BookingFlow } from '@/components/booking/BookingFlow';
 import { UserX } from 'lucide-react';
 import { PremiumSkeleton, SkeletonCard } from '@/components/ui/premium-skeleton';
 import { Card, CardContent } from '@/components/ui/card';
+
+const BookingFlow = lazy(() => import('@/components/booking/BookingFlow').then(m => ({ default: m.BookingFlow })));
 
 const AgendarBarbeiro = () => {
   const { barberId } = useParams<{ barberId: string }>();
@@ -111,7 +112,9 @@ const AgendarBarbeiro = () => {
               Escolha o serviço e horário para seu atendimento
             </p>
           </div>
-          <BookingFlow preselectedBarber={barber} />
+          <Suspense fallback={<SkeletonCard />}>
+            <BookingFlow preselectedBarber={barber} />
+          </Suspense>
         </div>
       </main>
     </div>

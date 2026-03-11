@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { supabase, Barber, Barbershop } from '@/lib/supabase';
 import { Logo } from '@/components/ui/Logo';
-import { BookingFlow } from '@/components/booking/BookingFlow';
 import { Building2 } from 'lucide-react';
 import { PremiumSkeleton, SkeletonCard } from '@/components/ui/premium-skeleton';
 import { Card, CardContent } from '@/components/ui/card';
+
+const BookingFlow = lazy(() => import('@/components/booking/BookingFlow').then(m => ({ default: m.BookingFlow })));
 
 const AgendarBarbearia = () => {
   const { slugOrId } = useParams<{ slugOrId: string }>();
@@ -145,11 +146,13 @@ const AgendarBarbearia = () => {
               {barbershop?.name}
             </h1>
           </div>
-          <BookingFlow 
-            barbershopId={barbershop?.id} 
-            availableBarbers={barbers}
-            preselectedBarber={preselectedBarber}
-          />
+          <Suspense fallback={<SkeletonCard />}>
+            <BookingFlow 
+              barbershopId={barbershop?.id} 
+              availableBarbers={barbers}
+              preselectedBarber={preselectedBarber}
+            />
+          </Suspense>
         </div>
       </main>
     </div>

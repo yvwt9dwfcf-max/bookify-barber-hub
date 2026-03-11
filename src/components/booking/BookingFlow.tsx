@@ -1,14 +1,16 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { supabase, Barber, Service, Appointment } from '@/lib/supabase';
 import { StepIndicator } from './StepIndicator';
-import { BarberSelection } from './BarberSelection';
-import { ServiceSelection } from './ServiceSelection';
-import { DateTimeSelection } from './DateTimeSelection';
-import { CustomerInfo } from './CustomerInfo';
-import { BookingConfirmation } from './BookingConfirmation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+
+const BarberSelection = lazy(() => import('./BarberSelection').then(m => ({ default: m.BarberSelection })));
+const ServiceSelection = lazy(() => import('./ServiceSelection').then(m => ({ default: m.ServiceSelection })));
+const DateTimeSelection = lazy(() => import('./DateTimeSelection').then(m => ({ default: m.DateTimeSelection })));
+const CustomerInfo = lazy(() => import('./CustomerInfo').then(m => ({ default: m.CustomerInfo })));
+const BookingConfirmation = lazy(() => import('./BookingConfirmation').then(m => ({ default: m.BookingConfirmation })));
 
 export type BookingStep = 'barber' | 'service' | 'datetime' | 'info' | 'confirmation';
 
@@ -141,14 +143,18 @@ export function BookingFlow({ preselectedBarber, barbershopId, availableBarbers 
     setError(null);
   };
 
+  const stepFallback = <Skeleton className="h-48 w-full rounded-xl" />;
+
   if (step === 'confirmation' && createdAppointment) {
     return (
-      <BookingConfirmation
-        appointment={createdAppointment}
-        onNewBooking={resetBooking}
-        barbershopId={barbershopId}
-        preselectedBarber={preselectedBarber}
-      />
+      <Suspense fallback={stepFallback}>
+        <BookingConfirmation
+          appointment={createdAppointment}
+          onNewBooking={resetBooking}
+          barbershopId={barbershopId}
+          preselectedBarber={preselectedBarber}
+        />
+      </Suspense>
     );
   }
 
@@ -176,6 +182,7 @@ export function BookingFlow({ preselectedBarber, barbershopId, availableBarbers 
             </div>
           )}
 
+          <Suspense fallback={stepFallback}>
           <div key={step} className="animate-fade-in">
             {step === 'barber' && (
               <BarberSelection 
@@ -209,6 +216,7 @@ export function BookingFlow({ preselectedBarber, barbershopId, availableBarbers 
               />
             )}
           </div>
+          </Suspense>
         </CardContent>
       </Card>
     </div>
