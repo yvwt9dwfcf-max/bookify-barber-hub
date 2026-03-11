@@ -522,10 +522,26 @@ const Agenda = () => {
           {/* Date Navigation - Sticky */}
           <Card className="border-border/50 shadow-sm bg-card/80 backdrop-blur-sm overflow-hidden animate-fade-in rounded-xl sticky top-0 z-20" style={{ animationDelay: '0.08s' }}>
             <CardContent className="p-3">
-              <div className="text-center mb-2">
+              <div className="flex items-center justify-between mb-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setDisplayMonth(addMonths(displayMonth, -1))}
+                  className="h-7 w-7 min-h-[28px] min-w-[28px] transition-all active:scale-95"
+                >
+                  <ChevronLeft className="h-3.5 w-3.5" />
+                </Button>
                 <span className="text-xs font-medium text-muted-foreground capitalize">
-                  {format(selectedDate, "MMMM 'de' yyyy", { locale: ptBR })}
+                  {format(displayMonth, "MMMM 'de' yyyy", { locale: ptBR })}
                 </span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setDisplayMonth(addMonths(displayMonth, 1))}
+                  className="h-7 w-7 min-h-[28px] min-w-[28px] transition-all active:scale-95"
+                >
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </Button>
               </div>
               <div
                 ref={daysScrollRef}
