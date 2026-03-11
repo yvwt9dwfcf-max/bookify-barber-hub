@@ -874,6 +874,7 @@ const Agenda = () => {
         onNewBlock={() => handleOpenQuickBlock()}
       />
     </div>
+    </Suspense>
   );
 };
 
