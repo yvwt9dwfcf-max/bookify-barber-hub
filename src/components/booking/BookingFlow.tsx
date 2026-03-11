@@ -143,14 +143,18 @@ export function BookingFlow({ preselectedBarber, barbershopId, availableBarbers 
     setError(null);
   };
 
+  const stepFallback = <Skeleton className="h-48 w-full rounded-xl" />;
+
   if (step === 'confirmation' && createdAppointment) {
     return (
-      <BookingConfirmation
-        appointment={createdAppointment}
-        onNewBooking={resetBooking}
-        barbershopId={barbershopId}
-        preselectedBarber={preselectedBarber}
-      />
+      <Suspense fallback={stepFallback}>
+        <BookingConfirmation
+          appointment={createdAppointment}
+          onNewBooking={resetBooking}
+          barbershopId={barbershopId}
+          preselectedBarber={preselectedBarber}
+        />
+      </Suspense>
     );
   }
 
