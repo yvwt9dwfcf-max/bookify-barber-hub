@@ -182,6 +182,7 @@ export function BookingFlow({ preselectedBarber, barbershopId, availableBarbers 
             </div>
           )}
 
+          <Suspense fallback={stepFallback}>
           <div key={step} className="animate-fade-in">
             {step === 'barber' && (
               <BarberSelection 
@@ -215,6 +216,7 @@ export function BookingFlow({ preselectedBarber, barbershopId, availableBarbers 
               />
             )}
           </div>
+          </Suspense>
         </CardContent>
       </Card>
     </div>
