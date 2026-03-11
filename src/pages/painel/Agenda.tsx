@@ -14,7 +14,7 @@ import {
   UserRound as User, Timer as Clock, CalendarPlus,
   CircleSlash as Ban, Copy, Share2, CalendarX
 } from 'lucide-react';
-import { format, addDays, startOfDay, isSameDay, setHours, setMinutes } from 'date-fns';
+import { format, addDays, addMonths, startOfDay, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, setHours, setMinutes } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -257,15 +257,24 @@ const Agenda = () => {
     setShowEditDialog(true);
   }, []);
 
-  // Memoize days array - generate ±21 days from today for swipeable strip
+  // Month base for the days strip
+  const [displayMonth, setDisplayMonth] = useState(() => startOfMonth(new Date()));
+
+  // Generate all days of the display month
   const days = useMemo(() => {
-    const result: Date[] = [];
-    const today = startOfDay(new Date());
-    for (let i = -21; i <= 21; i++) {
-      result.push(addDays(today, i));
+    return eachDayOfInterval({
+      start: startOfMonth(displayMonth),
+      end: endOfMonth(displayMonth),
+    });
+  }, [displayMonth]);
+
+  // When selecting a date, sync the display month
+  useEffect(() => {
+    const monthOfSelected = startOfMonth(selectedDate);
+    if (monthOfSelected.getTime() !== displayMonth.getTime()) {
+      setDisplayMonth(monthOfSelected);
     }
-    return result;
-  }, []);
+  }, [selectedDate]);
 
   // Ref for scrollable days container
   const daysScrollRef = useRef<HTMLDivElement>(null);
@@ -513,10 +522,26 @@ const Agenda = () => {
           {/* Date Navigation - Sticky */}
           <Card className="border-border/50 shadow-sm bg-card/80 backdrop-blur-sm overflow-hidden animate-fade-in rounded-xl sticky top-0 z-20" style={{ animationDelay: '0.08s' }}>
             <CardContent className="p-3">
-              <div className="text-center mb-2">
+              <div className="flex items-center justify-between mb-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setDisplayMonth(addMonths(displayMonth, -1))}
+                  className="h-7 w-7 min-h-[28px] min-w-[28px] transition-all active:scale-95"
+                >
+                  <ChevronLeft className="h-3.5 w-3.5" />
+                </Button>
                 <span className="text-xs font-medium text-muted-foreground capitalize">
-                  {format(selectedDate, "MMMM 'de' yyyy", { locale: ptBR })}
+                  {format(displayMonth, "MMMM 'de' yyyy", { locale: ptBR })}
                 </span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setDisplayMonth(addMonths(displayMonth, 1))}
+                  className="h-7 w-7 min-h-[28px] min-w-[28px] transition-all active:scale-95"
+                >
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </Button>
               </div>
               <div
                 ref={daysScrollRef}
