@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -5,31 +6,31 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
-import EsqueciSenha from "./pages/EsqueciSenha";
-import Onboarding from "./pages/Onboarding";
-import Painel from "./pages/Painel";
-import Agenda from "./pages/painel/Agenda";
-import Servicos from "./pages/painel/Servicos";
-import Horarios from "./pages/painel/Horarios";
-import Bloqueios from "./pages/painel/Bloqueios";
-import Barbeiros from "./pages/painel/Barbeiros";
-import Configuracoes from "./pages/painel/Configuracoes";
-import WhatsAppAtendimento from "./pages/painel/WhatsAppAtendimento";
-import Relatorios from "./pages/painel/Relatorios";
-import Assinatura from "./pages/painel/Assinatura";
-import PerfilPublico from "./pages/painel/PerfilPublico";
-import Comissoes from "./pages/painel/Comissoes";
-import Fidelidade from "./pages/painel/Fidelidade";
-import Suporte from "./pages/painel/Suporte";
-import ExcluirConta from "./pages/painel/ExcluirConta";
-
-import AgendarBarbearia from "./pages/AgendarBarbearia";
-import AgendarBarbeiro from "./pages/AgendarBarbeiro";
-import BarbeariaPublica from "./pages/BarbeariaPublica";
-import TrialExpirado from "./pages/TrialExpirado";
 import NotFound from "./pages/NotFound";
-import PoliticaPrivacidade from "./pages/PoliticaPrivacidade";
-import TermosUso from "./pages/TermosUso";
+
+const EsqueciSenha = lazy(() => import("./pages/EsqueciSenha"));
+const Onboarding = lazy(() => import("./pages/Onboarding"));
+const Painel = lazy(() => import("./pages/Painel"));
+const Agenda = lazy(() => import("./pages/painel/Agenda"));
+const Servicos = lazy(() => import("./pages/painel/Servicos"));
+const Horarios = lazy(() => import("./pages/painel/Horarios"));
+const Bloqueios = lazy(() => import("./pages/painel/Bloqueios"));
+const Barbeiros = lazy(() => import("./pages/painel/Barbeiros"));
+const Configuracoes = lazy(() => import("./pages/painel/Configuracoes"));
+const WhatsAppAtendimento = lazy(() => import("./pages/painel/WhatsAppAtendimento"));
+const Relatorios = lazy(() => import("./pages/painel/Relatorios"));
+const Assinatura = lazy(() => import("./pages/painel/Assinatura"));
+const PerfilPublico = lazy(() => import("./pages/painel/PerfilPublico"));
+const Comissoes = lazy(() => import("./pages/painel/Comissoes"));
+const Fidelidade = lazy(() => import("./pages/painel/Fidelidade"));
+const Suporte = lazy(() => import("./pages/painel/Suporte"));
+const ExcluirConta = lazy(() => import("./pages/painel/ExcluirConta"));
+const AgendarBarbearia = lazy(() => import("./pages/AgendarBarbearia"));
+const AgendarBarbeiro = lazy(() => import("./pages/AgendarBarbeiro"));
+const BarbeariaPublica = lazy(() => import("./pages/BarbeariaPublica"));
+const TrialExpirado = lazy(() => import("./pages/TrialExpirado"));
+const PoliticaPrivacidade = lazy(() => import("./pages/PoliticaPrivacidade"));
+const TermosUso = lazy(() => import("./pages/TermosUso"));
 
 const queryClient = new QueryClient();
 
@@ -39,6 +40,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div>}>
         <Routes>
           {/* Landing page */}
           <Route path="/" element={<LandingPage />} />
@@ -81,6 +83,7 @@ const App = () => (
 
           <Route path="*" element={<NotFound />} />
         </Routes>
+        </Suspense>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
