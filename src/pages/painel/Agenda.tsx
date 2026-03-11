@@ -257,15 +257,31 @@ const Agenda = () => {
     setShowEditDialog(true);
   }, []);
 
-  // Memoize days array - only recalculate when selectedDate changes
+  // Memoize days array - generate ±21 days from today for swipeable strip
+  const [weekOffset, setWeekOffset] = useState(0);
   const days = useMemo(() => {
     const result: Date[] = [];
     const today = startOfDay(new Date());
-    for (let i = -3; i <= 3; i++) {
+    for (let i = -21; i <= 21; i++) {
       result.push(addDays(today, i));
     }
     return result;
   }, []);
+
+  // Ref for scrollable days container
+  const daysScrollRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to selected day
+  useEffect(() => {
+    const container = daysScrollRef.current;
+    if (!container) return;
+    const selectedIndex = days.findIndex(d => isSameDay(d, selectedDate));
+    if (selectedIndex === -1) return;
+    const child = container.children[selectedIndex] as HTMLElement;
+    if (!child) return;
+    const scrollLeft = child.offsetLeft - container.offsetWidth / 2 + child.offsetWidth / 2;
+    container.scrollTo({ left: scrollLeft, behavior: 'smooth' });
+  }, [selectedDate, days]);
 
   // Current time - use ref to avoid re-renders, update via interval
   const [currentTime, setCurrentTime] = useState(() => new Date());
