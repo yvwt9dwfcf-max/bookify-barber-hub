@@ -569,9 +569,11 @@ const Agenda = () => {
                           <CalendarX className="h-7 w-7 text-primary/80" />
                         </div>
                       </div>
-                      <h3 className="text-base font-semibold mb-1.5">Nenhum agendamento hoje</h3>
+                      <h3 className="text-base font-semibold mb-1.5">
+                        {isToday ? 'Nenhum agendamento hoje' : 'Nenhum agendamento para este dia'}
+                      </h3>
                       <p className="text-sm text-muted-foreground max-w-xs mx-auto mb-2 leading-relaxed">
-                        Ainda não há clientes marcados para hoje.
+                        {isToday ? 'Ainda não há clientes marcados para hoje.' : 'Ainda não há clientes marcados para este dia.'}
                       </p>
                       <p className="text-xs text-muted-foreground/70 max-w-xs mx-auto mb-6 leading-relaxed">
                         Compartilhe seu link de agendamento para que seus clientes possam marcar um horário facilmente.
