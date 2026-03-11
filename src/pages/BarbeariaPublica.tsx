@@ -173,6 +173,11 @@ const BarbeariaPublica = () => {
     setDrawerOpen(true);
   };
 
+  const prefetchBooking = () => {
+    import('@/pages/AgendarBarbearia');
+    import('@/components/booking/BookingFlow');
+  };
+
   const handleAgendar = () => {
     if (barbershop && selectedBarber) {
       navigate(`/agendar/${barbershop.slug || barbershop.id}?barber=${selectedBarber.id}`);
