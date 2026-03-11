@@ -258,7 +258,6 @@ const Agenda = () => {
   }, []);
 
   // Memoize days array - generate ±21 days from today for swipeable strip
-  const [weekOffset, setWeekOffset] = useState(0);
   const days = useMemo(() => {
     const result: Date[] = [];
     const today = startOfDay(new Date());
