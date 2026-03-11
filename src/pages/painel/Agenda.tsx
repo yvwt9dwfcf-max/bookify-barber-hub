@@ -257,15 +257,24 @@ const Agenda = () => {
     setShowEditDialog(true);
   }, []);
 
-  // Memoize days array - generate ±21 days from today for swipeable strip
+  // Month base for the days strip
+  const [displayMonth, setDisplayMonth] = useState(() => startOfMonth(new Date()));
+
+  // Generate all days of the display month
   const days = useMemo(() => {
-    const result: Date[] = [];
-    const today = startOfDay(new Date());
-    for (let i = -21; i <= 21; i++) {
-      result.push(addDays(today, i));
+    return eachDayOfInterval({
+      start: startOfMonth(displayMonth),
+      end: endOfMonth(displayMonth),
+    });
+  }, [displayMonth]);
+
+  // When selecting a date, sync the display month
+  useEffect(() => {
+    const monthOfSelected = startOfMonth(selectedDate);
+    if (monthOfSelected.getTime() !== displayMonth.getTime()) {
+      setDisplayMonth(monthOfSelected);
     }
-    return result;
-  }, []);
+  }, [selectedDate]);
 
   // Ref for scrollable days container
   const daysScrollRef = useRef<HTMLDivElement>(null);
