@@ -372,7 +372,10 @@ const Agenda = () => {
   const dayHours = getOpeningHoursForDay(dayOfWeek);
   const isDayClosed = !dayHours;
 
+  const fallback = <Skeleton className="h-24 w-full rounded-xl" />;
+
   return (
+    <Suspense fallback={fallback}>
     <div className="space-y-4 pb-24 animate-page-enter">
       {/* Dashboard Cards */}
       <DashboardCards barbershopId={barbershop?.id} selectedDate={selectedDate} refreshKey={dashboardRefreshKey} />
