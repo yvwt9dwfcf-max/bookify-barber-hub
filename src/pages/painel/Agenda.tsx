@@ -514,28 +514,16 @@ const Agenda = () => {
           {/* Date Navigation - Sticky */}
           <Card className="border-border/50 shadow-sm bg-card/80 backdrop-blur-sm overflow-hidden animate-fade-in rounded-xl sticky top-0 z-20" style={{ animationDelay: '0.08s' }}>
             <CardContent className="p-3">
-              <div className="flex items-center justify-between mb-3">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setSelectedDate(addDays(selectedDate, -7))}
-                  className="h-7 w-7 min-h-[28px] min-w-[28px] transition-all hover:-translate-y-0.5 active:scale-95"
-                >
-                  <ChevronLeft className="h-3.5 w-3.5" />
-                </Button>
+              <div className="text-center mb-2">
                 <span className="text-xs font-medium text-muted-foreground capitalize">
                   {format(selectedDate, "MMMM 'de' yyyy", { locale: ptBR })}
                 </span>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setSelectedDate(addDays(selectedDate, 7))}
-                  className="h-7 w-7 min-h-[28px] min-w-[28px] transition-all hover:-translate-y-0.5 active:scale-95"
-                >
-                  <ChevronRight className="h-3.5 w-3.5" />
-                </Button>
               </div>
-              <div className="grid grid-cols-7 gap-1.5">
+              <div
+                ref={daysScrollRef}
+                className="flex gap-1.5 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-1"
+                style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              >
                 {days.map((day) => {
                   const isSelected = isSameDay(day, selectedDate);
                   const isDayToday = isSameDay(day, new Date());
@@ -545,13 +533,14 @@ const Agenda = () => {
                       key={day.toISOString()}
                       onClick={() => setSelectedDate(day)}
                       className={cn(
-                        'flex flex-col items-center py-1.5 px-1 rounded-xl transition-all duration-200',
+                        'flex flex-col items-center py-1.5 px-2.5 rounded-xl transition-all duration-200 snap-center shrink-0',
                         'hover:bg-accent/50 active:scale-95',
                         isSelected && 'text-primary-foreground hover:bg-primary shadow-md',
                         isDayToday && !isSelected && 'ring-1 ring-primary/50'
                       )}
                       style={{
                         background: isSelected ? 'var(--primary-gradient)' : undefined,
+                        minWidth: '48px',
                       }}
                     >
                       <span className="text-[9px] font-medium uppercase opacity-70">
