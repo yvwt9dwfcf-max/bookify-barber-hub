@@ -603,27 +603,6 @@ const Agenda = () => {
               </Card>
             ) : (
               <div className="relative">
-                {/* Current time line indicator */}
-                {isToday && daySlots.length > 0 && (() => {
-                  const firstSlot = daySlots[0];
-                  const lastSlot = daySlots[daySlots.length - 1];
-                  const totalMinutes = (lastSlot.hour * 60 + lastSlot.minute + 30) - (firstSlot.hour * 60 + firstSlot.minute);
-                  const elapsedMinutes = (currentHour * 60 + currentMinute) - (firstSlot.hour * 60 + firstSlot.minute);
-                  const progress = elapsedMinutes / totalMinutes;
-                  if (progress < 0 || progress > 1) return null;
-                  return (
-                    <div
-                      data-current-slot
-                      className="absolute left-0 right-0 z-10 pointer-events-none"
-                      style={{ top: `${progress * 100}%` }}
-                    >
-                      <div className="relative flex items-center">
-                        <div className="w-2 h-2 rounded-full bg-destructive shadow-[0_0_6px_hsl(var(--destructive)/0.5)]" />
-                        <div className="flex-1 h-px bg-destructive/60" />
-                      </div>
-                    </div>
-                  );
-                })()}
 
                 {/* Empty state when no appointments */}
                 {!hasAppointments && !loading && (
