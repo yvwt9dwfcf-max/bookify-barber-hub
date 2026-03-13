@@ -28,8 +28,6 @@ const Configuracoes = () => {
   const { barbershop, isMaster, refetch: refetchUserRole } = useUserRole();
   const navigate = useNavigate();
   
-  const [savingAccount, setSavingAccount] = useState(false);
-  const [savingBarbershop, setSavingBarbershop] = useState(false);
   const [copied, setCopied] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [photoUrl, setPhotoUrl] = useState('');
@@ -53,43 +51,42 @@ const Configuracoes = () => {
     }
   };
 
-  const [name, setName] = useState(barber?.name || '');
-  const [phone, setPhone] = useState(barber?.phone || '');
-  const [barbershopName, setBarbershopName] = useState(barbershop?.name || '');
-
-  // Sync state when barbershop/barber data loads or changes
+  // Sync photo when barbershop data loads
   useEffect(() => {
     if (barbershop) {
-      setBarbershopName(barbershop.name || '');
       setPhotoUrl(barbershop.photo_url || '');
     }
   }, [barbershop]);
 
-  useEffect(() => {
-    if (barber) {
-      setName(barber.name || '');
-      setPhone(barber.phone || '');
-    }
-  }, [barber]);
+  // Auto-save: barbershop name
+  const saveBarbershopName = useCallback(async (val: string) => {
+    if (!barbershop) return;
+    const { error } = await supabase
+      .from('barbershops')
+      .update({ name: val })
+      .eq('id', barbershop.id);
+    if (error) throw error;
+    await refetchUserRole();
+    await refetchRole();
+  }, [barbershop, refetchUserRole, refetchRole]);
 
-  const barbershopSlug = barbershop?.slug || barbershop?.id || '';
-  const publicLinkReal = barbershop
-    ? `${window.location.origin}/barbearia/${barbershopSlug}`
-    : '';
-  const publicLinkDisplay = barbershopSlug ? `bookify.app/${barbershopSlug}` : '';
+  const barbershopNameAutoSave = useAutoSave({
+    serverValue: barbershop?.name || '',
+    onSave: saveBarbershopName,
+  });
 
-  const handleCopyLink = async () => {
-    if (!publicLinkReal) return;
-    try {
-      await navigator.clipboard.writeText(publicLinkReal);
-      setCopied(true);
-      toast.success('Link copiado!');
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      toast.error('Erro ao copiar link');
-    }
-  };
+  // Auto-save: barber name
+  const saveBarberName = useCallback(async (val: string) => {
+    const { error } = await updateBarber({ name: val });
+    if (error) throw error;
+  }, [updateBarber]);
 
+  const barberNameAutoSave = useAutoSave({
+    serverValue: barber?.name || '',
+    onSave: saveBarberName,
+  });
+
+  // Auto-save: barber phone
   const formatPhone = (value: string) => {
     const numbers = value.replace(/\D/g, '');
     if (numbers.length <= 2) return numbers;
@@ -98,138 +95,18 @@ const Configuracoes = () => {
     return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
   };
 
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatPhone(e.target.value);
-    setPhone(formatted);
-  };
+  const saveBarberPhone = useCallback(async (val: string) => {
+    const { error } = await updateBarber({ phone: val || null });
+    if (error) throw error;
+  }, [updateBarber]);
 
-  const handleSaveAccount = async () => {
-    if (!name.trim()) {
-      toast.error('Digite seu nome');
-      return;
-    }
+  const barberPhoneAutoSave = useAutoSave({
+    serverValue: barber?.phone || '',
+    onSave: saveBarberPhone,
+  });
 
-    setSavingAccount(true);
-    try {
-      const { error } = await updateBarber({
-        name: name.trim(),
-        phone: phone || null,
-      });
-
-      if (error) throw error;
-      toast.success('Dados da conta atualizados!');
-    } catch (error) {
-      toast.error('Erro ao atualizar dados');
-    } finally {
-      setSavingAccount(false);
-    }
-  };
-
-  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !barber) return;
-
-    if (!file.type.startsWith('image/')) {
-      toast.error('Selecione uma imagem válida');
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Imagem deve ter no máximo 5MB');
-      return;
-    }
-
-    setUploadingPhoto(true);
-    try {
-      const ext = file.name.split('.').pop();
-      const fileName = `barbers/${barber.id}/${Date.now()}.${ext}`;
-      const { error: uploadErr } = await supabase.storage
-        .from('barbershop-photos')
-        .upload(fileName, file, { upsert: true });
-      if (uploadErr) throw uploadErr;
-
-      const { data: urlData } = supabase.storage
-        .from('barbershop-photos')
-        .getPublicUrl(fileName);
-
-      const newUrl = urlData.publicUrl;
-      await updateBarber({ photo_url: newUrl });
-      toast.success('Foto atualizada!');
-    } catch (err) {
-      toast.error('Erro ao enviar foto');
-      console.error(err);
-    } finally {
-      setUploadingPhoto(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
-    }
-  };
-
-  const handleBarbershopPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !barbershop) return;
-
-    if (!file.type.startsWith('image/')) {
-      toast.error('Selecione uma imagem válida');
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Imagem deve ter no máximo 5MB');
-      return;
-    }
-
-    setUploadingPhoto(true);
-    try {
-      const ext = file.name.split('.').pop();
-      const fileName = `${barbershop.id}/${Date.now()}.${ext}`;
-      const { error: uploadErr } = await supabase.storage
-        .from('barbershop-photos')
-        .upload(fileName, file, { upsert: true });
-      if (uploadErr) throw uploadErr;
-
-      const { data: urlData } = supabase.storage
-        .from('barbershop-photos')
-        .getPublicUrl(fileName);
-
-      const newUrl = urlData.publicUrl;
-      const { error } = await supabase
-        .from('barbershops')
-        .update({ photo_url: newUrl })
-        .eq('id', barbershop.id);
-      if (error) throw error;
-
-      setPhotoUrl(newUrl);
-      await refetchUserRole();
-      await refetchRole();
-      toast.success('Foto atualizada!');
-    } catch (err) {
-      toast.error('Erro ao enviar foto');
-      console.error(err);
-    } finally {
-      setUploadingPhoto(false);
-    }
-  };
-
-  const handleSaveBarbershop = async () => {
-    if (!barbershopName.trim()) {
-      toast.error('Digite o nome da barbearia');
-      return;
-    }
-
-    setSavingBarbershop(true);
-    try {
-      const { error } = await supabase
-        .from('barbershops')
-        .update({ name: barbershopName.trim() })
-        .eq('id', barbershop!.id);
-
-      if (error) throw error;
-      await refetchUserRole();
-      await refetchRole();
-      toast.success('Nome da barbearia atualizado!');
-    } catch (error) {
-      toast.error('Erro ao atualizar barbearia');
-    } finally {
-      setSavingBarbershop(false);
-    }
+  const handlePhoneChange = (val: string) => {
+    barberPhoneAutoSave.setValue(formatPhone(val));
   };
 
   const planLabel = barbershop?.plan
