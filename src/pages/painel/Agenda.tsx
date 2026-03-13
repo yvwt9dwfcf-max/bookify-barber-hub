@@ -602,7 +602,29 @@ const Agenda = () => {
                 </CardContent>
               </Card>
             ) : (
-              <div className="space-y-1.5">
+              <div className="relative">
+                {/* Current time line indicator */}
+                {isToday && daySlots.length > 0 && (() => {
+                  const firstSlot = daySlots[0];
+                  const lastSlot = daySlots[daySlots.length - 1];
+                  const totalMinutes = (lastSlot.hour * 60 + lastSlot.minute + 30) - (firstSlot.hour * 60 + firstSlot.minute);
+                  const elapsedMinutes = (currentHour * 60 + currentMinute) - (firstSlot.hour * 60 + firstSlot.minute);
+                  const progress = elapsedMinutes / totalMinutes;
+                  if (progress < 0 || progress > 1) return null;
+                  return (
+                    <div
+                      data-current-slot
+                      className="absolute left-0 right-0 z-10 pointer-events-none"
+                      style={{ top: `${progress * 100}%` }}
+                    >
+                      <div className="relative flex items-center">
+                        <div className="w-2 h-2 rounded-full bg-destructive shadow-[0_0_6px_hsl(var(--destructive)/0.5)]" />
+                        <div className="flex-1 h-px bg-destructive/60" />
+                      </div>
+                    </div>
+                  );
+                })()}
+
                 {/* Empty state when no appointments */}
                 {!hasAppointments && !loading && (
                   <Card className="border-border/40 border-dashed shadow-sm bg-card/60 backdrop-blur-sm rounded-xl mb-3">
@@ -676,106 +698,86 @@ const Agenda = () => {
                   const isPast = availability.reason === 'passado';
                   const isBreak = availability.reason === 'intervalo';
                   const isBlocked = availability.reason === 'bloqueado';
-                  
+                  const isFullHour = slot.minute === 0;
 
                   // Skip slots covered by a multi-slot appointment
                   if (coveredSlots.has(slot.time)) {
                     return null;
                   }
 
-                  // If this slot has an appointment (occupied)
-                    if (appointment && appointment.status !== 'cancelled') {
-                      const durationMin = appointment.service?.duration_minutes || 30;
-                      const slotsSpanned = Math.ceil(durationMin / 30);
-                      const cardMinHeight = slotsSpanned > 1 ? slotsSpanned * 52 + (slotsSpanned - 1) * 6 : undefined;
-                      const cfg = getStatusConfig(appointment.status);
-                      
-                      return (
+                  // Separator line
+                  const separator = (
+                    <div className={cn(
+                      "absolute top-0 left-14 right-0 h-px",
+                      isFullHour ? "bg-border/40" : "bg-border/20"
+                    )} />
+                  );
+
+                  // Appointment card
+                  if (appointment && appointment.status !== 'cancelled') {
+                    const durationMin = appointment.service?.duration_minutes || 30;
+                    const slotsSpanned = Math.ceil(durationMin / 30);
+                    const cardMinHeight = slotsSpanned > 1 ? slotsSpanned * 52 + (slotsSpanned - 1) * 6 : 52;
+                    const cfg = getStatusConfig(appointment.status);
+                    
+                    return (
+                      <div key={slot.time} className="relative flex" style={{ animationDelay: `${index * 0.02}s` }}>
+                        {separator}
+                        {/* Time label */}
+                        <div className="w-14 shrink-0 pt-2.5 pr-3 text-right">
+                          <p className="text-xs font-medium tabular-nums text-muted-foreground/70">{slot.time}</p>
+                        </div>
+                        {/* Card */}
                         <div
-                          key={slot.time}
                           className={cn(
-                            "relative flex items-center gap-3 rounded-2xl overflow-hidden cursor-pointer",
-                            "border border-l-[3px] p-3",
+                            "flex-1 rounded-xl overflow-hidden cursor-pointer my-0.5",
+                            "border-l-[3px] px-3 py-2.5",
                             "transition-all duration-200 active:scale-[0.99]",
-                            "backdrop-blur-sm",
-                            cfg.bg,
+                            "bg-secondary/80",
                             cfg.borderColor,
-                            appointment.status === 'confirmed' && "border-primary/25 shadow-[0_0_12px_-2px_hsl(var(--primary)/0.2)]",
-                            appointment.status === 'completed' && "border-success/25 shadow-[0_0_12px_-2px_hsl(var(--success)/0.2)]",
                           )}
                           onClick={() => handleCardClick(appointment)}
-                          style={{ 
-                            animationDelay: `${index * 0.02}s`,
-                            minHeight: cardMinHeight ? `${cardMinHeight}px` : undefined,
-                          }}
+                          style={{ minHeight: `${cardMinHeight}px` }}
                         >
-                          {/* Time */}
-                          <div className="shrink-0 text-left">
-                            <p className="text-base font-bold tabular-nums leading-tight">
-                              {format(new Date(appointment.start_time), 'HH:mm')}
-                            </p>
-                            <p className="text-[10px] text-muted-foreground/50 tabular-nums leading-none mt-0.5">
-                              {format(new Date(appointment.end_time), 'HH:mm')}
-                            </p>
-                          </div>
-
-                          {/* Avatar */}
-                          <div className={cn(
-                            "w-10 h-10 rounded-xl flex items-center justify-center text-xs font-bold shrink-0 text-primary-foreground",
-                          )}
-                            style={{ background: 'var(--primary-gradient)' }}
-                          >
-                            {getInitials(appointment.customer_name)}
-                          </div>
-
-                          {/* Info */}
-                          <div className="flex-1 min-w-0">
-                            <p className="font-bold text-sm leading-tight truncate">
-                              {appointment.customer_name}
-                            </p>
-                            {appointment.service && (
-                              <p className="text-xs text-muted-foreground leading-tight mt-0.5 truncate">
-                                {appointment.service.name} • {appointment.service.duration_minutes}min
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0 flex-1">
+                              {appointment.service && (
+                                <p className="text-xs font-semibold text-foreground/90 truncate">
+                                  {appointment.service.name}
+                                </p>
+                              )}
+                              <p className="text-[11px] text-muted-foreground truncate mt-0.5">
+                                {appointment.customer_name}
                               </p>
-                            )}
-                            {slotsSpanned > 1 && (
-                              <p className="text-[10px] text-muted-foreground/50 mt-1">
+                              <p className="text-[10px] text-muted-foreground/50 tabular-nums mt-0.5">
                                 {format(new Date(appointment.start_time), 'HH:mm')} — {format(new Date(appointment.end_time), 'HH:mm')}
                               </p>
-                            )}
+                            </div>
+                            <span className={cn(
+                              "px-2 py-0.5 rounded-full text-[9px] font-semibold shrink-0 border",
+                              appointment.status === 'confirmed' && "bg-primary/10 text-primary border-primary/20",
+                              appointment.status === 'completed' && "bg-success/10 text-success border-success/20",
+                            )}>
+                              {cfg.label}
+                            </span>
                           </div>
-
-                          {/* Status Badge */}
-                          <span className={cn(
-                            "px-2.5 py-1 rounded-full text-[10px] font-semibold shrink-0 border",
-                            appointment.status === 'confirmed' && "bg-primary/10 text-primary border-primary/25",
-                            appointment.status === 'completed' && "bg-success/10 text-success border-success/25",
-                          )}>
-                            {cfg.label}
-                          </span>
                         </div>
-                      );
-                    }
+                      </div>
+                    );
+                  }
 
                   // Blocked slot
                   if (isBlocked) {
                     return (
-                      <div
-                        key={slot.time}
-                        className={cn(
-                          "flex items-center gap-3 px-4 py-2.5 rounded-xl",
-                          "bg-muted/30 border border-border/30",
-                          "opacity-60"
-                        )}
-                      >
-                        <div className="w-12 shrink-0 text-center">
-                          <p className="text-sm font-medium tabular-nums text-muted-foreground">{slot.time}</p>
+                      <div key={slot.time} className="relative flex">
+                        {separator}
+                        <div className="w-14 shrink-0 pt-2.5 pr-3 text-right">
+                          <p className="text-xs font-medium tabular-nums text-muted-foreground/40">{slot.time}</p>
                         </div>
-                        <div className="w-px h-6 bg-border/30" />
-                        <Ban className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                        <span className="text-xs text-muted-foreground">
-                          {blockedReason || 'Bloqueado'}
-                        </span>
+                        <div className="flex-1 flex items-center gap-2 py-2.5 opacity-50">
+                          <Ban className="h-3 w-3 text-muted-foreground shrink-0" />
+                          <span className="text-[11px] text-muted-foreground">{blockedReason || 'Bloqueado'}</span>
+                        </div>
                       </div>
                     );
                   }
@@ -783,20 +785,15 @@ const Agenda = () => {
                   // Break slot
                   if (isBreak) {
                     return (
-                      <div
-                        key={slot.time}
-                        className={cn(
-                          "flex items-center gap-3 px-4 py-2.5 rounded-xl",
-                          "bg-amber-500/5 border border-amber-500/10",
-                          "opacity-50"
-                        )}
-                      >
-                        <div className="w-12 shrink-0 text-center">
-                          <p className="text-sm font-medium tabular-nums text-muted-foreground">{slot.time}</p>
+                      <div key={slot.time} className="relative flex">
+                        {separator}
+                        <div className="w-14 shrink-0 pt-2.5 pr-3 text-right">
+                          <p className="text-xs font-medium tabular-nums text-muted-foreground/40">{slot.time}</p>
                         </div>
-                        <div className="w-px h-6 bg-border/30" />
-                        <Clock className="h-3.5 w-3.5 text-amber-500 shrink-0" />
-                        <span className="text-xs text-amber-500/80">Intervalo</span>
+                        <div className="flex-1 flex items-center gap-2 py-2.5 opacity-40">
+                          <Clock className="h-3 w-3 text-warning shrink-0" />
+                          <span className="text-[11px] text-warning/80">Intervalo</span>
+                        </div>
                       </div>
                     );
                   }
@@ -804,65 +801,60 @@ const Agenda = () => {
                   // Past slot
                   if (isPast) {
                     return (
-                      <div
-                        key={slot.time}
-                        className={cn(
-                          "flex items-center gap-3 px-4 py-2 rounded-xl",
-                          "opacity-30"
-                        )}
-                      >
-                        <div className="w-12 shrink-0 text-center">
-                          <p className="text-sm font-medium tabular-nums text-muted-foreground">{slot.time}</p>
+                      <div key={slot.time} className="relative flex">
+                        {separator}
+                        <div className="w-14 shrink-0 pt-2.5 pr-3 text-right">
+                          <p className="text-xs font-medium tabular-nums text-muted-foreground/25">{slot.time}</p>
                         </div>
-                        <div className="w-px h-6 bg-border/20" />
-                        <div className="flex-1 h-px bg-border/20" />
+                        <div className="flex-1 py-3">
+                          <div className="h-px bg-border/10" />
+                        </div>
                       </div>
                     );
                   }
 
-                  // Available slot - clickable
+                  // Available slot
                   return (
                     <button
                       key={slot.time}
                       onClick={() => handleOpenManualDialog(slot.time)}
                       className={cn(
-                        "w-full flex items-center gap-3 px-4 py-2.5 rounded-xl",
-                        "border border-transparent",
+                        "relative w-full flex group",
                         "transition-all duration-200",
-                        "hover:bg-primary/5 hover:border-primary/20 hover:shadow-sm",
-                        "active:scale-[0.99] active:bg-primary/10",
-                        "group",
-                        isCurrentSlot && "bg-primary/5 border-primary/15 ring-1 ring-primary/20"
                       )}
                     >
-                      <div className="w-12 shrink-0 text-center">
+                      {separator}
+                      <div className="w-14 shrink-0 pt-2.5 pr-3 text-right">
                         <p className={cn(
-                          "text-sm font-medium tabular-nums",
-                          isCurrentSlot ? "text-primary font-bold" : "text-muted-foreground"
+                          "text-xs font-medium tabular-nums",
+                          isCurrentSlot ? "text-primary font-bold" : "text-muted-foreground/60"
                         )}>
                           {slot.time}
                         </p>
                       </div>
-                      <div className="w-px h-6 bg-border/30 group-hover:bg-primary/30 transition-colors" />
-                      <div className="flex-1 flex items-center justify-between">
-                        <span className="text-xs text-muted-foreground/50 group-hover:text-primary/70 transition-colors">
-                          Horário disponível
+                      <div className={cn(
+                        "flex-1 flex items-center justify-between py-3 px-2 rounded-lg -mx-1",
+                        "group-hover:bg-primary/5 transition-colors",
+                        isCurrentSlot && "bg-primary/[0.03]"
+                      )}>
+                        <span className="text-[11px] text-muted-foreground/30 group-hover:text-primary/50 transition-colors">
+                          Disponível
                         </span>
-                        <CalendarPlus className="h-3.5 w-3.5 text-muted-foreground/0 group-hover:text-primary/60 transition-all duration-200" />
+                        <CalendarPlus className="h-3 w-3 text-transparent group-hover:text-primary/40 transition-all" />
                       </div>
                     </button>
                   );
                 })}
 
-                {/* Current time indicator */}
+                {/* Current time scroll button */}
                 {isToday && daySlots.length > 0 && (
                   <div className="fixed right-4 bottom-24 z-10">
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={() => {
-                        const currentSlotEl = document.querySelector('[data-current-slot]');
-                        currentSlotEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        const el = document.querySelector('[data-current-slot]');
+                        el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                       }}
                       className="rounded-full shadow-md text-xs h-8 px-3 border-primary/30 text-primary bg-card/95 backdrop-blur-sm"
                     >
