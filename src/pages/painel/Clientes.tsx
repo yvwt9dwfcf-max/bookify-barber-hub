@@ -48,6 +48,7 @@ const Clientes = () => {
   const [selectedClient, setSelectedClient] = useState<ClientData | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'all' | 'top' | 'inactive'>('all');
+  const [periodFilter, setPeriodFilter] = useState<number>(0); // 0 = all time
 
   // Fetch all completed appointments with service info
   const { data: rawAppointments, isLoading } = useQuery({
