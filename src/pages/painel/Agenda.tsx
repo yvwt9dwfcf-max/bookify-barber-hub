@@ -816,10 +816,10 @@ const Agenda = () => {
                         "group-hover:bg-primary/5 transition-colors",
                         isCurrentSlot && "bg-primary/[0.03]"
                       )}>
-                        <span className="text-[11px] text-muted-foreground/30 group-hover:text-primary/50 transition-colors">
-                          Disponível
+                        <span className="text-[11px] text-muted-foreground/40 group-hover:text-muted-foreground/60 transition-colors">
+                          {slot.time} <span className="mx-0.5">•</span> Disponível
                         </span>
-                        <CalendarPlus className="h-3 w-3 text-transparent group-hover:text-primary/40 transition-all" />
+                        <CalendarPlus className="h-3 w-3 text-transparent group-hover:text-muted-foreground/40 transition-all" />
                       </div>
                     </button>
                   );
