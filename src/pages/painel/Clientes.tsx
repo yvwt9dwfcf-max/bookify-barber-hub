@@ -212,6 +212,29 @@ const Clientes = () => {
         ))}
       </div>
 
+      {/* Period Filter */}
+      <div className="flex gap-1.5">
+        {[
+          { value: 0, label: 'Todos' },
+          { value: 30, label: '30 dias' },
+          { value: 60, label: '60 dias' },
+          { value: 90, label: '90 dias' },
+        ].map(p => (
+          <Button
+            key={p.value}
+            variant={periodFilter === p.value ? 'secondary' : 'ghost'}
+            size="sm"
+            onClick={() => setPeriodFilter(p.value)}
+            className={cn(
+              'h-7 px-3 text-[11px] flex-1',
+              periodFilter === p.value && 'font-semibold'
+            )}
+          >
+            {p.label}
+          </Button>
+        ))}
+      </div>
+
       {/* Search */}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
