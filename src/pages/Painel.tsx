@@ -19,14 +19,12 @@ import {
   CalendarX2,
   UsersRound,
   Crown,
-   MessageCircle,
+  MessageCircle,
   PieChart,
   Share2,
   Percent,
   Stamp,
   Contact,
-  Percent,
-  Stamp,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
