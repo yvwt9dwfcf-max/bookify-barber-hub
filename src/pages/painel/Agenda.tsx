@@ -403,21 +403,21 @@ const Agenda = () => {
       <DashboardCards barbershopId={barbershop?.id} selectedDate={selectedDate} refreshKey={dashboardRefreshKey} />
 
       {/* Premium Header */}
-      <div className="animate-fade-in space-y-2">
-        <div className="flex items-center justify-between gap-3">
+      <div className="animate-fade-in space-y-1">
+        <div className="flex items-center justify-between gap-2">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setSelectedDate(addDays(selectedDate, -1))}
-            className="h-9 w-9 shrink-0 transition-all hover:-translate-x-0.5 active:scale-95"
+            className="h-8 w-8 shrink-0 transition-all hover:-translate-x-0.5 active:scale-95"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <div className="flex-1 text-center">
-            <h1 className="text-2xl font-bold capitalize">
+            <h1 className="text-xl font-bold capitalize leading-tight">
               {format(selectedDate, 'EEEE', { locale: ptBR })}
             </h1>
-            <p className="text-sm text-muted-foreground mt-0.5">
+            <p className="text-xs text-muted-foreground">
               {format(selectedDate, "d 'de' MMMM 'de' yyyy", { locale: ptBR })}
             </p>
           </div>
@@ -425,7 +425,7 @@ const Agenda = () => {
             variant="ghost"
             size="icon"
             onClick={() => setSelectedDate(addDays(selectedDate, 1))}
-            className="h-9 w-9 shrink-0 transition-all hover:translate-x-0.5 active:scale-95"
+            className="h-8 w-8 shrink-0 transition-all hover:translate-x-0.5 active:scale-95"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
