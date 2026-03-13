@@ -178,7 +178,7 @@ const DashboardCards = ({ barbershopId, selectedDate, refreshKey }: DashboardCar
                     <span>{isPositive ? '+' : ''}{growth}%</span>
                   </div>
                 </CardContent>
-                <div className="h-9">
+                <div className="h-7">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={sparkData} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
                       <defs>

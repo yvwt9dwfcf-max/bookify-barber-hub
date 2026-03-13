@@ -519,8 +519,8 @@ const Agenda = () => {
         <>
           {/* Date Navigation - Sticky */}
           <Card className="border-border/50 shadow-sm bg-card/80 backdrop-blur-sm overflow-hidden animate-fade-in rounded-xl sticky top-0 z-20" style={{ animationDelay: '0.08s' }}>
-            <CardContent className="p-3">
-              <div className="flex items-center justify-between mb-2">
+            <CardContent className="p-2">
+              <div className="flex items-center justify-between mb-1">
                 <Button
                   variant="ghost"
                   size="icon"
