@@ -672,8 +672,6 @@ const Agenda = () => {
                   const appointment = appointmentsBySlot[slot.time];
                   const availability = checkSlotAvailability(slot.time, selectedDate, 30);
                   const blockedReason = getBlockedReason(slot.time);
-                  const isCurrentSlot = isToday && slot.hour === currentHour && 
-                    currentMinute >= slot.minute && currentMinute < slot.minute + 30;
                   const isPast = availability.reason === 'passado';
                   const isBreak = availability.reason === 'intervalo';
                   const isBlocked = availability.reason === 'bloqueado';
