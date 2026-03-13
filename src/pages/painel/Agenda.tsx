@@ -291,15 +291,7 @@ const Agenda = () => {
     container.scrollTo({ left: scrollLeft, behavior: 'smooth' });
   }, [selectedDate, days]);
 
-  // Current time - use ref to avoid re-renders, update via interval
-  const [currentTime, setCurrentTime] = useState(() => new Date());
-  useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 60000);
-    return () => clearInterval(timer);
-  }, []);
-  const currentHour = currentTime.getHours();
-  const currentMinute = currentTime.getMinutes();
-  const isToday = isSameDay(selectedDate, currentTime);
+  const isToday = isSameDay(selectedDate, new Date());
 
   const hasAppointments = useMemo(() => 
     appointments.some(a => a.status !== 'cancelled'), 
