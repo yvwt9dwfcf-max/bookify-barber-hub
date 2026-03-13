@@ -1,17 +1,19 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useOutletContext, useNavigate } from 'react-router-dom';
 import { Barber, Barbershop } from '@/lib/supabase';
 import { useBarber } from '@/hooks/useBarber';
 import { useUserRole } from '@/hooks/useUserRole';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { UserRound as User, Mail, Loader2, Save, Building2, Crown, Link2, Copy, CircleCheck as CheckCircle, CreditCard, ChevronRight, Sun, Moon, TriangleAlert as AlertTriangle, Trash2, Camera, CircleHelp as HelpCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Loader2, Building2, Crown, Link2, Copy, CircleCheck as CheckCircle, CreditCard, ChevronRight, Sun, Moon, TriangleAlert as AlertTriangle, Trash2, Camera, CircleHelp as HelpCircle, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 import { Switch } from '@/components/ui/switch';
 import { supabase } from '@/integrations/supabase/client';
 import { Separator } from '@/components/ui/separator';
+import { useAutoSave } from '@/hooks/useAutoSave';
+import { AutoSaveIndicator } from '@/components/ui/AutoSaveIndicator';
 
 interface ContextType {
   barber: Barber | null;
@@ -26,12 +28,9 @@ const Configuracoes = () => {
   const { barbershop, isMaster, refetch: refetchUserRole } = useUserRole();
   const navigate = useNavigate();
   
-  const [savingAccount, setSavingAccount] = useState(false);
-  const [savingBarbershop, setSavingBarbershop] = useState(false);
   const [copied, setCopied] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [photoUrl, setPhotoUrl] = useState('');
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const barbershopFileInputRef = useRef<HTMLInputElement>(null);
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const saved = localStorage.getItem('bookify-theme');
@@ -51,24 +50,69 @@ const Configuracoes = () => {
     }
   };
 
-  const [name, setName] = useState(barber?.name || '');
-  const [phone, setPhone] = useState(barber?.phone || '');
-  const [barbershopName, setBarbershopName] = useState(barbershop?.name || '');
-
-  // Sync state when barbershop/barber data loads or changes
+  // Sync photo when barbershop data loads
   useEffect(() => {
     if (barbershop) {
-      setBarbershopName(barbershop.name || '');
       setPhotoUrl(barbershop.photo_url || '');
     }
   }, [barbershop]);
 
-  useEffect(() => {
-    if (barber) {
-      setName(barber.name || '');
-      setPhone(barber.phone || '');
-    }
-  }, [barber]);
+  // Auto-save: barbershop name
+  const saveBarbershopName = useCallback(async (val: string) => {
+    if (!barbershop) return;
+    const { error } = await supabase
+      .from('barbershops')
+      .update({ name: val })
+      .eq('id', barbershop.id);
+    if (error) throw error;
+    await refetchUserRole();
+    await refetchRole();
+  }, [barbershop, refetchUserRole, refetchRole]);
+
+  const barbershopNameAutoSave = useAutoSave({
+    serverValue: barbershop?.name || '',
+    onSave: saveBarbershopName,
+  });
+
+  // Auto-save: barber name
+  const saveBarberName = useCallback(async (val: string) => {
+    const { error } = await updateBarber({ name: val });
+    if (error) throw error;
+  }, [updateBarber]);
+
+  const barberNameAutoSave = useAutoSave({
+    serverValue: barber?.name || '',
+    onSave: saveBarberName,
+  });
+
+  // Auto-save: barber phone
+  const formatPhone = (value: string) => {
+    const numbers = value.replace(/\D/g, '');
+    if (numbers.length <= 2) return numbers;
+    if (numbers.length <= 7) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
+    if (numbers.length <= 11) return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7)}`;
+    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
+  };
+
+  const saveBarberPhone = useCallback(async (val: string) => {
+    const { error } = await updateBarber({ phone: val || null });
+    if (error) throw error;
+  }, [updateBarber]);
+
+  const barberPhoneAutoSave = useAutoSave({
+    serverValue: barber?.phone || '',
+    onSave: saveBarberPhone,
+  });
+
+  // Combined auto-save status for the indicator
+  const combinedStatus = 
+    barbershopNameAutoSave.status === 'saving' || barberNameAutoSave.status === 'saving' || barberPhoneAutoSave.status === 'saving'
+      ? 'saving' as const
+      : barbershopNameAutoSave.status === 'error' || barberNameAutoSave.status === 'error' || barberPhoneAutoSave.status === 'error'
+        ? 'error' as const
+        : barbershopNameAutoSave.status === 'saved' || barberNameAutoSave.status === 'saved' || barberPhoneAutoSave.status === 'saved'
+          ? 'saved' as const
+          : 'idle' as const;
 
   const barbershopSlug = barbershop?.slug || barbershop?.id || '';
   const publicLinkReal = barbershop
@@ -85,79 +129,6 @@ const Configuracoes = () => {
       setTimeout(() => setCopied(false), 2000);
     } catch {
       toast.error('Erro ao copiar link');
-    }
-  };
-
-  const formatPhone = (value: string) => {
-    const numbers = value.replace(/\D/g, '');
-    if (numbers.length <= 2) return numbers;
-    if (numbers.length <= 7) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
-    if (numbers.length <= 11) return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7)}`;
-    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
-  };
-
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatPhone(e.target.value);
-    setPhone(formatted);
-  };
-
-  const handleSaveAccount = async () => {
-    if (!name.trim()) {
-      toast.error('Digite seu nome');
-      return;
-    }
-
-    setSavingAccount(true);
-    try {
-      const { error } = await updateBarber({
-        name: name.trim(),
-        phone: phone || null,
-      });
-
-      if (error) throw error;
-      toast.success('Dados da conta atualizados!');
-    } catch (error) {
-      toast.error('Erro ao atualizar dados');
-    } finally {
-      setSavingAccount(false);
-    }
-  };
-
-  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !barber) return;
-
-    if (!file.type.startsWith('image/')) {
-      toast.error('Selecione uma imagem válida');
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Imagem deve ter no máximo 5MB');
-      return;
-    }
-
-    setUploadingPhoto(true);
-    try {
-      const ext = file.name.split('.').pop();
-      const fileName = `barbers/${barber.id}/${Date.now()}.${ext}`;
-      const { error: uploadErr } = await supabase.storage
-        .from('barbershop-photos')
-        .upload(fileName, file, { upsert: true });
-      if (uploadErr) throw uploadErr;
-
-      const { data: urlData } = supabase.storage
-        .from('barbershop-photos')
-        .getPublicUrl(fileName);
-
-      const newUrl = urlData.publicUrl;
-      await updateBarber({ photo_url: newUrl });
-      toast.success('Foto atualizada!');
-    } catch (err) {
-      toast.error('Erro ao enviar foto');
-      console.error(err);
-    } finally {
-      setUploadingPhoto(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
@@ -203,30 +174,6 @@ const Configuracoes = () => {
       console.error(err);
     } finally {
       setUploadingPhoto(false);
-    }
-  };
-
-  const handleSaveBarbershop = async () => {
-    if (!barbershopName.trim()) {
-      toast.error('Digite o nome da barbearia');
-      return;
-    }
-
-    setSavingBarbershop(true);
-    try {
-      const { error } = await supabase
-        .from('barbershops')
-        .update({ name: barbershopName.trim() })
-        .eq('id', barbershop!.id);
-
-      if (error) throw error;
-      await refetchUserRole();
-      await refetchRole();
-      toast.success('Nome da barbearia atualizado!');
-    } catch (error) {
-      toast.error('Erro ao atualizar barbearia');
-    } finally {
-      setSavingBarbershop(false);
     }
   };
 
@@ -339,12 +286,15 @@ const Configuracoes = () => {
       {/* Seção Barbearia */}
       {isMaster && (
         <section className="space-y-4">
-          <div>
-            <h2 className="text-lg font-semibold flex items-center gap-2">
-              <Building2 className="h-4 w-4" />
-              Barbearia
-            </h2>
-            <p className="text-xs text-muted-foreground">Configurações da sua barbearia</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                <Building2 className="h-4 w-4" />
+                Barbearia
+              </h2>
+              <p className="text-xs text-muted-foreground">Configurações da sua barbearia</p>
+            </div>
+            <AutoSaveIndicator status={combinedStatus} />
           </div>
 
           <div className="rounded-lg border p-4 space-y-4">
@@ -353,8 +303,9 @@ const Configuracoes = () => {
               <Input
                 id="barbershop-name"
                 placeholder="Nome da barbearia"
-                value={barbershopName}
-                onChange={(e) => setBarbershopName(e.target.value)}
+                value={barbershopNameAutoSave.value}
+                onChange={(e) => barbershopNameAutoSave.setValue(e.target.value)}
+                onBlur={barbershopNameAutoSave.onBlur}
               />
             </div>
 
@@ -363,29 +314,21 @@ const Configuracoes = () => {
               <Input
                 id="name"
                 placeholder="Seu nome"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                value={barberNameAutoSave.value}
+                onChange={(e) => barberNameAutoSave.setValue(e.target.value)}
+                onBlur={barberNameAutoSave.onBlur}
               />
             </div>
 
-            <div className="flex justify-end gap-2 pt-1">
-              <Button
-                onClick={async () => {
-                  await handleSaveAccount();
-                  await handleSaveBarbershop();
-                }}
-                disabled={savingAccount || savingBarbershop}
-                size="sm"
-                variant="outline"
-                className="gap-1.5 text-xs"
-              >
-                {(savingAccount || savingBarbershop) ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                ) : (
-                  <Save className="h-3.5 w-3.5" />
-                )}
-                Salvar alterações
-              </Button>
+            <div className="space-y-1.5">
+              <Label htmlFor="phone" className="text-xs">Telefone</Label>
+              <Input
+                id="phone"
+                placeholder="(00) 00000-0000"
+                value={barberPhoneAutoSave.value}
+                onChange={(e) => barberPhoneAutoSave.setValue(formatPhone(e.target.value))}
+                onBlur={barberPhoneAutoSave.onBlur}
+              />
             </div>
           </div>
         </section>
