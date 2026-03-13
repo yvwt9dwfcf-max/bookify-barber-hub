@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useOutletContext, useNavigate } from 'react-router-dom';
 import { Barber, Barbershop } from '@/lib/supabase';
 import { useBarber } from '@/hooks/useBarber';
@@ -12,6 +12,8 @@ import { toast } from 'sonner';
 import { Switch } from '@/components/ui/switch';
 import { supabase } from '@/integrations/supabase/client';
 import { Separator } from '@/components/ui/separator';
+import { useAutoSave } from '@/hooks/useAutoSave';
+import { AutoSaveIndicator } from '@/components/ui/AutoSaveIndicator';
 
 interface ContextType {
   barber: Barber | null;
