@@ -808,8 +808,7 @@ const Agenda = () => {
                       </div>
                       <div className={cn(
                         "flex-1 flex items-center justify-between py-3 px-2 rounded-lg -mx-1",
-                        "group-hover:bg-primary/5 transition-colors",
-                        isCurrentSlot && "bg-primary/[0.03]"
+                        "group-hover:bg-accent/50 transition-colors"
                       )}>
                         <span className="text-[11px] text-muted-foreground/40 group-hover:text-muted-foreground/60 transition-colors">
                           {slot.time} <span className="mx-0.5">•</span> Disponível
