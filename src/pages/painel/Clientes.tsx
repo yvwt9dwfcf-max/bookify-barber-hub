@@ -104,9 +104,16 @@ const Clientes = () => {
     return Array.from(map.values());
   }, [rawAppointments]);
 
+  // Apply period filter first
+  const periodClients = useMemo(() => {
+    if (periodFilter === 0) return clients;
+    const cutoff = subDays(new Date(), periodFilter);
+    return clients.filter(c => new Date(c.lastVisit) >= cutoff);
+  }, [clients, periodFilter]);
+
   // Filter and sort
   const filteredClients = useMemo(() => {
-    let list = [...clients];
+    let list = [...periodClients];
 
     if (search) {
       const q = search.toLowerCase();
@@ -124,7 +131,7 @@ const Clientes = () => {
     }
 
     return list;
-  }, [clients, search, activeTab]);
+  }, [periodClients, search, activeTab]);
 
   const topClients = useMemo(() => [...clients].sort((a, b) => b.visits - a.visits).slice(0, 5), [clients]);
   const inactiveClients = useMemo(() => {
