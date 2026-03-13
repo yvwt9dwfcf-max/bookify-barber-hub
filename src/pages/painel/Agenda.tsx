@@ -279,7 +279,8 @@ const Agenda = () => {
   // Ref for scrollable days container
   const daysScrollRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to selected day
+  // Auto-scroll to selected day (instant on mount, smooth after)
+  const hasInitialScrolled = useRef(false);
   useEffect(() => {
     const container = daysScrollRef.current;
     if (!container) return;
@@ -288,7 +289,12 @@ const Agenda = () => {
     const child = container.children[selectedIndex] as HTMLElement;
     if (!child) return;
     const scrollLeft = child.offsetLeft - container.offsetWidth / 2 + child.offsetWidth / 2;
-    container.scrollTo({ left: scrollLeft, behavior: 'smooth' });
+    if (!hasInitialScrolled.current) {
+      container.scrollTo({ left: scrollLeft, behavior: 'instant' as ScrollBehavior });
+      hasInitialScrolled.current = true;
+    } else {
+      container.scrollTo({ left: scrollLeft, behavior: 'smooth' });
+    }
   }, [selectedDate, days]);
 
   const isToday = isSameDay(selectedDate, new Date());
@@ -392,26 +398,26 @@ const Agenda = () => {
 
   return (
     <Suspense fallback={fallback}>
-    <div className="space-y-4 pb-24 animate-page-enter">
+    <div className="space-y-2 pb-24 animate-page-enter">
       {/* Dashboard Cards */}
       <DashboardCards barbershopId={barbershop?.id} selectedDate={selectedDate} refreshKey={dashboardRefreshKey} />
 
       {/* Premium Header */}
-      <div className="animate-fade-in space-y-2">
-        <div className="flex items-center justify-between gap-3">
+      <div className="animate-fade-in space-y-1">
+        <div className="flex items-center justify-between gap-2">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setSelectedDate(addDays(selectedDate, -1))}
-            className="h-9 w-9 shrink-0 transition-all hover:-translate-x-0.5 active:scale-95"
+            className="h-8 w-8 shrink-0 transition-all hover:-translate-x-0.5 active:scale-95"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <div className="flex-1 text-center">
-            <h1 className="text-2xl font-bold capitalize">
+            <h1 className="text-xl font-bold capitalize leading-tight">
               {format(selectedDate, 'EEEE', { locale: ptBR })}
             </h1>
-            <p className="text-sm text-muted-foreground mt-0.5">
+            <p className="text-xs text-muted-foreground">
               {format(selectedDate, "d 'de' MMMM 'de' yyyy", { locale: ptBR })}
             </p>
           </div>
@@ -419,7 +425,7 @@ const Agenda = () => {
             variant="ghost"
             size="icon"
             onClick={() => setSelectedDate(addDays(selectedDate, 1))}
-            className="h-9 w-9 shrink-0 transition-all hover:translate-x-0.5 active:scale-95"
+            className="h-8 w-8 shrink-0 transition-all hover:translate-x-0.5 active:scale-95"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
@@ -453,7 +459,7 @@ const Agenda = () => {
       {/* Barber selector */}
       {canViewOthers && barbers.length > 1 && (
         <Card className="border-border/50 shadow-sm bg-card/80 backdrop-blur-sm animate-fade-in rounded-xl" style={{ animationDelay: '0.05s' }}>
-          <CardContent className="p-2.5">
+          <CardContent className="p-2">
             <div className="flex items-center gap-2">
               <User className="h-3.5 w-3.5 text-muted-foreground" />
               <div className="flex-1">
@@ -513,8 +519,8 @@ const Agenda = () => {
         <>
           {/* Date Navigation - Sticky */}
           <Card className="border-border/50 shadow-sm bg-card/80 backdrop-blur-sm overflow-hidden animate-fade-in rounded-xl sticky top-0 z-20" style={{ animationDelay: '0.08s' }}>
-            <CardContent className="p-3">
-              <div className="flex items-center justify-between mb-2">
+            <CardContent className="p-2">
+              <div className="flex items-center justify-between mb-1">
                 <Button
                   variant="ghost"
                   size="icon"
