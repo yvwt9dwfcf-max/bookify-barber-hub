@@ -124,7 +124,7 @@ const DashboardCards = ({ barbershopId, selectedDate, refreshKey }: DashboardCar
   ];
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       {isTrialActive && (
         <motion.div
           initial={{ opacity: 0, y: -4 }}
