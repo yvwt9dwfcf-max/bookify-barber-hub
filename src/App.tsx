@@ -23,6 +23,7 @@ const Assinatura = lazy(() => import("./pages/painel/Assinatura"));
 const PerfilPublico = lazy(() => import("./pages/painel/PerfilPublico"));
 const Comissoes = lazy(() => import("./pages/painel/Comissoes"));
 const Fidelidade = lazy(() => import("./pages/painel/Fidelidade"));
+const Clientes = lazy(() => import("./pages/painel/Clientes"));
 const Suporte = lazy(() => import("./pages/painel/Suporte"));
 const ExcluirConta = lazy(() => import("./pages/painel/ExcluirConta"));
 const AgendarBarbearia = lazy(() => import("./pages/AgendarBarbearia"));
