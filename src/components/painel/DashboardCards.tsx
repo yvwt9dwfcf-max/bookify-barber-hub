@@ -167,13 +167,13 @@ const DashboardCards = ({ barbershopId, selectedDate, refreshKey }: DashboardCar
           return (
             <motion.div key={label} variants={itemVariants}>
               <Card className="border-border/30 bg-card/60 backdrop-blur-sm rounded-xl overflow-hidden">
-                <CardContent className="p-3 pb-0">
-                  <div className={`h-6 w-6 rounded-lg ${bgColor} flex items-center justify-center mb-2`}>
-                    <Icon className={`h-3 w-3 ${iconColor}`} />
+                <CardContent className="p-2 pb-0">
+                  <div className={`h-5 w-5 rounded-md ${bgColor} flex items-center justify-center mb-1`}>
+                    <Icon className={`h-2.5 w-2.5 ${iconColor}`} />
                   </div>
-                  <p className="text-base font-bold leading-tight truncate">{formatted}</p>
-                  <p className="text-[9px] text-muted-foreground leading-tight mt-0.5">{label}</p>
-                  <div className={`flex items-center gap-0.5 text-[9px] font-medium mt-1 mb-2 ${growthColor}`}>
+                  <p className="text-sm font-bold leading-tight truncate">{formatted}</p>
+                  <p className="text-[9px] text-muted-foreground leading-tight">{label}</p>
+                  <div className={`flex items-center gap-0.5 text-[9px] font-medium mt-0.5 mb-1 ${growthColor}`}>
                     <GrowthIcon className="h-2.5 w-2.5" />
                     <span>{isPositive ? '+' : ''}{growth}%</span>
                   </div>
