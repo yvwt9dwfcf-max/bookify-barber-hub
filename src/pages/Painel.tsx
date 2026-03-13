@@ -19,11 +19,12 @@ import {
   CalendarX2,
   UsersRound,
   Crown,
-   MessageCircle,
+  MessageCircle,
   PieChart,
   Share2,
   Percent,
   Stamp,
+  Contact,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
@@ -74,6 +75,7 @@ const Painel = () => {
     { icon: CalendarX2, label: 'Bloqueios', path: '/painel/bloqueios' },
     ...(isMaster ? [{ icon: UsersRound, label: 'Equipe', path: '/painel/barbeiros' }] : []),
     ...(isMaster ? [{ icon: PieChart, label: 'Relatórios', path: '/painel/relatorios' }] : []),
+    ...(isMaster ? [{ icon: Contact, label: 'Clientes', path: '/painel/clientes' }] : []),
     ...(isMaster ? [{ icon: Percent, label: 'Comissões', path: '/painel/comissoes' }] : []),
     { icon: Stamp, label: 'Fidelidade', path: '/painel/fidelidade' },
     

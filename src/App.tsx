@@ -23,6 +23,7 @@ const Assinatura = lazy(() => import("./pages/painel/Assinatura"));
 const PerfilPublico = lazy(() => import("./pages/painel/PerfilPublico"));
 const Comissoes = lazy(() => import("./pages/painel/Comissoes"));
 const Fidelidade = lazy(() => import("./pages/painel/Fidelidade"));
+const Clientes = lazy(() => import("./pages/painel/Clientes"));
 const Suporte = lazy(() => import("./pages/painel/Suporte"));
 const ExcluirConta = lazy(() => import("./pages/painel/ExcluirConta"));
 const AgendarBarbearia = lazy(() => import("./pages/AgendarBarbearia"));
@@ -67,6 +68,7 @@ const App = () => (
             <Route path="perfil-publico" element={<PerfilPublico />} />
             <Route path="comissoes" element={<Comissoes />} />
             <Route path="fidelidade" element={<Fidelidade />} />
+            <Route path="clientes" element={<Clientes />} />
             <Route path="configuracoes" element={<Configuracoes />} />
             <Route path="excluir-conta" element={<ExcluirConta />} />
             <Route path="suporte" element={<Suporte />} />
