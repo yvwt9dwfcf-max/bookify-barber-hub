@@ -376,6 +376,24 @@ const Clientes = () => {
                 </div>
               </div>
 
+              {/* WhatsApp Button for inactive clients */}
+              {selectedClient.phone && differenceInDays(new Date(), new Date(selectedClient.lastVisit)) >= 30 && (
+                <Button
+                  variant="outline"
+                  className="w-full gap-2 h-10 text-sm border-border/40"
+                  onClick={() => {
+                    const phone = selectedClient.phone.replace(/\D/g, '');
+                    const msg = encodeURIComponent(
+                      `Olá ${selectedClient.name.split(' ')[0]}! Sentimos sua falta por aqui 😊 Que tal agendar um horário?`
+                    );
+                    window.open(`https://wa.me/55${phone}?text=${msg}`, '_blank');
+                  }}
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  Enviar mensagem no WhatsApp
+                </Button>
+              )}
+
               <Separator className="bg-border/30" />
 
               {/* History */}
