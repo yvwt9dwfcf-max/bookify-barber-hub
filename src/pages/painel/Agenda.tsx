@@ -279,7 +279,8 @@ const Agenda = () => {
   // Ref for scrollable days container
   const daysScrollRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to selected day
+  // Auto-scroll to selected day (instant on mount, smooth after)
+  const hasInitialScrolled = useRef(false);
   useEffect(() => {
     const container = daysScrollRef.current;
     if (!container) return;
@@ -288,7 +289,12 @@ const Agenda = () => {
     const child = container.children[selectedIndex] as HTMLElement;
     if (!child) return;
     const scrollLeft = child.offsetLeft - container.offsetWidth / 2 + child.offsetWidth / 2;
-    container.scrollTo({ left: scrollLeft, behavior: 'smooth' });
+    if (!hasInitialScrolled.current) {
+      container.scrollTo({ left: scrollLeft, behavior: 'instant' as ScrollBehavior });
+      hasInitialScrolled.current = true;
+    } else {
+      container.scrollTo({ left: scrollLeft, behavior: 'smooth' });
+    }
   }, [selectedDate, days]);
 
   const isToday = isSameDay(selectedDate, new Date());
