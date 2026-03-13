@@ -804,10 +804,7 @@ const Agenda = () => {
                     >
                       {separator}
                       <div className="w-14 shrink-0 pt-2.5 pr-3 text-right">
-                        <p className={cn(
-                          "text-xs font-medium tabular-nums",
-                          isCurrentSlot ? "text-primary font-bold" : "text-muted-foreground/60"
-                        )}>
+                        <p className="text-xs font-medium tabular-nums text-muted-foreground/60">
                           {slot.time}
                         </p>
                       </div>
