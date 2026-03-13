@@ -291,15 +291,7 @@ const Agenda = () => {
     container.scrollTo({ left: scrollLeft, behavior: 'smooth' });
   }, [selectedDate, days]);
 
-  // Current time - use ref to avoid re-renders, update via interval
-  const [currentTime, setCurrentTime] = useState(() => new Date());
-  useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 60000);
-    return () => clearInterval(timer);
-  }, []);
-  const currentHour = currentTime.getHours();
-  const currentMinute = currentTime.getMinutes();
-  const isToday = isSameDay(selectedDate, currentTime);
+  const isToday = isSameDay(selectedDate, new Date());
 
   const hasAppointments = useMemo(() => 
     appointments.some(a => a.status !== 'cancelled'), 
@@ -603,27 +595,6 @@ const Agenda = () => {
               </Card>
             ) : (
               <div className="relative">
-                {/* Current time line indicator */}
-                {isToday && daySlots.length > 0 && (() => {
-                  const firstSlot = daySlots[0];
-                  const lastSlot = daySlots[daySlots.length - 1];
-                  const totalMinutes = (lastSlot.hour * 60 + lastSlot.minute + 30) - (firstSlot.hour * 60 + firstSlot.minute);
-                  const elapsedMinutes = (currentHour * 60 + currentMinute) - (firstSlot.hour * 60 + firstSlot.minute);
-                  const progress = elapsedMinutes / totalMinutes;
-                  if (progress < 0 || progress > 1) return null;
-                  return (
-                    <div
-                      data-current-slot
-                      className="absolute left-0 right-0 z-10 pointer-events-none"
-                      style={{ top: `${progress * 100}%` }}
-                    >
-                      <div className="relative flex items-center">
-                        <div className="w-2 h-2 rounded-full bg-destructive shadow-[0_0_6px_hsl(var(--destructive)/0.5)]" />
-                        <div className="flex-1 h-px bg-destructive/60" />
-                      </div>
-                    </div>
-                  );
-                })()}
 
                 {/* Empty state when no appointments */}
                 {!hasAppointments && !loading && (
@@ -693,8 +664,6 @@ const Agenda = () => {
                   const appointment = appointmentsBySlot[slot.time];
                   const availability = checkSlotAvailability(slot.time, selectedDate, 30);
                   const blockedReason = getBlockedReason(slot.time);
-                  const isCurrentSlot = isToday && slot.hour === currentHour && 
-                    currentMinute >= slot.minute && currentMinute < slot.minute + 30;
                   const isPast = availability.reason === 'passado';
                   const isBreak = availability.reason === 'intervalo';
                   const isBlocked = availability.reason === 'bloqueado';
@@ -825,44 +794,23 @@ const Agenda = () => {
                     >
                       {separator}
                       <div className="w-14 shrink-0 pt-2.5 pr-3 text-right">
-                        <p className={cn(
-                          "text-xs font-medium tabular-nums",
-                          isCurrentSlot ? "text-primary font-bold" : "text-muted-foreground/60"
-                        )}>
+                        <p className="text-xs font-medium tabular-nums text-muted-foreground/60">
                           {slot.time}
                         </p>
                       </div>
                       <div className={cn(
                         "flex-1 flex items-center justify-between py-3 px-2 rounded-lg -mx-1",
-                        "group-hover:bg-primary/5 transition-colors",
-                        isCurrentSlot && "bg-primary/[0.03]"
+                        "group-hover:bg-accent/50 transition-colors"
                       )}>
-                        <span className="text-[11px] text-muted-foreground/30 group-hover:text-primary/50 transition-colors">
-                          Disponível
+                        <span className="text-[11px] text-muted-foreground/40 group-hover:text-muted-foreground/60 transition-colors">
+                          {slot.time} <span className="mx-0.5">•</span> Disponível
                         </span>
-                        <CalendarPlus className="h-3 w-3 text-transparent group-hover:text-primary/40 transition-all" />
+                        <CalendarPlus className="h-3 w-3 text-transparent group-hover:text-muted-foreground/40 transition-all" />
                       </div>
                     </button>
                   );
                 })}
 
-                {/* Current time scroll button */}
-                {isToday && daySlots.length > 0 && (
-                  <div className="fixed right-4 bottom-24 z-10">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        const el = document.querySelector('[data-current-slot]');
-                        el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                      }}
-                      className="rounded-full shadow-md text-xs h-8 px-3 border-primary/30 text-primary bg-card/95 backdrop-blur-sm"
-                    >
-                      <Clock className="h-3 w-3 mr-1" />
-                      Agora
-                    </Button>
-                  </div>
-                )}
               </div>
             )}
           </div>

@@ -79,12 +79,12 @@ const FloatingActionButton = ({ onNewAppointment, onNewBlock }: FloatingActionBu
       {/* Main FAB */}
       <Button
         size="icon"
-        className="h-14 w-14 rounded-full shadow-xl shadow-primary/20 transition-all duration-300 bg-primary hover:bg-primary/90 hover:scale-110 hover:shadow-2xl hover:shadow-primary/30"
+        className="h-12 w-12 rounded-full shadow-md transition-all duration-300 bg-primary/90 hover:bg-primary hover:scale-105"
         onClick={() => setIsOpen(!isOpen)}
       >
         <Plus 
           className={cn(
-            'h-6 w-6 transition-transform duration-300',
+            'h-5 w-5 transition-transform duration-300',
             isOpen && 'rotate-45'
           )} 
         />
