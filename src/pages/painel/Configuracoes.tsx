@@ -3,10 +3,10 @@ import { useOutletContext, useNavigate } from 'react-router-dom';
 import { Barber, Barbershop } from '@/lib/supabase';
 import { useBarber } from '@/hooks/useBarber';
 import { useUserRole } from '@/hooks/useUserRole';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Loader2, Building2, Crown, Link2, Copy, CircleCheck as CheckCircle, CreditCard, ChevronRight, Sun, Moon, TriangleAlert as AlertTriangle, Trash2, Camera, CircleHelp as HelpCircle, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 import { Switch } from '@/components/ui/switch';
@@ -31,7 +31,6 @@ const Configuracoes = () => {
   const [copied, setCopied] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [photoUrl, setPhotoUrl] = useState('');
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const barbershopFileInputRef = useRef<HTMLInputElement>(null);
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const saved = localStorage.getItem('bookify-theme');
@@ -105,8 +104,77 @@ const Configuracoes = () => {
     onSave: saveBarberPhone,
   });
 
-  const handlePhoneChange = (val: string) => {
-    barberPhoneAutoSave.setValue(formatPhone(val));
+  // Combined auto-save status for the indicator
+  const combinedStatus = 
+    barbershopNameAutoSave.status === 'saving' || barberNameAutoSave.status === 'saving' || barberPhoneAutoSave.status === 'saving'
+      ? 'saving' as const
+      : barbershopNameAutoSave.status === 'error' || barberNameAutoSave.status === 'error' || barberPhoneAutoSave.status === 'error'
+        ? 'error' as const
+        : barbershopNameAutoSave.status === 'saved' || barberNameAutoSave.status === 'saved' || barberPhoneAutoSave.status === 'saved'
+          ? 'saved' as const
+          : 'idle' as const;
+
+  const barbershopSlug = barbershop?.slug || barbershop?.id || '';
+  const publicLinkReal = barbershop
+    ? `${window.location.origin}/barbearia/${barbershopSlug}`
+    : '';
+  const publicLinkDisplay = barbershopSlug ? `bookify.app/${barbershopSlug}` : '';
+
+  const handleCopyLink = async () => {
+    if (!publicLinkReal) return;
+    try {
+      await navigator.clipboard.writeText(publicLinkReal);
+      setCopied(true);
+      toast.success('Link copiado!');
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error('Erro ao copiar link');
+    }
+  };
+
+  const handleBarbershopPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !barbershop) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Selecione uma imagem válida');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Imagem deve ter no máximo 5MB');
+      return;
+    }
+
+    setUploadingPhoto(true);
+    try {
+      const ext = file.name.split('.').pop();
+      const fileName = `${barbershop.id}/${Date.now()}.${ext}`;
+      const { error: uploadErr } = await supabase.storage
+        .from('barbershop-photos')
+        .upload(fileName, file, { upsert: true });
+      if (uploadErr) throw uploadErr;
+
+      const { data: urlData } = supabase.storage
+        .from('barbershop-photos')
+        .getPublicUrl(fileName);
+
+      const newUrl = urlData.publicUrl;
+      const { error } = await supabase
+        .from('barbershops')
+        .update({ photo_url: newUrl })
+        .eq('id', barbershop.id);
+      if (error) throw error;
+
+      setPhotoUrl(newUrl);
+      await refetchUserRole();
+      await refetchRole();
+      toast.success('Foto atualizada!');
+    } catch (err) {
+      toast.error('Erro ao enviar foto');
+      console.error(err);
+    } finally {
+      setUploadingPhoto(false);
+    }
   };
 
   const planLabel = barbershop?.plan
@@ -218,12 +286,15 @@ const Configuracoes = () => {
       {/* Seção Barbearia */}
       {isMaster && (
         <section className="space-y-4">
-          <div>
-            <h2 className="text-lg font-semibold flex items-center gap-2">
-              <Building2 className="h-4 w-4" />
-              Barbearia
-            </h2>
-            <p className="text-xs text-muted-foreground">Configurações da sua barbearia</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                <Building2 className="h-4 w-4" />
+                Barbearia
+              </h2>
+              <p className="text-xs text-muted-foreground">Configurações da sua barbearia</p>
+            </div>
+            <AutoSaveIndicator status={combinedStatus} />
           </div>
 
           <div className="rounded-lg border p-4 space-y-4">
@@ -232,8 +303,9 @@ const Configuracoes = () => {
               <Input
                 id="barbershop-name"
                 placeholder="Nome da barbearia"
-                value={barbershopName}
-                onChange={(e) => setBarbershopName(e.target.value)}
+                value={barbershopNameAutoSave.value}
+                onChange={(e) => barbershopNameAutoSave.setValue(e.target.value)}
+                onBlur={barbershopNameAutoSave.onBlur}
               />
             </div>
 
@@ -242,29 +314,21 @@ const Configuracoes = () => {
               <Input
                 id="name"
                 placeholder="Seu nome"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                value={barberNameAutoSave.value}
+                onChange={(e) => barberNameAutoSave.setValue(e.target.value)}
+                onBlur={barberNameAutoSave.onBlur}
               />
             </div>
 
-            <div className="flex justify-end gap-2 pt-1">
-              <Button
-                onClick={async () => {
-                  await handleSaveAccount();
-                  await handleSaveBarbershop();
-                }}
-                disabled={savingAccount || savingBarbershop}
-                size="sm"
-                variant="outline"
-                className="gap-1.5 text-xs"
-              >
-                {(savingAccount || savingBarbershop) ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                ) : (
-                  <Save className="h-3.5 w-3.5" />
-                )}
-                Salvar alterações
-              </Button>
+            <div className="space-y-1.5">
+              <Label htmlFor="phone" className="text-xs">Telefone</Label>
+              <Input
+                id="phone"
+                placeholder="(00) 00000-0000"
+                value={barberPhoneAutoSave.value}
+                onChange={(e) => barberPhoneAutoSave.setValue(formatPhone(e.target.value))}
+                onBlur={barberPhoneAutoSave.onBlur}
+              />
             </div>
           </div>
         </section>
