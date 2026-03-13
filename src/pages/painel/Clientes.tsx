@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
-import { format, differenceInDays } from 'date-fns';
+import { format, differenceInDays, subDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 
@@ -48,6 +48,7 @@ const Clientes = () => {
   const [selectedClient, setSelectedClient] = useState<ClientData | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'all' | 'top' | 'inactive'>('all');
+  const [periodFilter, setPeriodFilter] = useState<number>(0); // 0 = all time
 
   // Fetch all completed appointments with service info
   const { data: rawAppointments, isLoading } = useQuery({
@@ -103,9 +104,16 @@ const Clientes = () => {
     return Array.from(map.values());
   }, [rawAppointments]);
 
+  // Apply period filter first
+  const periodClients = useMemo(() => {
+    if (periodFilter === 0) return clients;
+    const cutoff = subDays(new Date(), periodFilter);
+    return clients.filter(c => new Date(c.lastVisit) >= cutoff);
+  }, [clients, periodFilter]);
+
   // Filter and sort
   const filteredClients = useMemo(() => {
-    let list = [...clients];
+    let list = [...periodClients];
 
     if (search) {
       const q = search.toLowerCase();
@@ -123,7 +131,7 @@ const Clientes = () => {
     }
 
     return list;
-  }, [clients, search, activeTab]);
+  }, [periodClients, search, activeTab]);
 
   const topClients = useMemo(() => [...clients].sort((a, b) => b.visits - a.visits).slice(0, 5), [clients]);
   const inactiveClients = useMemo(() => {
@@ -200,6 +208,29 @@ const Clientes = () => {
           >
             <tab.icon className="h-3 w-3" />
             {tab.label}
+          </Button>
+        ))}
+      </div>
+
+      {/* Period Filter */}
+      <div className="flex gap-1.5">
+        {[
+          { value: 0, label: 'Todos' },
+          { value: 30, label: '30 dias' },
+          { value: 60, label: '60 dias' },
+          { value: 90, label: '90 dias' },
+        ].map(p => (
+          <Button
+            key={p.value}
+            variant={periodFilter === p.value ? 'secondary' : 'ghost'}
+            size="sm"
+            onClick={() => setPeriodFilter(p.value)}
+            className={cn(
+              'h-7 px-3 text-[11px] flex-1',
+              periodFilter === p.value && 'font-semibold'
+            )}
+          >
+            {p.label}
           </Button>
         ))}
       </div>
