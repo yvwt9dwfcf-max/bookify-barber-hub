@@ -251,9 +251,9 @@ const Clientes = () => {
                 {activeTab === 'top' && (
                   <div className={cn(
                     'w-7 h-7 rounded-lg flex items-center justify-center shrink-0 text-xs font-bold',
-                    index === 0 && 'bg-amber-500/15 text-amber-500',
+                    index === 0 && 'bg-warning/15 text-warning',
                     index === 1 && 'bg-muted/50 text-muted-foreground',
-                    index === 2 && 'bg-amber-700/15 text-amber-700',
+                    index === 2 && 'bg-warning/10 text-warning/70',
                     index > 2 && 'bg-muted/30 text-muted-foreground/60',
                   )}>
                     {index === 0 ? <Crown className="h-3.5 w-3.5" /> : `${index + 1}º`}
