@@ -459,7 +459,7 @@ const Agenda = () => {
       {/* Barber selector */}
       {canViewOthers && barbers.length > 1 && (
         <Card className="border-border/50 shadow-sm bg-card/80 backdrop-blur-sm animate-fade-in rounded-xl" style={{ animationDelay: '0.05s' }}>
-          <CardContent className="p-2.5">
+          <CardContent className="p-2">
             <div className="flex items-center gap-2">
               <User className="h-3.5 w-3.5 text-muted-foreground" />
               <div className="flex-1">
