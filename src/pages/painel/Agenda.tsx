@@ -846,15 +846,15 @@ const Agenda = () => {
                   );
                 })}
 
-                {/* Current time indicator */}
+                {/* Current time scroll button */}
                 {isToday && daySlots.length > 0 && (
                   <div className="fixed right-4 bottom-24 z-10">
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={() => {
-                        const currentSlotEl = document.querySelector('[data-current-slot]');
-                        currentSlotEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        const el = document.querySelector('[data-current-slot]');
+                        el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                       }}
                       className="rounded-full shadow-md text-xs h-8 px-3 border-primary/30 text-primary bg-card/95 backdrop-blur-sm"
                     >
