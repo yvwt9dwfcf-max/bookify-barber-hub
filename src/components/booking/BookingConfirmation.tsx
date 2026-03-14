@@ -15,6 +15,30 @@ interface BookingConfirmationProps {
 
 export function BookingConfirmation({ appointment, onNewBooking, barbershopId, preselectedBarber }: BookingConfirmationProps) {
   const navigate = useNavigate();
+  const [whatsappLink, setWhatsappLink] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!barbershopId) return;
+    const fetchWhatsapp = async () => {
+      const { data: profile } = await supabase
+        .from('public_profiles')
+        .select('whatsapp_numero')
+        .eq('barbershop_id', barbershopId)
+        .maybeSingle();
+      
+      const { data: shop } = await supabase
+        .from('barbershops')
+        .select('phone')
+        .eq('id', barbershopId)
+        .maybeSingle();
+
+      const number = profile?.whatsapp_numero || shop?.phone;
+      if (number) {
+        setWhatsappLink(`https://wa.me/55${number.replace(/\D/g, '')}`);
+      }
+    };
+    fetchWhatsapp();
+  }, [barbershopId]);
 
   const handleBackToStart = () => {
     if (barbershopId) {
