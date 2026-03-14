@@ -184,6 +184,17 @@ export function BookingConfirmation({ appointment, onNewBooking, barbershopId, p
         >
           Voltar ao início
         </Button>
+        {whatsappLink && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full gap-2 text-muted-foreground hover:text-foreground"
+            onClick={() => window.open(whatsappLink, '_blank')}
+          >
+            <MessageCircle className="h-4 w-4" />
+            Falar com a barbearia
+          </Button>
+        )}
       </div>
     </div>
   );
