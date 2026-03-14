@@ -125,18 +125,20 @@ export function DateTimeSelection({ barberId, serviceDuration, onSelect }: DateT
           const isOpen = !!getOpeningHoursForDay(dayOfWeek);
           const isPast = isBefore(day, startOfDay(new Date()));
           const isSelected = selectedDate && isSameDay(day, selectedDate);
-          const hasSlots = !isPast && isOpen && getAvailableSlotsForDate(day, serviceDuration).length > 0;
+          const isSelectable = !isPast && isOpen;
+          const hasSlots = isSelectable && getAvailableSlotsForDate(day, serviceDuration).length > 0;
 
           return (
             <button
               key={day.toISOString()}
-              onClick={() => hasSlots && handleDateSelect(day)}
-              disabled={!hasSlots}
+              onClick={() => isSelectable && handleDateSelect(day)}
+              disabled={!isSelectable}
               className={cn(
                 'flex flex-col items-center p-2.5 rounded-xl border-2 transition-all duration-200 ease-out',
-                hasSlots && 'hover:-translate-y-0.5 hover:shadow-md cursor-pointer border-border/30',
-                !hasSlots && 'opacity-40 cursor-not-allowed border-transparent bg-muted/30',
-                isSelected && 'text-primary-foreground border-primary shadow-md hover:border-primary'
+                isSelectable && 'hover:-translate-y-0.5 hover:shadow-md cursor-pointer border-border/30',
+                !isSelectable && 'opacity-40 cursor-not-allowed border-transparent bg-muted/30',
+                isSelectable && !hasSlots && 'opacity-60 border-border/20',
+                isSelected && 'text-primary-foreground border-primary shadow-md hover:border-primary !opacity-100'
               )}
               style={isSelected ? { background: 'var(--primary-gradient)' } : undefined}
             >
