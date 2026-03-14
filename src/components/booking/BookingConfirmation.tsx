@@ -1,6 +1,7 @@
-import { CircleCheck as CheckCircle, CalendarDays as Calendar, UserRound as User, Sparkles as Scissors } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { CircleCheck as CheckCircle, CalendarDays as Calendar, UserRound as User, Sparkles as Scissors, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Appointment, Barber } from '@/lib/supabase';
+import { Appointment, Barber, supabase } from '@/lib/supabase';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
