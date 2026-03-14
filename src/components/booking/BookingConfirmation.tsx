@@ -1,6 +1,7 @@
-import { CircleCheck as CheckCircle, CalendarDays as Calendar, UserRound as User, Sparkles as Scissors } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { CircleCheck as CheckCircle, CalendarDays as Calendar, UserRound as User, Sparkles as Scissors, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Appointment, Barber } from '@/lib/supabase';
+import { Appointment, Barber, supabase } from '@/lib/supabase';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
@@ -14,6 +15,30 @@ interface BookingConfirmationProps {
 
 export function BookingConfirmation({ appointment, onNewBooking, barbershopId, preselectedBarber }: BookingConfirmationProps) {
   const navigate = useNavigate();
+  const [whatsappLink, setWhatsappLink] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!barbershopId) return;
+    const fetchWhatsapp = async () => {
+      const { data: profile } = await supabase
+        .from('public_profiles')
+        .select('whatsapp_numero')
+        .eq('barbershop_id', barbershopId)
+        .maybeSingle();
+      
+      const { data: shop } = await supabase
+        .from('barbershops')
+        .select('phone')
+        .eq('id', barbershopId)
+        .maybeSingle();
+
+      const number = profile?.whatsapp_numero || shop?.phone;
+      if (number) {
+        setWhatsappLink(`https://wa.me/55${number.replace(/\D/g, '')}`);
+      }
+    };
+    fetchWhatsapp();
+  }, [barbershopId]);
 
   const handleBackToStart = () => {
     if (barbershopId) {
@@ -159,6 +184,17 @@ export function BookingConfirmation({ appointment, onNewBooking, barbershopId, p
         >
           Voltar ao início
         </Button>
+        {whatsappLink && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full gap-2 text-muted-foreground hover:text-foreground"
+            onClick={() => window.open(whatsappLink, '_blank')}
+          >
+            <MessageCircle className="h-4 w-4" />
+            Falar com a barbearia
+          </Button>
+        )}
       </div>
     </div>
   );

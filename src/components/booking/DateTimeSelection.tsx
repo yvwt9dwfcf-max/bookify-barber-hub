@@ -160,9 +160,14 @@ export function DateTimeSelection({ barberId, serviceDuration, onSelect }: DateT
           </h3>
           
           {availableSlots.length === 0 ? (
-            <p className="text-muted-foreground text-center py-6">
-              Nenhum horário disponível para esta data.
-            </p>
+            <div className="text-center py-8 space-y-2">
+              <p className="font-semibold text-sm">
+                Todos os horários deste dia já foram reservados.
+              </p>
+              <p className="text-muted-foreground text-xs">
+                Tente selecionar outro dia ou entre em contato com a barbearia.
+              </p>
+            </div>
           ) : (
             <div className="grid grid-cols-4 sm:grid-cols-5 gap-2.5">
               {availableSlots.map((time) => (
