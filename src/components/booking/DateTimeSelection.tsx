@@ -160,12 +160,15 @@ export function DateTimeSelection({ barberId, serviceDuration, onSelect }: DateT
           </h3>
           
           {availableSlots.length === 0 ? (
-            <div className="text-center py-8 space-y-2">
-              <p className="font-semibold text-sm">
+            <div className="flex flex-col items-center justify-center py-12 px-4 text-center rounded-xl border border-border/20 bg-muted/10">
+              <div className="w-12 h-12 rounded-full bg-muted/30 flex items-center justify-center mb-4">
+                <Clock className="h-5 w-5 text-muted-foreground/60" />
+              </div>
+              <p className="font-bold text-sm tracking-wide uppercase">
                 Todos os horários deste dia já foram reservados.
               </p>
-              <p className="text-muted-foreground text-xs">
-                Tente selecionar outro dia ou entre em contato com a barbearia.
+              <p className="text-muted-foreground text-xs mt-2">
+                Tente selecionar outro dia ou fale com a barbearia.
               </p>
             </div>
           ) : (
