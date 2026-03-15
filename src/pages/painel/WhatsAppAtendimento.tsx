@@ -51,7 +51,7 @@ interface BarberWhatsApp {
   message: string;
 }
 
-const DEFAULT_MESSAGE = `Olá 👋
+const DEFAULT_MESSAGE = `Olá!
 Para agendar seu horário, clique no link abaixo:
 {{LINK_AGENDAMENTO}}`;
 
@@ -312,7 +312,7 @@ const WhatsAppAtendimento = () => {
               <AccordionContent className="pt-2">
                 <div className="bg-muted/50 rounded-lg p-4 space-y-3">
                   <p className="text-sm text-amber-600 dark:text-amber-400 font-medium">
-                    ⚠️ Este método funciona somente no aplicativo WhatsApp Business (não funciona no WhatsApp comum).
+                    Atenção: Este método funciona somente no aplicativo WhatsApp Business (não funciona no WhatsApp comum).
                   </p>
                   <ol className="space-y-2 text-sm">
                     <li className="flex gap-2">
@@ -338,7 +338,7 @@ const WhatsAppAtendimento = () => {
                   </ol>
                   <div className="mt-3 p-3 bg-green-500/10 border border-green-500/20 rounded-md">
                     <p className="text-xs text-green-700 dark:text-green-400">
-                      💡 Este é o método <strong>recomendado</strong> para automatizar seu atendimento.
+                      Dica: Este é o método <strong>recomendado</strong> para automatizar seu atendimento.
                     </p>
                   </div>
                 </div>
