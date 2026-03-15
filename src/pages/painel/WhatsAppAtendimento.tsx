@@ -312,7 +312,7 @@ const WhatsAppAtendimento = () => {
               <AccordionContent className="pt-2">
                 <div className="bg-muted/50 rounded-lg p-4 space-y-3">
                   <p className="text-sm text-amber-600 dark:text-amber-400 font-medium">
-                    ⚠️ Este método funciona somente no aplicativo WhatsApp Business (não funciona no WhatsApp comum).
+                    Atenção: Este método funciona somente no aplicativo WhatsApp Business (não funciona no WhatsApp comum).
                   </p>
                   <ol className="space-y-2 text-sm">
                     <li className="flex gap-2">
