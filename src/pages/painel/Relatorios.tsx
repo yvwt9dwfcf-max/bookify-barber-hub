@@ -620,7 +620,7 @@ const Relatorios = () => {
                     />
                   </div>
                   {(totalRevenue / monthlyGoal) >= 1 && (
-                    <p className="text-xs text-primary mt-1 font-medium">🎉 Meta atingida!</p>
+                    <p className="text-xs text-primary mt-1 font-medium">Meta atingida!</p>
                   )}
                 </div>
               )}

@@ -338,7 +338,7 @@ const WhatsAppAtendimento = () => {
                   </ol>
                   <div className="mt-3 p-3 bg-green-500/10 border border-green-500/20 rounded-md">
                     <p className="text-xs text-green-700 dark:text-green-400">
-                      💡 Este é o método <strong>recomendado</strong> para automatizar seu atendimento.
+                      Dica: Este é o método <strong>recomendado</strong> para automatizar seu atendimento.
                     </p>
                   </div>
                 </div>
