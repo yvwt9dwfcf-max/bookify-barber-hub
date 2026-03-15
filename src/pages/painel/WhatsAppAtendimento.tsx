@@ -51,7 +51,7 @@ interface BarberWhatsApp {
   message: string;
 }
 
-const DEFAULT_MESSAGE = `Olá 👋
+const DEFAULT_MESSAGE = `Olá!
 Para agendar seu horário, clique no link abaixo:
 {{LINK_AGENDAMENTO}}`;
 
