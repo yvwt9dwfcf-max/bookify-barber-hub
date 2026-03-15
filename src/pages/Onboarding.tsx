@@ -305,7 +305,7 @@ const Onboarding = () => {
 
           <div className="space-y-3">
             <h1 className="text-3xl font-bold tracking-tight">
-              Sua barbearia está pronta!
+              Sua barbearia está pronta 🚀
             </h1>
             <p className="text-muted-foreground text-lg">
               Tudo configurado! Agora seus clientes já podem agendar horários.

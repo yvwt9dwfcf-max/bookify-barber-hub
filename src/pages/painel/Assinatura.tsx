@@ -36,7 +36,7 @@ const Assinatura = () => {
 
   useEffect(() => {
     if (searchParams.get('success') === 'true') {
-      toast.success('Assinatura realizada com sucesso!');
+      toast.success('Assinatura realizada com sucesso! 🎉');
       // Re-check after a short delay to let Stripe process
       setTimeout(checkSubscription, 2000);
     }

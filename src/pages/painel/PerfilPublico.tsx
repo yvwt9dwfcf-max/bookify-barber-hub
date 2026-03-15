@@ -367,7 +367,7 @@ const PerfilPublico = () => {
       {/* Description */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Descrição</CardTitle>
+          <CardTitle className="text-lg">📝 Descrição</CardTitle>
           <CardDescription>Apresente sua barbearia para os clientes</CardDescription>
         </CardHeader>
         <CardContent>
