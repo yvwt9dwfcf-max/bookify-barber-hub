@@ -345,11 +345,11 @@ const Agenda = () => {
       const key = format(startTime, 'HH:mm');
       map[key] = apt;
       
-      // Mark intermediate slots as covered
-      let slotTime = new Date(startTime.getTime() + 30 * 60 * 1000);
+      // Mark intermediate slots as covered (15-min intervals)
+      let slotTime = new Date(startTime.getTime() + 15 * 60 * 1000);
       while (slotTime < endTime) {
         covered.add(format(slotTime, 'HH:mm'));
-        slotTime = new Date(slotTime.getTime() + 30 * 60 * 1000);
+        slotTime = new Date(slotTime.getTime() + 15 * 60 * 1000);
       }
     });
     return { appointmentsBySlot: map, coveredSlots: covered };
