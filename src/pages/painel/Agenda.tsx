@@ -324,7 +324,7 @@ const Agenda = () => {
         hour: h,
         minute: m,
       });
-      m += 30;
+      m += 15;
       if (m >= 60) {
         m = 0;
         h++;
