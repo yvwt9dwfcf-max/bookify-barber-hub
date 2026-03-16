@@ -820,7 +820,7 @@ const Relatorios = () => {
                     <div key={barber.name} className="flex items-center justify-between p-2.5 rounded-lg bg-muted/50">
                       <div className="flex items-center gap-2.5">
                         <span className={`text-sm font-bold ${index === 0 ? 'text-yellow-500' : index === 1 ? 'text-gray-400' : index === 2 ? 'text-amber-700' : 'text-muted-foreground'}`}>
-                          {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
+                          {`${index + 1}º`}
                         </span>
                         <div>
                           <span className="text-sm font-medium">{barber.name}</span>
