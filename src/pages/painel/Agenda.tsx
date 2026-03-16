@@ -324,7 +324,7 @@ const Agenda = () => {
         hour: h,
         minute: m,
       });
-      m += 30;
+      m += 15;
       if (m >= 60) {
         m = 0;
         h++;
@@ -345,11 +345,11 @@ const Agenda = () => {
       const key = format(startTime, 'HH:mm');
       map[key] = apt;
       
-      // Mark intermediate slots as covered
-      let slotTime = new Date(startTime.getTime() + 30 * 60 * 1000);
+      // Mark intermediate slots as covered (15-min intervals)
+      let slotTime = new Date(startTime.getTime() + 15 * 60 * 1000);
       while (slotTime < endTime) {
         covered.add(format(slotTime, 'HH:mm'));
-        slotTime = new Date(slotTime.getTime() + 30 * 60 * 1000);
+        slotTime = new Date(slotTime.getTime() + 15 * 60 * 1000);
       }
     });
     return { appointmentsBySlot: map, coveredSlots: covered };
@@ -668,12 +668,13 @@ const Agenda = () => {
                 {/* Slot grid - always rendered */}
                 {daySlots.map((slot, index) => {
                   const appointment = appointmentsBySlot[slot.time];
-                  const availability = checkSlotAvailability(slot.time, selectedDate, 30);
+                  const availability = checkSlotAvailability(slot.time, selectedDate, 15);
                   const blockedReason = getBlockedReason(slot.time);
                   const isPast = availability.reason === 'passado';
                   const isBreak = availability.reason === 'intervalo';
                   const isBlocked = availability.reason === 'bloqueado';
                   const isFullHour = slot.minute === 0;
+                  const isHalfHour = slot.minute === 30;
 
                   // Skip slots covered by a multi-slot appointment
                   if (coveredSlots.has(slot.time)) {
@@ -684,15 +685,15 @@ const Agenda = () => {
                   const separator = (
                     <div className={cn(
                       "absolute top-0 left-14 right-0 h-px",
-                      isFullHour ? "bg-border/40" : "bg-border/20"
+                      isFullHour ? "bg-border/40" : isHalfHour ? "bg-border/20" : "bg-border/10"
                     )} />
                   );
 
                   // Appointment card
                   if (appointment && appointment.status !== 'cancelled') {
                     const durationMin = appointment.service?.duration_minutes || 30;
-                    const slotsSpanned = Math.ceil(durationMin / 30);
-                    const cardMinHeight = slotsSpanned > 1 ? slotsSpanned * 52 + (slotsSpanned - 1) * 6 : 52;
+                    const slotsSpanned = Math.ceil(durationMin / 15);
+                    const cardMinHeight = slotsSpanned > 1 ? slotsSpanned * 40 + (slotsSpanned - 1) * 4 : 40;
                     const cfg = getStatusConfig(appointment.status);
                     
                     return (
