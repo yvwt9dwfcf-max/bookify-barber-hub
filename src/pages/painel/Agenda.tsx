@@ -674,6 +674,7 @@ const Agenda = () => {
                   const isBreak = availability.reason === 'intervalo';
                   const isBlocked = availability.reason === 'bloqueado';
                   const isFullHour = slot.minute === 0;
+                  const isHalfHour = slot.minute === 30;
 
                   // Skip slots covered by a multi-slot appointment
                   if (coveredSlots.has(slot.time)) {
