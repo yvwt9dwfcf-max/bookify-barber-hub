@@ -176,7 +176,7 @@ export function useAvailability({
     let current = setMinutes(setHours(date, startHour), startMin);
     const endTime = setMinutes(setHours(date, endHour), endMin);
 
-    // Generate slots every 30 minutes
+    // Generate slots every 15 minutes
     while (addMinutes(current, durationMinutes).getTime() <= endTime.getTime()) {
       const timeSlot = `${current.getHours().toString().padStart(2, '0')}:${current.getMinutes().toString().padStart(2, '0')}`;
       
@@ -186,7 +186,7 @@ export function useAvailability({
         slots.push(timeSlot);
       }
 
-      current = addMinutes(current, 30);
+      current = addMinutes(current, 15);
     }
 
     return slots;

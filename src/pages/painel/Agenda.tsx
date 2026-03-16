@@ -685,7 +685,7 @@ const Agenda = () => {
                   const separator = (
                     <div className={cn(
                       "absolute top-0 left-14 right-0 h-px",
-                      isFullHour ? "bg-border/40" : "bg-border/20"
+                      isFullHour ? "bg-border/40" : isHalfHour ? "bg-border/20" : "bg-border/10"
                     )} />
                   );
 
