@@ -691,8 +691,8 @@ const Agenda = () => {
                   // Appointment card
                   if (appointment && appointment.status !== 'cancelled') {
                     const durationMin = appointment.service?.duration_minutes || 30;
-                    const slotsSpanned = Math.ceil(durationMin / 30);
-                    const cardMinHeight = slotsSpanned > 1 ? slotsSpanned * 52 + (slotsSpanned - 1) * 6 : 52;
+                    const slotsSpanned = Math.ceil(durationMin / 15);
+                    const cardMinHeight = slotsSpanned > 1 ? slotsSpanned * 40 + (slotsSpanned - 1) * 4 : 40;
                     const cfg = getStatusConfig(appointment.status);
                     
                     return (
