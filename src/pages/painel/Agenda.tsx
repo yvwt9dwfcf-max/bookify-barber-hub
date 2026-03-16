@@ -668,7 +668,7 @@ const Agenda = () => {
                 {/* Slot grid - always rendered */}
                 {daySlots.map((slot, index) => {
                   const appointment = appointmentsBySlot[slot.time];
-                  const availability = checkSlotAvailability(slot.time, selectedDate, 30);
+                  const availability = checkSlotAvailability(slot.time, selectedDate, 15);
                   const blockedReason = getBlockedReason(slot.time);
                   const isPast = availability.reason === 'passado';
                   const isBreak = availability.reason === 'intervalo';
