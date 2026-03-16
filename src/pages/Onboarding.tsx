@@ -11,9 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { 
-  Loader2, Building2, Timer as Clock, CalendarDays as Calendar, 
-  CircleCheck as CheckCircle, ArrowRight, ArrowLeft, UserRound as User, 
-  Phone, Sparkles, Rocket, Scissors, DollarSign
+  Loader2, Building2, Timer as Clock, CalendarDays as Calendar, CircleCheck as CheckCircle, ArrowRight, ArrowLeft, UserRound as User, Phone
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -36,17 +34,15 @@ const defaultDays: DayConfig[] = [
   { day_of_week: 6, is_open: true, start_time: '09:00', end_time: '14:00', break_start: '', break_end: '' },
 ];
 
-const TOTAL_CONFIG_STEPS = 4;
+const TOTAL_STEPS = 4;
 
-type OnboardingPhase = 'welcome' | 'config' | 'complete';
-
-const stepIcons = [Building2, User, Scissors, Clock];
-const stepTitles = ['Nome da Barbearia', 'Seu Perfil', 'Primeiro Serviço', 'Horário de Funcionamento'];
+const stepIcons = [Building2, Calendar, Clock, Clock];
+const stepTitles = ['Seus dados e barbearia', 'Dias de Atendimento', 'Horários de Funcionamento', 'Intervalos / Almoço'];
 const stepDescriptions = [
-  'Como sua barbearia será conhecida pelos clientes',
-  'Informações do barbeiro principal',
-  'Crie o primeiro serviço para seus clientes agendarem',
-  'Defina os dias e horários de atendimento',
+  'Informações básicas para começar',
+  'Selecione os dias em que você atende',
+  'Configure o horário de cada dia',
+  'Configure os intervalos de cada dia (opcional)',
 ];
 
 const Onboarding = () => {
@@ -55,23 +51,15 @@ const Onboarding = () => {
   const { barbershop, loading: roleLoading } = useUserRole();
   const navigate = useNavigate();
 
-  const [phase, setPhase] = useState<OnboardingPhase>('welcome');
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
 
-  // Step 1: Barbershop
+  // Step 1: Personal info + Barbershop
+  const [barberName, setBarberName] = useState('');
   const [barbershopName, setBarbershopName] = useState('');
   const [barbershopPhone, setBarbershopPhone] = useState('');
 
-  // Step 2: Barber
-  const [barberName, setBarberName] = useState('');
-
-  // Step 3: Service
-  const [serviceName, setServiceName] = useState('');
-  const [servicePrice, setServicePrice] = useState('');
-  const [serviceDuration, setServiceDuration] = useState('30');
-
-  // Step 4: Days and hours
+  // Step 2 & 3: Days and hours
   const [days, setDays] = useState<DayConfig[]>(defaultDays);
 
   // Redirect if not authenticated
@@ -112,10 +100,22 @@ const Onboarding = () => {
 
   const handleNext = async () => {
     if (step === 1) {
+      if (!barberName.trim()) {
+        toast.error('Digite seu nome');
+        return;
+      }
       if (!barbershopName.trim()) {
         toast.error('Digite o nome da barbearia');
         return;
       }
+
+      if (barber) {
+        await supabase
+          .from('barbers')
+          .update({ name: barberName.trim() })
+          .eq('id', barber.id);
+      }
+
       if (barbershop) {
         await supabase
           .from('barbershops')
@@ -125,55 +125,17 @@ const Onboarding = () => {
           })
           .eq('id', barbershop.id);
       }
+
       setStep(2);
     } else if (step === 2) {
-      if (!barberName.trim()) {
-        toast.error('Digite seu nome');
-        return;
-      }
-      if (barber) {
-        await supabase
-          .from('barbers')
-          .update({ name: barberName.trim() })
-          .eq('id', barber.id);
-      }
-      setStep(3);
-    } else if (step === 3) {
-      if (!serviceName.trim()) {
-        toast.error('Digite o nome do serviço');
-        return;
-      }
-      if (!servicePrice.trim() || parseFloat(servicePrice) <= 0) {
-        toast.error('Digite um preço válido');
-        return;
-      }
-      // Save service
-      if (barber && barbershop) {
-        const { error } = await supabase
-          .from('services')
-          .insert({
-            barber_id: barber.id,
-            barbershop_id: barbershop.id,
-            name: serviceName.trim(),
-            price: parseFloat(servicePrice),
-            duration_minutes: parseInt(serviceDuration),
-            is_global: true,
-            active: true,
-          });
-        if (error) {
-          toast.error('Erro ao criar serviço');
-          console.error(error);
-          return;
-        }
-      }
-      setStep(4);
-    } else if (step === 4) {
       const hasOpenDay = days.some(d => d.is_open);
       if (!hasOpenDay) {
         toast.error('Selecione pelo menos um dia de atendimento');
         return;
       }
-      await handleFinish();
+      setStep(3);
+    } else if (step === 3) {
+      setStep(4);
     }
   };
 
@@ -212,7 +174,8 @@ const Onboarding = () => {
 
       if (updateError) throw updateError;
 
-      setPhase('complete');
+      toast.success('Barbearia configurada com sucesso! 🎉');
+      navigate('/painel', { replace: true });
     } catch (error) {
       console.error('Erro ao salvar configurações:', error);
       toast.error('Erro ao salvar configurações');
@@ -231,115 +194,6 @@ const Onboarding = () => {
 
   if (!user) return null;
 
-  // Welcome Screen
-  if (phase === 'welcome') {
-    return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 relative overflow-hidden">
-        {/* Background effects */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-primary/5 blur-3xl" />
-          <div className="absolute bottom-20 left-1/4 w-[400px] h-[400px] rounded-full bg-primary/3 blur-3xl" />
-        </div>
-
-        <div className="relative z-10 text-center space-y-8 max-w-md animate-fade-in">
-          <div className="flex justify-center">
-            <Logo size="lg" linkTo={undefined} />
-          </div>
-
-          <div className="space-y-3">
-            <h1 className="text-3xl font-bold tracking-tight">
-              Bem-vindo ao Bookify
-            </h1>
-            <p className="text-muted-foreground text-lg">
-              Vamos preparar sua barbearia em poucos passos.
-            </p>
-          </div>
-
-          <div className="flex flex-col gap-3 pt-4">
-            {[
-              { icon: Building2, text: 'Nome da barbearia' },
-              { icon: User, text: 'Seu perfil de barbeiro' },
-              { icon: Scissors, text: 'Primeiro serviço' },
-              { icon: Clock, text: 'Horários de funcionamento' },
-            ].map((item, i) => (
-              <div
-                key={i}
-                className="flex items-center gap-3 text-left px-4 py-3 rounded-xl border border-border/30 bg-card/50"
-                style={{ animationDelay: `${(i + 1) * 0.1}s`, animation: 'fade-in 0.4s ease-out backwards' }}
-              >
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-primary/10">
-                  <item.icon className="h-4 w-4 text-primary" />
-                </div>
-                <span className="text-sm font-medium">{item.text}</span>
-              </div>
-            ))}
-          </div>
-
-          <Button
-            onClick={() => setPhase('config')}
-            className="w-full btn-primary-gradient h-12 rounded-xl text-base"
-          >
-            Começar configuração
-            <ArrowRight className="ml-2 h-5 w-5" />
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  // Completion Screen
-  if (phase === 'complete') {
-    return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 relative overflow-hidden">
-        {/* Background effects */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-primary/5 blur-3xl" />
-        </div>
-
-        <div className="relative z-10 text-center space-y-8 max-w-md animate-fade-in">
-          <div className="flex justify-center">
-            <div className="w-20 h-20 rounded-2xl flex items-center justify-center bg-primary/10 border border-primary/20">
-              <Rocket className="h-10 w-10 text-primary" />
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <h1 className="text-3xl font-bold tracking-tight">
-              Sua barbearia está pronta 🚀
-            </h1>
-            <p className="text-muted-foreground text-lg">
-              Tudo configurado! Agora seus clientes já podem agendar horários.
-            </p>
-          </div>
-
-          <div className="flex flex-col gap-3 pt-2">
-            <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-primary/20 bg-primary/5">
-              <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
-              <span className="text-sm">Barbearia configurada</span>
-            </div>
-            <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-primary/20 bg-primary/5">
-              <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
-              <span className="text-sm">Serviço criado</span>
-            </div>
-            <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-primary/20 bg-primary/5">
-              <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
-              <span className="text-sm">Horários definidos</span>
-            </div>
-          </div>
-
-          <Button
-            onClick={() => navigate('/painel', { replace: true })}
-            className="w-full btn-primary-gradient h-12 rounded-xl text-base"
-          >
-            <Calendar className="mr-2 h-5 w-5" />
-            Ir para agenda
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  // Configuration Steps
   const StepIcon = stepIcons[step - 1];
 
   return (
@@ -358,13 +212,13 @@ const Onboarding = () => {
             </div>
             <h1 className="text-2xl font-bold">Configure sua barbearia</h1>
             <p className="text-muted-foreground mt-1">
-              Passo {step} de {TOTAL_CONFIG_STEPS}
+              Passo {step} de {TOTAL_STEPS}
             </p>
           </div>
 
           {/* Progress */}
           <div className="flex gap-2">
-            {Array.from({ length: TOTAL_CONFIG_STEPS }).map((_, i) => (
+            {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
               <div
                 key={i}
                 className="h-1.5 flex-1 rounded-full transition-all duration-500"
@@ -391,9 +245,23 @@ const Onboarding = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Step 1: Barbershop Name */}
+              {/* Step 1: Personal Info + Barbershop */}
               {step === 1 && (
                 <>
+                  <div className="space-y-2">
+                    <Label htmlFor="barber-name">Seu nome *</Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="barber-name"
+                        placeholder="Seu nome completo"
+                        value={barberName}
+                        onChange={(e) => setBarberName(e.target.value)}
+                        className="pl-10 h-11"
+                        autoFocus
+                      />
+                    </div>
+                  </div>
                   <div className="space-y-2">
                     <Label htmlFor="barbershop-name">Nome da barbearia *</Label>
                     <div className="relative">
@@ -404,7 +272,6 @@ const Onboarding = () => {
                         value={barbershopName}
                         onChange={(e) => setBarbershopName(e.target.value)}
                         className="pl-10 h-11"
-                        autoFocus
                       />
                     </div>
                   </div>
@@ -432,122 +299,89 @@ const Onboarding = () => {
                 </>
               )}
 
-              {/* Step 2: Barber Profile */}
+              {/* Step 2: Working Days */}
               {step === 2 && (
                 <div className="space-y-2">
-                  <Label htmlFor="barber-name">Seu nome *</Label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="barber-name"
-                      placeholder="Seu nome completo"
-                      value={barberName}
-                      onChange={(e) => setBarberName(e.target.value)}
-                      className="pl-10 h-11"
-                      autoFocus
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Step 3: First Service */}
-              {step === 3 && (
-                <>
-                  <div className="space-y-2">
-                    <Label htmlFor="service-name">Nome do serviço *</Label>
-                    <div className="relative">
-                      <Scissors className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="service-name"
-                        placeholder="Ex: Corte masculino"
-                        value={serviceName}
-                        onChange={(e) => setServiceName(e.target.value)}
-                        className="pl-10 h-11"
-                        autoFocus
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-2">
-                      <Label htmlFor="service-price">Preço (R$) *</Label>
-                      <div className="relative">
-                        <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="service-price"
-                          type="number"
-                          placeholder="35.00"
-                          value={servicePrice}
-                          onChange={(e) => setServicePrice(e.target.value)}
-                          className="pl-10 h-11"
-                          min="0"
-                          step="0.01"
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="service-duration">Duração (min)</Label>
-                      <div className="relative">
-                        <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="service-duration"
-                          type="number"
-                          placeholder="30"
-                          value={serviceDuration}
-                          onChange={(e) => setServiceDuration(e.target.value)}
-                          className="pl-10 h-11"
-                          min="5"
-                          step="5"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </>
-              )}
-
-              {/* Step 4: Schedule */}
-              {step === 4 && (
-                <div className="space-y-3">
                   {days.map(day => (
                     <div
                       key={day.day_of_week}
-                      className={`rounded-xl border transition-all duration-200 ${
+                      className={`flex items-center justify-between p-3.5 rounded-xl border transition-all duration-200 ${
                         day.is_open 
                           ? 'border-primary/30 bg-primary/5 shadow-sm' 
                           : 'border-border/50 hover:border-border'
                       }`}
                     >
-                      <div className="flex items-center justify-between p-3.5">
-                        <span className="font-medium text-sm">{DAY_NAMES[day.day_of_week]}</span>
-                        <Switch
-                          checked={day.is_open}
-                          onCheckedChange={(checked) => updateDay(day.day_of_week, 'is_open', checked)}
-                        />
-                      </div>
-                      {day.is_open && (
-                        <div className="px-3.5 pb-3.5">
-                          <div className="flex items-center gap-2">
-                            <div className="flex-1">
-                              <Label className="text-xs text-muted-foreground">Início</Label>
-                              <Input
-                                type="time"
-                                value={day.start_time}
-                                onChange={(e) => updateDay(day.day_of_week, 'start_time', e.target.value)}
-                                className="h-9"
-                              />
-                            </div>
-                            <span className="text-muted-foreground mt-4">—</span>
-                            <div className="flex-1">
-                              <Label className="text-xs text-muted-foreground">Fim</Label>
-                              <Input
-                                type="time"
-                                value={day.end_time}
-                                onChange={(e) => updateDay(day.day_of_week, 'end_time', e.target.value)}
-                                className="h-9"
-                              />
-                            </div>
-                          </div>
+                      <span className="font-medium text-sm">{DAY_NAMES[day.day_of_week]}</span>
+                      <Switch
+                        checked={day.is_open}
+                        onCheckedChange={(checked) => updateDay(day.day_of_week, 'is_open', checked)}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Step 3: Hours */}
+              {step === 3 && (
+                <div className="space-y-3">
+                  {days.filter(d => d.is_open).map(day => (
+                    <div key={day.day_of_week} className="p-3.5 rounded-xl border border-border/50 space-y-3 bg-secondary/20">
+                      <p className="font-medium text-sm">{DAY_NAMES[day.day_of_week]}</p>
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1">
+                          <Label className="text-xs text-muted-foreground">Início</Label>
+                          <Input
+                            type="time"
+                            value={day.start_time}
+                            onChange={(e) => updateDay(day.day_of_week, 'start_time', e.target.value)}
+                            className="h-10"
+                          />
                         </div>
-                      )}
+                        <span className="text-muted-foreground mt-5">—</span>
+                        <div className="flex-1">
+                          <Label className="text-xs text-muted-foreground">Fim</Label>
+                          <Input
+                            type="time"
+                            value={day.end_time}
+                            onChange={(e) => updateDay(day.day_of_week, 'end_time', e.target.value)}
+                            className="h-10"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Step 4: Breaks */}
+              {step === 4 && (
+                <div className="space-y-3">
+                  {days.filter(d => d.is_open).map(day => (
+                    <div key={day.day_of_week} className="p-3.5 rounded-xl border border-border/50 space-y-3 bg-secondary/20">
+                      <p className="font-medium text-sm">{DAY_NAMES[day.day_of_week]}</p>
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1">
+                          <Label className="text-xs text-muted-foreground">Intervalo início</Label>
+                          <Input
+                            type="time"
+                            value={day.break_start}
+                            onChange={(e) => updateDay(day.day_of_week, 'break_start', e.target.value)}
+                            placeholder="--:--"
+                            className="h-10"
+                          />
+                        </div>
+                        <span className="text-muted-foreground mt-5">—</span>
+                        <div className="flex-1">
+                          <Label className="text-xs text-muted-foreground">Intervalo fim</Label>
+                          <Input
+                            type="time"
+                            value={day.break_end}
+                            onChange={(e) => updateDay(day.day_of_week, 'break_end', e.target.value)}
+                            placeholder="--:--"
+                            className="h-10"
+                          />
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -561,28 +395,26 @@ const Onboarding = () => {
                     Voltar
                   </Button>
                 )}
-                <Button 
-                  onClick={handleNext} 
-                  disabled={saving} 
-                  className="flex-1 btn-primary-gradient h-11 rounded-xl"
-                >
-                  {saving ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Finalizando...
-                    </>
-                  ) : step < TOTAL_CONFIG_STEPS ? (
-                    <>
-                      Continuar
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle className="mr-2 h-4 w-4" />
-                      Finalizar
-                    </>
-                  )}
-                </Button>
+                {step < TOTAL_STEPS ? (
+                  <Button onClick={handleNext} className="flex-1 btn-primary-gradient h-11 rounded-xl">
+                    Continuar
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                ) : (
+                  <Button onClick={handleFinish} disabled={saving} className="flex-1 btn-primary-gradient h-11 rounded-xl">
+                    {saving ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Finalizando...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="mr-2 h-4 w-4" />
+                        Finalizar
+                      </>
+                    )}
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>
