@@ -4,9 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
   CalendarDays as Calendar, Timer as Clock, UsersRound as Users, Smartphone, PieChart as BarChart3, ShieldCheck as Shield, 
-  ArrowRight, CircleCheck as CheckCircle, Zap, Share2 as Globe, Stamp as Gift, Coins as DollarSign
+  ArrowRight, Zap, Share2 as Globe, Stamp as Gift, Coins as DollarSign, Play, Star, CheckCircle2,
+  TrendingUp, MessageCircle
 } from 'lucide-react';
-import { PLANS } from '@/lib/plans';
+import { motion } from 'framer-motion';
 
 const features = [
   {
@@ -31,7 +32,7 @@ const features = [
   },
   {
     icon: BarChart3,
-    title: 'Relatórios',
+    title: 'Relatórios Completos',
     description: 'Acompanhe faturamento, atendimentos e desempenho da sua barbearia.',
   },
   {
@@ -42,7 +43,7 @@ const features = [
   {
     icon: Gift,
     title: 'Programa de Fidelidade',
-    description: 'Fidelize seus clientes com um sistema de pontos simples e prático por serviço concluído.',
+    description: 'Fidelize seus clientes com um sistema de pontos simples e prático.',
   },
   {
     icon: DollarSign,
@@ -50,6 +51,41 @@ const features = [
     description: 'Defina comissões por barbeiro e por serviço, com relatório mensal automático.',
   },
 ];
+
+const howItWorks = [
+  {
+    step: '01',
+    title: 'Crie sua conta',
+    description: 'Cadastre-se em menos de 1 minuto e ganhe 3 dias grátis para testar tudo.',
+  },
+  {
+    step: '02',
+    title: 'Configure sua barbearia',
+    description: 'Adicione seus serviços, barbeiros e horários de funcionamento.',
+  },
+  {
+    step: '03',
+    title: 'Compartilhe o link',
+    description: 'Envie o link de agendamento para seus clientes e receba agendamentos online.',
+  },
+];
+
+const stats = [
+  { value: '3 dias', label: 'Grátis para testar' },
+  { value: '100%', label: 'Online e seguro' },
+  { value: '24/7', label: 'Agendamento disponível' },
+  { value: '0', label: 'Cartão necessário' },
+];
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: 'easeOut' as const } },
+};
+
+const staggerContainer = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.1 } },
+};
 
 const LandingPage = () => {
   return (
@@ -66,7 +102,7 @@ const LandingPage = () => {
             </Link>
             <Link to="/register">
               <Button size="sm" className="btn-primary-gradient text-sm rounded-lg">
-                Criar conta
+                Teste grátis
               </Button>
             </Link>
           </div>
@@ -74,177 +110,279 @@ const LandingPage = () => {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-36 pb-24 md:pt-44 md:pb-36 px-4 sm:px-6">
+      <section className="relative pt-32 pb-20 md:pt-44 md:pb-32 px-4 sm:px-6">
         {/* Background effects */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[600px] h-[600px] md:w-[900px] md:h-[900px] rounded-full bg-primary/8 blur-[120px]" />
-          <div className="absolute top-40 left-1/4 w-[300px] h-[300px] rounded-full bg-primary/5 blur-[100px] animate-pulse-soft" />
-          <div className="absolute top-60 right-1/4 w-[200px] h-[200px] rounded-full bg-primary/10 blur-[80px] animate-pulse-soft" style={{ animationDelay: '1s' }} />
+          <div className="absolute top-40 left-1/4 w-[300px] h-[300px] rounded-full bg-primary/5 blur-[100px]" />
         </div>
 
         <div className="relative max-w-4xl mx-auto text-center">
           {/* Badge */}
-          <div className="inline-flex flex-col items-center gap-1 px-6 py-3 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-10 animate-fade-in">
-            <div className="flex items-center gap-2">
-              <Zap className="h-4 w-4" />
-              <span className="font-semibold">Teste gratuito por 3 dias</span>
-            </div>
-            <span className="text-xs text-primary/80">Comece agora e experimente todas as funcionalidades do Bookify. Sem necessidade de cartão de crédito.</span>
-          </div>
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }} 
+            animate={{ opacity: 1, scale: 1 }} 
+            transition={{ duration: 0.5 }}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-semibold mb-10"
+          >
+            <Zap className="h-4 w-4" />
+            3 dias grátis · Sem cartão de crédito
+          </motion.div>
 
           {/* Heading */}
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.08] mb-8 animate-fade-in" style={{ animationDelay: '0.1s' }}>
-            <span className="text-foreground">Sistema profissional para</span>
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            transition={{ duration: 0.7, delay: 0.1 }}
+            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.08] mb-8"
+          >
+            <span className="text-foreground">Sua barbearia no</span>
             <br />
             <span className="bg-clip-text text-transparent" style={{ backgroundImage: 'var(--primary-gradient)' }}>
-              barbearias que querem crescer
+              próximo nível
             </span>
-          </h1>
+          </motion.h1>
 
           {/* Subtitle */}
-          <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-12 leading-relaxed animate-fade-in" style={{ animationDelay: '0.2s' }}>
-            Organização e tecnologia em um só lugar. Gerencie agendamentos, equipe e faturamento enquanto seus clientes agendam online, sem complicação.
-          </p>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            transition={{ duration: 0.7, delay: 0.2 }}
+            className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-12 leading-relaxed"
+          >
+            O sistema completo para gerenciar agendamentos, equipe e faturamento. 
+            Seus clientes agendam online, você foca no que importa.
+          </motion.p>
 
           {/* CTAs */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in" style={{ animationDelay: '0.3s' }}>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            transition={{ duration: 0.7, delay: 0.3 }}
+            className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+          >
             <Link to="/register">
-              <Button size="lg" className="btn-primary-gradient text-base px-8 py-6 rounded-lg shadow-xl shadow-primary/25 hover:shadow-2xl hover:shadow-primary/35 transition-all duration-300">
+              <Button size="lg" className="btn-primary-gradient text-base px-8 py-6 rounded-xl shadow-xl shadow-primary/25 hover:shadow-2xl hover:shadow-primary/35 transition-all duration-300">
                 Começar teste grátis
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
-            <a href="#features">
-              <Button variant="outline" size="lg" className="text-base px-8 py-6 rounded-lg border-border/60 text-muted-foreground hover:text-foreground hover:border-border">
-                Ver funcionalidades
+            <a href="#como-funciona">
+              <Button variant="outline" size="lg" className="text-base px-8 py-6 rounded-xl border-border/60 text-muted-foreground hover:text-foreground hover:border-border">
+                Como funciona?
               </Button>
             </a>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Stats Strip */}
+      <section className="py-8 px-4 sm:px-6 border-y border-border/20 bg-card/30">
+        <div className="max-w-5xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+            {stats.map((stat) => (
+              <div key={stat.label} className="text-center">
+                <div className="text-2xl sm:text-3xl font-extrabold text-primary mb-1">{stat.value}</div>
+                <div className="text-sm text-muted-foreground">{stat.label}</div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
+      {/* Video / Demo Placeholder */}
+      <section className="py-20 md:py-28 px-4 sm:px-6">
+        <div className="max-w-4xl mx-auto">
+          <motion.div 
+            initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-50px' }}
+            variants={fadeInUp}
+            className="text-center mb-12"
+          >
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
+              Veja o Bookify em ação
+            </h2>
+            <p className="text-muted-foreground text-lg max-w-xl mx-auto">
+              Descubra como é simples gerenciar sua barbearia com o Bookify.
+            </p>
+          </motion.div>
+
+          <motion.div 
+            initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-50px' }}
+            variants={fadeInUp}
+            className="relative aspect-video rounded-2xl overflow-hidden border border-border/40 bg-card/60 backdrop-blur-sm shadow-2xl shadow-black/30"
+          >
+            {/* Placeholder - substituir por vídeo real futuramente */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
+              <div className="w-20 h-20 rounded-full flex items-center justify-center bg-primary/15 border border-primary/30 backdrop-blur-sm">
+                <Play className="h-8 w-8 text-primary ml-1" />
+              </div>
+              <p className="text-muted-foreground text-sm font-medium">
+                Vídeo demonstrativo em breve
+              </p>
+            </div>
+            {/* Efeito de grid sutil */}
+            <div className="absolute inset-0 opacity-[0.03]" style={{
+              backgroundImage: 'linear-gradient(hsl(var(--foreground)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--foreground)) 1px, transparent 1px)',
+              backgroundSize: '40px 40px'
+            }} />
+          </motion.div>
+        </div>
+      </section>
+
       {/* Features Section */}
-      <section id="features" className="py-24 md:py-32 px-4 sm:px-6 bg-card/30">
+      <section id="features" className="py-20 md:py-28 px-4 sm:px-6 bg-card/30">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-20">
+          <motion.div 
+            initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-50px' }}
+            variants={fadeInUp}
+            className="text-center mb-16"
+          >
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-6">
               <Globe className="h-4 w-4" />
               Funcionalidades
             </div>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-5">
-              Tudo que você precisa
+              Tudo que sua barbearia precisa
             </h2>
             <p className="text-muted-foreground text-lg max-w-xl mx-auto leading-relaxed">
-              Ferramentas profissionais para elevar sua barbearia ao próximo nível.
+              Ferramentas profissionais para organizar e fazer sua barbearia crescer.
             </p>
-          </div>
+          </motion.div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
-              <Card 
-                key={feature.title}
-                className="group border-border/30 bg-card/80 backdrop-blur-sm hover:shadow-card-lg hover:border-primary/20 transition-all duration-300 hover:-translate-y-1"
-                style={{ animationDelay: `${index * 0.08}s` }}
-              >
-                <CardContent className="p-8">
-                  <div className="w-12 h-12 rounded-lg flex items-center justify-center mb-5 transition-colors duration-300" style={{ background: 'var(--primary-gradient)' }}>
-                    <feature.icon className="h-6 w-6 text-white" />
-                  </div>
-                  <h3 className="font-bold text-lg mb-3">{feature.title}</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">{feature.description}</p>
-                </CardContent>
-              </Card>
+          <motion.div 
+            initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-80px' }}
+            variants={staggerContainer}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"
+          >
+            {features.map((feature) => (
+              <motion.div key={feature.title} variants={fadeInUp}>
+                <Card className="group border-border/30 bg-card/80 backdrop-blur-sm hover:shadow-card-lg hover:border-primary/20 transition-all duration-300 hover:-translate-y-1 h-full">
+                  <CardContent className="p-6">
+                    <div className="w-11 h-11 rounded-xl flex items-center justify-center mb-4 transition-colors duration-300" style={{ background: 'var(--primary-gradient)' }}>
+                      <feature.icon className="h-5 w-5 text-white" />
+                    </div>
+                    <h3 className="font-bold text-base mb-2">{feature.title}</h3>
+                    <p className="text-muted-foreground text-sm leading-relaxed">{feature.description}</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
-      {/* Pricing Section */}
-      <section id="pricing" className="py-24 md:py-32 px-4 sm:px-6">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-20">
+      {/* How it Works */}
+      <section id="como-funciona" className="py-20 md:py-28 px-4 sm:px-6">
+        <div className="max-w-4xl mx-auto">
+          <motion.div 
+            initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-50px' }}
+            variants={fadeInUp}
+            className="text-center mb-16"
+          >
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-6">
+              <TrendingUp className="h-4 w-4" />
+              Simples e rápido
+            </div>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-5">
-              Planos simples e transparentes
+              Como funciona?
             </h2>
             <p className="text-muted-foreground text-lg max-w-xl mx-auto leading-relaxed">
-              Todos os planos incluem 3 dias de teste gratuito. Cancele quando quiser.
+              Em 3 passos simples, sua barbearia está online e pronta para receber agendamentos.
             </p>
-          </div>
+          </motion.div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {PLANS.map((plan) => (
-              <Card 
-                key={plan.id}
-                className={`relative overflow-hidden transition-all duration-300 hover:-translate-y-1 ${
-                  plan.popular 
-                    ? 'border-primary shadow-xl shadow-primary/15 scale-[1.02] md:scale-105' 
-                    : 'border-border/30 hover:shadow-card-lg hover:border-border/60'
-                }`}
-              >
-                {plan.popular && (
-                  <div className="absolute top-0 left-0 right-0 h-1" style={{ background: 'var(--primary-gradient)' }} />
-                )}
-                <CardContent className="p-8">
-                  {plan.popular && (
-                    <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold mb-4 badge-gradient">
-                      Mais popular
-                    </span>
-                  )}
-                  <h3 className="text-xl font-bold mb-2">{plan.name}</h3>
-                  <div className="mb-5">
-                    <span className="text-3xl font-extrabold">R$ {plan.price.toFixed(2).replace('.', ',')}</span>
-                    <span className="text-muted-foreground text-sm">/mês</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-muted-foreground mb-8">
-                    <Users className="h-4 w-4" />
-                    <span className="text-sm font-medium">{plan.label}</span>
-                  </div>
-                  <ul className="space-y-3.5 mb-10">
-                    {plan.features.map((feat) => (
-                      <li key={feat} className="flex items-center gap-2.5 text-sm">
-                        <CheckCircle className="h-4 w-4 text-success flex-shrink-0" />
-                        <span>{feat}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <Button 
-                    className={`w-full rounded-lg ${plan.popular ? 'btn-primary-gradient' : ''}`}
-                    variant={plan.popular ? 'default' : 'outline'}
-                    onClick={() => {
-                      localStorage.setItem('selected_plan', plan.id);
-                      window.location.href = '/register';
-                    }}
-                  >
-                    Começar teste grátis
-                  </Button>
-                </CardContent>
-              </Card>
+          <motion.div 
+            initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-80px' }}
+            variants={staggerContainer}
+            className="space-y-6"
+          >
+            {howItWorks.map((item) => (
+              <motion.div key={item.step} variants={fadeInUp}>
+                <Card className="border-border/30 bg-card/80 backdrop-blur-sm overflow-hidden">
+                  <CardContent className="p-6 sm:p-8 flex items-start gap-5">
+                    <div className="shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-extrabold text-primary bg-primary/10 border border-primary/20">
+                      {item.step}
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-lg mb-1.5">{item.title}</h3>
+                      <p className="text-muted-foreground leading-relaxed">{item.description}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Social Proof */}
+      <section className="py-20 md:py-28 px-4 sm:px-6 bg-card/30">
+        <div className="max-w-4xl mx-auto text-center">
+          <motion.div 
+            initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-50px' }}
+            variants={fadeInUp}
+          >
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-6">
+              <Star className="h-4 w-4" />
+              Por que escolher o Bookify?
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-12">
+              Feito para barbearias que querem crescer
+            </h2>
+          </motion.div>
+
+          <motion.div 
+            initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-80px' }}
+            variants={staggerContainer}
+            className="grid grid-cols-1 sm:grid-cols-2 gap-5"
+          >
+            {[
+              { icon: CheckCircle2, title: 'Sem papel, sem confusão', desc: 'Esqueça a agenda de papel. Tudo digital, organizado e acessível de qualquer lugar.' },
+              { icon: MessageCircle, title: 'Clientes agendam sozinhos', desc: 'Compartilhe seu link e receba agendamentos 24 horas por dia, sem precisar atender telefone.' },
+              { icon: TrendingUp, title: 'Controle total do faturamento', desc: 'Saiba exatamente quanto cada barbeiro faturou, as comissões e o desempenho da equipe.' },
+              { icon: Gift, title: 'Fidelize seus clientes', desc: 'Sistema de pontos que faz seus clientes voltarem sempre. Simples de configurar e usar.' },
+            ].map((item) => (
+              <motion.div key={item.title} variants={fadeInUp}>
+                <Card className="border-border/30 bg-card/80 text-left h-full">
+                  <CardContent className="p-6">
+                    <item.icon className="h-6 w-6 text-primary mb-3" />
+                    <h3 className="font-bold text-base mb-2">{item.title}</h3>
+                    <p className="text-muted-foreground text-sm leading-relaxed">{item.desc}</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </motion.div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 md:py-32 px-4 sm:px-6">
+      <section className="py-20 md:py-28 px-4 sm:px-6">
         <div className="max-w-3xl mx-auto">
-          <Card className="relative overflow-hidden border-0 shadow-2xl">
-            <div className="absolute inset-0" style={{ background: 'var(--primary-gradient)' }} />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.12),transparent_60%)]" />
-            <CardContent className="relative p-10 md:p-14 text-center">
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-5">
-                Pronto para transformar sua barbearia?
-              </h2>
-              <p className="text-white/75 text-lg mb-10 max-w-lg mx-auto leading-relaxed">
-                Teste grátis por 3 dias. Sem cartão de crédito. Cancele quando quiser.
-              </p>
-              <Link to="/register">
-                <Button size="lg" variant="secondary" className="text-base px-8 py-6 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 bg-white text-primary hover:bg-white/90">
-                  Começar teste grátis
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
+          <motion.div 
+            initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-50px' }}
+            variants={fadeInUp}
+          >
+            <Card className="relative overflow-hidden border-0 shadow-2xl">
+              <div className="absolute inset-0" style={{ background: 'var(--primary-gradient)' }} />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.12),transparent_60%)]" />
+              <CardContent className="relative p-10 md:p-14 text-center">
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-5">
+                  Pronto para organizar sua barbearia?
+                </h2>
+                <p className="text-white/75 text-lg mb-10 max-w-lg mx-auto leading-relaxed">
+                  Crie sua conta agora e teste todas as funcionalidades por 3 dias. 
+                  Sem cartão de crédito, sem compromisso.
+                </p>
+                <Link to="/register">
+                  <Button size="lg" variant="secondary" className="text-base px-8 py-6 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 bg-white text-primary hover:bg-white/90">
+                    Criar conta grátis
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          </motion.div>
         </div>
       </section>
 

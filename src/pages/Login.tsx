@@ -8,11 +8,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate, Link } from 'react-router-dom';
-import { Loader2, Mail, Lock, Scissors, User, Check } from 'lucide-react';
+import { Loader2, Mail, Lock, Scissors, User } from 'lucide-react';
 import { toast } from 'sonner';
 import { lovable } from '@/integrations/lovable/index';
 import { Checkbox } from '@/components/ui/checkbox';
-import { PLANS } from '@/lib/plans';
 
 interface LoginProps {
   initialTab?: 'login' | 'signup';
@@ -23,22 +22,13 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isAppleLoading, setIsAppleLoading] = useState(false);
   const [activeTab, setActiveTab] = useState(initialTab);
-  const [showPlanSelection, setShowPlanSelection] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(() =>
     initialTab === 'signup' ? localStorage.getItem('selected_plan') : null
-  );
-  const [hasExplicitPlanSelection, setHasExplicitPlanSelection] = useState(() =>
-    initialTab === 'signup' && Boolean(localStorage.getItem('selected_plan'))
   );
   const { user, loading: authLoading, signIn, signUp } = useAuth();
   const navigate = useNavigate();
 
-  const handleGoogleLogin = async (isSignup = false) => {
-    if (isSignup && (!selectedPlan || !hasExplicitPlanSelection)) {
-      toast.error('Escolha um plano antes de criar sua conta.');
-      setShowPlanSelection(true);
-      return;
-    }
+  const handleGoogleLogin = async (_isSignup = false) => {
     setIsGoogleLoading(true);
     try {
       const { error } = await lovable.auth.signInWithOAuth('google', {
@@ -54,12 +44,7 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
     }
   };
 
-  const handleAppleLogin = async (isSignup = false) => {
-    if (isSignup && (!selectedPlan || !hasExplicitPlanSelection)) {
-      toast.error('Escolha um plano antes de criar sua conta.');
-      setShowPlanSelection(true);
-      return;
-    }
+  const handleAppleLogin = async (_isSignup = false) => {
     setIsAppleLoading(true);
     try {
       const { error } = await lovable.auth.signInWithOAuth('apple', {
@@ -142,25 +127,18 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
       return;
     }
 
-    if (!selectedPlan || !hasExplicitPlanSelection) {
-      toast.error('Escolha um plano antes de criar sua conta.');
-      setShowPlanSelection(true);
-      return;
-    }
-
     setIsLoading(true);
     try {
+      const finalPlan = selectedPlan || 'basic';
       const { error } = await signUp(signupEmail, signupPassword, {
         name: signupName.trim() || undefined,
-        selected_plan: selectedPlan,
+        selected_plan: finalPlan,
       });
       if (error) {
         toast.error(error.message);
       } else {
         localStorage.removeItem('selected_plan');
         setSelectedPlan(null);
-        setHasExplicitPlanSelection(false);
-        setShowPlanSelection(false);
         toast.success('Conta criada com sucesso! Você já pode acessar o painel.');
         navigate('/painel');
       }
@@ -180,7 +158,7 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
     );
   }
 
-  const selectedPlanData = selectedPlan ? PLANS.find((plan) => plan.id === selectedPlan) : null;
+  
 
   return (
     <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
@@ -225,10 +203,8 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
                 setActiveTab(tab);
                 if (tab === 'signup' && activeTab !== 'signup') {
                   setSelectedPlan(null);
-                  setHasExplicitPlanSelection(false);
                   localStorage.removeItem('selected_plan');
                 }
-                setShowPlanSelection(false);
               }}>
                 <TabsList className="grid w-full grid-cols-2 mb-6">
                   <TabsTrigger value="login">Entrar</TabsTrigger>
@@ -337,86 +313,7 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
                 </TabsContent>
 
                 <TabsContent value="signup">
-                  <div className="space-y-4">
-                    <button
-                      type="button"
-                      onClick={() => setShowPlanSelection((prev) => !prev)}
-                      className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-primary/10 border border-primary/20 text-xs hover:bg-primary/15 transition-colors"
-                    >
-                      <span className="text-primary font-medium">
-                        Plano: {selectedPlanData?.name || 'Escolher plano'}
-                      </span>
-                      <span className="text-primary/70 text-[10px]">
-                        {selectedPlan ? 'Alterar plano' : 'Selecionar agora'}
-                      </span>
-                    </button>
-
-                    {showPlanSelection && (
-                      <div className="space-y-3 animate-fade-in rounded-xl border border-border/50 bg-card/60 p-3">
-                        <div className="text-center space-y-1">
-                          <h3 className="text-base font-semibold">Escolha o plano ideal para sua barbearia</h3>
-                          <p className="text-xs text-muted-foreground">
-                            Todos os planos incluem 3 dias de teste gratuito.{' '}
-                            Sem necessidade de cartão de crédito para começar.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
-                          {PLANS.map((plan) => {
-                            const isSelected = selectedPlan === plan.id;
-
-                            return (
-                              <button
-                                type="button"
-                                key={plan.id}
-                                onClick={() => {
-                                  localStorage.setItem('selected_plan', plan.id);
-                                  setSelectedPlan(plan.id);
-                                  setHasExplicitPlanSelection(true);
-                                  setShowPlanSelection(false);
-                                }}
-                                className={`w-full text-left p-3 rounded-xl border transition-all duration-200 hover:border-primary/50 ${
-                                  isSelected
-                                    ? 'border-primary/40 bg-primary/10'
-                                    : plan.popular
-                                      ? 'border-primary/40 bg-primary/5'
-                                      : 'border-border/50 bg-card/60'
-                                }`}
-                              >
-                                <div className="flex items-center justify-between mb-1">
-                                  <div className="flex items-center gap-2">
-                                    <span className="font-semibold text-sm">{plan.name}</span>
-                                    {isSelected && (
-                                      <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">
-                                        Selecionado
-                                      </span>
-                                    )}
-                                    {!isSelected && plan.popular && (
-                                      <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">
-                                        Popular
-                                      </span>
-                                    )}
-                                  </div>
-                                  <span className="text-sm font-bold">
-                                    R$ {plan.price.toFixed(2).replace('.', ',')}
-                                    <span className="text-[10px] text-muted-foreground font-normal">/mês</span>
-                                  </span>
-                                </div>
-                                <p className="text-[11px] text-muted-foreground">{plan.label}</p>
-                                <div className="flex flex-wrap gap-1.5 mt-2">
-                                  {plan.features.slice(0, 3).map((feature) => (
-                                    <span key={feature} className="text-[10px] text-muted-foreground flex items-center gap-0.5">
-                                      <Check className="h-2.5 w-2.5 text-primary" />
-                                      {feature}
-                                    </span>
-                                  ))}
-                                </div>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
+                   <div className="space-y-4">
 
                     <Button
                       type="button"
