@@ -296,7 +296,7 @@ const LandingPage = () => {
             variants={staggerContainer}
             className="space-y-6"
           >
-            {howItWorks.map((item, index) => (
+            {howItWorks.map((item) => (
               <motion.div key={item.step} variants={fadeInUp}>
                 <Card className="border-border/30 bg-card/80 backdrop-blur-sm overflow-hidden">
                   <CardContent className="p-6 sm:p-8 flex items-start gap-5">

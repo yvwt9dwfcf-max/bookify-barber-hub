@@ -49,12 +49,7 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
     }
   };
 
-  const handleAppleLogin = async (isSignup = false) => {
-    if (isSignup && (!selectedPlan || !hasExplicitPlanSelection)) {
-      toast.error('Escolha um plano antes de criar sua conta.');
-      setShowPlanSelection(true);
-      return;
-    }
+  const handleAppleLogin = async (_isSignup = false) => {
     setIsAppleLoading(true);
     try {
       const { error } = await lovable.auth.signInWithOAuth('apple', {
