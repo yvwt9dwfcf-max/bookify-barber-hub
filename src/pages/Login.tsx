@@ -22,12 +22,8 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isAppleLoading, setIsAppleLoading] = useState(false);
   const [activeTab, setActiveTab] = useState(initialTab);
-  const [showPlanSelection, setShowPlanSelection] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(() =>
     initialTab === 'signup' ? localStorage.getItem('selected_plan') : null
-  );
-  const [hasExplicitPlanSelection, setHasExplicitPlanSelection] = useState(() =>
-    initialTab === 'signup' && Boolean(localStorage.getItem('selected_plan'))
   );
   const { user, loading: authLoading, signIn, signUp } = useAuth();
   const navigate = useNavigate();
