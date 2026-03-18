@@ -33,12 +33,7 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
   const { user, loading: authLoading, signIn, signUp } = useAuth();
   const navigate = useNavigate();
 
-  const handleGoogleLogin = async (isSignup = false) => {
-    if (isSignup && (!selectedPlan || !hasExplicitPlanSelection)) {
-      toast.error('Escolha um plano antes de criar sua conta.');
-      setShowPlanSelection(true);
-      return;
-    }
+  const handleGoogleLogin = async (_isSignup = false) => {
     setIsGoogleLoading(true);
     try {
       const { error } = await lovable.auth.signInWithOAuth('google', {
