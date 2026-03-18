@@ -8,11 +8,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate, Link } from 'react-router-dom';
-import { Loader2, Mail, Lock, Scissors, User, Check } from 'lucide-react';
+import { Loader2, Mail, Lock, Scissors, User } from 'lucide-react';
 import { toast } from 'sonner';
 import { lovable } from '@/integrations/lovable/index';
 import { Checkbox } from '@/components/ui/checkbox';
-import { PLANS } from '@/lib/plans';
 
 interface LoginProps {
   initialTab?: 'login' | 'signup';
