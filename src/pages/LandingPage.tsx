@@ -327,7 +327,7 @@ const LandingPage = () => {
               Por que escolher o Bookify?
             </div>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-12">
-              Feito para barbearias que querem crescer
+              Resultado real pra sua barbearia
             </h2>
           </motion.div>
 
