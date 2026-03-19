@@ -337,10 +337,10 @@ const LandingPage = () => {
             className="grid grid-cols-1 sm:grid-cols-2 gap-5"
           >
             {[
-              { icon: CheckCircle2, title: 'Sem papel, sem confusão', desc: 'Esqueça a agenda de papel. Tudo digital, organizado e acessível de qualquer lugar.' },
-              { icon: MessageCircle, title: 'Clientes agendam sozinhos', desc: 'Compartilhe seu link e receba agendamentos 24 horas por dia, sem precisar atender telefone.' },
-              { icon: TrendingUp, title: 'Controle total do faturamento', desc: 'Saiba exatamente quanto cada barbeiro faturou, as comissões e o desempenho da equipe.' },
-              { icon: Gift, title: 'Fidelize seus clientes', desc: 'Sistema de pontos que faz seus clientes voltarem sempre. Simples de configurar e usar.' },
+              { icon: CheckCircle2, title: 'Acabou a bagunça', desc: 'Nada de agenda de papel ou mensagem perdida. Tudo num lugar só, do celular ou computador.' },
+              { icon: MessageCircle, title: 'Menos ligação, mais cliente', desc: 'Seu cliente agenda sozinho, a qualquer hora. Você para de perder tempo no telefone.' },
+              { icon: TrendingUp, title: 'Dinheiro no controle', desc: 'Faturamento, comissões e desempenho de cada barbeiro. Tudo claro, sem surpresa no fim do mês.' },
+              { icon: Gift, title: 'Cliente que sempre volta', desc: 'Programa de pontos automático. Seu cliente acumula e volta pra resgatar. Fidelização na prática.' },
             ].map((item) => (
               <motion.div key={item.title} variants={fadeInUp}>
                 <Card className="border-border/30 bg-card/80 text-left h-full">
