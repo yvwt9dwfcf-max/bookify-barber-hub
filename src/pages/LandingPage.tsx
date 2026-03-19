@@ -12,68 +12,68 @@ import { motion } from 'framer-motion';
 const features = [
   {
     icon: Calendar,
-    title: 'Agenda Inteligente',
-    description: 'Gerencie todos os agendamentos em tempo real com visão diária e mensal.',
+    title: 'Agenda sem confusão',
+    description: 'Controle seus horários em tempo real. Nada de caderninho ou WhatsApp lotado.',
   },
   {
     icon: Smartphone,
-    title: 'Link de Agendamento',
-    description: 'Seus clientes agendam pelo celular sem precisar ligar ou mandar mensagem.',
+    title: 'Clientes agendam sozinhos',
+    description: 'Mande o link e pronto. Seu cliente escolhe o horário sem te incomodar.',
   },
   {
     icon: Users,
-    title: 'Gestão de Equipe',
-    description: 'Adicione barbeiros, defina permissões e gerencie horários de cada um.',
+    title: 'Equipe organizada',
+    description: 'Cada barbeiro com sua agenda, seus horários e suas permissões.',
   },
   {
     icon: Clock,
-    title: 'Horários Flexíveis',
-    description: 'Configure horários de funcionamento, intervalos e bloqueios com facilidade.',
+    title: 'Horários do seu jeito',
+    description: 'Defina expediente, pausas e folgas em poucos cliques.',
   },
   {
     icon: BarChart3,
-    title: 'Relatórios Completos',
-    description: 'Acompanhe faturamento, atendimentos e desempenho da sua barbearia.',
+    title: 'Saiba quanto faturou',
+    description: 'Veja o faturamento, os atendimentos e o desempenho de cada barbeiro.',
   },
   {
     icon: Shield,
-    title: 'Seguro e Confiável',
-    description: 'Seus dados protegidos com criptografia e backups automáticos.',
+    title: 'Dados sempre seguros',
+    description: 'Criptografia e backups automáticos. Seus dados não se perdem.',
   },
   {
     icon: Gift,
-    title: 'Programa de Fidelidade',
-    description: 'Fidelize seus clientes com um sistema de pontos simples e prático.',
+    title: 'Cliente que volta',
+    description: 'Programa de fidelidade com pontos. Seu cliente volta e indica outros.',
   },
   {
     icon: DollarSign,
-    title: 'Gestão de Comissões',
-    description: 'Defina comissões por barbeiro e por serviço, com relatório mensal automático.',
+    title: 'Comissões na mão',
+    description: 'Calcule comissão por barbeiro e por serviço. Sem planilha, sem erro.',
   },
 ];
 
 const howItWorks = [
   {
     step: '01',
-    title: 'Crie sua conta',
-    description: 'Cadastre-se em menos de 1 minuto e ganhe 3 dias grátis para testar tudo.',
+    title: 'Crie sua conta em 1 minuto',
+    description: 'Cadastro rápido e 3 dias grátis pra você testar tudo, sem pagar nada.',
   },
   {
     step: '02',
-    title: 'Configure sua barbearia',
-    description: 'Adicione seus serviços, barbeiros e horários de funcionamento.',
+    title: 'Monte sua barbearia',
+    description: 'Coloque seus serviços, preços, barbeiros e horários. Simples e rápido.',
   },
   {
     step: '03',
-    title: 'Compartilhe o link',
-    description: 'Envie o link de agendamento para seus clientes e receba agendamentos online.',
+    title: 'Mande o link pros clientes',
+    description: 'Compartilhe no Instagram, WhatsApp ou onde quiser. Os agendamentos começam a chegar.',
   },
 ];
 
 const stats = [
-  { value: '3 dias', label: 'Grátis para testar' },
-  { value: '100%', label: 'Online e seguro' },
-  { value: '24/7', label: 'Agendamento disponível' },
+  { value: '3 dias', label: 'Grátis pra testar' },
+  { value: '100%', label: 'Online, sem instalar nada' },
+  { value: '24h', label: 'Clientes agendam sozinhos' },
   { value: '0', label: 'Cartão necessário' },
 ];
 
@@ -136,10 +136,10 @@ const LandingPage = () => {
             transition={{ duration: 0.7, delay: 0.1 }}
             className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.08] mb-8"
           >
-            <span className="text-foreground">Sua barbearia no</span>
+            <span className="text-foreground">Mais clientes, menos</span>
             <br />
             <span className="bg-clip-text text-transparent" style={{ backgroundImage: 'var(--primary-gradient)' }}>
-              próximo nível
+              confusão
             </span>
           </motion.h1>
 
@@ -150,8 +150,8 @@ const LandingPage = () => {
             transition={{ duration: 0.7, delay: 0.2 }}
             className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-12 leading-relaxed"
           >
-            O sistema completo para gerenciar agendamentos, equipe e faturamento. 
-            Seus clientes agendam online, você foca no que importa.
+            Controle sua agenda, sua equipe e seu faturamento em um só lugar. 
+            Seus clientes agendam online, você foca em cortar.
           </motion.p>
 
           {/* CTAs */}
@@ -199,10 +199,10 @@ const LandingPage = () => {
             className="text-center mb-12"
           >
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
-              Veja o Bookify em ação
+              Veja como funciona na prática
             </h2>
             <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-              Descubra como é simples gerenciar sua barbearia com o Bookify.
+              Em poucos minutos sua barbearia tá online e recebendo agendamentos.
             </p>
           </motion.div>
 
@@ -242,10 +242,10 @@ const LandingPage = () => {
               Funcionalidades
             </div>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-5">
-              Tudo que sua barbearia precisa
+              Tudo pra você trabalhar tranquilo
             </h2>
             <p className="text-muted-foreground text-lg max-w-xl mx-auto leading-relaxed">
-              Ferramentas profissionais para organizar e fazer sua barbearia crescer.
+              Organização, controle e mais tempo pra fazer o que você faz de melhor.
             </p>
           </motion.div>
 
@@ -284,10 +284,10 @@ const LandingPage = () => {
               Simples e rápido
             </div>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-5">
-              Como funciona?
+              Comece em 3 passos
             </h2>
             <p className="text-muted-foreground text-lg max-w-xl mx-auto leading-relaxed">
-              Em 3 passos simples, sua barbearia está online e pronta para receber agendamentos.
+              Rápido, fácil e sem enrolação. Sua barbearia online em minutos.
             </p>
           </motion.div>
 
@@ -327,7 +327,7 @@ const LandingPage = () => {
               Por que escolher o Bookify?
             </div>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-12">
-              Feito para barbearias que querem crescer
+              Resultado real pra sua barbearia
             </h2>
           </motion.div>
 
@@ -337,10 +337,10 @@ const LandingPage = () => {
             className="grid grid-cols-1 sm:grid-cols-2 gap-5"
           >
             {[
-              { icon: CheckCircle2, title: 'Sem papel, sem confusão', desc: 'Esqueça a agenda de papel. Tudo digital, organizado e acessível de qualquer lugar.' },
-              { icon: MessageCircle, title: 'Clientes agendam sozinhos', desc: 'Compartilhe seu link e receba agendamentos 24 horas por dia, sem precisar atender telefone.' },
-              { icon: TrendingUp, title: 'Controle total do faturamento', desc: 'Saiba exatamente quanto cada barbeiro faturou, as comissões e o desempenho da equipe.' },
-              { icon: Gift, title: 'Fidelize seus clientes', desc: 'Sistema de pontos que faz seus clientes voltarem sempre. Simples de configurar e usar.' },
+              { icon: CheckCircle2, title: 'Acabou a bagunça', desc: 'Nada de agenda de papel ou mensagem perdida. Tudo num lugar só, do celular ou computador.' },
+              { icon: MessageCircle, title: 'Menos ligação, mais cliente', desc: 'Seu cliente agenda sozinho, a qualquer hora. Você para de perder tempo no telefone.' },
+              { icon: TrendingUp, title: 'Dinheiro no controle', desc: 'Faturamento, comissões e desempenho de cada barbeiro. Tudo claro, sem surpresa no fim do mês.' },
+              { icon: Gift, title: 'Cliente que sempre volta', desc: 'Programa de pontos automático. Seu cliente acumula e volta pra resgatar. Fidelização na prática.' },
             ].map((item) => (
               <motion.div key={item.title} variants={fadeInUp}>
                 <Card className="border-border/30 bg-card/80 text-left h-full">
@@ -368,15 +368,15 @@ const LandingPage = () => {
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.12),transparent_60%)]" />
               <CardContent className="relative p-10 md:p-14 text-center">
                 <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-5">
-                  Pronto para organizar sua barbearia?
+                  Bora organizar sua barbearia?
                 </h2>
                 <p className="text-white/75 text-lg mb-10 max-w-lg mx-auto leading-relaxed">
-                  Crie sua conta agora e teste todas as funcionalidades por 3 dias. 
-                  Sem cartão de crédito, sem compromisso.
+                  3 dias grátis pra testar tudo. 
+                  Sem cartão, sem compromisso. Cancela quando quiser.
                 </p>
                 <Link to="/register">
                   <Button size="lg" variant="secondary" className="text-base px-8 py-6 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 bg-white text-primary hover:bg-white/90">
-                    Criar conta grátis
+                    Começar agora grátis
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </Link>
