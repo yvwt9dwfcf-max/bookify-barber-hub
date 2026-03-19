@@ -136,10 +136,10 @@ const LandingPage = () => {
             transition={{ duration: 0.7, delay: 0.1 }}
             className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.08] mb-8"
           >
-            <span className="text-foreground">Sua barbearia no</span>
+            <span className="text-foreground">Mais clientes, menos</span>
             <br />
             <span className="bg-clip-text text-transparent" style={{ backgroundImage: 'var(--primary-gradient)' }}>
-              próximo nível
+              confusão
             </span>
           </motion.h1>
 
@@ -150,8 +150,8 @@ const LandingPage = () => {
             transition={{ duration: 0.7, delay: 0.2 }}
             className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-12 leading-relaxed"
           >
-            O sistema completo para gerenciar agendamentos, equipe e faturamento. 
-            Seus clientes agendam online, você foca no que importa.
+            Controle sua agenda, sua equipe e seu faturamento em um só lugar. 
+            Seus clientes agendam online, você foca em cortar.
           </motion.p>
 
           {/* CTAs */}
