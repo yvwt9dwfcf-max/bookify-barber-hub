@@ -284,10 +284,10 @@ const LandingPage = () => {
               Simples e rápido
             </div>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-5">
-              Como funciona?
+              Comece em 3 passos
             </h2>
             <p className="text-muted-foreground text-lg max-w-xl mx-auto leading-relaxed">
-              Em 3 passos simples, sua barbearia está online e pronta para receber agendamentos.
+              Rápido, fácil e sem enrolação. Sua barbearia online em minutos.
             </p>
           </motion.div>
 
