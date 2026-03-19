@@ -80,13 +80,17 @@ serve(async (req) => {
     let planId: string | null = null;
     let productId: string | null = null;
     let subscriptionEnd: string | null = null;
+    let subscriptionStart: string | null = null;
+    let cancelAtPeriodEnd = false;
 
     if (hasActiveSub) {
       const subscription = subscriptions.data[0];
       subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
+      subscriptionStart = new Date(subscription.current_period_start * 1000).toISOString();
+      cancelAtPeriodEnd = subscription.cancel_at_period_end === true;
       productId = subscription.items.data[0].price.product as string;
       planId = PRODUCT_TO_PLAN[productId] || null;
-      logStep("Active subscription found", { planId, productId, subscriptionEnd });
+      logStep("Active subscription found", { planId, productId, subscriptionEnd, cancelAtPeriodEnd });
 
       // Sync plan to barbershop
       if (planId) {
