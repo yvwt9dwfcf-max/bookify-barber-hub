@@ -145,7 +145,9 @@ serve(async (req) => {
       subscribed: hasActiveSub,
       plan_id: planId,
       product_id: productId,
+      subscription_start: subscriptionStart,
       subscription_end: subscriptionEnd,
+      cancel_at_period_end: cancelAtPeriodEnd,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
