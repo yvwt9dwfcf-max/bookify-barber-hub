@@ -242,10 +242,10 @@ const LandingPage = () => {
               Funcionalidades
             </div>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-5">
-              Tudo que sua barbearia precisa
+              Tudo pra você trabalhar tranquilo
             </h2>
             <p className="text-muted-foreground text-lg max-w-xl mx-auto leading-relaxed">
-              Ferramentas profissionais para organizar e fazer sua barbearia crescer.
+              Organização, controle e mais tempo pra fazer o que você faz de melhor.
             </p>
           </motion.div>
 
