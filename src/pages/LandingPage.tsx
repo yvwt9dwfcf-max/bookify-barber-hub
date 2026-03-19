@@ -12,68 +12,68 @@ import { motion } from 'framer-motion';
 const features = [
   {
     icon: Calendar,
-    title: 'Agenda Inteligente',
-    description: 'Gerencie todos os agendamentos em tempo real com visão diária e mensal.',
+    title: 'Agenda sem confusão',
+    description: 'Controle seus horários em tempo real. Nada de caderninho ou WhatsApp lotado.',
   },
   {
     icon: Smartphone,
-    title: 'Link de Agendamento',
-    description: 'Seus clientes agendam pelo celular sem precisar ligar ou mandar mensagem.',
+    title: 'Clientes agendam sozinhos',
+    description: 'Mande o link e pronto. Seu cliente escolhe o horário sem te incomodar.',
   },
   {
     icon: Users,
-    title: 'Gestão de Equipe',
-    description: 'Adicione barbeiros, defina permissões e gerencie horários de cada um.',
+    title: 'Equipe organizada',
+    description: 'Cada barbeiro com sua agenda, seus horários e suas permissões.',
   },
   {
     icon: Clock,
-    title: 'Horários Flexíveis',
-    description: 'Configure horários de funcionamento, intervalos e bloqueios com facilidade.',
+    title: 'Horários do seu jeito',
+    description: 'Defina expediente, pausas e folgas em poucos cliques.',
   },
   {
     icon: BarChart3,
-    title: 'Relatórios Completos',
-    description: 'Acompanhe faturamento, atendimentos e desempenho da sua barbearia.',
+    title: 'Saiba quanto faturou',
+    description: 'Veja o faturamento, os atendimentos e o desempenho de cada barbeiro.',
   },
   {
     icon: Shield,
-    title: 'Seguro e Confiável',
-    description: 'Seus dados protegidos com criptografia e backups automáticos.',
+    title: 'Dados sempre seguros',
+    description: 'Criptografia e backups automáticos. Seus dados não se perdem.',
   },
   {
     icon: Gift,
-    title: 'Programa de Fidelidade',
-    description: 'Fidelize seus clientes com um sistema de pontos simples e prático.',
+    title: 'Cliente que volta',
+    description: 'Programa de fidelidade com pontos. Seu cliente volta e indica outros.',
   },
   {
     icon: DollarSign,
-    title: 'Gestão de Comissões',
-    description: 'Defina comissões por barbeiro e por serviço, com relatório mensal automático.',
+    title: 'Comissões na mão',
+    description: 'Calcule comissão por barbeiro e por serviço. Sem planilha, sem erro.',
   },
 ];
 
 const howItWorks = [
   {
     step: '01',
-    title: 'Crie sua conta',
-    description: 'Cadastre-se em menos de 1 minuto e ganhe 3 dias grátis para testar tudo.',
+    title: 'Crie sua conta em 1 minuto',
+    description: 'Cadastro rápido e 3 dias grátis pra você testar tudo, sem pagar nada.',
   },
   {
     step: '02',
-    title: 'Configure sua barbearia',
-    description: 'Adicione seus serviços, barbeiros e horários de funcionamento.',
+    title: 'Monte sua barbearia',
+    description: 'Coloque seus serviços, preços, barbeiros e horários. Simples e rápido.',
   },
   {
     step: '03',
-    title: 'Compartilhe o link',
-    description: 'Envie o link de agendamento para seus clientes e receba agendamentos online.',
+    title: 'Mande o link pros clientes',
+    description: 'Compartilhe no Instagram, WhatsApp ou onde quiser. Os agendamentos começam a chegar.',
   },
 ];
 
 const stats = [
-  { value: '3 dias', label: 'Grátis para testar' },
-  { value: '100%', label: 'Online e seguro' },
-  { value: '24/7', label: 'Agendamento disponível' },
+  { value: '3 dias', label: 'Grátis pra testar' },
+  { value: '100%', label: 'Online, sem instalar nada' },
+  { value: '24h', label: 'Clientes agendam sozinhos' },
   { value: '0', label: 'Cartão necessário' },
 ];
 
