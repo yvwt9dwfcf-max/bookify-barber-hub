@@ -199,10 +199,10 @@ const LandingPage = () => {
             className="text-center mb-12"
           >
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
-              Veja o Bookify em ação
+              Veja como funciona na prática
             </h2>
             <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-              Descubra como é simples gerenciar sua barbearia com o Bookify.
+              Em poucos minutos sua barbearia tá online e recebendo agendamentos.
             </p>
           </motion.div>
 
