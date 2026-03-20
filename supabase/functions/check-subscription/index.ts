@@ -29,6 +29,9 @@ const PLAN_MAX_BARBERS: Record<string, number> = {
   rede: 20,
 };
 
+// Owner account — always has unlimited access, never needs to pay
+const OWNER_EMAILS = ["kevins4ntana@gmail.com"];
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
