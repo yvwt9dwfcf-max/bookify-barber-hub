@@ -59,6 +59,44 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
+    // Owner bypass — unlimited access, no payment needed
+    if (OWNER_EMAILS.includes(user.email.toLowerCase())) {
+      logStep("Owner account detected, granting unlimited access", { email: user.email });
+
+      // Ensure barbershop is marked as active with max plan
+      const { data: userRole } = await supabaseClient
+        .from("user_roles")
+        .select("barbershop_id")
+        .eq("user_id", user.id)
+        .limit(1)
+        .single();
+
+      if (userRole?.barbershop_id) {
+        await supabaseClient
+          .from("barbershops")
+          .update({
+            plan: "rede",
+            max_barbers: 20,
+            subscription_active: true,
+            subscription_status: "active",
+          })
+          .eq("id", userRole.barbershop_id);
+      }
+
+      return new Response(JSON.stringify({
+        subscribed: true,
+        plan_id: "rede",
+        product_id: "owner",
+        subscription_start: new Date().toISOString(),
+        subscription_end: null,
+        cancel_at_period_end: false,
+        is_owner: true,
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
 
