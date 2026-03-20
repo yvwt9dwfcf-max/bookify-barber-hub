@@ -254,47 +254,37 @@ const Horarios = () => {
 
               {day.is_open ? (
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
-                  <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2">
                     <Label className="text-xs text-muted-foreground min-w-[50px]">Início</Label>
-                    <Input
-                      type="time"
+                    <TimeInput
                       value={day.start_time}
-                      onChange={(e) =>
-                        updateHour(day.day_of_week, 'start_time', e.target.value)
+                      onChange={(val) =>
+                        updateHour(day.day_of_week, 'start_time', val)
                       }
-                      className="w-auto"
                     />
                     <span className="text-muted-foreground">-</span>
-                    <Input
-                      type="time"
+                    <TimeInput
                       value={day.end_time}
-                      onChange={(e) =>
-                        updateHour(day.day_of_week, 'end_time', e.target.value)
+                      onChange={(val) =>
+                        updateHour(day.day_of_week, 'end_time', val)
                       }
-                      className="w-auto"
                     />
                   </div>
                   
                   <div className="flex items-center gap-2">
                     <Label className="text-xs text-muted-foreground min-w-[50px]">Intervalo</Label>
-                    <Input
-                      type="time"
+                    <TimeInput
                       value={day.break_start || ''}
-                      onChange={(e) =>
-                        updateHour(day.day_of_week, 'break_start', e.target.value || null)
+                      onChange={(val) =>
+                        updateHour(day.day_of_week, 'break_start', val || null)
                       }
-                      className="w-auto"
-                      placeholder="--:--"
                     />
                     <span className="text-muted-foreground">-</span>
-                    <Input
-                      type="time"
+                    <TimeInput
                       value={day.break_end || ''}
-                      onChange={(e) =>
-                        updateHour(day.day_of_week, 'break_end', e.target.value || null)
+                      onChange={(val) =>
+                        updateHour(day.day_of_week, 'break_end', val || null)
                       }
-                      className="w-auto"
-                      placeholder="--:--"
                     />
                   </div>
                 </div>
