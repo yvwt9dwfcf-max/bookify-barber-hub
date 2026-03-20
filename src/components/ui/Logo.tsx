@@ -13,20 +13,28 @@ interface LogoProps {
 export const Logo = React.forwardRef<HTMLDivElement, LogoProps>(
   ({ className, size = 'md', linkTo = '/', showText = true }, ref) => {
     const sizeClasses = {
-      sm: 'text-xl',
-      md: 'text-2xl',
-      lg: 'text-4xl',
+      sm: 'text-2xl',
+      md: 'text-4xl',
+      lg: 'text-5xl',
     };
 
     const imgSizes = {
-      sm: 28,
-      md: 36,
-      lg: 52,
+      sm: 38,
+      md: 56,
+      lg: 76,
     };
 
     const content = (
-      <div ref={ref} className={cn('flex items-center gap-2', className)}>
-        <img src={logoImg} alt="Bookify" width={imgSizes[size]} height={imgSizes[size]} className="rounded-lg" />
+      <div ref={ref} className={cn('flex items-center gap-3', className)}>
+        <img
+          src={logoImg}
+          alt="Bookify"
+          width={imgSizes[size]}
+          height={imgSizes[size]}
+          className="rounded-lg"
+          loading="lazy"
+          decoding="async"
+        />
         {showText && (
           <span className={cn('font-display font-bold text-foreground', sizeClasses[size])}>
             Bookify
