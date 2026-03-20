@@ -34,6 +34,7 @@ interface SubscriptionData {
   subscription_start: string | null;
   subscription_end: string | null;
   cancel_at_period_end: boolean;
+  is_owner?: boolean;
 }
 
 const Assinatura = () => {
