@@ -333,6 +333,14 @@ const Painel = () => {
         </div>
       </main>
 
+      {/* Tutorial for new accounts */}
+      {showTutorial && barbershop && (
+        <AppTutorial
+          barbershopId={barbershop.id}
+          onComplete={handleTutorialComplete}
+        />
+      )}
+
       {/* Day Closing Modal */}
       <DayClosingModal
         open={showDayClosing}
