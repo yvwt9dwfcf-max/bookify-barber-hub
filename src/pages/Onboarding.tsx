@@ -361,22 +361,18 @@ const Onboarding = () => {
                       <div className="flex items-center gap-2">
                         <div className="flex-1">
                           <Label className="text-xs text-muted-foreground">Intervalo início</Label>
-                          <Input
-                            type="time"
+                          <TimeInput
                             value={day.break_start}
-                            onChange={(e) => updateDay(day.day_of_week, 'break_start', e.target.value)}
-                            placeholder="--:--"
+                            onChange={(val) => updateDay(day.day_of_week, 'break_start', val)}
                             className="h-10"
                           />
                         </div>
                         <span className="text-muted-foreground mt-5">—</span>
                         <div className="flex-1">
                           <Label className="text-xs text-muted-foreground">Intervalo fim</Label>
-                          <Input
-                            type="time"
+                          <TimeInput
                             value={day.break_end}
-                            onChange={(e) => updateDay(day.day_of_week, 'break_end', e.target.value)}
-                            placeholder="--:--"
+                            onChange={(val) => updateDay(day.day_of_week, 'break_end', val)}
                             className="h-10"
                           />
                         </div>
