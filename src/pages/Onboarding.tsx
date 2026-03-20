@@ -329,22 +329,20 @@ const Onboarding = () => {
                     <div key={day.day_of_week} className="p-3.5 rounded-xl border border-border/50 space-y-3 bg-secondary/20">
                       <p className="font-medium text-sm">{DAY_NAMES[day.day_of_week]}</p>
                       <div className="flex items-center gap-2">
-                        <div className="flex-1">
+                         <div className="flex-1">
                           <Label className="text-xs text-muted-foreground">Início</Label>
-                          <Input
-                            type="time"
+                          <TimeInput
                             value={day.start_time}
-                            onChange={(e) => updateDay(day.day_of_week, 'start_time', e.target.value)}
+                            onChange={(val) => updateDay(day.day_of_week, 'start_time', val)}
                             className="h-10"
                           />
                         </div>
                         <span className="text-muted-foreground mt-5">—</span>
                         <div className="flex-1">
                           <Label className="text-xs text-muted-foreground">Fim</Label>
-                          <Input
-                            type="time"
+                          <TimeInput
                             value={day.end_time}
-                            onChange={(e) => updateDay(day.day_of_week, 'end_time', e.target.value)}
+                            onChange={(val) => updateDay(day.day_of_week, 'end_time', val)}
                             className="h-10"
                           />
                         </div>
