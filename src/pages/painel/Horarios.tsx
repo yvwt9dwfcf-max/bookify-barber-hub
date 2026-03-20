@@ -3,10 +3,10 @@ import { useOutletContext } from 'react-router-dom';
 import { supabase, OpeningHours, Barber, DAY_NAMES } from '@/lib/supabase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { PremiumSkeleton } from '@/components/ui/premium-skeleton';
+import { TimeInput } from '@/components/ui/TimeInput';
 import { Timer as Clock, Loader2, Save } from 'lucide-react';
 import { toast } from 'sonner';
 
