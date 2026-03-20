@@ -34,8 +34,8 @@ const steps = [
   },
   {
     icon: PartyPopper,
-    title: 'Tudo pronto!',
-    description: 'Seu espaço está configurado. Explore o painel, personalize como quiser e comece a receber agendamentos agora mesmo.',
+    title: 'Agora é com você!',
+    description: 'Além do que mostramos, você ainda tem gestão de horários, relatórios, programa de fidelidade e muito mais pra explorar. Vai no seu ritmo e descubra tudo que o painel oferece.',
     tip: null,
     color: 'hsl(var(--primary))',
   },

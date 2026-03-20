@@ -282,19 +282,25 @@ const Agenda = () => {
   // Auto-scroll to selected day (instant on mount, smooth after)
   const hasInitialScrolled = useRef(false);
   useEffect(() => {
-    const container = daysScrollRef.current;
-    if (!container) return;
-    const selectedIndex = days.findIndex(d => isSameDay(d, selectedDate));
-    if (selectedIndex === -1) return;
-    const child = container.children[selectedIndex] as HTMLElement;
-    if (!child) return;
-    const scrollLeft = child.offsetLeft - container.offsetWidth / 2 + child.offsetWidth / 2;
-    if (!hasInitialScrolled.current) {
-      container.scrollTo({ left: scrollLeft, behavior: 'instant' as ScrollBehavior });
-      hasInitialScrolled.current = true;
-    } else {
-      container.scrollTo({ left: scrollLeft, behavior: 'smooth' });
-    }
+    const doScroll = () => {
+      const container = daysScrollRef.current;
+      if (!container) return;
+      const selectedIndex = days.findIndex(d => isSameDay(d, selectedDate));
+      if (selectedIndex === -1) return;
+      const child = container.children[selectedIndex] as HTMLElement;
+      if (!child) return;
+      const scrollLeft = child.offsetLeft - container.offsetWidth / 2 + child.offsetWidth / 2;
+      if (!hasInitialScrolled.current) {
+        container.scrollTo({ left: scrollLeft, behavior: 'instant' as ScrollBehavior });
+        hasInitialScrolled.current = true;
+      } else {
+        container.scrollTo({ left: scrollLeft, behavior: 'smooth' });
+      }
+    };
+    // Use rAF to ensure DOM is painted before scrolling
+    requestAnimationFrame(() => {
+      requestAnimationFrame(doScroll);
+    });
   }, [selectedDate, days]);
 
   const isToday = isSameDay(selectedDate, new Date());
