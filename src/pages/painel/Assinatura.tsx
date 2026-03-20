@@ -336,7 +336,7 @@ const Assinatura = () => {
             <p className="text-muted-foreground text-sm">
               {hasActiveStripeSubscription
                 ? 'Faça upgrade ou downgrade quando quiser.'
-                : 'Todos os planos incluem 3 dias de teste gratuito. Cancele quando quiser.'}
+                : 'Toda conta nova começa no plano Pro gratuitamente. Ao final do teste, escolha o plano ideal para você.'}
             </p>
           </div>
 
