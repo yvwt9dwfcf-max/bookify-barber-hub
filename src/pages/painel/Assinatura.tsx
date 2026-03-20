@@ -405,7 +405,7 @@ const Assinatura = () => {
                       ) : isSubscribedToPlan ? (
                         'Plano atual'
                       ) : hasActiveStripeSubscription ? (
-                        'Trocar plano'
+                        'Alterar para este plano'
                       ) : (
                         'Assinar agora'
                       )}
