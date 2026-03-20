@@ -34,6 +34,7 @@ interface SubscriptionData {
   subscription_start: string | null;
   subscription_end: string | null;
   cancel_at_period_end: boolean;
+  is_owner?: boolean;
 }
 
 const Assinatura = () => {
@@ -128,6 +129,7 @@ const Assinatura = () => {
 
   const hasActiveStripeSubscription = subscriptionData?.subscribed === true;
   const isCancelScheduled = subscriptionData?.cancel_at_period_end === true;
+  const isOwnerAccount = subscriptionData?.is_owner === true;
 
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('pt-BR', {
@@ -147,8 +149,53 @@ const Assinatura = () => {
 
   return (
     <div className="space-y-8 max-w-4xl mx-auto pb-12">
-      {/* Current Subscription Info Card */}
-      {(hasActiveStripeSubscription || isTrialActive) && (
+      {/* Owner Account Card */}
+      {isOwnerAccount && (
+        <Card className="border-primary/30 overflow-hidden">
+          <div className="h-1" style={{ background: 'var(--primary-gradient)' }} />
+          <CardContent className="p-6 space-y-5">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">Plano atual</p>
+                <h2 className="text-2xl font-bold flex items-center gap-2">
+                  Rede
+                  <Badge className="bg-primary text-primary-foreground text-xs">
+                    <Sparkles className="h-3 w-3 mr-1" />
+                    Conta do Dono
+                  </Badge>
+                </h2>
+              </div>
+              <div className="text-right">
+                <span className="text-2xl font-extrabold text-primary">Ilimitado</span>
+              </div>
+            </div>
+            <Separator />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Status</p>
+                  <p className="text-sm font-semibold">Acesso vitalício — sem cobrança</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Users className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Limite de barbeiros</p>
+                  <p className="text-sm font-semibold">Ilimitado (até 20)</p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Current Subscription Info Card (non-owner) */}
+      {!isOwnerAccount && (hasActiveStripeSubscription || isTrialActive) && (
         <Card className={cn(
           "overflow-hidden",
           isCancelScheduled ? "border-destructive/30" : "border-primary/20"
@@ -192,7 +239,6 @@ const Assinatura = () => {
             <Separator />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Subscription start */}
               {hasActiveStripeSubscription && subscriptionData?.subscription_start && (
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -205,7 +251,6 @@ const Assinatura = () => {
                 </div>
               )}
 
-              {/* Renewal / end date */}
               {hasActiveStripeSubscription && subscriptionData?.subscription_end && (
                 <div className="flex items-center gap-3">
                   <div className={cn(
@@ -227,7 +272,6 @@ const Assinatura = () => {
                 </div>
               )}
 
-              {/* Trial info */}
               {isTrialActive && !hasActiveStripeSubscription && barbershop?.trial_ends_at && (
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -242,7 +286,6 @@ const Assinatura = () => {
                 </div>
               )}
 
-              {/* Barbers info */}
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
                   <Users className="h-4 w-4 text-primary" />
@@ -254,7 +297,6 @@ const Assinatura = () => {
               </div>
             </div>
 
-            {/* Cancel scheduled warning */}
             {isCancelScheduled && subscriptionData?.subscription_end && (
               <>
                 <Separator />
@@ -273,8 +315,8 @@ const Assinatura = () => {
         </Card>
       )}
 
-      {/* Trial expired, no subscription */}
-      {!isTrialActive && !hasActiveStripeSubscription && (
+      {/* Trial expired, no subscription (non-owner) */}
+      {!isOwnerAccount && !isTrialActive && !hasActiveStripeSubscription && (
         <Card className="border-destructive/30">
           <CardContent className="p-6 text-center space-y-2">
             <Badge variant="destructive" className="text-sm px-3 py-1">
@@ -284,98 +326,100 @@ const Assinatura = () => {
         </Card>
       )}
 
-      {/* Plans Section */}
-      <div className="space-y-4">
-        <div className="text-center space-y-1">
-          <h2 className="text-xl font-bold">
-            {hasActiveStripeSubscription ? 'Trocar de plano' : 'Escolha seu plano'}
-          </h2>
-          <p className="text-muted-foreground text-sm">
-            {hasActiveStripeSubscription
-              ? 'Faça upgrade ou downgrade quando quiser.'
-              : 'Todos os planos incluem 3 dias de teste gratuito. Cancele quando quiser.'}
-          </p>
-        </div>
+      {/* Plans Section (hidden for owner) */}
+      {!isOwnerAccount && (
+        <div className="space-y-4">
+          <div className="text-center space-y-1">
+            <h2 className="text-xl font-bold">
+              {hasActiveStripeSubscription ? 'Trocar de plano' : 'Escolha seu plano'}
+            </h2>
+            <p className="text-muted-foreground text-sm">
+              {hasActiveStripeSubscription
+                ? 'Faça upgrade ou downgrade quando quiser.'
+                : 'Todos os planos incluem 3 dias de teste gratuito. Cancele quando quiser.'}
+            </p>
+          </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {PLANS.map((plan) => {
-            const isSubscribedToPlan = hasActiveStripeSubscription && subscriptionData?.plan_id === plan.id;
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {PLANS.map((plan) => {
+              const isSubscribedToPlan = hasActiveStripeSubscription && subscriptionData?.plan_id === plan.id;
 
-            return (
-              <Card
-                key={plan.id}
-                className={cn(
-                  'relative overflow-hidden transition-all duration-200 hover:shadow-lg',
-                  plan.popular && 'ring-2 ring-primary shadow-lg',
-                  isSubscribedToPlan && 'border-green-500 bg-green-500/5'
-                )}
-              >
-                {plan.popular && (
-                  <div
-                    className="absolute top-0 left-0 right-0 h-1"
-                    style={{ background: 'var(--primary-gradient)' }}
-                  />
-                )}
+              return (
+                <Card
+                  key={plan.id}
+                  className={cn(
+                    'relative overflow-hidden transition-all duration-200 hover:shadow-lg',
+                    plan.popular && 'ring-2 ring-primary shadow-lg',
+                    isSubscribedToPlan && 'border-green-500 bg-green-500/5'
+                  )}
+                >
+                  {plan.popular && (
+                    <div
+                      className="absolute top-0 left-0 right-0 h-1"
+                      style={{ background: 'var(--primary-gradient)' }}
+                    />
+                  )}
 
-                <CardContent className="p-5 flex flex-col h-full">
-                  <div className="mb-4">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-lg font-bold">{plan.name}</h3>
-                      {plan.popular && (
-                        <Badge className="badge-gradient text-[10px]">Popular</Badge>
+                  <CardContent className="p-5 flex flex-col h-full">
+                    <div className="mb-4">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="text-lg font-bold">{plan.name}</h3>
+                        {plan.popular && (
+                          <Badge className="badge-gradient text-[10px]">Popular</Badge>
+                        )}
+                        {isSubscribedToPlan && (
+                          <Badge className="bg-green-600 text-white text-[10px]">Seu Plano</Badge>
+                        )}
+                      </div>
+                      <div className="mt-2">
+                        <span className="text-2xl font-extrabold">R$ {plan.price.toFixed(2).replace('.', ',')}</span>
+                        <span className="text-muted-foreground text-sm">/mês</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-muted-foreground mt-1">
+                        <Users className="h-3.5 w-3.5" />
+                        <span className="text-sm font-medium">{plan.label}</span>
+                      </div>
+                    </div>
+
+                    <ul className="space-y-2 mb-5 flex-1">
+                      {plan.features.map((feature) => (
+                        <li key={feature} className="flex items-start gap-2 text-sm">
+                          <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                          <span className="text-muted-foreground">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    <Button
+                      className={cn(
+                        'w-full',
+                        isSubscribedToPlan
+                          ? 'bg-green-600 hover:bg-green-700 text-white opacity-60 cursor-default'
+                          : 'btn-primary-gradient'
                       )}
-                      {isSubscribedToPlan && (
-                        <Badge className="bg-green-600 text-white text-[10px]">Seu Plano</Badge>
+                      disabled={isSubscribedToPlan || selecting !== null}
+                      onClick={() => handleSelectPlan(plan.id)}
+                    >
+                      {selecting === plan.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : isSubscribedToPlan ? (
+                        'Plano atual'
+                      ) : hasActiveStripeSubscription ? (
+                        'Trocar plano'
+                      ) : (
+                        'Assinar agora'
                       )}
-                    </div>
-                    <div className="mt-2">
-                      <span className="text-2xl font-extrabold">R$ {plan.price.toFixed(2).replace('.', ',')}</span>
-                      <span className="text-muted-foreground text-sm">/mês</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 text-muted-foreground mt-1">
-                      <Users className="h-3.5 w-3.5" />
-                      <span className="text-sm font-medium">{plan.label}</span>
-                    </div>
-                  </div>
-
-                  <ul className="space-y-2 mb-5 flex-1">
-                    {plan.features.map((feature) => (
-                      <li key={feature} className="flex items-start gap-2 text-sm">
-                        <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                        <span className="text-muted-foreground">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  <Button
-                    className={cn(
-                      'w-full',
-                      isSubscribedToPlan
-                        ? 'bg-green-600 hover:bg-green-700 text-white opacity-60 cursor-default'
-                        : 'btn-primary-gradient'
-                    )}
-                    disabled={isSubscribedToPlan || selecting !== null}
-                    onClick={() => handleSelectPlan(plan.id)}
-                  >
-                    {selecting === plan.id ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : isSubscribedToPlan ? (
-                      'Plano atual'
-                    ) : hasActiveStripeSubscription ? (
-                      'Trocar plano'
-                    ) : (
-                      'Assinar agora'
-                    )}
-                  </Button>
-                </CardContent>
-              </Card>
-            );
-          })}
+                    </Button>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Cancel Subscription Section */}
-      {hasActiveStripeSubscription && isMaster && !isCancelScheduled && (
+      {/* Cancel Subscription Section (hidden for owner) */}
+      {!isOwnerAccount && hasActiveStripeSubscription && isMaster && !isCancelScheduled && (
         <div className="pt-4">
           <Separator className="mb-6" />
           <div className="flex items-center justify-between">
