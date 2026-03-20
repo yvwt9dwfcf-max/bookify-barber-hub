@@ -129,7 +129,7 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
 
     setIsLoading(true);
     try {
-      const finalPlan = selectedPlan || 'basic';
+      const finalPlan = 'pro';
       const { error } = await signUp(signupEmail, signupPassword, {
         name: signupName.trim() || undefined,
         selected_plan: finalPlan,
