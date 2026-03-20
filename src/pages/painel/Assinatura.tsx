@@ -129,6 +129,7 @@ const Assinatura = () => {
 
   const hasActiveStripeSubscription = subscriptionData?.subscribed === true;
   const isCancelScheduled = subscriptionData?.cancel_at_period_end === true;
+  const isOwnerAccount = subscriptionData?.is_owner === true;
 
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('pt-BR', {
