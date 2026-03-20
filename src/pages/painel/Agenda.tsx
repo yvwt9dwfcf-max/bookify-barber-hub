@@ -666,157 +666,225 @@ const Agenda = () => {
                 )}
 
                 {/* Slot grid - always rendered */}
-                {daySlots.map((slot, index) => {
-                  const appointment = appointmentsBySlot[slot.time];
-                  const availability = checkSlotAvailability(slot.time, selectedDate, 15);
-                  const blockedReason = getBlockedReason(slot.time);
-                  const isPast = availability.reason === 'passado';
-                  const isBreak = availability.reason === 'intervalo';
-                  const isBlocked = availability.reason === 'bloqueado';
-                  const isFullHour = slot.minute === 0;
-                  const isHalfHour = slot.minute === 30;
-
-                  // Skip slots covered by a multi-slot appointment
-                  if (coveredSlots.has(slot.time)) {
-                    return null;
-                  }
-
-                  // Separator line
-                  const separator = (
-                    <div className={cn(
-                      "absolute top-0 left-14 right-0 h-px",
-                      isFullHour ? "bg-border/40" : isHalfHour ? "bg-border/20" : "bg-border/10"
-                    )} />
-                  );
-
-                  // Appointment card
-                  if (appointment && appointment.status !== 'cancelled') {
-                    const durationMin = appointment.service?.duration_minutes || 30;
-                    const slotsSpanned = Math.ceil(durationMin / 15);
-                    const cardMinHeight = slotsSpanned > 1 ? slotsSpanned * 40 + (slotsSpanned - 1) * 4 : 40;
-                    const cfg = getStatusConfig(appointment.status);
+                {(() => {
+                  // Build display rows: merge pairs of 15-min slots into 30-min rows when both are "simple" (available/past/break/blocked without appointments)
+                  type DisplayRow = {
+                    slots: typeof daySlots;
+                    merged: boolean; // true = 30-min merged row
+                  };
+                  
+                  const displayRows: DisplayRow[] = [];
+                  let i = 0;
+                  
+                  while (i < daySlots.length) {
+                    const slot = daySlots[i];
+                    const nextSlot = i + 1 < daySlots.length ? daySlots[i + 1] : null;
                     
-                    return (
-                      <div key={slot.time} className="relative flex" style={{ animationDelay: `${index * 0.02}s` }}>
-                        {separator}
-                        {/* Time label */}
-                        <div className="w-14 shrink-0 pt-2.5 pr-3 text-right">
-                          <p className="text-xs font-medium tabular-nums text-muted-foreground/70">{slot.time}</p>
-                        </div>
-                        {/* Card */}
-                        <div
-                          className={cn(
-                            "flex-1 rounded-xl overflow-hidden cursor-pointer my-0.5",
-                            "border-l-[3px] px-3 py-2.5",
-                            "transition-all duration-200 active:scale-[0.99]",
-                            "bg-secondary/80",
-                            cfg.borderColor,
-                          )}
-                          onClick={() => handleCardClick(appointment)}
-                          style={{ minHeight: `${cardMinHeight}px` }}
-                        >
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="min-w-0 flex-1">
-                              {appointment.service && (
-                                <p className="text-xs font-semibold text-foreground/90 truncate">
-                                  {appointment.service.name}
+                    const slotHasAppointment = !!appointmentsBySlot[slot.time] && appointmentsBySlot[slot.time].status !== 'cancelled';
+                    const slotIsCovered = coveredSlots.has(slot.time);
+                    const nextHasAppointment = nextSlot && !!appointmentsBySlot[nextSlot.time] && appointmentsBySlot[nextSlot.time].status !== 'cancelled';
+                    const nextIsCovered = nextSlot && coveredSlots.has(nextSlot.time);
+                    
+                    // If current slot is covered by a multi-slot appointment, skip it
+                    if (slotIsCovered) {
+                      i++;
+                      continue;
+                    }
+                    
+                    // If this slot has an appointment, render it individually (appointment handles its own height)
+                    if (slotHasAppointment) {
+                      displayRows.push({ slots: [slot], merged: false });
+                      i++;
+                      continue;
+                    }
+                    
+                    // Try to merge with next slot into a 30-min row
+                    // Only merge if: next slot exists, is at +15 min, neither has appointments, neither is covered
+                    const canMerge = nextSlot 
+                      && !nextHasAppointment 
+                      && !nextIsCovered
+                      && slot.minute % 30 === 0  // current is :00 or :30
+                      && nextSlot.minute === (slot.minute + 15) % 60
+                      && (nextSlot.minute !== 0 || nextSlot.hour === slot.hour + 1 || (slot.minute === 45));
+                    
+                    if (canMerge) {
+                      displayRows.push({ slots: [slot, nextSlot], merged: true });
+                      i += 2;
+                    } else {
+                      displayRows.push({ slots: [slot], merged: false });
+                      i++;
+                    }
+                  }
+                  
+                  return displayRows.map((row, rowIndex) => {
+                    const slot = row.slots[0];
+                    const appointment = appointmentsBySlot[slot.time];
+                    const availability = checkSlotAvailability(slot.time, selectedDate, 15);
+                    const blockedReason = getBlockedReason(slot.time);
+                    const isPast = availability.reason === 'passado';
+                    const isBreak = availability.reason === 'intervalo';
+                    const isBlocked = availability.reason === 'bloqueado';
+                    const isFullHour = slot.minute === 0;
+                    const isHalfHour = slot.minute === 30;
+
+                    // For merged rows, also check second slot's state
+                    const secondSlot = row.merged ? row.slots[1] : null;
+                    const secondAvailability = secondSlot ? checkSlotAvailability(secondSlot.time, selectedDate, 15) : null;
+                    const secondBlockedReason = secondSlot ? getBlockedReason(secondSlot.time) : null;
+                    const secondIsBreak = secondAvailability?.reason === 'intervalo';
+                    const secondIsBlocked = secondAvailability?.reason === 'bloqueado';
+                    const secondIsPast = secondAvailability?.reason === 'passado';
+
+                    // Separator line
+                    const separator = (
+                      <div className={cn(
+                        "absolute top-0 left-14 right-0 h-px",
+                        isFullHour ? "bg-border/40" : isHalfHour ? "bg-border/20" : "bg-border/10"
+                      )} />
+                    );
+
+                    // Appointment card (always individual, not merged)
+                    if (appointment && appointment.status !== 'cancelled') {
+                      const durationMin = appointment.service?.duration_minutes || 30;
+                      const slotsSpanned = Math.ceil(durationMin / 15);
+                      const is15Min = durationMin <= 15;
+                      const cardMinHeight = is15Min ? 36 : slotsSpanned > 1 ? slotsSpanned * 40 + (slotsSpanned - 1) * 4 : 40;
+                      const cfg = getStatusConfig(appointment.status);
+                      
+                      return (
+                        <div key={slot.time} className="relative flex" style={{ animationDelay: `${rowIndex * 0.02}s` }}>
+                          {separator}
+                          <div className="w-14 shrink-0 pt-2.5 pr-3 text-right">
+                            <p className="text-xs font-medium tabular-nums text-muted-foreground/70">{slot.time}</p>
+                          </div>
+                          <div
+                            className={cn(
+                              "flex-1 rounded-xl overflow-hidden cursor-pointer my-0.5",
+                              "border-l-[3px] px-3",
+                              is15Min ? "py-1.5" : "py-2.5",
+                              "transition-all duration-200 active:scale-[0.99]",
+                              "bg-secondary/80",
+                              cfg.borderColor,
+                            )}
+                            onClick={() => handleCardClick(appointment)}
+                            style={{ minHeight: `${cardMinHeight}px` }}
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="min-w-0 flex-1">
+                                {appointment.service && (
+                                  <p className={cn("font-semibold text-foreground/90 truncate", is15Min ? "text-[11px]" : "text-xs")}>
+                                    {appointment.service.name}
+                                  </p>
+                                )}
+                                <p className="text-[11px] text-muted-foreground truncate mt-0.5">
+                                  {appointment.customer_name}
                                 </p>
-                              )}
-                              <p className="text-[11px] text-muted-foreground truncate mt-0.5">
-                                {appointment.customer_name}
-                              </p>
-                              <p className="text-[10px] text-muted-foreground/50 tabular-nums mt-0.5">
-                                {format(new Date(appointment.start_time), 'HH:mm')} — {format(new Date(appointment.end_time), 'HH:mm')}
-                              </p>
+                                {!is15Min && (
+                                  <p className="text-[10px] text-muted-foreground/50 tabular-nums mt-0.5">
+                                    {format(new Date(appointment.start_time), 'HH:mm')} — {format(new Date(appointment.end_time), 'HH:mm')}
+                                  </p>
+                                )}
+                              </div>
+                              <span className={cn(
+                                "px-2 py-0.5 rounded-full text-[9px] font-semibold shrink-0 border",
+                                appointment.status === 'confirmed' && "bg-primary/10 text-primary border-primary/20",
+                                appointment.status === 'completed' && "bg-success/10 text-success border-success/20",
+                              )}>
+                                {cfg.label}
+                              </span>
                             </div>
-                            <span className={cn(
-                              "px-2 py-0.5 rounded-full text-[9px] font-semibold shrink-0 border",
-                              appointment.status === 'confirmed' && "bg-primary/10 text-primary border-primary/20",
-                              appointment.status === 'completed' && "bg-success/10 text-success border-success/20",
-                            )}>
-                              {cfg.label}
-                            </span>
                           </div>
                         </div>
-                      </div>
-                    );
-                  }
+                      );
+                    }
 
-                  // Blocked slot
-                  if (isBlocked) {
+                    // For merged rows where both slots are the same type, render as one 30-min row
+                    const mergedHeight = row.merged ? 'py-5' : 'py-3';
+
+                    // Blocked slot
+                    if (isBlocked || (row.merged && secondIsBlocked)) {
+                      return (
+                        <div key={slot.time} className="relative flex">
+                          {separator}
+                          <div className="w-14 shrink-0 pt-2.5 pr-3 text-right">
+                            <p className="text-xs font-medium tabular-nums text-muted-foreground/40">{slot.time}</p>
+                          </div>
+                          <div className={cn("flex-1 flex items-center gap-2 opacity-50", mergedHeight)}>
+                            <Ban className="h-3 w-3 text-muted-foreground shrink-0" />
+                            <span className="text-[11px] text-muted-foreground">{blockedReason || secondBlockedReason || 'Bloqueado'}</span>
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    // Break slot
+                    if (isBreak || (row.merged && secondIsBreak)) {
+                      return (
+                        <div key={slot.time} className="relative flex">
+                          {separator}
+                          <div className="w-14 shrink-0 pt-2.5 pr-3 text-right">
+                            <p className="text-xs font-medium tabular-nums text-muted-foreground/40">{slot.time}</p>
+                          </div>
+                          <div className={cn("flex-1 flex items-center gap-2 opacity-40", mergedHeight)}>
+                            <Clock className="h-3 w-3 text-warning shrink-0" />
+                            <span className="text-[11px] text-warning/80">Intervalo</span>
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    // Past slot
+                    if (isPast && (!row.merged || secondIsPast)) {
+                      return (
+                        <div key={slot.time} className="relative flex">
+                          {separator}
+                          <div className="w-14 shrink-0 pt-2.5 pr-3 text-right">
+                            <p className="text-xs font-medium tabular-nums text-muted-foreground/25">{slot.time}</p>
+                          </div>
+                          <div className={cn("flex-1", mergedHeight)}>
+                            <div className="h-px bg-border/10" />
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    // Available slot (30-min merged or 15-min individual)
+                    const displayTime = row.merged 
+                      ? `${slot.time}` 
+                      : slot.time;
+                    const endTimeLabel = row.merged && secondSlot
+                      ? `${secondSlot.hour.toString().padStart(2, '0')}:${((secondSlot.minute + 15) % 60).toString().padStart(2, '0')}`
+                      : `${slot.hour.toString().padStart(2, '0')}:${((slot.minute + 15) % 60).toString().padStart(2, '0')}`;
+
                     return (
-                      <div key={slot.time} className="relative flex">
+                      <button
+                        key={slot.time}
+                        onClick={() => handleOpenManualDialog(slot.time)}
+                        className={cn(
+                          "relative w-full flex group",
+                          "transition-all duration-200",
+                        )}
+                      >
                         {separator}
                         <div className="w-14 shrink-0 pt-2.5 pr-3 text-right">
-                          <p className="text-xs font-medium tabular-nums text-muted-foreground/40">{slot.time}</p>
+                          <p className="text-xs font-medium tabular-nums text-muted-foreground/60">
+                            {displayTime}
+                          </p>
                         </div>
-                        <div className="flex-1 flex items-center gap-2 py-2.5 opacity-50">
-                          <Ban className="h-3 w-3 text-muted-foreground shrink-0" />
-                          <span className="text-[11px] text-muted-foreground">{blockedReason || 'Bloqueado'}</span>
+                        <div className={cn(
+                          "flex-1 flex items-center justify-between px-2 rounded-lg -mx-1",
+                          "group-hover:bg-accent/50 transition-colors",
+                          mergedHeight
+                        )}>
+                          <span className="text-[11px] text-muted-foreground/40 group-hover:text-muted-foreground/60 transition-colors">
+                            {displayTime} <span className="mx-0.5">•</span> Disponível
+                          </span>
+                          <CalendarPlus className="h-3 w-3 text-transparent group-hover:text-muted-foreground/40 transition-all" />
                         </div>
-                      </div>
+                      </button>
                     );
-                  }
-
-                  // Break slot
-                  if (isBreak) {
-                    return (
-                      <div key={slot.time} className="relative flex">
-                        {separator}
-                        <div className="w-14 shrink-0 pt-2.5 pr-3 text-right">
-                          <p className="text-xs font-medium tabular-nums text-muted-foreground/40">{slot.time}</p>
-                        </div>
-                        <div className="flex-1 flex items-center gap-2 py-2.5 opacity-40">
-                          <Clock className="h-3 w-3 text-warning shrink-0" />
-                          <span className="text-[11px] text-warning/80">Intervalo</span>
-                        </div>
-                      </div>
-                    );
-                  }
-
-                  // Past slot
-                  if (isPast) {
-                    return (
-                      <div key={slot.time} className="relative flex">
-                        {separator}
-                        <div className="w-14 shrink-0 pt-2.5 pr-3 text-right">
-                          <p className="text-xs font-medium tabular-nums text-muted-foreground/25">{slot.time}</p>
-                        </div>
-                        <div className="flex-1 py-3">
-                          <div className="h-px bg-border/10" />
-                        </div>
-                      </div>
-                    );
-                  }
-
-                  // Available slot
-                  return (
-                    <button
-                      key={slot.time}
-                      onClick={() => handleOpenManualDialog(slot.time)}
-                      className={cn(
-                        "relative w-full flex group",
-                        "transition-all duration-200",
-                      )}
-                    >
-                      {separator}
-                      <div className="w-14 shrink-0 pt-2.5 pr-3 text-right">
-                        <p className="text-xs font-medium tabular-nums text-muted-foreground/60">
-                          {slot.time}
-                        </p>
-                      </div>
-                      <div className={cn(
-                        "flex-1 flex items-center justify-between py-3 px-2 rounded-lg -mx-1",
-                        "group-hover:bg-accent/50 transition-colors"
-                      )}>
-                        <span className="text-[11px] text-muted-foreground/40 group-hover:text-muted-foreground/60 transition-colors">
-                          {slot.time} <span className="mx-0.5">•</span> Disponível
-                        </span>
-                        <CalendarPlus className="h-3 w-3 text-transparent group-hover:text-muted-foreground/40 transition-all" />
-                      </div>
-                    </button>
-                  );
-                })}
+                  });
+                })()}
 
               </div>
             )}
