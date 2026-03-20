@@ -32,6 +32,7 @@ import { toast } from 'sonner';
 
 import { useDayClosing } from '@/hooks/useDayClosing';
 import DayClosingModal from '@/components/painel/DayClosingModal';
+import AppTutorial from '@/components/painel/AppTutorial';
 
 const Painel = () => {
   const { user, loading: authLoading, signOut } = useAuth();
