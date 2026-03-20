@@ -44,15 +44,18 @@ export default defineConfig(({ mode }) => ({
         ],
       },
       manifest: {
+        id: "/",
         name: "Bookify – Barbearia Online",
         short_name: "Bookify",
         description: "Gerencie sua barbearia: agendamento online, equipe e relatórios.",
+        lang: "pt-BR",
         theme_color: "#0B0B0B",
         background_color: "#0B0B0B",
         display: "standalone",
         orientation: "portrait",
         scope: "/",
         start_url: "/",
+        categories: ["business", "productivity"],
         icons: [
           {
             src: "/pwa-192x192.png",
@@ -65,7 +68,7 @@ export default defineConfig(({ mode }) => ({
             type: "image/png",
           },
           {
-            src: "/pwa-512x512.png",
+            src: "/pwa-maskable-512x512.png",
             sizes: "512x512",
             type: "image/png",
             purpose: "maskable",
