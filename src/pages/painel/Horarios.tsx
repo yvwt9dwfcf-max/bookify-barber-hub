@@ -320,13 +320,10 @@ const Horarios = () => {
               <Label htmlFor="closing-time" className="text-sm font-medium">
                 Horário de encerramento
               </Label>
-              <Input
-                id="closing-time"
-                type="time"
+              <TimeInput
                 value={closingTime}
-                onChange={(e) => setClosingTime(e.target.value)}
-                className="mt-1.5 w-auto"
-                placeholder="18:00"
+                onChange={(val) => setClosingTime(val)}
+                className="mt-1.5"
               />
             </div>
             <Button
