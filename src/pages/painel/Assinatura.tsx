@@ -331,12 +331,12 @@ const Assinatura = () => {
         <div className="space-y-4">
           <div className="text-center space-y-1">
             <h2 className="text-xl font-bold">
-              {hasActiveStripeSubscription ? 'Trocar de plano' : 'Escolha seu plano'}
+              {hasActiveStripeSubscription ? 'Gerencie sua assinatura' : 'Escolha seu plano'}
             </h2>
             <p className="text-muted-foreground text-sm">
               {hasActiveStripeSubscription
-                ? 'Faça upgrade ou downgrade quando quiser.'
-                : 'Toda conta nova começa no plano Pro gratuitamente. Ao final do teste, escolha o plano ideal para você.'}
+                ? 'Altere seu plano a qualquer momento, de forma simples e sem burocracia.'
+                : 'Toda conta nova começa no plano Pro gratuitamente por 3 dias. Ao final do período, escolha o plano ideal para você.'}
             </p>
           </div>
 
