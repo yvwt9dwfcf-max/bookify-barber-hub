@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useBarber } from '@/hooks/useBarber';
 import { useUserRole } from '@/hooks/useUserRole';
@@ -32,6 +32,7 @@ import { toast } from 'sonner';
 
 import { useDayClosing } from '@/hooks/useDayClosing';
 import DayClosingModal from '@/components/painel/DayClosingModal';
+import AppTutorial from '@/components/painel/AppTutorial';
 
 const Painel = () => {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -40,6 +41,18 @@ const Painel = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
+
+  // Show tutorial for new accounts after onboarding
+  useEffect(() => {
+    if (!roleLoading && barbershop?.onboarding_completed && !(barbershop as any).tutorial_completed) {
+      setShowTutorial(true);
+    }
+  }, [roleLoading, barbershop]);
+
+  const handleTutorialComplete = useCallback(() => {
+    setShowTutorial(false);
+  }, []);
 
   // Lock body scroll when sidebar is open on mobile
   useEffect(() => {
@@ -319,6 +332,14 @@ const Painel = () => {
           <Outlet context={{ barber, barbershop, isMaster, refetchRole }} />
         </div>
       </main>
+
+      {/* Tutorial for new accounts */}
+      {showTutorial && barbershop && (
+        <AppTutorial
+          barbershopId={barbershop.id}
+          onComplete={handleTutorialComplete}
+        />
+      )}
 
       {/* Day Closing Modal */}
       <DayClosingModal

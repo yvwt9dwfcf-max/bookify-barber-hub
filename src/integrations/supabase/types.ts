@@ -369,6 +369,7 @@ export type Database = {
           subscription_status: string
           trial_ends_at: string | null
           trial_started_at: string | null
+          tutorial_completed: boolean
           updated_at: string
         }
         Insert: {
@@ -389,6 +390,7 @@ export type Database = {
           subscription_status?: string
           trial_ends_at?: string | null
           trial_started_at?: string | null
+          tutorial_completed?: boolean
           updated_at?: string
         }
         Update: {
@@ -409,6 +411,7 @@ export type Database = {
           subscription_status?: string
           trial_ends_at?: string | null
           trial_started_at?: string | null
+          tutorial_completed?: boolean
           updated_at?: string
         }
         Relationships: []
