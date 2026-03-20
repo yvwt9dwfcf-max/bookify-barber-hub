@@ -13,15 +13,15 @@ interface LogoProps {
 export const Logo = React.forwardRef<HTMLDivElement, LogoProps>(
   ({ className, size = 'md', linkTo = '/', showText = true }, ref) => {
     const sizeClasses = {
-      sm: 'text-2xl',
-      md: 'text-4xl',
-      lg: 'text-5xl',
+      sm: 'text-lg',
+      md: 'text-xl',
+      lg: 'text-2xl',
     };
 
     const imgSizes = {
-      sm: 38,
-      md: 56,
-      lg: 76,
+      sm: 48,
+      md: 72,
+      lg: 96,
     };
 
     const content = (
