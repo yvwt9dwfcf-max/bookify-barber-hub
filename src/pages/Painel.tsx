@@ -41,6 +41,18 @@ const Painel = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
+
+  // Show tutorial for new accounts after onboarding
+  useEffect(() => {
+    if (!roleLoading && barbershop?.onboarding_completed && !(barbershop as any).tutorial_completed) {
+      setShowTutorial(true);
+    }
+  }, [roleLoading, barbershop]);
+
+  const handleTutorialComplete = useCallback(() => {
+    setShowTutorial(false);
+  }, []);
 
   // Lock body scroll when sidebar is open on mobile
   useEffect(() => {
