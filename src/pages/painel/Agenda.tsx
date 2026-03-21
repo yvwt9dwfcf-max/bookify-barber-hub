@@ -120,10 +120,7 @@ const Agenda = () => {
   const canCreateForOthers = isMaster || barber?.permissions?.can_edit_others_schedule === true;
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedDate, setSelectedDate] = useState(() => {
-    const now = new Date();
-    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  });
+  const [selectedDate, setSelectedDate] = useState(getTodayLocalDate);
   const [dashboardRefreshKey, setDashboardRefreshKey] = useState(0);
   const [viewMode, setViewMode] = useState<ViewMode>('daily');
   const [showManualDialog, setShowManualDialog] = useState(false);
