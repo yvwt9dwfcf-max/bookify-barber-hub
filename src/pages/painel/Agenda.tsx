@@ -164,6 +164,12 @@ const Agenda = () => {
     }
   }, [barber, selectedBarberId]);
 
+  useEffect(() => {
+    const today = getTodayLocalDate();
+    setSelectedDate(today);
+    setDisplayMonth(startOfMonth(today));
+  }, []);
+
   const fetchAppointments = useCallback(async () => {
     if (!selectedBarberId) return;
 
