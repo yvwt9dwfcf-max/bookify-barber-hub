@@ -98,6 +98,19 @@ const getInitials = (name: string) => {
     .toUpperCase();
 };
 
+const toLocalDate = (date: Date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
+const getTodayLocalDate = () => toLocalDate(new Date());
+
+const shiftMonthKeepingDay = (date: Date, monthOffset: number) => {
+  const targetMonth = new Date(date.getFullYear(), date.getMonth() + monthOffset, 1);
+  const year = targetMonth.getFullYear();
+  const month = targetMonth.getMonth();
+  const maxDay = new Date(year, month + 1, 0).getDate();
+  const clampedDay = Math.min(date.getDate(), maxDay);
+
+  return new Date(year, month, clampedDay);
+};
+
 const Agenda = () => {
   const { barber, barbershop, isMaster } = useOutletContext<ContextType>();
   const { barbers } = useBarbershopBarbers();
