@@ -14,7 +14,7 @@ import {
   UserRound as User, Timer as Clock, CalendarPlus,
   CircleSlash as Ban, Copy, Share2, CalendarX
 } from 'lucide-react';
-import { format, addDays, addMonths, startOfDay, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, setHours, setMinutes } from 'date-fns';
+import { format, addDays, startOfDay, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, setHours, setMinutes } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -98,6 +98,19 @@ const getInitials = (name: string) => {
     .toUpperCase();
 };
 
+const toLocalDate = (date: Date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
+const getTodayLocalDate = () => toLocalDate(new Date());
+
+const shiftMonthKeepingDay = (date: Date, monthOffset: number) => {
+  const targetMonth = new Date(date.getFullYear(), date.getMonth() + monthOffset, 1);
+  const year = targetMonth.getFullYear();
+  const month = targetMonth.getMonth();
+  const maxDay = new Date(year, month + 1, 0).getDate();
+  const clampedDay = Math.min(date.getDate(), maxDay);
+
+  return new Date(year, month, clampedDay);
+};
+
 const Agenda = () => {
   const { barber, barbershop, isMaster } = useOutletContext<ContextType>();
   const { barbers } = useBarbershopBarbers();
@@ -107,10 +120,7 @@ const Agenda = () => {
   const canCreateForOthers = isMaster || barber?.permissions?.can_edit_others_schedule === true;
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedDate, setSelectedDate] = useState(() => {
-    const now = new Date();
-    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  });
+  const [selectedDate, setSelectedDate] = useState(getTodayLocalDate);
   const [dashboardRefreshKey, setDashboardRefreshKey] = useState(0);
   const [viewMode, setViewMode] = useState<ViewMode>('daily');
   const [showManualDialog, setShowManualDialog] = useState(false);
@@ -153,6 +163,12 @@ const Agenda = () => {
       setSelectedBarberId(barber.id);
     }
   }, [barber, selectedBarberId]);
+
+  useEffect(() => {
+    const today = getTodayLocalDate();
+    setSelectedDate(today);
+    setDisplayMonth(startOfMonth(today));
+  }, []);
 
   const fetchAppointments = useCallback(async () => {
     if (!selectedBarberId) return;
@@ -261,10 +277,7 @@ const Agenda = () => {
   }, []);
 
   // Month base for the days strip
-  const [displayMonth, setDisplayMonth] = useState(() => {
-    const now = new Date();
-    return new Date(now.getFullYear(), now.getMonth(), 1);
-  });
+  const [displayMonth, setDisplayMonth] = useState(() => startOfMonth(getTodayLocalDate()));
 
   // Generate all days of the display month
   const days = useMemo(() => {
@@ -280,7 +293,7 @@ const Agenda = () => {
     if (monthOfSelected.getTime() !== displayMonth.getTime()) {
       setDisplayMonth(monthOfSelected);
     }
-  }, [selectedDate]);
+  }, [selectedDate, displayMonth]);
 
   // Ref for scrollable days container
   const daysScrollRef = useRef<HTMLDivElement>(null);
@@ -398,8 +411,16 @@ const Agenda = () => {
   
 
   const handleDateSelectFromCalendar = (date: Date) => {
-    setSelectedDate(date);
+    setSelectedDate(toLocalDate(date));
     setViewMode('daily');
+  };
+
+  const handleShiftDay = (offset: number) => {
+    setSelectedDate(toLocalDate(addDays(selectedDate, offset)));
+  };
+
+  const handleShiftMonth = (offset: number) => {
+    setSelectedDate(shiftMonthKeepingDay(selectedDate, offset));
   };
 
   const dayOfWeek = selectedDate.getDay();
@@ -420,7 +441,7 @@ const Agenda = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setSelectedDate(addDays(selectedDate, -1))}
+            onClick={() => handleShiftDay(-1)}
             className="h-8 w-8 shrink-0 transition-all hover:-translate-x-0.5 active:scale-95"
           >
             <ChevronLeft className="h-4 w-4" />
@@ -436,7 +457,7 @@ const Agenda = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setSelectedDate(addDays(selectedDate, 1))}
+            onClick={() => handleShiftDay(1)}
             className="h-8 w-8 shrink-0 transition-all hover:translate-x-0.5 active:scale-95"
           >
             <ChevronRight className="h-4 w-4" />
@@ -536,7 +557,7 @@ const Agenda = () => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => setDisplayMonth(addMonths(displayMonth, -1))}
+                  onClick={() => handleShiftMonth(-1)}
                   className="h-7 w-7 min-h-[28px] min-w-[28px] transition-all active:scale-95"
                 >
                   <ChevronLeft className="h-3.5 w-3.5" />
@@ -547,7 +568,7 @@ const Agenda = () => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => setDisplayMonth(addMonths(displayMonth, 1))}
+                  onClick={() => handleShiftMonth(1)}
                   className="h-7 w-7 min-h-[28px] min-w-[28px] transition-all active:scale-95"
                 >
                   <ChevronRight className="h-3.5 w-3.5" />
@@ -565,7 +586,7 @@ const Agenda = () => {
                   return (
                     <button
                       key={day.toISOString()}
-                      onClick={() => setSelectedDate(startOfDay(day))}
+                      onClick={() => setSelectedDate(toLocalDate(day))}
                       className={cn(
                         'flex flex-col items-center py-1.5 px-2.5 rounded-xl transition-all duration-200 snap-center shrink-0',
                         'hover:bg-accent/50 active:scale-95',
