@@ -14,7 +14,7 @@ import {
   UserRound as User, Timer as Clock, CalendarPlus,
   CircleSlash as Ban, Copy, Share2, CalendarX
 } from 'lucide-react';
-import { format, addDays, addMonths, startOfDay, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, setHours, setMinutes } from 'date-fns';
+import { format, addDays, startOfDay, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, setHours, setMinutes } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
