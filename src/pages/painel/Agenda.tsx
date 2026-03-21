@@ -271,10 +271,7 @@ const Agenda = () => {
   }, []);
 
   // Month base for the days strip
-  const [displayMonth, setDisplayMonth] = useState(() => {
-    const now = new Date();
-    return new Date(now.getFullYear(), now.getMonth(), 1);
-  });
+  const [displayMonth, setDisplayMonth] = useState(() => startOfMonth(getTodayLocalDate()));
 
   // Generate all days of the display month
   const days = useMemo(() => {
