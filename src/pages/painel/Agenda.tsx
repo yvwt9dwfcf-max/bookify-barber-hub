@@ -441,7 +441,7 @@ const Agenda = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setSelectedDate(addDays(selectedDate, -1))}
+            onClick={() => handleShiftDay(-1)}
             className="h-8 w-8 shrink-0 transition-all hover:-translate-x-0.5 active:scale-95"
           >
             <ChevronLeft className="h-4 w-4" />
