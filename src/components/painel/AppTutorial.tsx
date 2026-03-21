@@ -34,8 +34,8 @@ const steps = [
   },
   {
     icon: PartyPopper,
-    title: 'Agora é com você!',
-    description: 'Além do que mostramos, você ainda tem gestão de horários, relatórios, programa de fidelidade e muito mais pra explorar. Vai no seu ritmo e descubra tudo que o painel oferece.',
+    title: 'Tudo pronto!',
+    description: 'Agora você pode organizar seus atendimentos, fidelizar clientes e aproveitar tudo que o Bookify oferece.',
     tip: null,
     color: 'hsl(var(--primary))',
   },
