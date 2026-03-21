@@ -107,7 +107,10 @@ const Agenda = () => {
   const canCreateForOthers = isMaster || barber?.permissions?.can_edit_others_schedule === true;
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedDate, setSelectedDate] = useState(startOfDay(new Date()));
+  const [selectedDate, setSelectedDate] = useState(() => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  });
   const [dashboardRefreshKey, setDashboardRefreshKey] = useState(0);
   const [viewMode, setViewMode] = useState<ViewMode>('daily');
   const [showManualDialog, setShowManualDialog] = useState(false);
@@ -258,7 +261,10 @@ const Agenda = () => {
   }, []);
 
   // Month base for the days strip
-  const [displayMonth, setDisplayMonth] = useState(() => startOfMonth(new Date()));
+  const [displayMonth, setDisplayMonth] = useState(() => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), 1);
+  });
 
   // Generate all days of the display month
   const days = useMemo(() => {
@@ -559,7 +565,7 @@ const Agenda = () => {
                   return (
                     <button
                       key={day.toISOString()}
-                      onClick={() => setSelectedDate(day)}
+                      onClick={() => setSelectedDate(startOfDay(day))}
                       className={cn(
                         'flex flex-col items-center py-1.5 px-2.5 rounded-xl transition-all duration-200 snap-center shrink-0',
                         'hover:bg-accent/50 active:scale-95',
