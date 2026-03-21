@@ -293,7 +293,7 @@ const Agenda = () => {
     if (monthOfSelected.getTime() !== displayMonth.getTime()) {
       setDisplayMonth(monthOfSelected);
     }
-  }, [selectedDate]);
+  }, [selectedDate, displayMonth]);
 
   // Ref for scrollable days container
   const daysScrollRef = useRef<HTMLDivElement>(null);
