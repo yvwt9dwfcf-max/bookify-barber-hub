@@ -568,7 +568,7 @@ const Agenda = () => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => setDisplayMonth(addMonths(displayMonth, 1))}
+                  onClick={() => handleShiftMonth(1)}
                   className="h-7 w-7 min-h-[28px] min-w-[28px] transition-all active:scale-95"
                 >
                   <ChevronRight className="h-3.5 w-3.5" />
