@@ -565,7 +565,7 @@ const Agenda = () => {
                   return (
                     <button
                       key={day.toISOString()}
-                      onClick={() => setSelectedDate(day)}
+                      onClick={() => setSelectedDate(startOfDay(day))}
                       className={cn(
                         'flex flex-col items-center py-1.5 px-2.5 rounded-xl transition-all duration-200 snap-center shrink-0',
                         'hover:bg-accent/50 active:scale-95',
