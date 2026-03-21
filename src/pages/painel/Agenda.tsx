@@ -411,8 +411,16 @@ const Agenda = () => {
   
 
   const handleDateSelectFromCalendar = (date: Date) => {
-    setSelectedDate(date);
+    setSelectedDate(toLocalDate(date));
     setViewMode('daily');
+  };
+
+  const handleShiftDay = (offset: number) => {
+    setSelectedDate(toLocalDate(addDays(selectedDate, offset)));
+  };
+
+  const handleShiftMonth = (offset: number) => {
+    setSelectedDate(shiftMonthKeepingDay(selectedDate, offset));
   };
 
   const dayOfWeek = selectedDate.getDay();
