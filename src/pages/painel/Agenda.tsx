@@ -434,12 +434,12 @@ const Agenda = () => {
 
   return (
     <Suspense fallback={fallback}>
-    <div className="space-y-2 pb-24 animate-page-enter">
+    <div className="space-y-1.5 pb-20 animate-page-enter">
       {/* Dashboard Cards */}
       <DashboardCards barbershopId={barbershop?.id} selectedDate={selectedDate} refreshKey={dashboardRefreshKey} />
 
       {/* Premium Header */}
-      <div className="animate-fade-in space-y-1">
+      <div className="animate-fade-in space-y-0.5">
         <div className="flex items-center justify-between gap-2">
           <Button
             variant="ghost"
@@ -450,7 +450,7 @@ const Agenda = () => {
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <div className="flex-1 text-center">
-            <h1 className="text-xl font-bold capitalize leading-tight">
+            <h1 className="text-lg font-bold capitalize leading-tight">
               {format(selectedDate, 'EEEE', { locale: ptBR })}
             </h1>
             <p className="text-xs text-muted-foreground">
@@ -466,13 +466,13 @@ const Agenda = () => {
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
-        <div className="flex items-center justify-center gap-1">
+        <div className="flex items-center justify-center gap-1 -mt-0.5">
           <Button
             variant={viewMode === 'daily' ? 'default' : 'ghost'}
             size="icon"
             onClick={() => setViewMode('daily')}
             className={cn(
-              "h-9 w-9 rounded-xl transition-all active:scale-95",
+              "h-8 w-8 rounded-xl transition-all active:scale-95",
               viewMode === 'daily' && 'btn-primary-gradient shadow-md'
             )}
           >
@@ -483,7 +483,7 @@ const Agenda = () => {
             size="icon"
             onClick={() => setViewMode('monthly')}
             className={cn(
-              "h-9 w-9 rounded-xl transition-all active:scale-95",
+              "h-8 w-8 rounded-xl transition-all active:scale-95",
               viewMode === 'monthly' && 'btn-primary-gradient shadow-md'
             )}
           >
@@ -555,7 +555,7 @@ const Agenda = () => {
         <>
           {/* Date Navigation - Sticky */}
           <Card className="border-border/50 shadow-sm bg-card/80 backdrop-blur-sm overflow-hidden animate-fade-in rounded-xl sticky top-0 z-20" style={{ animationDelay: '0.08s' }}>
-            <CardContent className="p-2">
+            <CardContent className="p-1.5">
               <div className="flex items-center justify-between mb-1">
                 <Button
                   variant="ghost"
@@ -579,7 +579,7 @@ const Agenda = () => {
               </div>
               <div
                 ref={daysScrollRef}
-                className="flex gap-1.5 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-1"
+                className="flex gap-1 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-0.5"
                 style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
               >
                 {days.map((day) => {
@@ -591,14 +591,14 @@ const Agenda = () => {
                       key={day.toISOString()}
                       onClick={() => setSelectedDate(toLocalDate(day))}
                       className={cn(
-                        'flex flex-col items-center py-1.5 px-2.5 rounded-xl transition-all duration-200 snap-center shrink-0',
+                        'flex flex-col items-center py-1 px-2 rounded-lg transition-all duration-200 snap-center shrink-0',
                         'hover:bg-accent/50 active:scale-95',
                         isSelected && 'text-primary-foreground hover:bg-primary shadow-md',
                         isDayToday && !isSelected && 'ring-1 ring-primary/50'
                       )}
                       style={{
                         background: isSelected ? 'var(--primary-gradient)' : undefined,
-                        minWidth: '48px',
+                        minWidth: '42px',
                       }}
                     >
                       <span className="text-[9px] font-medium uppercase opacity-70">
@@ -774,7 +774,7 @@ const Agenda = () => {
                     // Separator line
                     const separator = (
                       <div className={cn(
-                        "absolute top-0 left-14 right-0 h-px",
+                        "absolute top-0 left-12 right-0 h-px",
                         isFullHour ? "bg-border/40" : isHalfHour ? "bg-border/20" : "bg-border/10"
                       )} />
                     );
@@ -784,20 +784,20 @@ const Agenda = () => {
                       const durationMin = appointment.service?.duration_minutes || 30;
                       const slotsSpanned = Math.ceil(durationMin / 15);
                       const is15Min = durationMin <= 15;
-                      const cardMinHeight = is15Min ? 36 : slotsSpanned > 1 ? slotsSpanned * 32 + (slotsSpanned - 1) * 4 : 40;
+                      const cardMinHeight = is15Min ? 32 : slotsSpanned > 1 ? slotsSpanned * 28 + (slotsSpanned - 1) * 3 : 36;
                       const cfg = getStatusConfig(appointment.status);
                       
                       return (
                         <div key={slot.time} className="relative flex" style={{ animationDelay: `${rowIndex * 0.02}s` }}>
                           {separator}
-                          <div className="w-14 shrink-0 pt-2.5 pr-3 text-right">
-                            <p className="text-xs font-medium tabular-nums text-muted-foreground/70">{slot.time}</p>
+                          <div className="w-12 shrink-0 pt-2 pr-2 text-right">
+                            <p className="text-[11px] font-medium tabular-nums text-muted-foreground/70">{slot.time}</p>
                           </div>
                           <div
                             className={cn(
                               "flex-1 rounded-xl overflow-hidden cursor-pointer my-0.5",
-                              "border-l-[3px] px-3",
-                              is15Min ? "py-1.5" : "py-2.5",
+                              "border-l-[3px] px-2.5",
+                              is15Min ? "py-1" : "py-2",
                               "transition-all duration-200 active:scale-[0.99]",
                               "bg-secondary/80",
                               cfg.borderColor,
@@ -835,15 +835,15 @@ const Agenda = () => {
                     }
 
                     // For merged rows where both slots are the same type, render as one 30-min row
-                    const mergedHeight = row.merged ? 'py-5' : 'py-3';
+                    const mergedHeight = row.merged ? 'py-3.5' : 'py-2';
 
                     // Blocked slot
                     if (isBlocked || (row.merged && secondIsBlocked)) {
                       return (
                         <div key={slot.time} className="relative flex">
                           {separator}
-                          <div className="w-14 shrink-0 pt-2.5 pr-3 text-right">
-                            <p className="text-xs font-medium tabular-nums text-muted-foreground/40">{slot.time}</p>
+                          <div className="w-12 shrink-0 pt-2 pr-2 text-right">
+                            <p className="text-[11px] font-medium tabular-nums text-muted-foreground/40">{slot.time}</p>
                           </div>
                           <div className={cn("flex-1 flex items-center gap-2 opacity-50", mergedHeight)}>
                             <Ban className="h-3 w-3 text-muted-foreground shrink-0" />
@@ -858,8 +858,8 @@ const Agenda = () => {
                       return (
                         <div key={slot.time} className="relative flex">
                           {separator}
-                          <div className="w-14 shrink-0 pt-2.5 pr-3 text-right">
-                            <p className="text-xs font-medium tabular-nums text-muted-foreground/40">{slot.time}</p>
+                          <div className="w-12 shrink-0 pt-2 pr-2 text-right">
+                            <p className="text-[11px] font-medium tabular-nums text-muted-foreground/40">{slot.time}</p>
                           </div>
                           <div className={cn("flex-1 flex items-center gap-2 opacity-40", mergedHeight)}>
                             <Clock className="h-3 w-3 text-warning shrink-0" />
@@ -874,8 +874,8 @@ const Agenda = () => {
                       return (
                         <div key={slot.time} className="relative flex">
                           {separator}
-                          <div className="w-14 shrink-0 pt-2.5 pr-3 text-right">
-                            <p className="text-xs font-medium tabular-nums text-muted-foreground/25">{slot.time}</p>
+                          <div className="w-12 shrink-0 pt-2 pr-2 text-right">
+                            <p className="text-[11px] font-medium tabular-nums text-muted-foreground/25">{slot.time}</p>
                           </div>
                           <div className={cn("flex-1", mergedHeight)}>
                             <div className="h-px bg-border/10" />
@@ -902,8 +902,8 @@ const Agenda = () => {
                         )}
                       >
                         {separator}
-                        <div className="w-14 shrink-0 pt-2.5 pr-3 text-right">
-                          <p className="text-xs font-medium tabular-nums text-muted-foreground/60">
+                        <div className="w-12 shrink-0 pt-2 pr-2 text-right">
+                          <p className="text-[11px] font-medium tabular-nums text-muted-foreground/60">
                             {displayTime}
                           </p>
                         </div>
