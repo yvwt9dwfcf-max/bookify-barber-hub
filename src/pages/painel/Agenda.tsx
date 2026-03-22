@@ -835,7 +835,7 @@ const Agenda = () => {
                     }
 
                     // For merged rows where both slots are the same type, render as one 30-min row
-                    const mergedHeight = row.merged ? 'py-5' : 'py-3';
+                    const mergedHeight = row.merged ? 'py-3.5' : 'py-2';
 
                     // Blocked slot
                     if (isBlocked || (row.merged && secondIsBlocked)) {
