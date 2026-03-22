@@ -205,7 +205,7 @@ const Painel = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Mobile Header */}
-      <header className="lg:hidden fixed top-0 left-0 right-0 z-50 backdrop-blur-xl border-b border-border/40 px-5 py-3.5 flex items-center justify-between" style={{ background: 'linear-gradient(180deg, hsl(0 0% 10%) 0%, hsl(0 0% 7%) 100%)' }}>
+      <header className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-card/80 backdrop-blur-xl border-b border-border/50 px-4 py-3 flex items-center justify-between">
         <Logo size="sm" linkTo="/painel" />
         <Button
           variant="ghost"
