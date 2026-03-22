@@ -466,7 +466,7 @@ const Agenda = () => {
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
-        <div className="flex items-center justify-center gap-1">
+        <div className="flex items-center justify-center gap-1 -mt-0.5">
           <Button
             variant={viewMode === 'daily' ? 'default' : 'ghost'}
             size="icon"
