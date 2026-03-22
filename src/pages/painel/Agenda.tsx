@@ -598,7 +598,7 @@ const Agenda = () => {
                       )}
                       style={{
                         background: isSelected ? 'var(--primary-gradient)' : undefined,
-                        minWidth: '48px',
+                        minWidth: '42px',
                       }}
                     >
                       <span className="text-[9px] font-medium uppercase opacity-70">
