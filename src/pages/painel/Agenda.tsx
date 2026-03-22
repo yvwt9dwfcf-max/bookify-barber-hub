@@ -784,7 +784,7 @@ const Agenda = () => {
                       const durationMin = appointment.service?.duration_minutes || 30;
                       const slotsSpanned = Math.ceil(durationMin / 15);
                       const is15Min = durationMin <= 15;
-                      const cardMinHeight = is15Min ? 36 : slotsSpanned > 1 ? slotsSpanned * 32 + (slotsSpanned - 1) * 4 : 40;
+                      const cardMinHeight = is15Min ? 32 : slotsSpanned > 1 ? slotsSpanned * 28 + (slotsSpanned - 1) * 3 : 36;
                       const cfg = getStatusConfig(appointment.status);
                       
                       return (
