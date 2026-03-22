@@ -316,11 +316,14 @@ const Agenda = () => {
         container.scrollTo({ left: scrollLeft, behavior: 'smooth' });
       }
     };
+
+    if (viewMode !== 'daily') return;
+
     // Use rAF to ensure DOM is painted before scrolling
     requestAnimationFrame(() => {
       requestAnimationFrame(doScroll);
     });
-  }, [selectedDate, days]);
+  }, [selectedDate, days, selectedBarberId, viewMode]);
 
   const isToday = isSameDay(selectedDate, new Date());
 
