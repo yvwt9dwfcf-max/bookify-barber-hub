@@ -579,7 +579,7 @@ const Agenda = () => {
               </div>
               <div
                 ref={daysScrollRef}
-                className="flex gap-1.5 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-1"
+                className="flex gap-1 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-0.5"
                 style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
               >
                 {days.map((day) => {
