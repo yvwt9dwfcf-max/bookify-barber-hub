@@ -12,13 +12,13 @@ interface LogoProps {
 export const Logo = React.forwardRef<HTMLDivElement, LogoProps>(
   ({ className, size = 'md', linkTo = '/' }, ref) => {
     const sizeClasses = {
-      sm: 'text-lg',
-      md: 'text-xl',
-      lg: 'text-2xl',
+      sm: 'text-xl',
+      md: 'text-2xl',
+      lg: 'text-3xl',
     };
 
     const content = (
-      <div ref={ref} className={cn('flex items-center justify-center', className)}>
+      <div ref={ref} className={cn('flex items-center justify-center w-full text-center', className)}>
         <span className={cn('font-display font-bold text-foreground', sizeClasses[size])}>
           Bookify
         </span>
@@ -26,7 +26,7 @@ export const Logo = React.forwardRef<HTMLDivElement, LogoProps>(
     );
 
     if (linkTo) {
-      return <Link to={linkTo}>{content}</Link>;
+      return <Link to={linkTo} className="w-full">{content}</Link>;
     }
 
     return content;
