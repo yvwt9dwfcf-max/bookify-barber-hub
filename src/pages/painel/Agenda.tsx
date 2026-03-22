@@ -472,7 +472,7 @@ const Agenda = () => {
             size="icon"
             onClick={() => setViewMode('daily')}
             className={cn(
-              "h-9 w-9 rounded-xl transition-all active:scale-95",
+              "h-8 w-8 rounded-xl transition-all active:scale-95",
               viewMode === 'daily' && 'btn-primary-gradient shadow-md'
             )}
           >
