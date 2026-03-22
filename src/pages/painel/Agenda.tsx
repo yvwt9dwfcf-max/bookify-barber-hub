@@ -439,7 +439,7 @@ const Agenda = () => {
       <DashboardCards barbershopId={barbershop?.id} selectedDate={selectedDate} refreshKey={dashboardRefreshKey} />
 
       {/* Premium Header */}
-      <div className="animate-fade-in space-y-1">
+      <div className="animate-fade-in space-y-0.5">
         <div className="flex items-center justify-between gap-2">
           <Button
             variant="ghost"
