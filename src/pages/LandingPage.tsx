@@ -91,7 +91,7 @@ const LandingPage = () => {
   return (
     <div className="min-h-screen bg-background overflow-hidden">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl border-b border-white/10" style={{ background: 'linear-gradient(180deg, hsl(0 0% 28%) 0%, hsl(0 0% 22%) 100%)' }}>
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-xl border-b border-border/30">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <Logo size="sm" linkTo="/" />
           <div className="flex items-center gap-3">
