@@ -450,7 +450,7 @@ const Agenda = () => {
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <div className="flex-1 text-center">
-            <h1 className="text-xl font-bold capitalize leading-tight">
+            <h1 className="text-lg font-bold capitalize leading-tight">
               {format(selectedDate, 'EEEE', { locale: ptBR })}
             </h1>
             <p className="text-xs text-muted-foreground">
