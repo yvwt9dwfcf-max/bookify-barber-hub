@@ -7,10 +7,11 @@ interface LogoProps {
   size?: 'sm' | 'md' | 'lg';
   linkTo?: string;
   showText?: boolean;
+  align?: 'left' | 'center';
 }
 
 export const Logo = React.forwardRef<HTMLDivElement, LogoProps>(
-  ({ className, size = 'md', linkTo = '/' }, ref) => {
+  ({ className, size = 'md', linkTo = '/', align = 'left' }, ref) => {
     const sizeClasses = {
       sm: 'text-xl',
       md: 'text-2xl',
@@ -18,7 +19,11 @@ export const Logo = React.forwardRef<HTMLDivElement, LogoProps>(
     };
 
     const content = (
-      <div ref={ref} className={cn('flex items-center justify-center w-full text-center', className)}>
+      <div ref={ref} className={cn(
+        'flex items-center',
+        align === 'center' ? 'justify-center w-full' : 'justify-start',
+        className
+      )}>
         <span className={cn('font-display font-bold text-foreground', sizeClasses[size])}>
           Bookify
         </span>
@@ -26,7 +31,7 @@ export const Logo = React.forwardRef<HTMLDivElement, LogoProps>(
     );
 
     if (linkTo) {
-      return <Link to={linkTo} className="w-full">{content}</Link>;
+      return <Link to={linkTo}>{content}</Link>;
     }
 
     return content;
