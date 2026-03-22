@@ -874,8 +874,8 @@ const Agenda = () => {
                       return (
                         <div key={slot.time} className="relative flex">
                           {separator}
-                          <div className="w-14 shrink-0 pt-2.5 pr-3 text-right">
-                            <p className="text-xs font-medium tabular-nums text-muted-foreground/25">{slot.time}</p>
+                          <div className="w-12 shrink-0 pt-2 pr-2 text-right">
+                            <p className="text-[11px] font-medium tabular-nums text-muted-foreground/25">{slot.time}</p>
                           </div>
                           <div className={cn("flex-1", mergedHeight)}>
                             <div className="h-px bg-border/10" />
