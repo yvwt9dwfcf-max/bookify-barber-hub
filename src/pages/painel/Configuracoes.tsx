@@ -283,7 +283,7 @@ const Configuracoes = () => {
         </div>
       </div>
 
-      {/* Seção Barbearia */}
+      {/* Seção Barbearia (Master) */}
       {isMaster && (
         <section className="space-y-4">
           <div className="flex items-center justify-between">
@@ -328,6 +328,56 @@ const Configuracoes = () => {
                 value={barberPhoneAutoSave.value}
                 onChange={(e) => barberPhoneAutoSave.setValue(formatPhone(e.target.value))}
                 onBlur={barberPhoneAutoSave.onBlur}
+              />
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Seção Perfil (Funcionário) */}
+      {!isMaster && (
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                <Building2 className="h-4 w-4" />
+                Meu perfil
+              </h2>
+              <p className="text-xs text-muted-foreground">Suas informações pessoais</p>
+            </div>
+            <AutoSaveIndicator status={combinedStatus} />
+          </div>
+
+          <div className="rounded-lg border p-4 space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="name" className="text-xs">Seu nome</Label>
+              <Input
+                id="name"
+                placeholder="Seu nome"
+                value={barberNameAutoSave.value}
+                onChange={(e) => barberNameAutoSave.setValue(e.target.value)}
+                onBlur={barberNameAutoSave.onBlur}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="phone" className="text-xs">Telefone</Label>
+              <Input
+                id="phone"
+                placeholder="(00) 00000-0000"
+                value={barberPhoneAutoSave.value}
+                onChange={(e) => barberPhoneAutoSave.setValue(formatPhone(e.target.value))}
+                onBlur={barberPhoneAutoSave.onBlur}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs">E-mail</Label>
+              <Input
+                value={barber?.email || ''}
+                readOnly
+                disabled
+                className="opacity-60"
               />
             </div>
           </div>
