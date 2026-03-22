@@ -796,8 +796,8 @@ const Agenda = () => {
                           <div
                             className={cn(
                               "flex-1 rounded-xl overflow-hidden cursor-pointer my-0.5",
-                              "border-l-[3px] px-3",
-                              is15Min ? "py-1.5" : "py-2.5",
+                              "border-l-[3px] px-2.5",
+                              is15Min ? "py-1" : "py-2",
                               "transition-all duration-200 active:scale-[0.99]",
                               "bg-secondary/80",
                               cfg.borderColor,
