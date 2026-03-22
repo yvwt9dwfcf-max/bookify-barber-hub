@@ -19,9 +19,9 @@ export const Logo = React.forwardRef<HTMLDivElement, LogoProps>(
     };
 
     const imgSizes = {
-      sm: 48,
-      md: 72,
-      lg: 96,
+      sm: 36,
+      md: 52,
+      lg: 72,
     };
 
     const content = (
