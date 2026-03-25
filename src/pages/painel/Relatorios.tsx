@@ -693,6 +693,16 @@ const Relatorios = () => {
             <CardTitle className="flex items-center gap-2 text-base">
               <XCircle className="h-4 w-4 text-destructive" />
               Taxa de cancelamento
+              <TooltipProvider>
+                <UITooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-[220px] text-xs">
+                    Porcentagem de agendamentos cancelados em relação ao total no período selecionado.
+                  </TooltipContent>
+                </UITooltip>
+              </TooltipProvider>
             </CardTitle>
           </CardHeader>
           <CardContent className="px-4 pb-4 pt-1">
