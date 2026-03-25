@@ -47,8 +47,7 @@ const Horarios = () => {
   const [hours, setHours] = useState<DayHours[]>(defaultHours);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [closingTime, setClosingTime] = useState<string>('');
-  const [savingClosing, setSavingClosing] = useState(false);
+  const [serverClosingTime, setServerClosingTime] = useState<string>('');
 
   useEffect(() => {
     if (barber) {
@@ -71,29 +70,26 @@ const Horarios = () => {
         .eq('id', barbershop.id)
         .maybeSingle();
       if (error) throw error;
-      setClosingTime((data as any)?.closing_time || '');
+      setServerClosingTime((data as any)?.closing_time || '');
     } catch (error) {
       console.error('Erro ao buscar horário de encerramento:', error);
     }
   };
 
-  const handleSaveClosingTime = async () => {
+  const saveClosingTime = useCallback(async (val: string) => {
     if (!barbershop?.id) return;
-    setSavingClosing(true);
-    try {
-      const { error } = await supabase
-        .from('barbershops')
-        .update({ closing_time: closingTime || null } as any)
-        .eq('id', barbershop.id);
-      if (error) throw error;
-      toast.success('Horário de encerramento salvo!');
-    } catch (error) {
-      console.error('Erro ao salvar horário de encerramento:', error);
-      toast.error('Erro ao salvar horário de encerramento');
-    } finally {
-      setSavingClosing(false);
-    }
-  };
+    const { error } = await supabase
+      .from('barbershops')
+      .update({ closing_time: val || null } as any)
+      .eq('id', barbershop.id);
+    if (error) throw error;
+  }, [barbershop?.id]);
+
+  const closingTimeAutoSave = useAutoSave({
+    serverValue: serverClosingTime,
+    onSave: saveClosingTime,
+    debounceMs: 2000,
+  });
 
   const fetchHours = async () => {
     if (!barber) return;
