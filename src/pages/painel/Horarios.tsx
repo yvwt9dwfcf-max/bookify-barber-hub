@@ -325,7 +325,6 @@ const Horarios = () => {
             <TimeInput
               value={closingTimeAutoSave.value}
               onChange={(val) => closingTimeAutoSave.setValue(val)}
-              onBlur={closingTimeAutoSave.onBlur}
               className="mt-1.5"
             />
           </div>
