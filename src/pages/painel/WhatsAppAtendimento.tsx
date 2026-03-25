@@ -268,7 +268,38 @@ const WhatsAppAtendimento = () => {
     }
   };
 
-  if (loading) {
+  // Auto-save message after 3 seconds of inactivity
+  const messageInitializedRef = useRef(false);
+  const [messageSaveStatus, setMessageSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  
+  useEffect(() => {
+    // Skip the initial load
+    if (!messageInitializedRef.current) {
+      messageInitializedRef.current = true;
+      return;
+    }
+    
+    const currentMsg = mode === 'global' ? globalMessage : myMessage;
+    if (!currentMsg.trim()) return;
+    
+    const timer = setTimeout(async () => {
+      setMessageSaveStatus('saving');
+      try {
+        if (mode === 'global' && isMaster) {
+          await handleSaveGlobalSettings();
+        } else if (mode === 'individual') {
+          await handleSaveMySettings();
+        }
+        setMessageSaveStatus('saved');
+        setTimeout(() => setMessageSaveStatus('idle'), 2000);
+      } catch {
+        setMessageSaveStatus('idle');
+      }
+    }, 3000);
+    
+    return () => clearTimeout(timer);
+  }, [mode === 'global' ? globalMessage : myMessage]);
+
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
