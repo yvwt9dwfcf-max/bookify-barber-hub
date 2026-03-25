@@ -18,10 +18,6 @@ interface ContextType {
   isMaster: boolean;
 }
 
-interface BarbershopClosingConfig {
-  closing_time: string | null;
-}
-
 interface DayHours {
   day_of_week: number;
   start_time: string;

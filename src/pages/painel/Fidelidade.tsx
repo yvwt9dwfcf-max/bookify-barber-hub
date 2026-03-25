@@ -119,22 +119,31 @@ const Fidelidade = () => {
   }, [config]);
 
   const saveConfigMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async ({ pointsPerVisit, goalPoints: gp, rewardName: rn }: { pointsPerVisit: number; goalPoints: number; rewardName: string }) => {
       if (!config) return;
-      const pointsVal = Number(localPointsPerVisit) || 1;
-      const goalVal = Number(localGoalPoints) || 10;
       const { error } = await supabase
         .from('loyalty_config')
-        .update({ points_per_visit: pointsVal, goal_points: goalVal, reward_name: localRewardName.trim() || 'Corte grátis', updated_at: new Date().toISOString() } as any)
+        .update({ points_per_visit: pointsPerVisit, goal_points: gp, reward_name: rn.trim() || 'Corte grátis', updated_at: new Date().toISOString() } as any)
         .eq('id', config.id);
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['loyalty-config'] });
       setHasUnsavedChanges(false);
-      toast.success('Configurações salvas com sucesso!');
+      toast.success('Configurações salvas!');
     },
   });
+
+  // Auto-save config after 2 seconds of inactivity
+  useEffect(() => {
+    if (!hasUnsavedChanges || !config) return;
+    const timer = setTimeout(() => {
+      const pointsVal = Number(localPointsPerVisit) || 1;
+      const goalVal = Number(localGoalPoints) || 10;
+      saveConfigMutation.mutate({ pointsPerVisit: pointsVal, goalPoints: goalVal, rewardName: localRewardName });
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [localPointsPerVisit, localGoalPoints, localRewardName, hasUnsavedChanges]);
 
   const redeemMutation = useMutation({
     mutationFn: async ({ cardId, currentPoints, goalPoints }: { cardId: string; currentPoints: number; goalPoints: number }) => {
