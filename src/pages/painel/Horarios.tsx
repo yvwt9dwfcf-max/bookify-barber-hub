@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { supabase, OpeningHours, Barber, DAY_NAMES } from '@/lib/supabase';
+import { supabase, Barber, DAY_NAMES } from '@/lib/supabase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -8,16 +8,14 @@ import { Switch } from '@/components/ui/switch';
 import { PremiumSkeleton } from '@/components/ui/premium-skeleton';
 import { TimeInput } from '@/components/ui/TimeInput';
 import { Timer as Clock, Loader2, Save } from 'lucide-react';
+import { useAutoSave } from '@/hooks/useAutoSave';
+import { AutoSaveIndicator } from '@/components/ui/AutoSaveIndicator';
 import { toast } from 'sonner';
 
 interface ContextType {
   barber: Barber | null;
   barbershop: { id: string } | null;
   isMaster: boolean;
-}
-
-interface BarbershopClosingConfig {
-  closing_time: string | null;
 }
 
 interface DayHours {
@@ -45,8 +43,7 @@ const Horarios = () => {
   const [hours, setHours] = useState<DayHours[]>(defaultHours);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [closingTime, setClosingTime] = useState<string>('');
-  const [savingClosing, setSavingClosing] = useState(false);
+  const [serverClosingTime, setServerClosingTime] = useState<string>('');
 
   useEffect(() => {
     if (barber) {
@@ -69,29 +66,26 @@ const Horarios = () => {
         .eq('id', barbershop.id)
         .maybeSingle();
       if (error) throw error;
-      setClosingTime((data as any)?.closing_time || '');
+      setServerClosingTime((data as any)?.closing_time || '');
     } catch (error) {
       console.error('Erro ao buscar horário de encerramento:', error);
     }
   };
 
-  const handleSaveClosingTime = async () => {
+  const saveClosingTime = useCallback(async (val: string) => {
     if (!barbershop?.id) return;
-    setSavingClosing(true);
-    try {
-      const { error } = await supabase
-        .from('barbershops')
-        .update({ closing_time: closingTime || null } as any)
-        .eq('id', barbershop.id);
-      if (error) throw error;
-      toast.success('Horário de encerramento salvo!');
-    } catch (error) {
-      console.error('Erro ao salvar horário de encerramento:', error);
-      toast.error('Erro ao salvar horário de encerramento');
-    } finally {
-      setSavingClosing(false);
-    }
-  };
+    const { error } = await supabase
+      .from('barbershops')
+      .update({ closing_time: val || null } as any)
+      .eq('id', barbershop.id);
+    if (error) throw error;
+  }, [barbershop?.id]);
+
+  const closingTimeAutoSave = useAutoSave({
+    serverValue: serverClosingTime,
+    onSave: saveClosingTime,
+    debounceMs: 2000,
+  });
 
   const fetchHours = async () => {
     if (!barber) return;
@@ -306,48 +300,33 @@ const Horarios = () => {
       {/* Closing Time Configuration */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Clock className="h-5 w-5" />
-            Encerramento do dia
-          </CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Horário em que o sistema irá sugerir o fechamento dos atendimentos do dia.
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="h-5 w-5" />
+                Encerramento do dia
+              </CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                Horário em que o sistema irá sugerir o fechamento dos atendimentos do dia.
+              </p>
+            </div>
+            <AutoSaveIndicator status={closingTimeAutoSave.status} />
+          </div>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col sm:flex-row sm:items-end gap-4">
-            <div className="flex-1">
-              <Label htmlFor="closing-time" className="text-sm font-medium">
-                Horário de encerramento
-              </Label>
-              <TimeInput
-                value={closingTime}
-                onChange={(val) => setClosingTime(val)}
-                className="mt-1.5"
-              />
-            </div>
-            <Button
-              onClick={handleSaveClosingTime}
-              disabled={savingClosing}
-              size="sm"
-              className="btn-primary-gradient"
-            >
-              {savingClosing ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Salvando...
-                </>
-              ) : (
-                <>
-                  <Save className="mr-2 h-4 w-4" />
-                  Salvar
-                </>
-              )}
-            </Button>
+          <div className="flex-1">
+            <Label htmlFor="closing-time" className="text-sm font-medium">
+              Horário de encerramento
+            </Label>
+            <TimeInput
+              value={closingTimeAutoSave.value}
+              onChange={(val) => closingTimeAutoSave.setValue(val)}
+              className="mt-1.5"
+            />
           </div>
-          {closingTime && (
+          {closingTimeAutoSave.value && (
             <p className="text-xs text-muted-foreground mt-3">
-              Ao abrir o painel após as {closingTime}, você receberá um lembrete para concluir os atendimentos do dia.
+              Ao abrir o painel após as {closingTimeAutoSave.value}, você receberá um lembrete para concluir os atendimentos do dia.
             </p>
           )}
         </CardContent>
