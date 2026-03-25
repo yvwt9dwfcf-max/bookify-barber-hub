@@ -279,25 +279,14 @@ const Fidelidade = () => {
                   className="h-8 text-sm"
                 />
               </div>
-              {hasUnsavedChanges && (
-                <Button
-                  onClick={() => saveConfigMutation.mutate()}
-                  disabled={saveConfigMutation.isPending}
-                  className="w-full btn-primary-gradient"
-                  size="sm"
-                >
-                  {saveConfigMutation.isPending ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Salvando...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="h-4 w-4 mr-2" />
-                      Salvar configurações
-                    </>
-                  )}
-                </Button>
+              {saveConfigMutation.isPending && (
+                <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  Salvando...
+                </div>
+              )}
+              {!saveConfigMutation.isPending && hasUnsavedChanges && (
+                <p className="text-[11px] text-muted-foreground">Salvamento automático em instantes...</p>
               )}
               <p className="text-[11px] text-muted-foreground">
                 Pontos só são acumulados para clientes com número de telefone cadastrado.
