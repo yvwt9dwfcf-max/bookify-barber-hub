@@ -183,7 +183,7 @@ const Comissoes = () => {
           <DollarSign className="h-5 w-5 text-primary" />
           Gestão de Comissões
         </h1>
-        <p className="text-sm text-muted-foreground"><p className="text-sm text-muted-foreground">Defina o percentual de comissão para cada barbeiro e acompanhe quanto cada um faturou no mês.</p></p>
+        <p className="text-sm text-muted-foreground">Defina o percentual de comissão para cada barbeiro e acompanhe quanto cada um faturou no mês.</p>
       </div>
 
       {isLoading ? (
