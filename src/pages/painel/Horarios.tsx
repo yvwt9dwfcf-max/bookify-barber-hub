@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { supabase, OpeningHours, Barber, DAY_NAMES } from '@/lib/supabase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,6 +8,8 @@ import { Switch } from '@/components/ui/switch';
 import { PremiumSkeleton } from '@/components/ui/premium-skeleton';
 import { TimeInput } from '@/components/ui/TimeInput';
 import { Timer as Clock, Loader2, Save } from 'lucide-react';
+import { useAutoSave } from '@/hooks/useAutoSave';
+import { AutoSaveIndicator } from '@/components/ui/AutoSaveIndicator';
 import { toast } from 'sonner';
 
 interface ContextType {
