@@ -440,19 +440,22 @@ const WhatsAppAtendimento = () => {
             )}
           </Button>
 
-          {/* Auto-save for message */}
-          {canEdit && (
-            <AutoSaveMessage
-              mode={mode}
-              globalMessage={globalMessage}
-              myMessage={myMessage}
-              isMaster={isMaster}
-              barbershopId={barbershop?.id}
-              barberId={barber?.id}
-              settingsId={settings?.id}
-              myWhatsAppId={myWhatsApp?.id}
-              globalPhone={globalPhone}
-            />
+          {/* Auto-save status */}
+          {canEdit && messageSaveStatus !== 'idle' && (
+            <div className="flex items-center justify-center gap-1.5 text-[11px]">
+              {messageSaveStatus === 'saving' && (
+                <>
+                  <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+                  <span className="text-muted-foreground">Salvando mensagem...</span>
+                </>
+              )}
+              {messageSaveStatus === 'saved' && (
+                <>
+                  <CheckCircle2 className="h-3 w-3 text-primary" />
+                  <span className="text-primary">Mensagem salva</span>
+                </>
+              )}
+            </div>
           )}
         </CardContent>
       </Card>
