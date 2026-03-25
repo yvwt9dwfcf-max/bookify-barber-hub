@@ -304,48 +304,34 @@ const Horarios = () => {
       {/* Closing Time Configuration */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Clock className="h-5 w-5" />
-            Encerramento do dia
-          </CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Horário em que o sistema irá sugerir o fechamento dos atendimentos do dia.
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="h-5 w-5" />
+                Encerramento do dia
+              </CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                Horário em que o sistema irá sugerir o fechamento dos atendimentos do dia.
+              </p>
+            </div>
+            <AutoSaveIndicator status={closingTimeAutoSave.status} />
+          </div>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col sm:flex-row sm:items-end gap-4">
-            <div className="flex-1">
-              <Label htmlFor="closing-time" className="text-sm font-medium">
-                Horário de encerramento
-              </Label>
-              <TimeInput
-                value={closingTime}
-                onChange={(val) => setClosingTime(val)}
-                className="mt-1.5"
-              />
-            </div>
-            <Button
-              onClick={handleSaveClosingTime}
-              disabled={savingClosing}
-              size="sm"
-              className="btn-primary-gradient"
-            >
-              {savingClosing ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Salvando...
-                </>
-              ) : (
-                <>
-                  <Save className="mr-2 h-4 w-4" />
-                  Salvar
-                </>
-              )}
-            </Button>
+          <div className="flex-1">
+            <Label htmlFor="closing-time" className="text-sm font-medium">
+              Horário de encerramento
+            </Label>
+            <TimeInput
+              value={closingTimeAutoSave.value}
+              onChange={(val) => closingTimeAutoSave.setValue(val)}
+              onBlur={closingTimeAutoSave.onBlur}
+              className="mt-1.5"
+            />
           </div>
-          {closingTime && (
+          {closingTimeAutoSave.value && (
             <p className="text-xs text-muted-foreground mt-3">
-              Ao abrir o painel após as {closingTime}, você receberá um lembrete para concluir os atendimentos do dia.
+              Ao abrir o painel após as {closingTimeAutoSave.value}, você receberá um lembrete para concluir os atendimentos do dia.
             </p>
           )}
         </CardContent>
