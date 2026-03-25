@@ -408,26 +408,19 @@ const WhatsAppAtendimento = () => {
             )}
           </Button>
 
-          {/* Save button for editable message */}
+          {/* Auto-save for message */}
           {canEdit && (
-            <Button 
-              onClick={mode === 'global' ? handleSaveGlobalSettings : handleSaveMySettings} 
-              disabled={saving} 
-              variant="outline"
-              className="w-full"
-            >
-              {saving ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Salvando...
-                </>
-              ) : (
-                <>
-                  <Save className="mr-2 h-4 w-4" />
-                  Salvar mensagem
-                </>
-              )}
-            </Button>
+            <AutoSaveMessage
+              mode={mode}
+              globalMessage={globalMessage}
+              myMessage={myMessage}
+              isMaster={isMaster}
+              barbershopId={barbershop?.id}
+              barberId={barber?.id}
+              settingsId={settings?.id}
+              myWhatsAppId={myWhatsApp?.id}
+              globalPhone={globalPhone}
+            />
           )}
         </CardContent>
       </Card>
