@@ -149,8 +149,8 @@ const ReportContent = ({
         <CardContent className="px-4 pb-4 pt-2">
           {isLoading ? (
             <div className="space-y-3">
-              <Skeleton className="h-6 w-28" />
-              <Skeleton className="h-[180px] w-full" />
+              <PremiumSkeleton className="h-6 w-28" />
+              <PremiumSkeleton className="h-[180px] w-full" />
             </div>
           ) : (
             <>
@@ -258,7 +258,7 @@ const ReportContent = ({
             </CardTitle>
           </CardHeader>
           <CardContent className="px-4 pb-4 pt-1">
-            {isLoading ? <Skeleton className="h-16 w-full" /> : (
+            {isLoading ? <PremiumSkeleton className="h-16 w-full" /> : (
               <div>
                 <div className="text-3xl font-bold text-primary">{formatCurrency(ticketMedio)}</div>
                 <p className="text-xs text-muted-foreground mt-1">{totalCompleted} atendimento{totalCompleted !== 1 ? 's' : ''} concluído{totalCompleted !== 1 ? 's' : ''}</p>
@@ -280,7 +280,7 @@ const ReportContent = ({
             </CardTitle>
           </CardHeader>
           <CardContent className="px-4 pb-4 pt-1">
-            {isLoading ? <Skeleton className="h-16 w-full" /> : (
+            {isLoading ? <PremiumSkeleton className="h-16 w-full" /> : (
               <div className="flex items-center gap-4">
                 <div className="text-3xl font-bold text-destructive">{cancellationRate}%</div>
                 <div className="text-xs text-muted-foreground">{allAppointments?.filter((a: any) => a.status === 'cancelled').length || 0} de {allAppointments?.length || 0}</div>
@@ -296,7 +296,7 @@ const ReportContent = ({
             </CardTitle>
           </CardHeader>
           <CardContent className="px-4 pb-4 pt-1">
-            {isLoading ? <Skeleton className="h-16 w-full" /> : peakHours.length > 0 ? (
+            {isLoading ? <PremiumSkeleton className="h-16 w-full" /> : peakHours.length > 0 ? (
               <div className="space-y-1.5">
                 {peakHours.map((ph, i) => (
                   <div key={ph.hour} className="flex items-center justify-between p-1.5 rounded-lg bg-muted/50">
@@ -326,7 +326,7 @@ const ReportContent = ({
           </CardHeader>
           <CardContent className="px-4 pb-4 pt-1">
             {isLoading ? (
-              <div className="space-y-2">{[1, 2, 3].map((i) => <div key={i} className="flex items-center justify-between"><Skeleton className="h-4 w-28" /><Skeleton className="h-4 w-14" /></div>)}</div>
+              <div className="space-y-2">{[1, 2, 3].map((i) => <div key={i} className="flex items-center justify-between"><PremiumSkeleton className="h-4 w-28" /><PremiumSkeleton className="h-4 w-14" /></div>)}</div>
             ) : topServices.length > 0 ? (
               <>
                 <div className="h-[180px] mb-3">
@@ -367,7 +367,7 @@ const ReportContent = ({
             </CardHeader>
             <CardContent className="px-4 pb-4 pt-1">
               {isLoading ? (
-                <div className="space-y-2">{[1, 2, 3].map((i) => <div key={i} className="flex items-center justify-between"><Skeleton className="h-4 w-28" /><Skeleton className="h-4 w-14" /></div>)}</div>
+                <div className="space-y-2">{[1, 2, 3].map((i) => <div key={i} className="flex items-center justify-between"><PremiumSkeleton className="h-4 w-28" /><PremiumSkeleton className="h-4 w-14" /></div>)}</div>
               ) : barberPerformance.length > 0 ? (
                 <div className="space-y-2">
                   {barberPerformance.map((barber, index) => {
