@@ -125,18 +125,29 @@ const EditAppointmentDialog = ({
         return;
       }
 
-      // Buscar serviços vinculados ao barbeiro
-      const { data: barberServicesData, error: bsError } = await supabase
-        .from('barber_services')
-        .select('service_id')
-        .eq('barber_id', barberId);
+      // Buscar serviços vinculados ao barbeiro + serviços globais da barbearia
+      const [barberServicesRes, globalServicesRes] = await Promise.all([
+        supabase
+          .from('barber_services')
+          .select('service_id')
+          .eq('barber_id', barberId),
+        supabase
+          .from('services')
+          .select('*')
+          .eq('barbershop_id', barber.barbershop_id)
+          .eq('active', true)
+          .eq('is_global', true)
+          .order('name'),
+      ]);
 
-      if (bsError) throw bsError;
+      if (barberServicesRes.error) throw barberServicesRes.error;
+      if (globalServicesRes.error) throw globalServicesRes.error;
 
-      const serviceIds = (barberServicesData || []).map(bs => bs.service_id);
+      const serviceIds = (barberServicesRes.data || []).map(bs => bs.service_id);
+      const globalServices = globalServicesRes.data || [];
 
       if (serviceIds.length === 0) {
-        // Se não há vínculos, buscar todos os serviços da barbearia
+        // Sem vínculos específicos — mostrar todos os serviços ativos da barbearia
         const { data: allServices, error: allError } = await supabase
           .from('services')
           .select('*')
@@ -156,7 +167,16 @@ const EditAppointmentDialog = ({
           .order('name');
 
         if (linkedError) throw linkedError;
-        setServices(linkedServices || []);
+
+        // Mesclar globais + vinculados sem duplicatas
+        const merged = [...(linkedServices || [])];
+        for (const gs of globalServices) {
+          if (!merged.some(s => s.id === gs.id)) {
+            merged.push(gs);
+          }
+        }
+        merged.sort((a, b) => a.name.localeCompare(b.name));
+        setServices(merged);
       }
     } catch (error) {
       console.error('Erro ao buscar serviços:', error);
