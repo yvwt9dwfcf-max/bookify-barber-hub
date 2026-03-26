@@ -63,6 +63,14 @@ const Painel = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
 
+  // Prefetch panel sub-routes after initial render to eliminate navigation stutter
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      panelModules.forEach(load => load());
+    }, 500);
+    return () => clearTimeout(timer);
+  }, []);
+
   // Show tutorial for new accounts after onboarding
   useEffect(() => {
     if (!roleLoading && barbershop?.onboarding_completed && !(barbershop as any).tutorial_completed) {
