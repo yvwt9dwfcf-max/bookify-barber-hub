@@ -103,18 +103,16 @@ const AppointmentDetailsSheet = ({
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetContent side="bottom" className="rounded-t-2xl max-h-[90vh] flex flex-col p-0">
-          <SheetHeader className="text-left p-4 pb-2 flex-shrink-0">
-            <div className="flex items-center justify-between">
-              <SheetTitle className="text-lg">Detalhes do Agendamento</SheetTitle>
-              <span
-                className={cn(
-                  'px-2 py-1 rounded-full text-xs font-medium',
-                  getStatusColor(appointment.status)
-                )}
-              >
-                {getStatusLabel(appointment.status)}
-              </span>
-            </div>
+          <SheetHeader className="text-left p-4 pr-12 pb-2 flex-shrink-0">
+            <SheetTitle className="text-lg">Detalhes do Agendamento</SheetTitle>
+            <span
+              className={cn(
+                'px-2.5 py-1 rounded-full text-xs font-medium w-fit',
+                getStatusColor(appointment.status)
+              )}
+            >
+              {getStatusLabel(appointment.status)}
+            </span>
             <SheetDescription className="sr-only">
               Informações completas do agendamento
             </SheetDescription>
