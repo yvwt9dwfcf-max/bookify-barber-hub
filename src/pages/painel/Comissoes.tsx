@@ -3,7 +3,7 @@ import { useOutletContext } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Skeleton } from '@/components/ui/skeleton';
+import { ComissoesSkeleton } from '@/components/painel/skeletons';
 import { Coins as DollarSign, UsersRound as Users, ChevronDown, ChevronUp, Save } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -187,9 +187,7 @@ const Comissoes = () => {
       </div>
 
       {isLoading ? (
-        <div className="space-y-3">
-          {[1, 2, 3].map(i => <Skeleton key={i} className="h-20 w-full rounded-xl" />)}
-        </div>
+        <ComissoesSkeleton />
       ) : (
         <div className="space-y-3">
           {barbers?.map(barber => {

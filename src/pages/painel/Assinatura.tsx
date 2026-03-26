@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Check, UsersRound as Users, Sparkles, Loader2, CreditCard, Calendar, AlertTriangle, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { AssinaturaSkeleton } from '@/components/painel/skeletons';
 import { cn } from '@/lib/utils';
 import { PLANS } from '@/lib/plans';
 import { STRIPE_PLANS, StripePlanId } from '@/lib/stripe';
@@ -140,11 +141,7 @@ const Assinatura = () => {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <AssinaturaSkeleton />;
   }
 
   return (

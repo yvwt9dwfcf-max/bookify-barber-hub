@@ -12,6 +12,7 @@ import {
   Camera, Copy, CircleCheck as CheckCircle, TriangleAlert as AlertTriangle, ExternalLink, Trash2
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { PerfilPublicoSkeleton } from '@/components/painel/skeletons';
 
 interface PublicProfile {
   id: string;
@@ -242,11 +243,7 @@ const PerfilPublico = () => {
   }
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <PerfilPublicoSkeleton />;
   }
 
   return (

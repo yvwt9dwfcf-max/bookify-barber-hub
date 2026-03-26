@@ -29,6 +29,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { WhatsAppSkeleton } from '@/components/painel/skeletons';
 
 interface ContextType {
   barber: Barber | null;
@@ -301,11 +302,7 @@ const WhatsAppAtendimento = () => {
   }, [mode === 'global' ? globalMessage : myMessage]);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <WhatsAppSkeleton />;
   }
 
   return (
