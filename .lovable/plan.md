@@ -1,66 +1,64 @@
 
 
-# Plano: Limpeza de Código + Comportamento Nativo de App
+# Plano: Relatórios para Funcionários + Abas no Master + Melhorias Extras
 
 ## Resumo
 
-Duas frentes: (1) remover arquivos e código morto para manter o projeto limpo e fácil de editar, e (2) bloquear zoom/pinch para que o app se comporte como um app nativo (Nubank, TikTok).
+Três frentes: (1) desbloquear relatórios para funcionários com visão individual, (2) adicionar abas no relatório do master separando "Barbearia" e "Meu Desempenho", (3) melhorias extras que vão deixar o app mais profissional e vendável.
 
 ---
 
-## 1. Bloquear Zoom (comportamento nativo)
+## 1. Relatórios para Funcionários (Barbers)
 
-O `index.html` já tem `user-scalable=no, maximum-scale=1.0`, o que funciona na maioria dos navegadores. Falta:
+Hoje o menu "Relatórios" só aparece para o master e a página bloqueia com "Acesso restrito". Vamos:
 
-- **CSS `touch-action: manipulation`** no `html` e `body` dentro de `src/index.css` — isso impede double-tap-to-zoom no iOS/Android
-- **Listener JS** no `main.tsx` para interceptar `gesturestart` e `wheel` com ctrlKey (previne pinch-zoom em WebViews e PWA)
-
-### Código a adicionar:
-
-**index.css** (dentro de `@layer base`, no bloco `html`):
-```css
-html {
-  touch-action: manipulation;
-}
-```
-
-**main.tsx** — adicionar antes do `createRoot`:
-```typescript
-// Prevent pinch-to-zoom (native app behavior)
-document.addEventListener('gesturestart', (e) => e.preventDefault());
-document.addEventListener('wheel', (e) => { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
-```
+- Adicionar "Relatórios" no menu lateral para **todos** (não só master) em `Painel.tsx`
+- Na página `Relatorios.tsx`, quando `isMaster === false`:
+  - Filtrar **todos os dados pelo `barber_id` do funcionário logado**
+  - Mostrar: faturamento pessoal, atendimentos, serviços mais realizados por ele, horários de pico dele
+  - **Não mostrar**: ranking de barbeiros, meta mensal, dados de outros funcionários
+  - Título: "Meu Desempenho" em vez de "Relatórios & Desempenho"
+  - Exportar PDF só com os dados dele
 
 ---
 
-## 2. Remover Arquivos e Código Morto
+## 2. Abas no Relatório do Master
 
-| Arquivo | Motivo |
+Para o master, adicionar `Tabs` com duas abas:
+
+- **"Barbearia"** — visão atual completa (faturamento total, ranking, meta mensal, todos os barbeiros)
+- **"Meu Desempenho"** — filtra apenas pelos atendimentos do barber_id do master, mostrando o quanto **ele pessoalmente** faturou e atendeu (mesma estrutura visual do relatório do funcionário)
+
+O `OutletContext` já traz o `barber` com o ID do master, então basta filtrar.
+
+---
+
+## 3. Melhorias Extras para Vender Mais
+
+Ideias que fazem diferença real para 10-30k usuários:
+
+| Melhoria | Impacto |
 |---|---|
-| `src/App.css` | Nunca importado em nenhum lugar — CSS padrão do Vite, lixo |
-| `src/components/NavLink.tsx` | Nunca importado em nenhum componente |
-| `src/test/example.test.ts` | Teste placeholder vazio, não testa nada real |
+| **Notificação sonora/visual** quando chega agendamento novo na agenda | Dá sensação de app vivo, profissional |
+| **Ticket médio** nos relatórios (faturamento / atendimentos) | Métrica que todo dono de barbearia quer ver |
+| **Tempo médio de atendimento** nos relatórios | Ajuda a otimizar agenda |
+| **Feedback pós-atendimento** (cliente avalia com estrelas via link) | Diferencial competitivo enorme |
+| **Mensagem automática de confirmação** via WhatsApp ao agendar | Feature mais pedida em apps de agendamento |
 
-### Ação:
-- Deletar esses 3 arquivos (substituir por conteúdo vazio ou remover)
-
----
-
-## 3. Viewport meta — já OK
-
-O `index.html` já contém:
-```
-maximum-scale=1.0, user-scalable=no, viewport-fit=cover
-```
-Nenhuma mudança necessária aqui.
+Neste plano, vou implementar as **duas primeiras** (relatórios) e adicionar **ticket médio** como métrica bônus nos relatórios. As outras ficam como próximos passos.
 
 ---
 
 ## Arquivos Modificados
 
-1. `src/index.css` — adicionar `touch-action: manipulation`
-2. `src/main.tsx` — adicionar listeners anti-zoom
-3. `src/App.css` — deletar (não usado)
-4. `src/components/NavLink.tsx` — deletar (não usado)
-5. `src/test/example.test.ts` — deletar (placeholder vazio)
+1. `src/pages/Painel.tsx` — liberar menu "Relatórios" para barbers
+2. `src/pages/painel/Relatorios.tsx` — refatorar com abas (master) e visão individual (barber), adicionar ticket médio
+
+## Detalhes Técnicos
+
+- Usar `Tabs` do Radix já existente em `src/components/ui/tabs.tsx`
+- O `OutletContext` já fornece `barber.id` e `isMaster` — sem necessidade de queries extras
+- Filtro por barber_id: adicionar `.eq('barber_id', barber.id)` nas queries quando não é master ou na aba "Meu Desempenho"
+- Ticket médio = `totalRevenue / totalAppointments` (simples, sem mudança no banco)
+- Sem mudanças no banco de dados — tudo usa as tabelas e queries existentes
 
