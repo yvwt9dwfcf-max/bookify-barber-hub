@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 import { useBarber } from '@/hooks/useBarber';
 import { useUserRole } from '@/hooks/useUserRole';
