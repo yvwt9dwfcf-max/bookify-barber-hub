@@ -248,11 +248,7 @@ const Clientes = () => {
 
       {/* Client List */}
       {isLoading ? (
-        <div className="space-y-2">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-16 w-full rounded-xl" />
-          ))}
-        </div>
+        <ClientesSkeleton />
       ) : filteredClients.length === 0 ? (
         <Card className="border-border/40 border-dashed">
           <CardContent className="text-center py-10">
