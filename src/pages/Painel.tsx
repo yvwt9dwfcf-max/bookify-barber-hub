@@ -35,6 +35,25 @@ import { useDayClosing } from '@/hooks/useDayClosing';
 import DayClosingModal from '@/components/painel/DayClosingModal';
 import AppTutorial from '@/components/painel/AppTutorial';
 
+// Prefetch all panel sub-routes on mount to avoid stutter during animations
+const panelModules = [
+  () => import('./painel/Agenda'),
+  () => import('./painel/Servicos'),
+  () => import('./painel/Horarios'),
+  () => import('./painel/Bloqueios'),
+  () => import('./painel/Barbeiros'),
+  () => import('./painel/Relatorios'),
+  () => import('./painel/Clientes'),
+  () => import('./painel/Comissoes'),
+  () => import('./painel/Fidelidade'),
+  () => import('./painel/WhatsAppAtendimento'),
+  () => import('./painel/PerfilPublico'),
+  () => import('./painel/Configuracoes'),
+  () => import('./painel/Assinatura'),
+  () => import('./painel/Suporte'),
+  () => import('./painel/ExcluirConta'),
+];
+
 const Painel = () => {
   const { user, loading: authLoading, signOut } = useAuth();
   const { barber, loading: barberLoading } = useBarber();
