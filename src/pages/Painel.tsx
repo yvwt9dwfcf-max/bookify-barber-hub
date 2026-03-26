@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 import { useBarber } from '@/hooks/useBarber';
 import { useUserRole } from '@/hooks/useUserRole';
@@ -329,7 +330,17 @@ const Painel = () => {
       {/* Main Content */}
       <main className="lg:ml-[270px] pt-14 lg:pt-0 min-h-screen">
         <div className="p-3 md:p-5 lg:p-8 max-w-6xl">
-          <Outlet context={{ barber, barbershop, isMaster, refetchRole }} />
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.18, ease: [0.25, 0.1, 0.25, 1] as [number, number, number, number] }}
+            >
+              <Outlet context={{ barber, barbershop, isMaster, refetchRole }} />
+            </motion.div>
+          </AnimatePresence>
         </div>
       </main>
 
