@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Check, UsersRound as Users, Sparkles, Loader2, CreditCard, Calendar, AlertTriangle, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { AssinaturaSkeleton } from '@/components/painel/skeletons';
 import { cn } from '@/lib/utils';
 import { PLANS } from '@/lib/plans';
 import { STRIPE_PLANS, StripePlanId } from '@/lib/stripe';

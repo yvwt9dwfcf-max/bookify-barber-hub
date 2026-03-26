@@ -12,6 +12,7 @@ import {
   Camera, Copy, CircleCheck as CheckCircle, TriangleAlert as AlertTriangle, ExternalLink, Trash2
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { PerfilPublicoSkeleton } from '@/components/painel/skeletons';
 
 interface PublicProfile {
   id: string;

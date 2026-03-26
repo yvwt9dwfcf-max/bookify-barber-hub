@@ -29,6 +29,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { WhatsAppSkeleton } from '@/components/painel/skeletons';
 
 interface ContextType {
   barber: Barber | null;
