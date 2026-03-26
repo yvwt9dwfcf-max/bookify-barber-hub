@@ -70,8 +70,8 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
             <CardContent>
               <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'login' | 'signup')}>
                 <TabsList className="grid w-full grid-cols-2 mb-6 h-11 rounded-lg p-1">
-                  <TabsTrigger value="login" className="rounded-md text-sm">Entrar</TabsTrigger>
-                  <TabsTrigger value="signup" className="rounded-md text-sm">Criar conta</TabsTrigger>
+                  <TabsTrigger value="login" className="rounded-md h-full text-sm">Entrar</TabsTrigger>
+                  <TabsTrigger value="signup" className="rounded-md h-full text-sm">Criar conta</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="login">
