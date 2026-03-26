@@ -634,9 +634,9 @@ const Relatorios = () => {
 
       {isMaster ? (
         <Tabs value={masterTab} onValueChange={setMasterTab}>
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="barbearia">Barbearia</TabsTrigger>
-            <TabsTrigger value="meu-desempenho">Meu Desempenho</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 h-11 rounded-lg p-1">
+            <TabsTrigger value="barbearia" className="rounded-md h-full">Barbearia</TabsTrigger>
+            <TabsTrigger value="meu-desempenho" className="rounded-md h-full">Meu Desempenho</TabsTrigger>
           </TabsList>
           <TabsContent value="barbearia">
             <ReportContent
