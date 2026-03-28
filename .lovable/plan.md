@@ -1,30 +1,73 @@
 
 
-# Correção: Tabs desproporcionais (Relatórios + Login)
+## Plano: Video Promocional Profissional do Bookify (Remotion)
 
-## Problemas identificados
+### Conceito Criativo
 
-1. **Relatórios — Tabs "Barbearia" / "Meu Desempenho"**: As duas abas estão desproporcionais visualmente. O componente base `TabsList` usa `inline-flex` como padrão, que conflita com o `grid w-full grid-cols-2` aplicado. O `inline-flex` impede que o grid funcione corretamente, fazendo as abas ficarem com tamanhos diferentes.
+Video estilo anuncio premium de SaaS -- dark, elegante, com ritmo cinematografico. Sem moldura de celular (conforme pedido). Os screenshots reais aparecem como paineis flutuantes com bordas arredondadas, sombras e reflexos sutis, sobre um fundo dark com gradientes verdes.
 
-2. **Login — Tabs "Entrar" / "Criar conta"**: Mesmo problema — as abas não encaixam bem no bloco por conflito entre `inline-flex` e `grid`.
+### Direcao Visual
 
-## Solução
+- **Paleta**: Dark (#0A0A0A fundo), Verde Bookify (#22C55E accent), branco/cinza para texto
+- **Fonte**: Inter (display bold) + Inter (body regular)
+- **Estetica**: Tech Product / Cinematic Minimal -- reveals suaves, parallax, tipografia grande
+- **Motifs**: Glow verde sutil atras dos screenshots, particulas/linhas flutuantes, gradiente radial verde
 
-Corrigir os dois locais adicionando classes que sobrescrevam o `inline-flex` base:
+### Roteiro (6 cenas, ~25 segundos, 30fps = 750 frames)
 
-### 1. `src/pages/painel/Relatorios.tsx` (linha 637)
-- Adicionar `h-11 rounded-lg p-1` no `TabsList` para garantir altura e padding consistentes
-- Adicionar `rounded-md h-full` nos `TabsTrigger` para que cada aba preencha o container por igual
+| Cena | Duracao | Conteudo | Screenshot |
+|------|---------|----------|------------|
+| 1 - Hook | 3s (90f) | Logo Bookify + "Sua barbearia. Online. Agora." com reveal cinematografico | Nenhum |
+| 2 - Pagina Publica | 4s (120f) | "Seus clientes te encontram online" + screenshot da pagina publica com mapa (IMG_6912-2) | IMG_6912-2.png |
+| 3 - Servicos | 4s (120f) | "Escolhem o servico" + screenshot da selecao de servico (IMG_6914) e lista de servicos do barbeiro (IMG_6913) | IMG_6913 + IMG_6914 |
+| 4 - Agenda | 4s (120f) | "Agendam na hora" + screenshots do calendario e horarios (IMG_6915 + IMG_6916) | IMG_6915 + IMG_6916 |
+| 5 - Confirmacao | 4s (120f) | "E pronto. Confirmado." + screenshot dos dados (IMG_6917) e confirmacao (IMG_6918) | IMG_6917 + IMG_6918 |
+| 6 - Fechamento | 4s (120f) | "Bookify" + "Mais clientes, menos confusao" + "3 dias gratis" | Nenhum |
 
-### 2. `src/pages/Login.tsx` (linha 72)  
-- Adicionar `h-full` nos `TabsTrigger` para preencher a altura do container
-- Garantir que `rounded-md` está nos triggers
+Transicoes de ~20 frames entre cenas (~690f total com overlaps).
 
-### 3. `src/components/ui/tabs.tsx` — Correção na raiz
-- Trocar `inline-flex` por `flex` no `TabsList` base. Quando `grid` é aplicado via className, o `inline-flex` é sobrescrito, mas pode causar inconsistências em alguns browsers. Mudar para `flex` resolve o conflito de display sem quebrar outros usos.
+### Animacoes
 
-## Arquivos modificados
-1. `src/components/ui/tabs.tsx` — trocar `inline-flex` por `flex`
-2. `src/pages/painel/Relatorios.tsx` — ajustar classes do TabsList e TabsTrigger
-3. `src/pages/Login.tsx` — ajustar classes do TabsTrigger
+- Screenshots entram com spring slide-up + escala sutil, com glow verde atras
+- Texto entra com clip-path reveal ou fade+translate
+- Background: gradiente radial verde pulsando lentamente (sinusoidal)
+- Transicoes: wipe ou fade entre cenas
+
+### Estrutura de Arquivos
+
+```text
+remotion/
+  src/
+    index.ts
+    Root.tsx
+    MainVideo.tsx
+    scenes/
+      HookScene.tsx
+      PublicPageScene.tsx
+      ServicesScene.tsx
+      ScheduleScene.tsx
+      ConfirmScene.tsx
+      ClosingScene.tsx
+    components/
+      ScreenshotFrame.tsx    (painel flutuante com rounded corners + shadow + glow)
+      GradientBackground.tsx
+  public/
+    images/                  (screenshots copiados aqui)
+  scripts/
+    render-remotion.mjs
+```
+
+### Passos de Implementacao
+
+1. Scaffold projeto Remotion, instalar deps, corrigir compositor
+2. Copiar os 8 screenshots do usuario para `remotion/public/images/`
+3. Criar componente `ScreenshotFrame` -- exibe screenshot sem moldura de celular, com rounded corners, sombra e glow verde
+4. Criar `GradientBackground` -- fundo dark com gradiente radial verde animado
+5. Construir as 6 cenas individuais com tipografia grande e screenshots
+6. Montar `MainVideo.tsx` com `TransitionSeries` e transicoes
+7. Renderizar MP4, QA visual, entregar em `/mnt/documents/`
+
+### Saida
+
+MP4 1920x1080, 30fps, ~25 segundos, salvo em `/mnt/documents/bookify-promo.mp4`
 
