@@ -63,7 +63,7 @@ export const MainVideo: React.FC = () => {
         />
 
         {/* 5 - Pagina Publica */}
-        <TransitionSeries.Sequence durationInFrames={120}>
+        <TransitionSeries.Sequence durationInFrames={150}>
           <PublicPageScene />
         </TransitionSeries.Sequence>
 
