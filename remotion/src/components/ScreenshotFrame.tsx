@@ -72,8 +72,10 @@ export const ScreenshotFrame: React.FC<ScreenshotFrameProps> = ({
           src={staticFile(`images/${src}`)}
           style={{
             width: "100%",
-            height: "100%",
+            height: "110%",
             objectFit: "cover",
+            objectPosition: "center 8%",
+            marginTop: "-5%",
           }}
         />
         {/* Subtle top reflection */}
