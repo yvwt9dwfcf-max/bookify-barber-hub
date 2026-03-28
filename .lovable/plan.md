@@ -1,73 +1,27 @@
 
 
-## Plano: Video Promocional Profissional do Bookify (Remotion)
+## Plano: Video Promocional Completo do Bookify
 
-### Conceito Criativo
+### Problema Atual
+O video atual usa apenas 7 dos 14 screenshots (IMG_6912-6918) e mostra somente o fluxo de agendamento online do cliente. As imagens IMG_6904 a IMG_6911 (painel do barbeiro, agenda, relatórios, clientes) não foram usadas.
 
-Video estilo anuncio premium de SaaS -- dark, elegante, com ritmo cinematografico. Sem moldura de celular (conforme pedido). Os screenshots reais aparecem como paineis flutuantes com bordas arredondadas, sombras e reflexos sutis, sobre um fundo dark com gradientes verdes.
+### Nova Estrutura - 8 Cenas (~30s, 30fps)
 
-### Direcao Visual
+| Cena | Frames | Conteudo | Imagens |
+|------|--------|----------|---------|
+| 1 - Hook | 90f | "Sua barbearia. Online. Agora." - reveal cinematografico | Nenhuma |
+| 2 - Painel | 120f | "Gerencie tudo em um só lugar" - dashboard/painel do dono | IMG_6904, IMG_6905 |
+| 3 - Agenda | 120f | "Sua agenda sempre organizada" - calendario e agendamentos | IMG_6906, IMG_6907 |
+| 4 - Clientes | 100f | "Conheça seus clientes" - lista de clientes/relatórios | IMG_6909, IMG_6910, IMG_6911 |
+| 5 - Pagina Publica | 120f | "Seus clientes te encontram online" - pagina publica | IMG_6912-2 |
+| 6 - Servicos + Agenda | 120f | "Escolhem, agendam e confirmam" - fluxo completo | IMG_6913, IMG_6914, IMG_6915 |
+| 7 - Confirmacao | 100f | "E pronto. Confirmado." - dados + confirmação | IMG_6916, IMG_6917, IMG_6918 |
+| 8 - Fechamento | 120f | "Bookify - Mais clientes, menos confusão - 3 dias grátis" | Nenhuma |
 
-- **Paleta**: Dark (#0A0A0A fundo), Verde Bookify (#22C55E accent), branco/cinza para texto
-- **Fonte**: Inter (display bold) + Inter (body regular)
-- **Estetica**: Tech Product / Cinematic Minimal -- reveals suaves, parallax, tipografia grande
-- **Motifs**: Glow verde sutil atras dos screenshots, particulas/linhas flutuantes, gradiente radial verde
+Total: ~890f - 7 transições × 20f = ~750f (~25s)
 
-### Roteiro (6 cenas, ~25 segundos, 30fps = 750 frames)
+### Mudanças Técnicas
 
-| Cena | Duracao | Conteudo | Screenshot |
-|------|---------|----------|------------|
-| 1 - Hook | 3s (90f) | Logo Bookify + "Sua barbearia. Online. Agora." com reveal cinematografico | Nenhum |
-| 2 - Pagina Publica | 4s (120f) | "Seus clientes te encontram online" + screenshot da pagina publica com mapa (IMG_6912-2) | IMG_6912-2.png |
-| 3 - Servicos | 4s (120f) | "Escolhem o servico" + screenshot da selecao de servico (IMG_6914) e lista de servicos do barbeiro (IMG_6913) | IMG_6913 + IMG_6914 |
-| 4 - Agenda | 4s (120f) | "Agendam na hora" + screenshots do calendario e horarios (IMG_6915 + IMG_6916) | IMG_6915 + IMG_6916 |
-| 5 - Confirmacao | 4s (120f) | "E pronto. Confirmado." + screenshot dos dados (IMG_6917) e confirmacao (IMG_6918) | IMG_6917 + IMG_6918 |
-| 6 - Fechamento | 4s (120f) | "Bookify" + "Mais clientes, menos confusao" + "3 dias gratis" | Nenhum |
-
-Transicoes de ~20 frames entre cenas (~690f total com overlaps).
-
-### Animacoes
-
-- Screenshots entram com spring slide-up + escala sutil, com glow verde atras
-- Texto entra com clip-path reveal ou fade+translate
-- Background: gradiente radial verde pulsando lentamente (sinusoidal)
-- Transicoes: wipe ou fade entre cenas
-
-### Estrutura de Arquivos
-
-```text
-remotion/
-  src/
-    index.ts
-    Root.tsx
-    MainVideo.tsx
-    scenes/
-      HookScene.tsx
-      PublicPageScene.tsx
-      ServicesScene.tsx
-      ScheduleScene.tsx
-      ConfirmScene.tsx
-      ClosingScene.tsx
-    components/
-      ScreenshotFrame.tsx    (painel flutuante com rounded corners + shadow + glow)
-      GradientBackground.tsx
-  public/
-    images/                  (screenshots copiados aqui)
-  scripts/
-    render-remotion.mjs
-```
-
-### Passos de Implementacao
-
-1. Scaffold projeto Remotion, instalar deps, corrigir compositor
-2. Copiar os 8 screenshots do usuario para `remotion/public/images/`
-3. Criar componente `ScreenshotFrame` -- exibe screenshot sem moldura de celular, com rounded corners, sombra e glow verde
-4. Criar `GradientBackground` -- fundo dark com gradiente radial verde animado
-5. Construir as 6 cenas individuais com tipografia grande e screenshots
-6. Montar `MainVideo.tsx` com `TransitionSeries` e transicoes
-7. Renderizar MP4, QA visual, entregar em `/mnt/documents/`
-
-### Saida
-
-MP4 1920x1080, 30fps, ~25 segundos, salvo em `/mnt/documents/bookify-promo.mp4`
-
+1. **Criar 3 novas cenas**: `PainelScene.tsx`, `AgendaScene.tsx`, `ClientesScene.tsx` usando as imagens não utilizadas (IMG_6904-6911)
+2. **Refatorar cenas existentes**: Combinar ServicesScene + ScheduleScene em uma cena mais dinâmica mostrando o fluxo completo do cliente
+3. **Atualizar MainVideo.tsx**: Adicionar as novas cenas na TransitionSeries com
