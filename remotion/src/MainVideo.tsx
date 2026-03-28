@@ -43,7 +43,7 @@ export const MainVideo: React.FC = () => {
         />
 
         {/* 3 - Agenda */}
-        <TransitionSeries.Sequence durationInFrames={120}>
+        <TransitionSeries.Sequence durationInFrames={150}>
           <AgendaScene />
         </TransitionSeries.Sequence>
 
