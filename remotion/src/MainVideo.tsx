@@ -23,7 +23,7 @@ export const MainVideo: React.FC = () => {
 
       <TransitionSeries>
         {/* 1 - Hook */}
-        <TransitionSeries.Sequence durationInFrames={90}>
+        <TransitionSeries.Sequence durationInFrames={110}>
           <HookScene />
         </TransitionSeries.Sequence>
 
