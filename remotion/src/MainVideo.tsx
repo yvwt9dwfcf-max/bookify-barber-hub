@@ -93,7 +93,7 @@ export const MainVideo: React.FC = () => {
         />
 
         {/* 8 - Fechamento */}
-        <TransitionSeries.Sequence durationInFrames={120}>
+        <TransitionSeries.Sequence durationInFrames={140}>
           <ClosingScene />
         </TransitionSeries.Sequence>
       </TransitionSeries>
