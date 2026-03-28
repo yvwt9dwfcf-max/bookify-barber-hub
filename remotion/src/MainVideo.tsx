@@ -73,7 +73,7 @@ export const MainVideo: React.FC = () => {
         />
 
         {/* 6 - Fluxo Cliente */}
-        <TransitionSeries.Sequence durationInFrames={120}>
+        <TransitionSeries.Sequence durationInFrames={150}>
           <FluxoClienteScene />
         </TransitionSeries.Sequence>
 
