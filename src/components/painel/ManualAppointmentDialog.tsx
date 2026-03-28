@@ -145,42 +145,59 @@ const ManualAppointmentDialog = ({
         return;
       }
 
-      const { data: globalServices, error: globalError } = await supabase
-        .from('services')
-        .select('*')
-        .eq('barbershop_id', targetBarber.barbershop_id!)
-        .eq('active', true)
-        .eq('is_global', true)
-        .order('name');
-
-      if (globalError) throw globalError;
-
-      const { data: barberServicesData, error: bsError } = await supabase
-        .from('barber_services')
-        .select('service_id')
-        .eq('barber_id', targetBarber.id);
-
-      if (bsError) throw bsError;
-
-      const specificIds = (barberServicesData || []).map(bs => bs.service_id);
-      let specificServices: Service[] = [];
-
-      if (specificIds.length > 0) {
-        const { data: linked, error: linkedError } = await supabase
+      // Fetch barber-specific links and global services in parallel
+      const [barberServicesRes, globalServicesRes] = await Promise.all([
+        supabase
+          .from('barber_services')
+          .select('service_id')
+          .eq('barber_id', targetBarber.id),
+        supabase
           .from('services')
           .select('*')
-          .in('id', specificIds)
+          .eq('barbershop_id', targetBarber.barbershop_id!)
           .eq('active', true)
-          .eq('is_global', false)
+          .eq('is_global', true)
+          .order('name'),
+      ]);
+
+      if (barberServicesRes.error) throw barberServicesRes.error;
+      if (globalServicesRes.error) throw globalServicesRes.error;
+
+      const serviceIds = (barberServicesRes.data || []).map(bs => bs.service_id);
+      const globalServices = (globalServicesRes.data || []) as Service[];
+
+      if (serviceIds.length === 0) {
+        // No specific links — show ALL active services for the barbershop
+        const { data: allServices, error: allError } = await supabase
+          .from('services')
+          .select('*')
+          .eq('barbershop_id', targetBarber.barbershop_id!)
+          .eq('active', true)
+          .order('name');
+
+        if (allError) throw allError;
+        setServices((allServices || []) as Service[]);
+      } else {
+        // Fetch linked services
+        const { data: linkedServices, error: linkedError } = await supabase
+          .from('services')
+          .select('*')
+          .in('id', serviceIds)
+          .eq('active', true)
           .order('name');
 
         if (linkedError) throw linkedError;
-        specificServices = (linked || []) as Service[];
-      }
 
-      const all = [...(globalServices || []), ...specificServices] as Service[];
-      const unique = all.filter((s, i, arr) => arr.findIndex(x => x.id === s.id) === i);
-      setServices(unique);
+        // Merge linked + global without duplicates
+        const merged = [...(linkedServices || [])] as Service[];
+        for (const gs of globalServices) {
+          if (!merged.some(s => s.id === gs.id)) {
+            merged.push(gs);
+          }
+        }
+        merged.sort((a, b) => a.name.localeCompare(b.name));
+        setServices(merged);
+      }
     } catch (error) {
       console.error('Erro ao buscar serviços:', error);
       toast.error('Erro ao carregar serviços');
