@@ -23,7 +23,7 @@ export const MainVideo: React.FC = () => {
 
       <TransitionSeries>
         {/* 1 - Hook */}
-        <TransitionSeries.Sequence durationInFrames={90}>
+        <TransitionSeries.Sequence durationInFrames={110}>
           <HookScene />
         </TransitionSeries.Sequence>
 
@@ -33,7 +33,7 @@ export const MainVideo: React.FC = () => {
         />
 
         {/* 2 - Painel */}
-        <TransitionSeries.Sequence durationInFrames={120}>
+        <TransitionSeries.Sequence durationInFrames={150}>
           <PainelScene />
         </TransitionSeries.Sequence>
 
@@ -43,7 +43,7 @@ export const MainVideo: React.FC = () => {
         />
 
         {/* 3 - Agenda */}
-        <TransitionSeries.Sequence durationInFrames={120}>
+        <TransitionSeries.Sequence durationInFrames={150}>
           <AgendaScene />
         </TransitionSeries.Sequence>
 
@@ -53,7 +53,7 @@ export const MainVideo: React.FC = () => {
         />
 
         {/* 4 - Clientes */}
-        <TransitionSeries.Sequence durationInFrames={100}>
+        <TransitionSeries.Sequence durationInFrames={120}>
           <ClientesScene />
         </TransitionSeries.Sequence>
 
@@ -63,7 +63,7 @@ export const MainVideo: React.FC = () => {
         />
 
         {/* 5 - Pagina Publica */}
-        <TransitionSeries.Sequence durationInFrames={120}>
+        <TransitionSeries.Sequence durationInFrames={150}>
           <PublicPageScene />
         </TransitionSeries.Sequence>
 
@@ -73,7 +73,7 @@ export const MainVideo: React.FC = () => {
         />
 
         {/* 6 - Fluxo Cliente */}
-        <TransitionSeries.Sequence durationInFrames={120}>
+        <TransitionSeries.Sequence durationInFrames={150}>
           <FluxoClienteScene />
         </TransitionSeries.Sequence>
 
@@ -83,7 +83,7 @@ export const MainVideo: React.FC = () => {
         />
 
         {/* 7 - Confirmação */}
-        <TransitionSeries.Sequence durationInFrames={100}>
+        <TransitionSeries.Sequence durationInFrames={120}>
           <ConfirmScene />
         </TransitionSeries.Sequence>
 
@@ -93,7 +93,7 @@ export const MainVideo: React.FC = () => {
         />
 
         {/* 8 - Fechamento */}
-        <TransitionSeries.Sequence durationInFrames={120}>
+        <TransitionSeries.Sequence durationInFrames={140}>
           <ClosingScene />
         </TransitionSeries.Sequence>
       </TransitionSeries>
