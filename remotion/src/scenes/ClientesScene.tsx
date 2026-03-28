@@ -20,9 +20,9 @@ export const ClientesScene: React.FC = () => {
             Conheça seus <span style={{ color: "#22C55E" }}>clientes</span>
           </div>
         </div>
-        <ScreenshotFrame src="IMG_6909.png" width={300} height={600} delay={6} offsetX={-380} offsetY={80} rotation={-3} />
-        <ScreenshotFrame src="IMG_6910.png" width={300} height={600} delay={12} offsetX={0} offsetY={60} rotation={0} />
-        <ScreenshotFrame src="IMG_6911.png" width={300} height={600} delay={18} offsetX={380} offsetY={80} rotation={3} />
+        <ScreenshotFrame src="IMG_6946.png" width={300} height={600} delay={6} offsetX={-380} offsetY={80} rotation={-3} />
+        <ScreenshotFrame src="IMG_6944.png" width={300} height={600} delay={12} offsetX={0} offsetY={60} rotation={0} />
+        <ScreenshotFrame src="IMG_6945.png" width={300} height={600} delay={18} offsetX={380} offsetY={80} rotation={3} />
       </AbsoluteFill>
     </SceneWrapper>
   );
