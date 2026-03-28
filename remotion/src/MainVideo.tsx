@@ -33,7 +33,7 @@ export const MainVideo: React.FC = () => {
         />
 
         {/* 2 - Painel */}
-        <TransitionSeries.Sequence durationInFrames={120}>
+        <TransitionSeries.Sequence durationInFrames={150}>
           <PainelScene />
         </TransitionSeries.Sequence>
 
