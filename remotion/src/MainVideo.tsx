@@ -6,67 +6,93 @@ import { wipe } from "@remotion/transitions/wipe";
 
 import { GradientBackground } from "./components/GradientBackground";
 import { HookScene } from "./scenes/HookScene";
+import { PainelScene } from "./scenes/PainelScene";
+import { AgendaScene } from "./scenes/AgendaScene";
+import { ClientesScene } from "./scenes/ClientesScene";
 import { PublicPageScene } from "./scenes/PublicPageScene";
-import { ServicesScene } from "./scenes/ServicesScene";
-import { ScheduleScene } from "./scenes/ScheduleScene";
+import { FluxoClienteScene } from "./scenes/FluxoClienteScene";
 import { ConfirmScene } from "./scenes/ConfirmScene";
 import { ClosingScene } from "./scenes/ClosingScene";
 
-const TRANSITION_DURATION = 20;
+const T = 20; // transition duration
 
 export const MainVideo: React.FC = () => {
   return (
     <AbsoluteFill>
-      {/* Persistent animated background */}
       <GradientBackground />
 
-      {/* Scene sequence with transitions */}
       <TransitionSeries>
+        {/* 1 - Hook */}
         <TransitionSeries.Sequence durationInFrames={90}>
           <HookScene />
         </TransitionSeries.Sequence>
 
         <TransitionSeries.Transition
           presentation={fade()}
-          timing={linearTiming({ durationInFrames: TRANSITION_DURATION })}
+          timing={linearTiming({ durationInFrames: T })}
         />
 
+        {/* 2 - Painel */}
+        <TransitionSeries.Sequence durationInFrames={120}>
+          <PainelScene />
+        </TransitionSeries.Sequence>
+
+        <TransitionSeries.Transition
+          presentation={wipe({ direction: "from-left" })}
+          timing={linearTiming({ durationInFrames: T })}
+        />
+
+        {/* 3 - Agenda */}
+        <TransitionSeries.Sequence durationInFrames={120}>
+          <AgendaScene />
+        </TransitionSeries.Sequence>
+
+        <TransitionSeries.Transition
+          presentation={fade()}
+          timing={linearTiming({ durationInFrames: T })}
+        />
+
+        {/* 4 - Clientes */}
+        <TransitionSeries.Sequence durationInFrames={100}>
+          <ClientesScene />
+        </TransitionSeries.Sequence>
+
+        <TransitionSeries.Transition
+          presentation={wipe({ direction: "from-right" })}
+          timing={linearTiming({ durationInFrames: T })}
+        />
+
+        {/* 5 - Pagina Publica */}
         <TransitionSeries.Sequence durationInFrames={120}>
           <PublicPageScene />
         </TransitionSeries.Sequence>
 
         <TransitionSeries.Transition
-          presentation={wipe({ direction: "from-left" })}
-          timing={linearTiming({ durationInFrames: TRANSITION_DURATION })}
-        />
-
-        <TransitionSeries.Sequence durationInFrames={120}>
-          <ServicesScene />
-        </TransitionSeries.Sequence>
-
-        <TransitionSeries.Transition
           presentation={fade()}
-          timing={linearTiming({ durationInFrames: TRANSITION_DURATION })}
+          timing={linearTiming({ durationInFrames: T })}
         />
 
+        {/* 6 - Fluxo Cliente */}
         <TransitionSeries.Sequence durationInFrames={120}>
-          <ScheduleScene />
+          <FluxoClienteScene />
         </TransitionSeries.Sequence>
 
         <TransitionSeries.Transition
-          presentation={wipe({ direction: "from-right" })}
-          timing={linearTiming({ durationInFrames: TRANSITION_DURATION })}
+          presentation={wipe({ direction: "from-left" })}
+          timing={linearTiming({ durationInFrames: T })}
         />
 
-        <TransitionSeries.Sequence durationInFrames={120}>
+        {/* 7 - Confirmação */}
+        <TransitionSeries.Sequence durationInFrames={100}>
           <ConfirmScene />
         </TransitionSeries.Sequence>
 
         <TransitionSeries.Transition
           presentation={fade()}
-          timing={linearTiming({ durationInFrames: TRANSITION_DURATION })}
+          timing={linearTiming({ durationInFrames: T })}
         />
 
+        {/* 8 - Fechamento */}
         <TransitionSeries.Sequence durationInFrames={120}>
           <ClosingScene />
         </TransitionSeries.Sequence>
