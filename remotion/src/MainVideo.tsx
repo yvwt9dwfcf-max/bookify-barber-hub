@@ -83,7 +83,7 @@ export const MainVideo: React.FC = () => {
         />
 
         {/* 7 - Confirmação */}
-        <TransitionSeries.Sequence durationInFrames={100}>
+        <TransitionSeries.Sequence durationInFrames={120}>
           <ConfirmScene />
         </TransitionSeries.Sequence>
 
