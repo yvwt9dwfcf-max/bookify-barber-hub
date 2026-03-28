@@ -2,16 +2,13 @@ import React from "react";
 import { AbsoluteFill, useCurrentFrame, useVideoConfig, spring, interpolate } from "remotion";
 import { ScreenshotFrame } from "../components/ScreenshotFrame";
 
-export const ConfirmScene: React.FC = () => {
+export const FluxoClienteScene: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
   const textSpring = spring({ frame, fps, config: { damping: 22, stiffness: 120 } });
   const textY = interpolate(textSpring, [0, 1], [50, 0]);
   const textOpacity = interpolate(textSpring, [0, 1], [0, 1]);
-
-  const checkSpring = spring({ frame: frame - 20, fps, config: { damping: 12, stiffness: 200 } });
-  const checkScale = interpolate(checkSpring, [0, 1], [0, 1]);
 
   return (
     <AbsoluteFill>
@@ -20,7 +17,7 @@ export const ConfirmScene: React.FC = () => {
         style={{
           position: "absolute",
           width: "100%",
-          top: 70,
+          top: 60,
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -30,21 +27,16 @@ export const ConfirmScene: React.FC = () => {
       >
         <div
           style={{
-            width: 60,
-            height: 60,
-            borderRadius: "50%",
-            background: "rgba(34,197,94,0.15)",
-            border: "2px solid #22C55E",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            marginBottom: 20,
-            transform: `scale(${checkScale})`,
+            fontFamily: "Inter, sans-serif",
+            fontSize: 14,
+            fontWeight: 600,
+            color: "#22C55E",
+            letterSpacing: 4,
+            textTransform: "uppercase",
+            marginBottom: 16,
           }}
         >
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
+          Fluxo do Cliente
         </div>
         <div
           style={{
@@ -54,39 +46,41 @@ export const ConfirmScene: React.FC = () => {
             color: "#ffffff",
             lineHeight: 1.15,
             letterSpacing: -1,
+            textAlign: "center",
           }}
         >
-          E pronto. <span style={{ color: "#22C55E" }}>Confirmado.</span>
+          Escolhem, agendam e{" "}
+          <span style={{ color: "#22C55E" }}>confirmam</span>
         </div>
       </div>
 
-      {/* Three screenshots */}
+      {/* Three screenshots showing the client flow */}
       <ScreenshotFrame
-        src="IMG_6916.png"
+        src="IMG_6913.png"
         width={300}
         height={600}
-        delay={8}
+        delay={6}
         offsetX={-380}
         offsetY={80}
-        rotation={-2}
+        rotation={-3}
       />
       <ScreenshotFrame
-        src="IMG_6917.png"
+        src="IMG_6914.png"
         width={300}
         height={600}
-        delay={14}
+        delay={12}
         offsetX={0}
         offsetY={60}
         rotation={0}
       />
       <ScreenshotFrame
-        src="IMG_6918.png"
+        src="IMG_6915.png"
         width={300}
         height={600}
-        delay={20}
+        delay={18}
         offsetX={380}
         offsetY={80}
-        rotation={2}
+        rotation={3}
       />
     </AbsoluteFill>
   );
