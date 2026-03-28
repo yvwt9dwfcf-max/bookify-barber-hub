@@ -1,8 +1,5 @@
 import React from "react";
-import { AbsoluteFill } from "remotion";
-import { TransitionSeries, linearTiming } from "@remotion/transitions";
-import { fade } from "@remotion/transitions/fade";
-import { wipe } from "@remotion/transitions/wipe";
+import { AbsoluteFill, Series } from "remotion";
 
 import { GradientBackground } from "./components/GradientBackground";
 import { HookScene } from "./scenes/HookScene";
@@ -14,89 +11,44 @@ import { FluxoClienteScene } from "./scenes/FluxoClienteScene";
 import { ConfirmScene } from "./scenes/ConfirmScene";
 import { ClosingScene } from "./scenes/ClosingScene";
 
-const T = 20; // transition duration
-
 export const MainVideo: React.FC = () => {
   return (
     <AbsoluteFill>
       <GradientBackground />
 
-      <TransitionSeries>
-        {/* 1 - Hook */}
-        <TransitionSeries.Sequence durationInFrames={110}>
+      <Series>
+        <Series.Sequence durationInFrames={110}>
           <HookScene />
-        </TransitionSeries.Sequence>
+        </Series.Sequence>
 
-        <TransitionSeries.Transition
-          presentation={fade()}
-          timing={linearTiming({ durationInFrames: T })}
-        />
-
-        {/* 2 - Painel */}
-        <TransitionSeries.Sequence durationInFrames={150}>
+        <Series.Sequence durationInFrames={150}>
           <PainelScene />
-        </TransitionSeries.Sequence>
+        </Series.Sequence>
 
-        <TransitionSeries.Transition
-          presentation={wipe({ direction: "from-left" })}
-          timing={linearTiming({ durationInFrames: T })}
-        />
-
-        {/* 3 - Agenda */}
-        <TransitionSeries.Sequence durationInFrames={150}>
+        <Series.Sequence durationInFrames={150}>
           <AgendaScene />
-        </TransitionSeries.Sequence>
+        </Series.Sequence>
 
-        <TransitionSeries.Transition
-          presentation={fade()}
-          timing={linearTiming({ durationInFrames: T })}
-        />
-
-        {/* 4 - Clientes */}
-        <TransitionSeries.Sequence durationInFrames={120}>
+        <Series.Sequence durationInFrames={120}>
           <ClientesScene />
-        </TransitionSeries.Sequence>
+        </Series.Sequence>
 
-        <TransitionSeries.Transition
-          presentation={wipe({ direction: "from-right" })}
-          timing={linearTiming({ durationInFrames: T })}
-        />
-
-        {/* 5 - Pagina Publica */}
-        <TransitionSeries.Sequence durationInFrames={150}>
+        <Series.Sequence durationInFrames={150}>
           <PublicPageScene />
-        </TransitionSeries.Sequence>
+        </Series.Sequence>
 
-        <TransitionSeries.Transition
-          presentation={fade()}
-          timing={linearTiming({ durationInFrames: T })}
-        />
-
-        {/* 6 - Fluxo Cliente */}
-        <TransitionSeries.Sequence durationInFrames={150}>
+        <Series.Sequence durationInFrames={150}>
           <FluxoClienteScene />
-        </TransitionSeries.Sequence>
+        </Series.Sequence>
 
-        <TransitionSeries.Transition
-          presentation={wipe({ direction: "from-left" })}
-          timing={linearTiming({ durationInFrames: T })}
-        />
-
-        {/* 7 - Confirmação */}
-        <TransitionSeries.Sequence durationInFrames={120}>
+        <Series.Sequence durationInFrames={120}>
           <ConfirmScene />
-        </TransitionSeries.Sequence>
+        </Series.Sequence>
 
-        <TransitionSeries.Transition
-          presentation={fade()}
-          timing={linearTiming({ durationInFrames: T })}
-        />
-
-        {/* 8 - Fechamento */}
-        <TransitionSeries.Sequence durationInFrames={140}>
+        <Series.Sequence durationInFrames={140}>
           <ClosingScene />
-        </TransitionSeries.Sequence>
-      </TransitionSeries>
+        </Series.Sequence>
+      </Series>
     </AbsoluteFill>
   );
 };

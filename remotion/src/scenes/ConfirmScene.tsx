@@ -1,6 +1,7 @@
 import React from "react";
 import { AbsoluteFill, useCurrentFrame, useVideoConfig, spring, interpolate } from "remotion";
 import { ScreenshotFrame } from "../components/ScreenshotFrame";
+import { SceneWrapper } from "../components/SceneWrapper";
 
 export const ConfirmScene: React.FC = () => {
   const frame = useCurrentFrame();
@@ -14,80 +15,22 @@ export const ConfirmScene: React.FC = () => {
   const checkScale = interpolate(checkSpring, [0, 1], [0, 1]);
 
   return (
-    <AbsoluteFill>
-      {/* Text - center top */}
-      <div
-        style={{
-          position: "absolute",
-          width: "100%",
-          top: 70,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          transform: `translateY(${textY}px)`,
-          opacity: textOpacity,
-        }}
-      >
-        <div
-          style={{
-            width: 60,
-            height: 60,
-            borderRadius: "50%",
-            background: "rgba(34,197,94,0.15)",
-            border: "2px solid #22C55E",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            marginBottom: 20,
-            transform: `scale(${checkScale})`,
-          }}
-        >
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
+    <SceneWrapper>
+      <AbsoluteFill>
+        <div style={{ position: "absolute", width: "100%", top: 70, display: "flex", flexDirection: "column", alignItems: "center", transform: `translateY(${textY}px)`, opacity: textOpacity }}>
+          <div style={{ width: 60, height: 60, borderRadius: "50%", background: "rgba(34,197,94,0.15)", border: "2px solid #22C55E", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20, transform: `scale(${checkScale})` }}>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </div>
+          <div style={{ fontFamily: "Inter, sans-serif", fontSize: 52, fontWeight: 700, color: "#ffffff", lineHeight: 1.15, letterSpacing: -1 }}>
+            E pronto. <span style={{ color: "#22C55E" }}>Confirmado.</span>
+          </div>
         </div>
-        <div
-          style={{
-            fontFamily: "Inter, sans-serif",
-            fontSize: 52,
-            fontWeight: 700,
-            color: "#ffffff",
-            lineHeight: 1.15,
-            letterSpacing: -1,
-          }}
-        >
-          E pronto. <span style={{ color: "#22C55E" }}>Confirmado.</span>
-        </div>
-      </div>
-
-      {/* Three screenshots */}
-      <ScreenshotFrame
-        src="IMG_6916.png"
-        width={300}
-        height={600}
-        delay={8}
-        offsetX={-380}
-        offsetY={80}
-        rotation={-2}
-      />
-      <ScreenshotFrame
-        src="IMG_6917.png"
-        width={300}
-        height={600}
-        delay={14}
-        offsetX={0}
-        offsetY={60}
-        rotation={0}
-      />
-      <ScreenshotFrame
-        src="IMG_6918.png"
-        width={300}
-        height={600}
-        delay={20}
-        offsetX={380}
-        offsetY={80}
-        rotation={2}
-      />
-    </AbsoluteFill>
+        <ScreenshotFrame src="IMG_6916.png" width={300} height={600} delay={8} offsetX={-380} offsetY={80} rotation={-2} />
+        <ScreenshotFrame src="IMG_6917.png" width={300} height={600} delay={14} offsetX={0} offsetY={60} rotation={0} />
+        <ScreenshotFrame src="IMG_6918.png" width={300} height={600} delay={20} offsetX={380} offsetY={80} rotation={2} />
+      </AbsoluteFill>
+    </SceneWrapper>
   );
 };
