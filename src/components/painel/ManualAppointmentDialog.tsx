@@ -540,6 +540,23 @@ const ManualAppointmentDialog = ({
                 )}
               />
 
+              {/* Repeat weekly toggle */}
+              <FormField
+                control={form.control}
+                name="repeat_weekly"
+                render={({ field }) => (
+                  <FormItem className="flex items-center justify-between rounded-lg border p-2.5">
+                    <div>
+                      <FormLabel className="text-xs font-medium">Repetir toda semana</FormLabel>
+                      <p className="text-[10px] text-muted-foreground">Cria 4 agendamentos (1 por semana)</p>
+                    </div>
+                    <FormControl>
+                      <Switch checked={field.value || false} onCheckedChange={field.onChange} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
               <div className="flex justify-end gap-2 pt-2 sticky bottom-0 bg-background pb-1">
                 <Button
                   type="button"
