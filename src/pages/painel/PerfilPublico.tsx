@@ -498,6 +498,42 @@ const PerfilPublico = () => {
         </CardContent>
       </Card>
 
+      {/* Theme Color */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">🎨 Cor do Tema</CardTitle>
+          <CardDescription>Personalize a cor principal da sua página pública</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-3">
+            {[
+              { color: '#22C55E', name: 'Verde' },
+              { color: '#3B82F6', name: 'Azul' },
+              { color: '#8B5CF6', name: 'Roxo' },
+              { color: '#EF4444', name: 'Vermelho' },
+              { color: '#F59E0B', name: 'Amarelo' },
+              { color: '#EC4899', name: 'Rosa' },
+              { color: '#06B6D4', name: 'Ciano' },
+              { color: '#F97316', name: 'Laranja' },
+            ].map((opt) => (
+              <button
+                key={opt.color}
+                type="button"
+                className={`w-10 h-10 rounded-xl border-2 transition-all ${themeColor === opt.color ? 'border-foreground scale-110 ring-2 ring-offset-2 ring-offset-background' : 'border-transparent hover:scale-105'}`}
+                style={{ backgroundColor: opt.color, ringColor: opt.color }}
+                onClick={() => setThemeColor(opt.color)}
+                title={opt.name}
+              />
+            ))}
+          </div>
+          <div className="mt-3 flex items-center gap-2">
+            <Label className="text-xs shrink-0">Cor personalizada:</Label>
+            <input type="color" value={themeColor} onChange={(e) => setThemeColor(e.target.value)} className="w-8 h-8 rounded cursor-pointer border-0" />
+            <span className="text-xs text-muted-foreground font-mono">{themeColor}</span>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Save Button */}
       <Button
         onClick={handleSave}
