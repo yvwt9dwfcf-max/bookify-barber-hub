@@ -63,7 +63,7 @@ const EsqueciSenha = () => {
                 Enviamos um link para recuperar sua senha para <strong>{email}</strong>
               </p>
               <Button asChild variant="outline">
-                <Link to="/">Voltar ao login</Link>
+                <Link to="/login">Voltar ao login</Link>
               </Button>
             </CardContent>
           </Card>
