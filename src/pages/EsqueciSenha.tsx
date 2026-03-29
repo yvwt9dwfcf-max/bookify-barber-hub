@@ -44,7 +44,7 @@ const EsqueciSenha = () => {
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             <Logo linkTo="/" />
             <Button variant="ghost" asChild>
-              <Link to="/">
+              <Link to="/login">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Voltar ao login
               </Link>
