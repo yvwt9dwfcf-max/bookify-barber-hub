@@ -54,6 +54,7 @@ const PerfilPublico = () => {
   const [slugPersonalizado, setSlugPersonalizado] = useState('');
   const [fotoCapa, setFotoCapa] = useState<string | null>(null);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [themeColor, setThemeColor] = useState<string>('#22C55E');
 
   const coverInputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
