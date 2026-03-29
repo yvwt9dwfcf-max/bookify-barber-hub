@@ -127,6 +127,7 @@ const Agenda = () => {
   const [preselectedTime, setPreselectedTime] = useState<string | null>(null);
   const [showQuickBlock, setShowQuickBlock] = useState(false);
   const [blockTime, setBlockTime] = useState<string | null>(null);
+  const [hideEmptyState, setHideEmptyState] = useState(false);
 
   const handleOpenManualDialog = useCallback((time?: string) => {
     if (!checkCanPerformAction('create_appointment')) return;
