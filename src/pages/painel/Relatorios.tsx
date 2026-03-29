@@ -680,7 +680,7 @@ const Relatorios = () => {
               showGoal={true}
               monthlyGoal={monthlyGoal}
               prevMonthRevenue={prevMonthShopRevenue}
-              onOpenGoalDialog={() => { setGoalValue(monthlyGoal?.toString() || ''); setGoalDialogOpen(true); }}
+              onOpenGoalDialog={() => { setGoalTarget('barbershop'); setGoalValue(monthlyGoal?.toString() || ''); setGoalDialogOpen(true); }}
             />
           </TabsContent>
           <TabsContent value="meu-desempenho">
@@ -691,8 +691,10 @@ const Relatorios = () => {
               period={period}
               dateRange={dateRange}
               showRanking={false}
-              showGoal={false}
+              showGoal={true}
+              monthlyGoal={barberGoal}
               prevMonthRevenue={prevMonthPersonalRevenue}
+              onOpenGoalDialog={() => { setGoalTarget('barber'); setGoalValue(barberGoal?.toString() || ''); setGoalDialogOpen(true); }}
             />
           </TabsContent>
         </Tabs>
@@ -705,8 +707,10 @@ const Relatorios = () => {
           period={period}
           dateRange={dateRange}
           showRanking={false}
-          showGoal={false}
+          showGoal={true}
+          monthlyGoal={barberGoal}
           prevMonthRevenue={prevMonthPersonalRevenue}
+          onOpenGoalDialog={() => { setGoalTarget('barber'); setGoalValue(barberGoal?.toString() || ''); setGoalDialogOpen(true); }}
         />
       )}
 
