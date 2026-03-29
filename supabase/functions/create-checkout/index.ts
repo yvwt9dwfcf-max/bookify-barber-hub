@@ -56,13 +56,17 @@ serve(async (req) => {
       }
     }
 
+    const origin = req.headers.get("origin") || "";
+    const successBase = returnUrl || `${origin}/painel/assinatura`;
+    const cancelBase = returnUrl || `${origin}/painel/assinatura`;
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "subscription",
-      success_url: `${req.headers.get("origin")}/painel/assinatura?success=true`,
-      cancel_url: `${req.headers.get("origin")}/painel/assinatura?canceled=true`,
+      success_url: `${successBase}?success=true`,
+      cancel_url: `${cancelBase}?canceled=true`,
       allow_promotion_codes: true,
     });
 
