@@ -16,6 +16,36 @@ const TrialExpirado = () => {
   const { signOut } = useAuth();
   const navigate = useNavigate();
   const [selecting, setSelecting] = useState<string | null>(null);
+  const [polling, setPolling] = useState(false);
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get('success') === 'true') {
+      toast.success('Pagamento recebido! Ativando sua assinatura…');
+      setPolling(true);
+      let attempts = 0;
+      const maxAttempts = 10;
+      const poll = setInterval(async () => {
+        attempts++;
+        try {
+          const { data } = await supabase.functions.invoke('check-subscription');
+          if (data?.subscribed === true) {
+            clearInterval(poll);
+            setPolling(false);
+            toast.success('Assinatura ativada com sucesso! 🎉');
+            navigate('/painel', { replace: true });
+            return;
+          }
+        } catch { /* silent */ }
+        if (attempts >= maxAttempts) {
+          clearInterval(poll);
+          setPolling(false);
+          toast.info('A ativação pode levar alguns instantes. Recarregue a página em breve.');
+        }
+      }, 3000);
+      return () => clearInterval(poll);
+    }
+  }, [searchParams, navigate]);
 
   const handleSelectPlan = async (planId: string) => {
     const stripePlan = STRIPE_PLANS[planId as StripePlanId];
