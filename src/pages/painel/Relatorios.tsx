@@ -422,14 +422,34 @@ const Relatorios = () => {
 
   const monthlyGoal = barbershopData?.monthly_goal ?? null;
 
+  // Barber personal goal
+  const { data: barberData } = useQuery({
+    queryKey: ['barber-goal', barber?.id],
+    queryFn: async () => {
+      if (!barber?.id) return null;
+      const { data, error } = await supabase.from('barbers').select('id, monthly_goal').eq('id', barber.id).maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!barber?.id
+  });
+  const barberGoal = barberData?.monthly_goal ?? null;
+
   const updateGoalMutation = useMutation({
     mutationFn: async (newGoal: number | null) => {
-      if (!barbershop?.id) throw new Error('Barbearia não encontrada');
-      const { error } = await supabase.from('barbershops').update({ monthly_goal: newGoal }).eq('id', barbershop.id);
-      if (error) throw error;
+      if (goalTarget === 'barber') {
+        if (!barber?.id) throw new Error('Barbeiro não encontrado');
+        const { error } = await supabase.from('barbers').update({ monthly_goal: newGoal } as any).eq('id', barber.id);
+        if (error) throw error;
+      } else {
+        if (!barbershop?.id) throw new Error('Barbearia não encontrada');
+        const { error } = await supabase.from('barbershops').update({ monthly_goal: newGoal }).eq('id', barbershop.id);
+        if (error) throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['barbershop-goal'] });
+      queryClient.invalidateQueries({ queryKey: ['barber-goal'] });
       toast.success('Meta atualizada com sucesso!');
       setGoalDialogOpen(false);
     },
