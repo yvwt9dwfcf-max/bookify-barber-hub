@@ -166,7 +166,8 @@ serve(async (req) => {
       case "invoice.payment_failed": {
         const invoice = event.data.object as Stripe.Invoice;
         const customerId = invoice.customer as string;
-        logStep("invoice.payment_failed", { customerId });
+        const attemptCount = invoice.attempt_count || 1;
+        logStep("invoice.payment_failed", { customerId, attemptCount });
 
         const customer = await stripe.customers.retrieve(customerId);
         if (customer.deleted) break;
@@ -182,13 +183,21 @@ serve(async (req) => {
           .single();
 
         if (barberData3?.barbershop_id) {
-          // Don't block access — just flag as payment_pending so we can show a warning banner
-          await supabaseAdmin
-            .from("barbershops")
-            .update({ subscription_status: "payment_pending" })
-            .eq("id", barberData3.barbershop_id);
-
-          logStep("Marked as payment_pending (access kept)", { barbershopId: barberData3.barbershop_id });
+          if (attemptCount >= 2) {
+            // 2nd attempt failed → block access
+            await supabaseAdmin
+              .from("barbershops")
+              .update({ subscription_active: false, subscription_status: "expired" })
+              .eq("id", barberData3.barbershop_id);
+            logStep("Blocked after 2nd failed attempt", { barbershopId: barberData3.barbershop_id });
+          } else {
+            // 1st attempt failed → warn only, keep access
+            await supabaseAdmin
+              .from("barbershops")
+              .update({ subscription_status: "payment_pending" })
+              .eq("id", barberData3.barbershop_id);
+            logStep("Payment pending warning (1st attempt)", { barbershopId: barberData3.barbershop_id });
+          }
         }
         break;
       }
