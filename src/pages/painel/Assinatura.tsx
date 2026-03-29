@@ -210,7 +210,7 @@ const Assinatura = () => {
                 <h2 className="text-2xl font-bold flex items-center gap-2">
                   {currentPlanData?.name || 'Basic'}
                   {hasActiveStripeSubscription && !isCancelScheduled && (
-                    <Badge className="bg-green-600 text-white text-xs">Ativo</Badge>
+                    <Badge className="bg-primary text-primary-foreground text-xs">Ativo</Badge>
                   )}
                   {isCancelScheduled && (
                     <Badge variant="destructive" className="text-xs">Cancelamento agendado</Badge>
@@ -347,7 +347,7 @@ const Assinatura = () => {
                   className={cn(
                     'relative overflow-hidden transition-all duration-200 hover:shadow-lg',
                     plan.popular && 'ring-2 ring-primary shadow-lg',
-                    isSubscribedToPlan && 'border-green-500 bg-green-500/5'
+                    isSubscribedToPlan && 'border-primary bg-primary/5'
                   )}
                 >
                   {plan.popular && (
@@ -365,7 +365,7 @@ const Assinatura = () => {
                           <Badge className="badge-gradient text-[10px]">Popular</Badge>
                         )}
                         {isSubscribedToPlan && (
-                          <Badge className="bg-green-600 text-white text-[10px]">Seu Plano</Badge>
+                          <Badge className="bg-primary text-primary-foreground text-[10px]">Seu Plano</Badge>
                         )}
                       </div>
                       <div className="mt-2">
@@ -391,7 +391,7 @@ const Assinatura = () => {
                       className={cn(
                         'w-full',
                         isSubscribedToPlan
-                          ? 'bg-green-600 hover:bg-green-700 text-white opacity-60 cursor-default'
+                          ? 'bg-primary/60 text-primary-foreground opacity-60 cursor-default'
                           : 'btn-primary-gradient'
                       )}
                       disabled={isSubscribedToPlan || selecting !== null}
