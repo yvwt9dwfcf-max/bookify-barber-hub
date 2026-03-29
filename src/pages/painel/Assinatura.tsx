@@ -391,7 +391,7 @@ const Assinatura = () => {
                       className={cn(
                         'w-full',
                         isSubscribedToPlan
-                          ? 'bg-green-600 hover:bg-green-700 text-white opacity-60 cursor-default'
+                          ? 'bg-primary/60 text-primary-foreground opacity-60 cursor-default'
                           : 'btn-primary-gradient'
                       )}
                       disabled={isSubscribedToPlan || selecting !== null}

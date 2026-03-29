@@ -161,6 +161,7 @@ serve(async (req) => {
               plan: planId,
               max_barbers: maxBarbers,
               subscription_active: true,
+              subscription_status: "active",
             })
             .eq("id", userRole.barbershop_id);
           logStep("Synced plan to barbershop", { barbershopId: userRole.barbershop_id, planId, maxBarbers });
