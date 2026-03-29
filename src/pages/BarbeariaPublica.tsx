@@ -31,7 +31,6 @@ interface PublicProfileData {
   whatsapp_numero: string | null;
   latitude: number | null;
   longitude: number | null;
-  theme_color: string | null;
 }
 
 interface BarberData {
@@ -88,31 +87,7 @@ const BarbeariaPublica = () => {
     if (!loading) {
       requestAnimationFrame(() => setFadeIn(true));
     }
-    // Apply theme color from public profile by overriding --primary HSL
-    if (publicProfile?.theme_color) {
-      const hex = publicProfile.theme_color.replace('#', '');
-      const r = parseInt(hex.substring(0, 2), 16) / 255;
-      const g = parseInt(hex.substring(2, 4), 16) / 255;
-      const b = parseInt(hex.substring(4, 6), 16) / 255;
-      const max = Math.max(r, g, b), min = Math.min(r, g, b);
-      let h = 0, s = 0;
-      const l = (max + min) / 2;
-      if (max !== min) {
-        const d = max - min;
-        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-        if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
-        else if (max === g) h = ((b - r) / d + 2) / 6;
-        else h = ((r - g) / d + 4) / 6;
-      }
-      const hsl = `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
-      document.documentElement.style.setProperty('--primary', hsl);
-      document.documentElement.style.setProperty('--primary-foreground', l > 0.6 ? '0 0% 10%' : '0 0% 100%');
-    }
-    return () => {
-      document.documentElement.style.removeProperty('--primary');
-      document.documentElement.style.removeProperty('--primary-foreground');
-    };
-  }, [loading, publicProfile?.theme_color]);
+  }, [loading]);
 
   const fetchData = async () => {
     try {
@@ -176,7 +151,7 @@ const BarbeariaPublica = () => {
           .order('sort_order'),
         supabase
           .from('public_profiles')
-          .select('foto_capa_url, logo_url, descricao, endereco, numero, cidade, estado, instagram_url, whatsapp_numero, latitude, longitude, theme_color')
+          .select('foto_capa_url, logo_url, descricao, endereco, numero, cidade, estado, instagram_url, whatsapp_numero, latitude, longitude')
           .eq('barbershop_id', shop.id)
           .maybeSingle(),
       ]);
