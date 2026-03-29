@@ -88,7 +88,14 @@ const BarbeariaPublica = () => {
     if (!loading) {
       requestAnimationFrame(() => setFadeIn(true));
     }
-  }, [loading]);
+    // Apply theme color from public profile
+    if (publicProfile?.theme_color) {
+      document.documentElement.style.setProperty('--public-theme-color', publicProfile.theme_color);
+    }
+    return () => {
+      document.documentElement.style.removeProperty('--public-theme-color');
+    };
+  }, [loading, publicProfile?.theme_color]);
 
   const fetchData = async () => {
     try {
