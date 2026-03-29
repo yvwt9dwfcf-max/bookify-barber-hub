@@ -347,7 +347,7 @@ const Assinatura = () => {
                   className={cn(
                     'relative overflow-hidden transition-all duration-200 hover:shadow-lg',
                     plan.popular && 'ring-2 ring-primary shadow-lg',
-                    isSubscribedToPlan && 'border-green-500 bg-green-500/5'
+                    isSubscribedToPlan && 'border-primary bg-primary/5'
                   )}
                 >
                   {plan.popular && (
