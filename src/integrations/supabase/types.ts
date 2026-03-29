@@ -279,6 +279,7 @@ export type Database = {
           email: string | null
           id: string
           is_active: boolean
+          monthly_goal: number | null
           name: string
           phone: string | null
           photo_url: string | null
@@ -291,6 +292,7 @@ export type Database = {
           email?: string | null
           id?: string
           is_active?: boolean
+          monthly_goal?: number | null
           name: string
           phone?: string | null
           photo_url?: string | null
@@ -303,6 +305,7 @@ export type Database = {
           email?: string | null
           id?: string
           is_active?: boolean
+          monthly_goal?: number | null
           name?: string
           phone?: string | null
           photo_url?: string | null
@@ -506,6 +509,50 @@ export type Database = {
             columns: ["service_id"]
             isOneToOne: false
             referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      expenses: {
+        Row: {
+          amount: number
+          barbershop_id: string
+          category: string
+          created_at: string
+          expense_date: string
+          id: string
+          is_recurring: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          barbershop_id: string
+          category?: string
+          created_at?: string
+          expense_date?: string
+          id?: string
+          is_recurring?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          barbershop_id?: string
+          category?: string
+          created_at?: string
+          expense_date?: string
+          id?: string
+          is_recurring?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expenses_barbershop_id_fkey"
+            columns: ["barbershop_id"]
+            isOneToOne: false
+            referencedRelation: "barbershops"
             referencedColumns: ["id"]
           },
         ]
@@ -763,6 +810,7 @@ export type Database = {
           longitude: number | null
           numero: string | null
           slug_personalizado: string | null
+          theme_color: string | null
           updated_at: string
           whatsapp_numero: string | null
         }
@@ -782,6 +830,7 @@ export type Database = {
           longitude?: number | null
           numero?: string | null
           slug_personalizado?: string | null
+          theme_color?: string | null
           updated_at?: string
           whatsapp_numero?: string | null
         }
@@ -801,6 +850,7 @@ export type Database = {
           longitude?: number | null
           numero?: string | null
           slug_personalizado?: string | null
+          theme_color?: string | null
           updated_at?: string
           whatsapp_numero?: string | null
         }

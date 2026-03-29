@@ -31,6 +31,7 @@ interface PublicProfileData {
   whatsapp_numero: string | null;
   latitude: number | null;
   longitude: number | null;
+  theme_color: string | null;
 }
 
 interface BarberData {
@@ -87,7 +88,14 @@ const BarbeariaPublica = () => {
     if (!loading) {
       requestAnimationFrame(() => setFadeIn(true));
     }
-  }, [loading]);
+    // Apply theme color from public profile
+    if (publicProfile?.theme_color) {
+      document.documentElement.style.setProperty('--public-theme-color', publicProfile.theme_color);
+    }
+    return () => {
+      document.documentElement.style.removeProperty('--public-theme-color');
+    };
+  }, [loading, publicProfile?.theme_color]);
 
   const fetchData = async () => {
     try {
@@ -151,7 +159,7 @@ const BarbeariaPublica = () => {
           .order('sort_order'),
         supabase
           .from('public_profiles')
-          .select('foto_capa_url, logo_url, descricao, endereco, numero, cidade, estado, instagram_url, whatsapp_numero, latitude, longitude')
+          .select('foto_capa_url, logo_url, descricao, endereco, numero, cidade, estado, instagram_url, whatsapp_numero, latitude, longitude, theme_color')
           .eq('barbershop_id', shop.id)
           .maybeSingle(),
       ]);

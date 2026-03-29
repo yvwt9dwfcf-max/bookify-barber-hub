@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { format, addMinutes, setHours, setMinutes, addDays, subDays } from 'date-fns';
+import { format, addMinutes, setHours, setMinutes, addDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { supabase, Barber, Service } from '@/lib/supabase';
 import { useAvailability } from '@/hooks/useAvailability';
 import { toast } from 'sonner';
-import { Loader2, Timer as Clock, CalendarDays as Calendar, UserCircle, Sparkles as Scissors, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
+import { Loader2, Timer as Clock, CalendarDays as Calendar, UserCircle, Sparkles as Scissors, ChevronDown } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -33,6 +33,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import {
   Popover,
   PopoverContent,
@@ -47,6 +48,7 @@ const appointmentSchema = z.object({
   service_id: z.string().min(1, 'Selecione um serviço'),
   start_time: z.string().min(1, 'Horário é obrigatório'),
   notes: z.string().max(500, 'Observações muito longas').optional(),
+  repeat_weekly: z.boolean().optional(),
 });
 
 type AppointmentFormData = z.infer<typeof appointmentSchema>;
@@ -273,21 +275,30 @@ const ManualAppointmentDialog = ({
         return;
       }
 
-      const { error } = await supabase.from('appointments').insert({
-        barber_id: targetBarber.id,
-        barbershop_id: targetBarber.barbershop_id || null,
-        service_id: data.service_id || null,
-        customer_name: data.customer_name.trim(),
-        customer_phone: data.customer_phone?.trim() || '',
-        start_time: startTime.toISOString(),
-        end_time: endTime.toISOString(),
-        notes: data.notes?.trim() || null,
-        status: 'confirmed',
-      });
+      const weeksToCreate = data.repeat_weekly ? 4 : 1;
+      const appointments = [];
+
+      for (let w = 0; w < weeksToCreate; w++) {
+        const weekStart = addDays(startTime, w * 7);
+        const weekEnd = addDays(endTime, w * 7);
+        appointments.push({
+          barber_id: targetBarber.id,
+          barbershop_id: targetBarber.barbershop_id || null,
+          service_id: data.service_id || null,
+          customer_name: data.customer_name.trim(),
+          customer_phone: data.customer_phone?.trim() || '',
+          start_time: weekStart.toISOString(),
+          end_time: weekEnd.toISOString(),
+          notes: data.notes?.trim() || null,
+          status: 'confirmed',
+        });
+      }
+
+      const { error } = await supabase.from('appointments').insert(appointments);
 
       if (error) throw error;
 
-      toast.success('Agendamento criado com sucesso!');
+      toast.success(weeksToCreate > 1 ? `${weeksToCreate} agendamentos criados com sucesso!` : 'Agendamento criado com sucesso!');
       onOpenChange(false);
       onSuccess();
     } catch (error) {
@@ -526,6 +537,23 @@ const ManualAppointmentDialog = ({
                       />
                     </FormControl>
                     <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Repeat weekly toggle */}
+              <FormField
+                control={form.control}
+                name="repeat_weekly"
+                render={({ field }) => (
+                  <FormItem className="flex items-center justify-between rounded-lg border p-2.5">
+                    <div>
+                      <FormLabel className="text-xs font-medium">Repetir toda semana</FormLabel>
+                      <p className="text-[10px] text-muted-foreground">Cria 4 agendamentos (1 por semana)</p>
+                    </div>
+                    <FormControl>
+                      <Switch checked={field.value || false} onCheckedChange={field.onChange} />
+                    </FormControl>
                   </FormItem>
                 )}
               />

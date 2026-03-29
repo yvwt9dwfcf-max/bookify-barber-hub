@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Info } from 'lucide-react';
 import { useOutletContext } from 'react-router-dom';
@@ -8,7 +9,7 @@ import { PremiumSkeleton } from '@/components/ui/premium-skeleton';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ChartPie as BarChart3, TrendingUp, TrendingDown, UsersRound as Users, Sparkles as Scissors, Target, Download, Minus, Timer as Clock, CircleX as XCircle, DollarSign } from 'lucide-react';
+import { ChartPie as BarChart3, TrendingUp, TrendingDown, UsersRound as Users, Sparkles as Scissors, Target, Download, Minus, Timer as Clock, CircleX as XCircle, DollarSign, Receipt } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, PieChart, Pie, Cell } from 'recharts';
@@ -400,9 +401,11 @@ const ReportContent = ({
 // ─── Main Page ───
 const Relatorios = () => {
   const { barber, barbershop, isMaster } = useOutletContext<OutletContext>();
+  const navigate = useNavigate();
   const [period, setPeriod] = useState<PeriodFilter>('7days');
   const [goalDialogOpen, setGoalDialogOpen] = useState(false);
   const [goalValue, setGoalValue] = useState('');
+  const [goalTarget, setGoalTarget] = useState<'barbershop' | 'barber'>('barbershop');
   const [masterTab, setMasterTab] = useState('barbearia');
   const queryClient = useQueryClient();
 
@@ -419,14 +422,34 @@ const Relatorios = () => {
 
   const monthlyGoal = barbershopData?.monthly_goal ?? null;
 
+  // Barber personal goal
+  const { data: barberData } = useQuery({
+    queryKey: ['barber-goal', barber?.id],
+    queryFn: async () => {
+      if (!barber?.id) return null;
+      const { data, error } = await supabase.from('barbers').select('id, monthly_goal').eq('id', barber.id).maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!barber?.id
+  });
+  const barberGoal = barberData?.monthly_goal ?? null;
+
   const updateGoalMutation = useMutation({
     mutationFn: async (newGoal: number | null) => {
-      if (!barbershop?.id) throw new Error('Barbearia não encontrada');
-      const { error } = await supabase.from('barbershops').update({ monthly_goal: newGoal }).eq('id', barbershop.id);
-      if (error) throw error;
+      if (goalTarget === 'barber') {
+        if (!barber?.id) throw new Error('Barbeiro não encontrado');
+        const { error } = await supabase.from('barbers').update({ monthly_goal: newGoal } as any).eq('id', barber.id);
+        if (error) throw error;
+      } else {
+        if (!barbershop?.id) throw new Error('Barbearia não encontrada');
+        const { error } = await supabase.from('barbershops').update({ monthly_goal: newGoal }).eq('id', barbershop.id);
+        if (error) throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['barbershop-goal'] });
+      queryClient.invalidateQueries({ queryKey: ['barber-goal'] });
       toast.success('Meta atualizada com sucesso!');
       setGoalDialogOpen(false);
     },
@@ -623,10 +646,18 @@ const Relatorios = () => {
           </h1>
           <p className="text-sm text-muted-foreground">{pageSubtitle}</p>
         </div>
-        <Button variant="outline" size="sm" onClick={handleExportPDF} disabled={shopLoading} className="h-8 px-3 text-xs gap-1.5 shrink-0">
-          <Download className="h-3.5 w-3.5" />
-          Exportar
-        </Button>
+        <div className="flex items-center gap-2">
+          {isMaster && (
+            <Button variant="outline" size="sm" onClick={() => navigate('/painel/despesas')} className="h-8 px-3 text-xs gap-1.5 shrink-0">
+              <Receipt className="h-3.5 w-3.5" />
+              Despesas
+            </Button>
+          )}
+          <Button variant="outline" size="sm" onClick={handleExportPDF} disabled={shopLoading} className="h-8 px-3 text-xs gap-1.5 shrink-0">
+            <Download className="h-3.5 w-3.5" />
+            Exportar
+          </Button>
+        </div>
       </div>
 
       {/* Period filter */}
@@ -649,7 +680,7 @@ const Relatorios = () => {
               showGoal={true}
               monthlyGoal={monthlyGoal}
               prevMonthRevenue={prevMonthShopRevenue}
-              onOpenGoalDialog={() => { setGoalValue(monthlyGoal?.toString() || ''); setGoalDialogOpen(true); }}
+              onOpenGoalDialog={() => { setGoalTarget('barbershop'); setGoalValue(monthlyGoal?.toString() || ''); setGoalDialogOpen(true); }}
             />
           </TabsContent>
           <TabsContent value="meu-desempenho">
@@ -660,8 +691,10 @@ const Relatorios = () => {
               period={period}
               dateRange={dateRange}
               showRanking={false}
-              showGoal={false}
+              showGoal={true}
+              monthlyGoal={barberGoal}
               prevMonthRevenue={prevMonthPersonalRevenue}
+              onOpenGoalDialog={() => { setGoalTarget('barber'); setGoalValue(barberGoal?.toString() || ''); setGoalDialogOpen(true); }}
             />
           </TabsContent>
         </Tabs>
@@ -674,13 +707,15 @@ const Relatorios = () => {
           period={period}
           dateRange={dateRange}
           showRanking={false}
-          showGoal={false}
+          showGoal={true}
+          monthlyGoal={barberGoal}
           prevMonthRevenue={prevMonthPersonalRevenue}
+          onOpenGoalDialog={() => { setGoalTarget('barber'); setGoalValue(barberGoal?.toString() || ''); setGoalDialogOpen(true); }}
         />
       )}
 
-      {/* Goal dialog (master only) */}
-      {isMaster && (
+      {/* Goal dialog */}
+      {(
         <Dialog open={goalDialogOpen} onOpenChange={setGoalDialogOpen}>
           <DialogContent className="sm:max-w-[360px]">
             <DialogHeader>
