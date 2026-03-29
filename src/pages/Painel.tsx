@@ -135,26 +135,63 @@ const Painel = () => {
   }, [user, authLoading, navigate]);
 
   // Check subscription status - redirect if expired
+  // Skip redirect when returning from Stripe checkout (?success=true) to let webhook process
   useEffect(() => {
     if (!roleLoading && barbershop) {
+      const isPostCheckout = new URLSearchParams(window.location.search).get('success') === 'true' ||
+        location.pathname === '/painel/assinatura';
+
       // Auto-expire trial
       if (
         barbershop.subscription_status === 'trial' &&
         barbershop.trial_ends_at &&
         new Date(barbershop.trial_ends_at) <= new Date()
       ) {
-        // Update status in DB
+        if (isPostCheckout) {
+          // After checkout, poll check-subscription to sync status before redirecting
+          const pollSubscription = async () => {
+            try {
+              const { data } = await supabase.functions.invoke('check-subscription');
+              if (data?.subscribed) {
+                refetchRole();
+                return;
+              }
+            } catch {}
+            // If still not active after check, redirect
+            supabase
+              .from('barbershops')
+              .update({ subscription_status: 'expired', subscription_active: false })
+              .eq('id', barbershop.id)
+              .then(() => navigate('/trial-expirado', { replace: true }));
+          };
+          pollSubscription();
+          return;
+        }
+
         supabase
           .from('barbershops')
           .update({ subscription_status: 'expired', subscription_active: false })
           .eq('id', barbershop.id)
-          .then(() => {
-            navigate('/trial-expirado', { replace: true });
-          });
+          .then(() => navigate('/trial-expirado', { replace: true }));
         return;
       }
 
       if (barbershop.subscription_status === 'expired') {
+        if (isPostCheckout) {
+          // Post-checkout: check Stripe first before redirecting
+          const verifySubscription = async () => {
+            try {
+              const { data } = await supabase.functions.invoke('check-subscription');
+              if (data?.subscribed) {
+                refetchRole();
+                return;
+              }
+            } catch {}
+            navigate('/trial-expirado', { replace: true });
+          };
+          verifySubscription();
+          return;
+        }
         navigate('/trial-expirado', { replace: true });
         return;
       }
@@ -163,7 +200,7 @@ const Painel = () => {
         navigate('/onboarding', { replace: true });
       }
     }
-  }, [barbershop, roleLoading, navigate]);
+  }, [barbershop, roleLoading, navigate, location.pathname, refetchRole]);
 
   const handleSignOut = async () => {
     try {
