@@ -31,6 +31,7 @@ interface PublicProfileData {
   whatsapp_numero: string | null;
   latitude: number | null;
   longitude: number | null;
+  theme_color: string | null;
 }
 
 interface BarberData {
