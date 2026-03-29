@@ -210,7 +210,7 @@ const Assinatura = () => {
                 <h2 className="text-2xl font-bold flex items-center gap-2">
                   {currentPlanData?.name || 'Basic'}
                   {hasActiveStripeSubscription && !isCancelScheduled && (
-                    <Badge className="bg-green-600 text-white text-xs">Ativo</Badge>
+                    <Badge className="bg-primary text-primary-foreground text-xs">Ativo</Badge>
                   )}
                   {isCancelScheduled && (
                     <Badge variant="destructive" className="text-xs">Cancelamento agendado</Badge>
