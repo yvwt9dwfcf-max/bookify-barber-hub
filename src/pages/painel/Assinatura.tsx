@@ -55,8 +55,28 @@ const Assinatura = () => {
 
   useEffect(() => {
     if (searchParams.get('success') === 'true') {
-      toast.success('Assinatura realizada com sucesso! 🎉');
-      setTimeout(checkSubscription, 2000);
+      toast.success('Pagamento recebido! Ativando sua assinatura…');
+      let attempts = 0;
+      const maxAttempts = 10; // 10 x 3s = 30s
+      const poll = setInterval(async () => {
+        attempts++;
+        try {
+          const { data } = await supabase.functions.invoke('check-subscription');
+          if (data?.subscribed === true) {
+            clearInterval(poll);
+            setSubscriptionData(data);
+            setLoading(false);
+            toast.success('Assinatura ativada com sucesso! 🎉');
+            return;
+          }
+        } catch { /* silent */ }
+        if (attempts >= maxAttempts) {
+          clearInterval(poll);
+          toast.info('A ativação pode levar alguns instantes. Recarregue a página em breve.');
+          checkSubscription();
+        }
+      }, 3000);
+      return () => clearInterval(poll);
     }
     if (searchParams.get('canceled') === 'true') {
       toast.info('Checkout cancelado.');
