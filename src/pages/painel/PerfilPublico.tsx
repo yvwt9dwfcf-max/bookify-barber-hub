@@ -215,7 +215,7 @@ const PerfilPublico = () => {
       {/* Header with link */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold font-display">Perfil Público</h1>
+          <h1 className="text-xl font-bold">Perfil Público</h1>
           <p className="text-sm text-muted-foreground mt-0.5">Sua página de agendamento online</p>
         </div>
         {publicLinkReal && (
