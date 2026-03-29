@@ -640,8 +640,8 @@ const Agenda = () => {
               <div className="relative">
 
                 {/* Empty state when no appointments */}
-                {!hasAppointments && !loading && (
-                  <Card className="border-border/40 border-dashed shadow-sm bg-card/60 backdrop-blur-sm rounded-xl mb-3">
+                {!hasAppointments && !loading && !hideEmptyState && (
+                  <Card className="border-border/40 border-dashed shadow-sm bg-card/60 backdrop-blur-sm rounded-xl mb-3 relative">
                     <CardContent className="text-center py-10 px-6">
                       <div className="relative mb-5 inline-flex">
                         <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl scale-125" />
