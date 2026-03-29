@@ -53,6 +53,7 @@ export interface Barber {
   photo_url: string | null;
   barbershop_id: string | null;
   is_active: boolean;
+  monthly_goal: number | null;
   created_at: string;
   updated_at: string;
   permissions?: BarberPermissions;
