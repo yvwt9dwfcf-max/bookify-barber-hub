@@ -172,7 +172,7 @@ const Clientes = () => {
         <Card className="border-border/40">
           <CardContent className="p-3 text-center">
             <p className="text-2xl font-bold">{clients.length}</p>
-            <p className="text-[10px] text-muted-foreground mt-0.5">Total</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Total</p>
           </CardContent>
         </Card>
         <Card className="border-border/40">
