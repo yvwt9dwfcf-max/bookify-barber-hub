@@ -714,8 +714,8 @@ const Relatorios = () => {
         />
       )}
 
-      {/* Goal dialog (master only) */}
-      {isMaster && (
+      {/* Goal dialog */}
+      {(
         <Dialog open={goalDialogOpen} onOpenChange={setGoalDialogOpen}>
           <DialogContent className="sm:max-w-[360px]">
             <DialogHeader>
