@@ -274,21 +274,30 @@ const ManualAppointmentDialog = ({
         return;
       }
 
-      const { error } = await supabase.from('appointments').insert({
-        barber_id: targetBarber.id,
-        barbershop_id: targetBarber.barbershop_id || null,
-        service_id: data.service_id || null,
-        customer_name: data.customer_name.trim(),
-        customer_phone: data.customer_phone?.trim() || '',
-        start_time: startTime.toISOString(),
-        end_time: endTime.toISOString(),
-        notes: data.notes?.trim() || null,
-        status: 'confirmed',
-      });
+      const weeksToCreate = data.repeat_weekly ? 4 : 1;
+      const appointments = [];
+
+      for (let w = 0; w < weeksToCreate; w++) {
+        const weekStart = addDays(startTime, w * 7);
+        const weekEnd = addDays(endTime, w * 7);
+        appointments.push({
+          barber_id: targetBarber.id,
+          barbershop_id: targetBarber.barbershop_id || null,
+          service_id: data.service_id || null,
+          customer_name: data.customer_name.trim(),
+          customer_phone: data.customer_phone?.trim() || '',
+          start_time: weekStart.toISOString(),
+          end_time: weekEnd.toISOString(),
+          notes: data.notes?.trim() || null,
+          status: 'confirmed',
+        });
+      }
+
+      const { error } = await supabase.from('appointments').insert(appointments);
 
       if (error) throw error;
 
-      toast.success('Agendamento criado com sucesso!');
+      toast.success(weeksToCreate > 1 ? `${weeksToCreate} agendamentos criados com sucesso!` : 'Agendamento criado com sucesso!');
       onOpenChange(false);
       onSuccess();
     } catch (error) {
