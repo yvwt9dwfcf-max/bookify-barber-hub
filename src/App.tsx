@@ -79,6 +79,7 @@ function AnimatedRoutes() {
             <Route path="comissoes" element={<Comissoes />} />
             <Route path="fidelidade" element={<Fidelidade />} />
             <Route path="clientes" element={<Clientes />} />
+            <Route path="despesas" element={<Despesas />} />
             <Route path="configuracoes" element={<Configuracoes />} />
             <Route path="excluir-conta" element={<ExcluirConta />} />
             <Route path="suporte" element={<Suporte />} />
