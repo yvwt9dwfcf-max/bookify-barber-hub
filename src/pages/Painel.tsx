@@ -26,9 +26,9 @@ import {
   Percent,
   Stamp,
   Contact,
+  AlertTriangle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { useDayClosing } from '@/hooks/useDayClosing';
