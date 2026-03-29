@@ -47,6 +47,7 @@ const appointmentSchema = z.object({
   service_id: z.string().min(1, 'Selecione um serviço'),
   start_time: z.string().min(1, 'Horário é obrigatório'),
   notes: z.string().max(500, 'Observações muito longas').optional(),
+  repeat_weekly: z.boolean().optional(),
 });
 
 type AppointmentFormData = z.infer<typeof appointmentSchema>;
