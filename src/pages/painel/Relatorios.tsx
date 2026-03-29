@@ -401,6 +401,7 @@ const ReportContent = ({
 // ─── Main Page ───
 const Relatorios = () => {
   const { barber, barbershop, isMaster } = useOutletContext<OutletContext>();
+  const navigate = useNavigate();
   const [period, setPeriod] = useState<PeriodFilter>('7days');
   const [goalDialogOpen, setGoalDialogOpen] = useState(false);
   const [goalValue, setGoalValue] = useState('');
