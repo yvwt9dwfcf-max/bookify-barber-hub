@@ -9,7 +9,7 @@ import { PremiumSkeleton } from '@/components/ui/premium-skeleton';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ChartPie as BarChart3, TrendingUp, TrendingDown, UsersRound as Users, Sparkles as Scissors, Target, Download, Minus, Timer as Clock, CircleX as XCircle, DollarSign } from 'lucide-react';
+import { ChartPie as BarChart3, TrendingUp, TrendingDown, UsersRound as Users, Sparkles as Scissors, Target, Download, Minus, Timer as Clock, CircleX as XCircle, DollarSign, Receipt } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, PieChart, Pie, Cell } from 'recharts';
