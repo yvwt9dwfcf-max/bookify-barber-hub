@@ -689,7 +689,7 @@ const Agenda = () => {
                           onClick={() => {
                             const slug = barbershop?.slug;
                             if (slug) {
-                              const link = `${window.location.origin}/b/${slug}`;
+                              const link = `${window.location.origin}/agendar/${slug}`;
                               if (navigator.share) {
                                 navigator.share({ title: barbershop?.name, url: link });
                               } else {
