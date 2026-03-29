@@ -250,8 +250,8 @@ const Barbeiros = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Equipe</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-xl font-bold">Equipe</h1>
+          <p className="text-sm text-muted-foreground">
             Gerencie os barbeiros da sua barbearia
           </p>
         </div>

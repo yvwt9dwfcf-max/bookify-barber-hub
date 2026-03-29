@@ -172,19 +172,19 @@ const Clientes = () => {
         <Card className="border-border/40">
           <CardContent className="p-3 text-center">
             <p className="text-2xl font-bold">{clients.length}</p>
-            <p className="text-[10px] text-muted-foreground mt-0.5">Total</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Total</p>
           </CardContent>
         </Card>
         <Card className="border-border/40">
           <CardContent className="p-3 text-center">
             <p className="text-2xl font-bold">{topClients.length > 0 ? topClients[0].visits : 0}</p>
-            <p className="text-[10px] text-muted-foreground mt-0.5">Maior freq.</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Maior freq.</p>
           </CardContent>
         </Card>
         <Card className="border-border/40">
           <CardContent className="p-3 text-center">
             <p className="text-2xl font-bold text-destructive/80">{inactiveClients.length}</p>
-            <p className="text-[10px] text-muted-foreground mt-0.5">Inativos</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Inativos</p>
           </CardContent>
         </Card>
       </div>
@@ -358,17 +358,17 @@ const Clientes = () => {
               <div className="grid grid-cols-3 gap-2">
                 <div className="bg-secondary/50 rounded-xl p-3 text-center">
                   <p className="text-lg font-bold">{selectedClient.visits}</p>
-                  <p className="text-[10px] text-muted-foreground">Visitas</p>
+                  <p className="text-[11px] text-muted-foreground">Visitas</p>
                 </div>
                 <div className="bg-secondary/50 rounded-xl p-3 text-center">
                   <p className="text-lg font-bold">{formatCurrency(selectedClient.totalSpent)}</p>
-                  <p className="text-[10px] text-muted-foreground">Total gasto</p>
+                  <p className="text-[11px] text-muted-foreground">Total gasto</p>
                 </div>
                 <div className="bg-secondary/50 rounded-xl p-3 text-center">
                   <p className="text-lg font-bold">
                     {differenceInDays(new Date(), new Date(selectedClient.lastVisit))}d
                   </p>
-                  <p className="text-[10px] text-muted-foreground">Desde última</p>
+                  <p className="text-[11px] text-muted-foreground">Desde última</p>
                 </div>
               </div>
 

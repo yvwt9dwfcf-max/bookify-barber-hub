@@ -238,21 +238,21 @@ const Despesas = () => {
         <Card>
           <CardContent className="p-3 text-center">
             <TrendingUp className="h-4 w-4 text-primary mx-auto mb-1" />
-            <p className="text-[10px] text-muted-foreground">Receita</p>
+            <p className="text-[11px] text-muted-foreground">Receita</p>
             <p className="text-sm font-bold text-primary">{formatCurrency(monthlyRevenue)}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-3 text-center">
             <TrendingDown className="h-4 w-4 text-destructive mx-auto mb-1" />
-            <p className="text-[10px] text-muted-foreground">Despesas</p>
+            <p className="text-[11px] text-muted-foreground">Despesas</p>
             <p className="text-sm font-bold text-destructive">{formatCurrency(monthlyExpenses)}</p>
           </CardContent>
         </Card>
         <Card className={profit >= 0 ? 'border-primary/20' : 'border-destructive/20'}>
           <CardContent className="p-3 text-center">
             <DollarSign className={`h-4 w-4 mx-auto mb-1 ${profit >= 0 ? 'text-primary' : 'text-destructive'}`} />
-            <p className="text-[10px] text-muted-foreground">Lucro</p>
+            <p className="text-[11px] text-muted-foreground">Lucro</p>
             <p className={`text-sm font-bold ${profit >= 0 ? 'text-primary' : 'text-destructive'}`}>
               {formatCurrency(profit)}
             </p>

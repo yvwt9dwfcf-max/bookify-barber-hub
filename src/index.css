@@ -171,10 +171,10 @@
     overscroll-behavior: none;
   }
 
-  /* Better touch targets for mobile */
-  button, a, [role="button"] {
+  /* Better touch targets for mobile - only for standalone interactive elements */
+  button:not(.inline-size),
+  [role="button"]:not(.inline-size) {
     min-height: 44px;
-    min-width: 44px;
   }
 
   /* Prevent text selection on interactive elements */
