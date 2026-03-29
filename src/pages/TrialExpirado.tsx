@@ -54,7 +54,7 @@ const TrialExpirado = () => {
     setSelecting(planId);
     try {
       const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { priceId: stripePlan.price_id },
+        body: { priceId: stripePlan.price_id, returnUrl: `${window.location.origin}/trial-expirado` },
       });
 
       if (error) throw error;
