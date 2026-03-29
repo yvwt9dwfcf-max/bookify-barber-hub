@@ -10,6 +10,7 @@ import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
 const EsqueciSenha = lazy(() => import("./pages/EsqueciSenha"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const Painel = lazy(() => import("./pages/Painel"));
 const Agenda = lazy(() => import("./pages/painel/Agenda"));
@@ -60,6 +61,7 @@ function AnimatedRoutes() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Login initialTab="signup" />} />
           <Route path="/esqueci-senha" element={<EsqueciSenha />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
 
           {/* Onboarding */}
           <Route path="/onboarding" element={<Onboarding />} />
