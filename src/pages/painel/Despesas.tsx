@@ -238,7 +238,7 @@ const Despesas = () => {
         <Card>
           <CardContent className="p-3 text-center">
             <TrendingUp className="h-4 w-4 text-primary mx-auto mb-1" />
-            <p className="text-[10px] text-muted-foreground">Receita</p>
+            <p className="text-[11px] text-muted-foreground">Receita</p>
             <p className="text-sm font-bold text-primary">{formatCurrency(monthlyRevenue)}</p>
           </CardContent>
         </Card>
