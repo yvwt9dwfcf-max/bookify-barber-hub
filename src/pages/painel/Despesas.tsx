@@ -245,7 +245,7 @@ const Despesas = () => {
         <Card>
           <CardContent className="p-3 text-center">
             <TrendingDown className="h-4 w-4 text-destructive mx-auto mb-1" />
-            <p className="text-[10px] text-muted-foreground">Despesas</p>
+            <p className="text-[11px] text-muted-foreground">Despesas</p>
             <p className="text-sm font-bold text-destructive">{formatCurrency(monthlyExpenses)}</p>
           </CardContent>
         </Card>
