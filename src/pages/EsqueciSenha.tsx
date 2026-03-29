@@ -77,12 +77,12 @@ const EsqueciSenha = () => {
       <header className="section-padding py-4 border-b border-border/50">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <Logo linkTo="/" />
-          <Button variant="ghost" asChild>
-            <Link to="/">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Voltar ao login
-            </Link>
-          </Button>
+            <Button variant="ghost" asChild>
+              <Link to="/login">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Voltar ao login
+              </Link>
+            </Button>
         </div>
       </header>
 
