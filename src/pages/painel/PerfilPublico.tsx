@@ -30,6 +30,7 @@ interface PublicProfile {
   instagram_url: string | null;
   whatsapp_numero: string | null;
   slug_personalizado: string | null;
+  theme_color: string | null;
 }
 
 const PerfilPublico = () => {
