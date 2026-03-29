@@ -405,6 +405,7 @@ const Relatorios = () => {
   const [period, setPeriod] = useState<PeriodFilter>('7days');
   const [goalDialogOpen, setGoalDialogOpen] = useState(false);
   const [goalValue, setGoalValue] = useState('');
+  const [goalTarget, setGoalTarget] = useState<'barbershop' | 'barber'>('barbershop');
   const [masterTab, setMasterTab] = useState('barbearia');
   const queryClient = useQueryClient();
 
