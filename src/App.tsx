@@ -10,6 +10,7 @@ import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
 const EsqueciSenha = lazy(() => import("./pages/EsqueciSenha"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const Painel = lazy(() => import("./pages/Painel"));
 const Agenda = lazy(() => import("./pages/painel/Agenda"));
