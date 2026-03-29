@@ -172,8 +172,8 @@ const DashboardCards = ({ barbershopId, selectedDate, refreshKey }: DashboardCar
                     <Icon className={`h-2.5 w-2.5 ${iconColor}`} />
                   </div>
                   <p className="text-sm font-bold leading-tight truncate">{formatted}</p>
-                  <p className="text-[9px] text-muted-foreground leading-tight">{label}</p>
-                  <div className={`flex items-center gap-0.5 text-[9px] font-medium mt-0.5 mb-1 ${growthColor}`}>
+                  <p className="text-[10px] text-muted-foreground leading-tight">{label}</p>
+                  <div className={`flex items-center gap-0.5 text-[10px] font-medium mt-0.5 mb-1 ${growthColor}`}>
                     <GrowthIcon className="h-2.5 w-2.5" />
                     <span>{isPositive ? '+' : ''}{growth}%</span>
                   </div>
