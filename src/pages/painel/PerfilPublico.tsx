@@ -180,6 +180,7 @@ const PerfilPublico = () => {
         instagram_url: instagramUrl || null,
         whatsapp_numero: whatsappNumero || null,
         slug_personalizado: slugPersonalizado || null,
+        theme_color: themeColor || null,
       };
 
       if (profile) {
