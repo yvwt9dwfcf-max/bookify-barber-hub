@@ -25,6 +25,7 @@ const PerfilPublico = lazy(() => import("./pages/painel/PerfilPublico"));
 const Comissoes = lazy(() => import("./pages/painel/Comissoes"));
 const Fidelidade = lazy(() => import("./pages/painel/Fidelidade"));
 const Clientes = lazy(() => import("./pages/painel/Clientes"));
+const Despesas = lazy(() => import("./pages/painel/Despesas"));
 const Suporte = lazy(() => import("./pages/painel/Suporte"));
 const ExcluirConta = lazy(() => import("./pages/painel/ExcluirConta"));
 const AgendarBarbearia = lazy(() => import("./pages/AgendarBarbearia"));
