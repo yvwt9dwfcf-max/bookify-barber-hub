@@ -358,7 +358,7 @@ const Clientes = () => {
               <div className="grid grid-cols-3 gap-2">
                 <div className="bg-secondary/50 rounded-xl p-3 text-center">
                   <p className="text-lg font-bold">{selectedClient.visits}</p>
-                  <p className="text-[10px] text-muted-foreground">Visitas</p>
+                  <p className="text-[11px] text-muted-foreground">Visitas</p>
                 </div>
                 <div className="bg-secondary/50 rounded-xl p-3 text-center">
                   <p className="text-lg font-bold">{formatCurrency(selectedClient.totalSpent)}</p>
