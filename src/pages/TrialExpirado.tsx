@@ -90,19 +90,34 @@ const TrialExpirado = () => {
           <Logo size="lg" linkTo={undefined} />
         </div>
 
-        {/* Warning */}
-        <div className="text-center max-w-xl mx-auto mb-10">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-destructive/10 border border-destructive/20 text-destructive text-sm font-medium mb-6">
-            <AlertTriangle className="h-4 w-4" />
-            Teste grátis encerrado
+        {/* Warning / Polling */}
+        {polling ? (
+          <div className="text-center max-w-xl mx-auto mb-10">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-6">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Ativando assinatura…
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-bold mb-4">
+              Quase lá!
+            </h1>
+            <p className="text-muted-foreground text-lg leading-relaxed">
+              Estamos confirmando seu pagamento. Isso pode levar alguns segundos…
+            </p>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold mb-4">
-            Seu teste grátis terminou
-          </h1>
-          <p className="text-muted-foreground text-lg leading-relaxed">
-            Escolha um plano para continuar usando o Bookify e gerenciando sua barbearia.
-          </p>
-        </div>
+        ) : (
+          <div className="text-center max-w-xl mx-auto mb-10">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-destructive/10 border border-destructive/20 text-destructive text-sm font-medium mb-6">
+              <AlertTriangle className="h-4 w-4" />
+              Teste grátis encerrado
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-bold mb-4">
+              Seu teste grátis terminou
+            </h1>
+            <p className="text-muted-foreground text-lg leading-relaxed">
+              Escolha um plano para continuar usando o Bookify e gerenciando sua barbearia.
+            </p>
+          </div>
+        )}
 
         {/* Plans */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl w-full mb-8">
