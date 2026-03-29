@@ -643,6 +643,13 @@ const Agenda = () => {
                 {!hasAppointments && !loading && !hideEmptyState && (
                   <Card className="border-border/40 border-dashed shadow-sm bg-card/60 backdrop-blur-sm rounded-xl mb-3 relative">
                     <CardContent className="text-center py-10 px-6">
+                      <button
+                        onClick={() => setHideEmptyState(true)}
+                        className="absolute top-2.5 right-2.5 h-6 w-6 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+                        aria-label="Fechar"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
                       <div className="relative mb-5 inline-flex">
                         <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl scale-125" />
                         <div className="relative w-16 h-16 rounded-2xl bg-muted/50 border border-border/40 flex items-center justify-center">
