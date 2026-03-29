@@ -182,12 +182,13 @@ serve(async (req) => {
           .single();
 
         if (barberData3?.barbershop_id) {
+          // Don't block access — just flag as payment_pending so we can show a warning banner
           await supabaseAdmin
             .from("barbershops")
-            .update({ subscription_active: false, subscription_status: "expired" })
+            .update({ subscription_status: "payment_pending" })
             .eq("id", barberData3.barbershop_id);
 
-          logStep("Marked payment as failed/pending", { barbershopId: barberData3.barbershop_id });
+          logStep("Marked as payment_pending (access kept)", { barbershopId: barberData3.barbershop_id });
         }
         break;
       }
