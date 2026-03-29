@@ -368,7 +368,7 @@ const Clientes = () => {
                   <p className="text-lg font-bold">
                     {differenceInDays(new Date(), new Date(selectedClient.lastVisit))}d
                   </p>
-                  <p className="text-[10px] text-muted-foreground">Desde última</p>
+                  <p className="text-[11px] text-muted-foreground">Desde última</p>
                 </div>
               </div>
 
