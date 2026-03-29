@@ -86,6 +86,7 @@ const PerfilPublico = () => {
         setSlugPersonalizado(data.slug_personalizado || barbershop?.slug || '');
         setFotoCapa(data.foto_capa_url);
         setLogoUrl(data.logo_url);
+        setThemeColor((data as any).theme_color || '#22C55E');
       } else {
         setCidade(barbershop?.city || '');
         setSlugPersonalizado(barbershop?.slug || '');
