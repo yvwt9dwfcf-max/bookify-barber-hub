@@ -625,10 +625,18 @@ const Relatorios = () => {
           </h1>
           <p className="text-sm text-muted-foreground">{pageSubtitle}</p>
         </div>
-        <Button variant="outline" size="sm" onClick={handleExportPDF} disabled={shopLoading} className="h-8 px-3 text-xs gap-1.5 shrink-0">
-          <Download className="h-3.5 w-3.5" />
-          Exportar
-        </Button>
+        <div className="flex items-center gap-2">
+          {isMaster && (
+            <Button variant="outline" size="sm" onClick={() => navigate('/painel/despesas')} className="h-8 px-3 text-xs gap-1.5 shrink-0">
+              <Receipt className="h-3.5 w-3.5" />
+              Despesas
+            </Button>
+          )}
+          <Button variant="outline" size="sm" onClick={handleExportPDF} disabled={shopLoading} className="h-8 px-3 text-xs gap-1.5 shrink-0">
+            <Download className="h-3.5 w-3.5" />
+            Exportar
+          </Button>
+        </div>
       </div>
 
       {/* Period filter */}
