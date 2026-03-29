@@ -365,7 +365,7 @@ const Assinatura = () => {
                           <Badge className="badge-gradient text-[10px]">Popular</Badge>
                         )}
                         {isSubscribedToPlan && (
-                          <Badge className="bg-green-600 text-white text-[10px]">Seu Plano</Badge>
+                          <Badge className="bg-primary text-primary-foreground text-[10px]">Seu Plano</Badge>
                         )}
                       </div>
                       <div className="mt-2">
