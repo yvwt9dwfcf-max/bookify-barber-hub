@@ -252,7 +252,7 @@ const Despesas = () => {
         <Card className={profit >= 0 ? 'border-primary/20' : 'border-destructive/20'}>
           <CardContent className="p-3 text-center">
             <DollarSign className={`h-4 w-4 mx-auto mb-1 ${profit >= 0 ? 'text-primary' : 'text-destructive'}`} />
-            <p className="text-[10px] text-muted-foreground">Lucro</p>
+            <p className="text-[11px] text-muted-foreground">Lucro</p>
             <p className={`text-sm font-bold ${profit >= 0 ? 'text-primary' : 'text-destructive'}`}>
               {formatCurrency(profit)}
             </p>
