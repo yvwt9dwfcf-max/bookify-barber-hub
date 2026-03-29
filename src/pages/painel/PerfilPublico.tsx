@@ -30,7 +30,6 @@ interface PublicProfile {
   instagram_url: string | null;
   whatsapp_numero: string | null;
   slug_personalizado: string | null;
-  theme_color: string | null;
 }
 
 const PerfilPublico = () => {
@@ -54,7 +53,6 @@ const PerfilPublico = () => {
   const [slugPersonalizado, setSlugPersonalizado] = useState('');
   const [fotoCapa, setFotoCapa] = useState<string | null>(null);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
-  const [themeColor, setThemeColor] = useState<string>('#22C55E');
 
   const coverInputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
@@ -86,7 +84,6 @@ const PerfilPublico = () => {
         setSlugPersonalizado(data.slug_personalizado || barbershop?.slug || '');
         setFotoCapa(data.foto_capa_url);
         setLogoUrl(data.logo_url);
-        setThemeColor((data as any).theme_color || '#22C55E');
       } else {
         setCidade(barbershop?.city || '');
         setSlugPersonalizado(barbershop?.slug || '');
@@ -180,7 +177,6 @@ const PerfilPublico = () => {
         instagram_url: instagramUrl || null,
         whatsapp_numero: whatsappNumero || null,
         slug_personalizado: slugPersonalizado || null,
-        theme_color: themeColor || null,
       };
 
       if (profile) {
@@ -495,42 +491,6 @@ const PerfilPublico = () => {
               {window.location.origin}/barbearia/{slugPersonalizado}
             </p>
           )}
-        </CardContent>
-      </Card>
-
-      {/* Theme Color */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">🎨 Cor do Tema</CardTitle>
-          <CardDescription>Personalize a cor principal da sua página pública</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-3">
-            {[
-              { color: '#22C55E', name: 'Verde' },
-              { color: '#3B82F6', name: 'Azul' },
-              { color: '#8B5CF6', name: 'Roxo' },
-              { color: '#EF4444', name: 'Vermelho' },
-              { color: '#F59E0B', name: 'Amarelo' },
-              { color: '#EC4899', name: 'Rosa' },
-              { color: '#06B6D4', name: 'Ciano' },
-              { color: '#F97316', name: 'Laranja' },
-            ].map((opt) => (
-              <button
-                key={opt.color}
-                type="button"
-                className={`w-10 h-10 rounded-xl border-2 transition-all ${themeColor === opt.color ? 'border-foreground scale-110 ring-2 ring-offset-2 ring-offset-background' : 'border-transparent hover:scale-105'}`}
-                style={{ backgroundColor: opt.color }}
-                onClick={() => setThemeColor(opt.color)}
-                title={opt.name}
-              />
-            ))}
-          </div>
-          <div className="mt-3 flex items-center gap-2">
-            <Label className="text-xs shrink-0">Cor personalizada:</Label>
-            <input type="color" value={themeColor} onChange={(e) => setThemeColor(e.target.value)} className="w-8 h-8 rounded cursor-pointer border-0" />
-            <span className="text-xs text-muted-foreground font-mono">{themeColor}</span>
-          </div>
         </CardContent>
       </Card>
 
