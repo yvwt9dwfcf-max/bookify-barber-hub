@@ -520,7 +520,7 @@ const PerfilPublico = () => {
                 key={opt.color}
                 type="button"
                 className={`w-10 h-10 rounded-xl border-2 transition-all ${themeColor === opt.color ? 'border-foreground scale-110 ring-2 ring-offset-2 ring-offset-background' : 'border-transparent hover:scale-105'}`}
-                style={{ backgroundColor: opt.color, ringColor: opt.color }}
+                style={{ backgroundColor: opt.color }}
                 onClick={() => setThemeColor(opt.color)}
                 title={opt.name}
               />
