@@ -306,7 +306,7 @@ const WhatsAppAtendimento = () => {
   }
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="space-y-5 max-w-2xl">
       {/* Header */}
       <div>
         <h1 className="text-xl font-bold flex items-center gap-2">
