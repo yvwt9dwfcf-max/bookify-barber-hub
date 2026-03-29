@@ -12,7 +12,7 @@ import { PremiumSkeleton, SkeletonSlot, SkeletonStats } from '@/components/ui/pr
 import { 
   CalendarRange as Calendar, CalendarDays, ChevronLeft, ChevronRight, 
   UserRound as User, Timer as Clock, CalendarPlus,
-  CircleSlash as Ban, Copy, Share2, CalendarX
+  CircleSlash as Ban, Copy, Share2, CalendarX, X
 } from 'lucide-react';
 import { format, addDays, startOfDay, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, setHours, setMinutes } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
