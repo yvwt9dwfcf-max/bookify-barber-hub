@@ -402,6 +402,26 @@ const Painel = () => {
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.18, ease: [0.25, 0.1, 0.25, 1] as [number, number, number, number] }}
             >
+              {/* Payment pending warning banner */}
+              {barbershop?.subscription_status === 'payment_pending' && (
+                <div className="mb-4 flex items-center gap-3 p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-sm">
+                  <AlertTriangle className="h-5 w-5 text-destructive shrink-0" />
+                  <div>
+                    <p className="font-medium text-destructive">Problema no pagamento</p>
+                    <p className="text-muted-foreground text-xs mt-0.5">
+                      Não conseguimos cobrar sua assinatura. Atualize seu método de pagamento para evitar o bloqueio da conta.
+                    </p>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    className="shrink-0 ml-auto"
+                    onClick={() => navigate('/painel/assinatura')}
+                  >
+                    Resolver
+                  </Button>
+                </div>
+              )}
               <Outlet context={{ barber, barbershop, isMaster, refetchRole }} />
             </motion.div>
           </AnimatePresence>
