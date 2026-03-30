@@ -13,8 +13,8 @@ const LandingPage = () => {
     <div className="min-h-screen bg-background overflow-hidden">
       <LandingNav />
       <HeroSection />
-      <StatsStrip />
       <VideoSection />
+      <StatsStrip />
       <FeaturesSection />
       <HowItWorksSection />
       <SocialProofSection />
