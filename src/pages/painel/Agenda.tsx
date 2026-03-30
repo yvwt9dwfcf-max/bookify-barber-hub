@@ -7,7 +7,7 @@ import { useBarbershopBarbers } from '@/hooks/useBarbershopBarbers';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useAvailability } from '@/hooks/useAvailability';
 import { PremiumSkeleton, SkeletonSlot, SkeletonStats } from '@/components/ui/premium-skeleton';
-import { startOfDay, addDays, startOfMonth, isSameDay, setHours, setMinutes } from 'date-fns';
+import { startOfDay, addDays, startOfMonth, isSameDay } from 'date-fns';
 import { toast } from 'sonner';
 import { lazy, Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -16,6 +16,48 @@ import AgendaHeader from '@/components/painel/agenda/AgendaHeader';
 import AgendaDaysStrip from '@/components/painel/agenda/AgendaDaysStrip';
 import AgendaSlotGrid from '@/components/painel/agenda/AgendaSlotGrid';
 import { AgendaContextType, ViewMode, toLocalDate, getTodayLocalDate, shiftMonthKeepingDay } from '@/components/painel/agenda/agendaUtils';
+
+/* Sticky wrapper — adds dynamic shadow on scroll */
+const StickyDaysStrip = (props: React.ComponentProps<typeof AgendaDaysStrip>) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const [isStuck, setIsStuck] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsStuck(!entry.isIntersecting),
+      { threshold: [1], rootMargin: '-1px 0px 0px 0px' }
+    );
+
+    // Observe a sentinel element right above the sticky container
+    const sentinel = document.createElement('div');
+    sentinel.style.height = '1px';
+    sentinel.style.marginBottom = '-1px';
+    sentinel.style.pointerEvents = 'none';
+    el.parentElement?.insertBefore(sentinel, el);
+    observer.observe(sentinel);
+
+    return () => {
+      observer.disconnect();
+      sentinel.remove();
+    };
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      className="sticky top-14 lg:top-0 z-20 -mx-3 md:-mx-5 lg:-mx-8 px-3 md:px-5 lg:px-8 pt-1 pb-0.5 transition-shadow duration-300"
+      style={{
+        boxShadow: isStuck ? '0 4px 20px -4px hsl(var(--foreground) / 0.08)' : 'none',
+        backgroundColor: 'hsl(var(--background))',
+      }}
+    >
+      <AgendaDaysStrip {...props} />
+    </div>
+  );
+};
 
 const MonthlyCalendar = lazy(() => import('@/components/painel/MonthlyCalendar'));
 const ManualAppointmentDialog = lazy(() => import('@/components/painel/ManualAppointmentDialog'));
@@ -233,15 +275,13 @@ const Agenda = () => {
 
         {viewMode === 'daily' && (
           <>
-            <div className="sticky top-0 z-20">
-              <AgendaDaysStrip
-                selectedDate={selectedDate}
-                displayMonth={displayMonth}
-                onSelectDate={setSelectedDate}
-                onShiftMonth={handleShiftMonth}
-                selectedBarberId={selectedBarberId}
-              />
-            </div>
+            <StickyDaysStrip
+              selectedDate={selectedDate}
+              displayMonth={displayMonth}
+              onSelectDate={setSelectedDate}
+              onShiftMonth={handleShiftMonth}
+              selectedBarberId={selectedBarberId}
+            />
 
             <div className="animate-fade-in" style={{ animationDelay: '0.16s' }}>
               <AgendaSlotGrid
