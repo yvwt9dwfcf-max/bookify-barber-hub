@@ -233,15 +233,13 @@ const Agenda = () => {
 
         {viewMode === 'daily' && (
           <>
-            <div className="sticky top-0 z-20">
-              <AgendaDaysStrip
-                selectedDate={selectedDate}
-                displayMonth={displayMonth}
-                onSelectDate={setSelectedDate}
-                onShiftMonth={handleShiftMonth}
-                selectedBarberId={selectedBarberId}
-              />
-            </div>
+            <StickyDaysStrip
+              selectedDate={selectedDate}
+              displayMonth={displayMonth}
+              onSelectDate={setSelectedDate}
+              onShiftMonth={handleShiftMonth}
+              selectedBarberId={selectedBarberId}
+            />
 
             <div className="animate-fade-in" style={{ animationDelay: '0.16s' }}>
               <AgendaSlotGrid
