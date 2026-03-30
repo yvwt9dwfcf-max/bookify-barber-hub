@@ -51,7 +51,7 @@ const AgendaDaysStrip = ({
   }, [selectedDate, days, selectedBarberId]);
 
   return (
-    <Card className="border-border/50 shadow-sm bg-card/80 backdrop-blur-sm overflow-hidden animate-fade-in rounded-xl sticky top-0 z-20" style={{ animationDelay: '0.08s' }}>
+    <Card className="border-border/50 shadow-md bg-card/95 backdrop-blur-md overflow-hidden animate-fade-in rounded-xl" style={{ animationDelay: '0.08s' }}>
       <CardContent className="p-1.5">
         <div className="flex items-center justify-between mb-1">
           <Button
