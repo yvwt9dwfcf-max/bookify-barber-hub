@@ -194,12 +194,66 @@ const PerfilPublico = () => {
   };
 
   if (!isMaster) {
+    const barberSlug = profile?.slug_personalizado || barbershop?.slug || '';
+    const barberLinkReal = barberSlug ? `${window.location.origin}/barbearia/${barberSlug}` : '';
+    const barberLinkDisplay = barberSlug ? `bookify.app/${barberSlug}` : '';
+
     return (
-      <div className="text-center py-12">
-        <AlertTriangle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-        <h2 className="text-xl font-bold mb-2">Acesso restrito</h2>
-        <p className="text-muted-foreground">Apenas o administrador pode editar o perfil público.</p>
-      </div>
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="max-w-md mx-auto py-12 space-y-6"
+      >
+        <div className="text-center space-y-2">
+          <Globe className="h-10 w-10 mx-auto text-primary" />
+          <h2 className="text-xl font-bold">Link de Agendamento</h2>
+          <p className="text-sm text-muted-foreground">Compartilhe com seus clientes para receberem agendamentos online.</p>
+        </div>
+
+        {barberLinkReal ? (
+          <div className="rounded-2xl border border-border bg-card p-4 space-y-3">
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-primary/5 border border-primary/15">
+              <Link2 className="h-4 w-4 text-primary shrink-0" />
+              <span className="text-xs font-mono text-muted-foreground truncate flex-1">{barberLinkDisplay}</span>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(barberLinkReal);
+                    setCopied(true);
+                    toast.success('Link copiado!');
+                    setTimeout(() => setCopied(false), 2000);
+                  } catch { toast.error('Erro ao copiar'); }
+                }}
+                variant="outline"
+                className="flex-1 gap-1.5 text-sm"
+              >
+                {copied ? <CheckCircle className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4" />}
+                {copied ? 'Copiado!' : 'Copiar link'}
+              </Button>
+              <Button
+                onClick={() => window.open(barberLinkReal, '_blank')}
+                variant="outline"
+                className="gap-1.5 text-sm"
+              >
+                <ExternalLink className="h-4 w-4" />
+                Abrir
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="text-center p-6 rounded-2xl border border-border bg-card">
+            <AlertTriangle className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+            <p className="text-sm text-muted-foreground">O administrador ainda não configurou o perfil público.</p>
+          </div>
+        )}
+
+        <p className="text-xs text-center text-muted-foreground">
+          Para editar o perfil público, peça ao administrador da barbearia.
+        </p>
+      </motion.div>
     );
   }
 
