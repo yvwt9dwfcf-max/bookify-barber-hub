@@ -15,7 +15,7 @@ import FloatingActionButton from '@/components/painel/FloatingActionButton';
 import AgendaHeader from '@/components/painel/agenda/AgendaHeader';
 import AgendaDaysStrip from '@/components/painel/agenda/AgendaDaysStrip';
 import AgendaSlotGrid from '@/components/painel/agenda/AgendaSlotGrid';
-import { AgendaContextType, ViewMode, toLocalDate, getTodayLocalDate, shiftMonthKeepingDay } from '@/components/painel/agenda/agendaUtils';
+import { AgendaContextType, ViewMode, toLocalDate, getTodayLocalDate, shiftMonthToStart } from '@/components/painel/agenda/agendaUtils';
 
 /* Sticky wrapper — adds dynamic shadow on scroll */
 const StickyDaysStrip = (props: React.ComponentProps<typeof AgendaDaysStrip>) => {
@@ -201,7 +201,7 @@ const Agenda = () => {
   }, []);
 
   const handleShiftDay = (offset: number) => setSelectedDate(toLocalDate(addDays(selectedDate, offset)));
-  const handleShiftMonth = (offset: number) => setSelectedDate(shiftMonthKeepingDay(selectedDate, offset));
+  const handleShiftMonth = (offset: number) => setSelectedDate((currentDate) => shiftMonthToStart(currentDate, offset));
   const handleDateSelectFromCalendar = (date: Date) => { setSelectedDate(toLocalDate(date)); setViewMode('daily'); };
 
   // --- Computed ---
