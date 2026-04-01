@@ -79,62 +79,74 @@
     --green-glow: rgba(34, 197, 94, 0.25);
   }
 
-  /* Light mode override */
+  /* Light mode override — Premium Clean */
   .light {
-    --background: 140 20% 97%; /* tom levemente esverdeado */
-    --foreground: 150 10% 12%;
-    --card: 0 0% 100%;
-    --card-foreground: 150 10% 12%;
+    --background: 60 5% 96%; /* off-white quente #F5F5F3 */
+    --foreground: 0 0% 8%; /* #141414 — títulos escuros */
+
+    --card: 0 0% 100%; /* branco puro para cards = hierarquia */
+    --card-foreground: 0 0% 8%;
+
     --popover: 0 0% 100%;
-    --popover-foreground: 150 10% 12%;
-    --primary: 142 71% 40%;
+    --popover-foreground: 0 0% 8%;
+
+    --primary: 142 64% 36%; /* #1B9E4B — verde mais denso, não estourado */
     --primary-foreground: 0 0% 100%;
-    --primary-gradient-start: 142 71% 40%;
-    --primary-gradient-end: 142 76% 32%;
-    --secondary: 140 14% 94%;
-    --secondary-foreground: 150 10% 12%;
-    --muted: 140 12% 93%;
-    --muted-foreground: 150 5% 40%;
-    --accent: 142 40% 92%;
-    --accent-foreground: 142 60% 28%;
-    --destructive: 0 84% 55%;
+    --primary-gradient-start: 142 64% 36%;
+    --primary-gradient-end: 142 72% 28%; /* #137A3A */
+
+    --secondary: 60 4% 93%; /* #EDEDED leve warm */
+    --secondary-foreground: 0 0% 12%;
+
+    --muted: 60 4% 93%;
+    --muted-foreground: 0 0% 40%; /* #666666 — texto secundário legível */
+
+    --accent: 142 30% 93%; /* verde muito sutil para hover */
+    --accent-foreground: 142 55% 26%;
+
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    --success: 142 69% 45%;
+
+    --success: 142 58% 40%;
     --success-foreground: 0 0% 100%;
+
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
-    --border: 140 12% 88%;
-    --input: 140 12% 88%;
-    --ring: 142 71% 40%;
 
-    --sidebar-background: 140 18% 95%;
-    --sidebar-foreground: 150 10% 12%;
-    --sidebar-primary: 142 71% 40%;
+    --border: 0 0% 88%; /* #E0E0E0 — mais definido */
+    --input: 0 0% 88%;
+    --ring: 142 64% 36%;
+
+    --sidebar-background: 60 4% 97%;
+    --sidebar-foreground: 0 0% 8%;
+    --sidebar-primary: 142 64% 36%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 140 20% 90%;
-    --sidebar-accent-foreground: 150 10% 12%;
-    --sidebar-border: 140 12% 88%;
-    --sidebar-ring: 142 71% 40%;
+    --sidebar-accent: 142 20% 94%;
+    --sidebar-accent-foreground: 0 0% 12%;
+    --sidebar-border: 0 0% 88%;
+    --sidebar-ring: 142 64% 36%;
 
-    --hero-gradient: linear-gradient(135deg, #1ea750 0%, #15803d 100%);
-    --primary-gradient: linear-gradient(135deg, #1ea750 0%, #15803d 100%);
-    --success-gradient: linear-gradient(135deg, #22c55e 0%, #1ea750 100%);
-    --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(20, 80, 45, 0.06);
-    --card-shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.06), 0 12px 32px rgba(20, 80, 45, 0.1);
-    --selection-glow: 0 0 0 2px rgba(30, 167, 80, 0.2);
-    --selection-border: #1ea750;
-    --green-glow: rgba(30, 167, 80, 0.12);
+    --hero-gradient: linear-gradient(135deg, #1B9E4B 0%, #137A3A 100%);
+    --primary-gradient: linear-gradient(135deg, #1B9E4B 0%, #137A3A 100%);
+    --success-gradient: linear-gradient(135deg, #1B9E4B 0%, #22874A 100%);
+
+    --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 6px 20px rgba(0, 0, 0, 0.04);
+    --card-shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.08), 0 16px 40px rgba(0, 0, 0, 0.06);
+    --selection-glow: 0 0 0 2px rgba(27, 158, 75, 0.2);
+    --selection-border: #1B9E4B;
+    --green-glow: rgba(27, 158, 75, 0.1);
   }
 
   /* Light mode scrollbar */
   .light ::-webkit-scrollbar-track {
-    background: hsl(140 20% 97%);
+    background: hsl(60 5% 96%);
   }
   .light ::-webkit-scrollbar-thumb {
-    background: rgba(30, 167, 80, 0.25);
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 3px;
   }
   .light ::-webkit-scrollbar-thumb:hover {
-    background: rgba(30, 167, 80, 0.4);
+    background: rgba(0, 0, 0, 0.25);
   }
 }
 
