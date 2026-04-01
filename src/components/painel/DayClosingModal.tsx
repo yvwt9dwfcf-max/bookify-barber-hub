@@ -3,9 +3,8 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { supabase } from '@/integrations/supabase/client';
 import { awardLoyaltyPoints } from '@/lib/loyaltyUtils';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
-import { Loader2, Moon } from 'lucide-react';
+import { Loader2, Moon, Check, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -24,6 +23,8 @@ interface GroupedAppointments {
   appointments: PendingAppointment[];
 }
 
+type AppointmentAction = 'completed' | 'no_show' | null;
+
 interface DayClosingModalProps {
   open: boolean;
   onClose: () => void;
@@ -39,31 +40,32 @@ const DayClosingModal = ({
   isPastDays,
   onCompleted,
 }: DayClosingModalProps) => {
-  const [selected, setSelected] = useState<Set<string>>(
-    new Set(pendingAppointments.map((a) => a.id))
-  );
+  // Track action per appointment: 'completed', 'no_show', or null (undecided)
+  const [actions, setActions] = useState<Record<string, AppointmentAction>>(() => {
+    const initial: Record<string, AppointmentAction> = {};
+    pendingAppointments.forEach(a => { initial[a.id] = 'completed'; });
+    return initial;
+  });
   const [completing, setCompleting] = useState(false);
 
-  const allSelected = selected.size === pendingAppointments.length;
+  const completedCount = Object.values(actions).filter(a => a === 'completed').length;
+  const noShowCount = Object.values(actions).filter(a => a === 'no_show').length;
+  const hasActions = completedCount > 0 || noShowCount > 0;
 
-  const toggleAll = () => {
-    if (allSelected) {
-      setSelected(new Set());
-    } else {
-      setSelected(new Set(pendingAppointments.map((a) => a.id)));
-    }
+  const setAction = (id: string, action: AppointmentAction) => {
+    setActions(prev => ({
+      ...prev,
+      [id]: prev[id] === action ? null : action,
+    }));
   };
 
-  const toggle = (id: string) => {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
+  const markAllCompleted = () => {
+    const allCompleted = Object.values(actions).every(a => a === 'completed');
+    const updated: Record<string, AppointmentAction> = {};
+    pendingAppointments.forEach(a => {
+      updated[a.id] = allCompleted ? null : 'completed';
     });
+    setActions(updated);
   };
 
   // Group by date for past days view
@@ -86,41 +88,60 @@ const DayClosingModal = ({
   }, [pendingAppointments]);
 
   const handleComplete = async () => {
-    if (selected.size === 0) {
-      toast.error('Selecione ao menos um atendimento');
+    if (!hasActions) {
+      toast.error('Marque ao menos um atendimento');
       return;
     }
 
     setCompleting(true);
     try {
-      const ids = Array.from(selected);
-      const { error } = await supabase
-        .from('appointments')
-        .update({ status: 'completed' })
-        .in('id', ids);
+      const completedIds = Object.entries(actions)
+        .filter(([, a]) => a === 'completed')
+        .map(([id]) => id);
+      const noShowIds = Object.entries(actions)
+        .filter(([, a]) => a === 'no_show')
+        .map(([id]) => id);
 
-      if (error) throw error;
+      // Update completed
+      if (completedIds.length > 0) {
+        const { error } = await supabase
+          .from('appointments')
+          .update({ status: 'completed' })
+          .in('id', completedIds);
+        if (error) throw error;
 
-      // Award loyalty points for each completed appointment
-      const selectedApts = pendingAppointments.filter(a => ids.includes(a.id));
-      await Promise.allSettled(
-        selectedApts.map(apt =>
-          awardLoyaltyPoints({
-            id: apt.id,
-            customer_name: apt.customer_name,
-            customer_phone: apt.customer_phone,
-            barbershop_id: apt.barbershop_id,
-          })
-        )
-      );
+        // Award loyalty points for completed appointments
+        const completedApts = pendingAppointments.filter(a => completedIds.includes(a.id));
+        await Promise.allSettled(
+          completedApts.map(apt =>
+            awardLoyaltyPoints({
+              id: apt.id,
+              customer_name: apt.customer_name,
+              customer_phone: apt.customer_phone,
+              barbershop_id: apt.barbershop_id,
+            })
+          )
+        );
+      }
 
-      toast.success(
-        `${ids.length} ${ids.length === 1 ? 'atendimento concluído' : 'atendimentos concluídos'}!`
-      );
+      // Update no-shows as cancelled
+      if (noShowIds.length > 0) {
+        const { error } = await supabase
+          .from('appointments')
+          .update({ status: 'cancelled' })
+          .in('id', noShowIds);
+        if (error) throw error;
+      }
+
+      const parts: string[] = [];
+      if (completedIds.length > 0) parts.push(`${completedIds.length} concluído${completedIds.length > 1 ? 's' : ''}`);
+      if (noShowIds.length > 0) parts.push(`${noShowIds.length} falta${noShowIds.length > 1 ? 's' : ''}`);
+      toast.success(parts.join(' • '));
+
       onCompleted();
     } catch (error) {
-      console.error('Erro ao concluir atendimentos:', error);
-      toast.error('Erro ao concluir atendimentos');
+      console.error('Erro ao processar atendimentos:', error);
+      toast.error('Erro ao processar atendimentos');
     } finally {
       setCompleting(false);
     }
@@ -128,39 +149,72 @@ const DayClosingModal = ({
 
   if (!open) return null;
 
-  const renderAppointmentItem = (a: PendingAppointment) => (
-    <label
-      key={a.id}
-      className={cn(
-        'flex items-center gap-3 p-3 rounded-xl border border-border/50 bg-card/60',
-        'shadow-sm cursor-pointer transition-all duration-150',
-        'hover:bg-accent/30 active:scale-[0.985]',
-        selected.has(a.id) && 'ring-1 ring-primary/40 bg-primary/5'
-      )}
-    >
-      <Checkbox
-        checked={selected.has(a.id)}
-        onCheckedChange={() => toggle(a.id)}
-        className="shrink-0"
-      />
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium truncate">{a.customer_name}</p>
-        <div className="flex items-center gap-2 mt-0.5">
-          <span className="text-xs text-muted-foreground">
-            {format(new Date(a.start_time), 'HH:mm')}
-          </span>
-          {a.service?.name && (
-            <>
-              <span className="text-muted-foreground/40">·</span>
-              <span className="text-xs text-primary font-medium truncate">
-                {a.service.name}
-              </span>
-            </>
-          )}
+  const renderAppointmentItem = (a: PendingAppointment) => {
+    const action = actions[a.id];
+    return (
+      <div
+        key={a.id}
+        className={cn(
+          'flex items-center gap-2 p-3 rounded-xl border border-border/50 bg-card/60',
+          'shadow-sm transition-all duration-150',
+          action === 'completed' && 'ring-1 ring-primary/40 bg-primary/5',
+          action === 'no_show' && 'ring-1 ring-destructive/40 bg-destructive/5 opacity-75'
+        )}
+      >
+        <div className="flex-1 min-w-0">
+          <p className={cn(
+            'text-sm font-medium truncate',
+            action === 'no_show' && 'line-through text-muted-foreground'
+          )}>
+            {a.customer_name}
+          </p>
+          <div className="flex items-center gap-2 mt-0.5">
+            <span className="text-xs text-muted-foreground">
+              {format(new Date(a.start_time), 'HH:mm')}
+            </span>
+            {a.service?.name && (
+              <>
+                <span className="text-muted-foreground/40">·</span>
+                <span className="text-xs text-primary font-medium truncate">
+                  {a.service.name}
+                </span>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Action buttons */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          <button
+            type="button"
+            onClick={() => setAction(a.id, 'completed')}
+            className={cn(
+              'h-8 w-8 rounded-full flex items-center justify-center transition-all',
+              action === 'completed'
+                ? 'bg-primary text-primary-foreground shadow-sm'
+                : 'bg-muted/50 text-muted-foreground hover:bg-primary/10 hover:text-primary'
+            )}
+            title="Compareceu"
+          >
+            <Check className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setAction(a.id, 'no_show')}
+            className={cn(
+              'h-8 w-8 rounded-full flex items-center justify-center transition-all',
+              action === 'no_show'
+                ? 'bg-destructive text-destructive-foreground shadow-sm'
+                : 'bg-muted/50 text-muted-foreground hover:bg-destructive/10 hover:text-destructive'
+            )}
+            title="Faltou"
+          >
+            <X className="h-4 w-4" />
+          </button>
         </div>
       </div>
-    </label>
-  );
+    );
+  };
 
   return (
     <>
@@ -196,27 +250,37 @@ const DayClosingModal = ({
               <p className="text-xs text-muted-foreground mt-0.5">
                 {isPastDays
                   ? 'Existem atendimentos de dias anteriores que não foram concluídos.'
-                  : 'Você ainda possui atendimentos não concluídos hoje.'}
+                  : 'Marque quem compareceu e quem faltou.'}
               </p>
             </div>
+          </div>
+
+          {/* Legend */}
+          <div className="flex items-center gap-4 mt-3 px-1">
+            <div className="flex items-center gap-1.5">
+              <div className="h-5 w-5 rounded-full bg-primary flex items-center justify-center">
+                <Check className="h-3 w-3 text-primary-foreground" />
+              </div>
+              <span className="text-xs text-muted-foreground">Compareceu</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="h-5 w-5 rounded-full bg-destructive flex items-center justify-center">
+                <X className="h-3 w-3 text-destructive-foreground" />
+              </div>
+              <span className="text-xs text-muted-foreground">Faltou</span>
+            </div>
+            <button
+              type="button"
+              onClick={markAllCompleted}
+              className="text-xs text-primary font-medium ml-auto hover:underline"
+            >
+              {Object.values(actions).every(a => a === 'completed') ? 'Desmarcar todos' : 'Todos compareceram'}
+            </button>
           </div>
         </div>
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
-          {/* Select all */}
-          <label className="flex items-center gap-3 px-1 cursor-pointer">
-            <Checkbox
-              checked={allSelected}
-              onCheckedChange={toggleAll}
-            />
-            <span className="text-sm font-medium">Selecionar todos</span>
-            <span className="text-xs text-muted-foreground ml-auto">
-              {selected.size}/{pendingAppointments.length}
-            </span>
-          </label>
-
-          {/* Appointments */}
           {isPastDays ? (
             grouped.map((group) => (
               <div key={group.date}>
@@ -237,29 +301,47 @@ const DayClosingModal = ({
           )}
         </div>
 
-        {/* Footer - sticky */}
-        <div className="p-4 pt-3 border-t border-border/50 flex gap-3 bg-card rounded-b-2xl">
-          <Button
-            variant="ghost"
-            className="flex-1"
-            onClick={onClose}
-          >
-            Depois
-          </Button>
-          <Button
-            className="flex-1 active:scale-[0.98]"
-            onClick={handleComplete}
-            disabled={completing || selected.size === 0}
-          >
-            {completing ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Concluindo...
-              </>
-            ) : (
-              `Concluir selecionados (${selected.size})`
-            )}
-          </Button>
+        {/* Footer with summary */}
+        <div className="p-4 pt-3 border-t border-border/50 bg-card rounded-b-2xl">
+          {(completedCount > 0 || noShowCount > 0) && (
+            <div className="flex items-center gap-3 mb-3 text-xs text-muted-foreground px-1">
+              {completedCount > 0 && (
+                <span className="flex items-center gap-1">
+                  <Check className="h-3 w-3 text-primary" />
+                  {completedCount} compareceu{completedCount > 1 ? 'ram' : ''}
+                </span>
+              )}
+              {noShowCount > 0 && (
+                <span className="flex items-center gap-1">
+                  <X className="h-3 w-3 text-destructive" />
+                  {noShowCount} falta{noShowCount > 1 ? 's' : ''}
+                </span>
+              )}
+            </div>
+          )}
+          <div className="flex gap-3">
+            <Button
+              variant="ghost"
+              className="flex-1"
+              onClick={onClose}
+            >
+              Depois
+            </Button>
+            <Button
+              className="flex-1 active:scale-[0.98]"
+              onClick={handleComplete}
+              disabled={completing || !hasActions}
+            >
+              {completing ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Processando...
+                </>
+              ) : (
+                'Confirmar'
+              )}
+            </Button>
+          </div>
         </div>
       </div>
 
