@@ -65,11 +65,7 @@ export const getInitials = (name: string) => {
 export const toLocalDate = (date: Date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
 export const getTodayLocalDate = () => toLocalDate(new Date());
 
-export const shiftMonthKeepingDay = (date: Date, monthOffset: number) => {
+export const shiftMonthToStart = (date: Date, monthOffset: number) => {
   const targetMonth = new Date(date.getFullYear(), date.getMonth() + monthOffset, 1);
-  const year = targetMonth.getFullYear();
-  const month = targetMonth.getMonth();
-  const maxDay = new Date(year, month + 1, 0).getDate();
-  const clampedDay = Math.min(date.getDate(), maxDay);
-  return new Date(year, month, clampedDay);
+  return new Date(targetMonth.getFullYear(), targetMonth.getMonth(), 1);
 };
