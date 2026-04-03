@@ -158,7 +158,10 @@ export function useAvailability({
   }, [openingHours, blockedSlots, appointments, getOpeningHoursForDay]);
 
   /**
-   * Get all available time slots for a given date
+   * Get all available time slots for a given date.
+   * Uses 30min intervals by default; switches to 15min when:
+   * - The selected service duration is 15min, OR
+   * - There are existing appointments that create 15min gaps
    */
   const getAvailableSlotsForDate = useCallback((
     date: Date, 
@@ -169,28 +172,62 @@ export function useAvailability({
     
     if (!dayHours) return [];
 
-    const slots: string[] = [];
     const [startHour, startMin] = dayHours.start_time.split(':').map(Number);
     const [endHour, endMin] = dayHours.end_time.split(':').map(Number);
 
-    let current = setMinutes(setHours(date, startHour), startMin);
-    const endTime = setMinutes(setHours(date, endHour), endMin);
+    const startTotal = startHour * 60 + startMin;
+    const endTotal = endHour * 60 + endMin;
 
-    // Generate slots every 15 minutes
-    while (addMinutes(current, durationMinutes).getTime() <= endTime.getTime()) {
-      const timeSlot = `${current.getHours().toString().padStart(2, '0')}:${current.getMinutes().toString().padStart(2, '0')}`;
+    // Determine if we need 15min precision:
+    // 1) The service itself is 15min
+    // 2) Any existing appointment ends on a :15 or :45 boundary
+    const needs15Min = durationMinutes === 15 || appointments.some((apt) => {
+      const aptEnd = new Date(apt.end_time);
+      const aptEndMin = aptEnd.getMinutes();
+      return aptEndMin === 15 || aptEndMin === 45;
+    });
+
+    const interval = needs15Min ? 15 : 30;
+
+    // Generate candidate slots at the chosen interval
+    const candidateMinutes: number[] = [];
+    for (let m = startTotal; m + durationMinutes <= endTotal; m += interval) {
+      candidateMinutes.push(m);
+    }
+
+    // Also add slots right after each existing appointment ends (to fill gaps)
+    appointments.forEach((apt) => {
+      if (apt.status === 'cancelled') return;
+      const aptEnd = new Date(apt.end_time);
+      // Only consider appointments on the same date
+      if (aptEnd.getFullYear() === date.getFullYear() &&
+          aptEnd.getMonth() === date.getMonth() &&
+          aptEnd.getDate() === date.getDate()) {
+        const endMinutes = aptEnd.getHours() * 60 + aptEnd.getMinutes();
+        if (endMinutes + durationMinutes <= endTotal && endMinutes >= startTotal) {
+          candidateMinutes.push(endMinutes);
+        }
+      }
+    });
+
+    // Deduplicate and sort
+    const uniqueMinutes = [...new Set(candidateMinutes)].sort((a, b) => a - b);
+
+    const slots: string[] = [];
+    for (const totalMin of uniqueMinutes) {
+      const h = Math.floor(totalMin / 60);
+      const m = totalMin % 60;
+      const timeSlot = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
       
       const availability = checkSlotAvailability(timeSlot, date, durationMinutes);
       
       if (availability.available) {
         slots.push(timeSlot);
       }
-
-      current = addMinutes(current, 15);
     }
 
     return slots;
-  }, [getOpeningHoursForDay, checkSlotAvailability]);
+  }, [getOpeningHoursForDay, checkSlotAvailability, appointments]);
 
   return {
     openingHours,
