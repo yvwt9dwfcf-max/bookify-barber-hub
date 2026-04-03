@@ -284,6 +284,8 @@ const Agenda = () => {
               selectedBarberId={selectedBarberId}
             />
 
+            <HolidayBanner date={selectedDate} />
+
             <div className="animate-fade-in" style={{ animationDelay: '0.16s' }}>
               <AgendaSlotGrid
                 loading={loading || availabilityLoading}
