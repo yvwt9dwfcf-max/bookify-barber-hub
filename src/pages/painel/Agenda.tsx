@@ -16,6 +16,7 @@ import AgendaHeader from '@/components/painel/agenda/AgendaHeader';
 import AgendaDaysStrip from '@/components/painel/agenda/AgendaDaysStrip';
 import AgendaSlotGrid from '@/components/painel/agenda/AgendaSlotGrid';
 import { AgendaContextType, ViewMode, toLocalDate, getTodayLocalDate, shiftMonthToStart } from '@/components/painel/agenda/agendaUtils';
+import HolidayBanner from '@/components/painel/agenda/HolidayBanner';
 
 /* Sticky wrapper — adds dynamic shadow on scroll */
 const StickyDaysStrip = (props: React.ComponentProps<typeof AgendaDaysStrip>) => {
