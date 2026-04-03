@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase, OpeningHours, BlockedSlot, Appointment } from '@/lib/supabase';
 import { 
-  startOfDay, 
   isBefore, 
   isAfter, 
   addMinutes, 
   setHours, 
-  setMinutes 
+  setMinutes,
+  startOfDay
 } from 'date-fns';
 
 export interface SlotAvailability {
