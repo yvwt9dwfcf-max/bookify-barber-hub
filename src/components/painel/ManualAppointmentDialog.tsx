@@ -315,7 +315,7 @@ const ManualAppointmentDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[440px] max-h-[85vh] flex flex-col p-0">
+      <DialogContent className="sm:max-w-[440px] max-h-[90dvh] flex flex-col p-0">
         <DialogHeader className="px-4 pt-4 pb-2">
           <DialogTitle className="text-base">Novo Agendamento</DialogTitle>
           <DialogDescription className="sr-only">

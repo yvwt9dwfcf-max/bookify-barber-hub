@@ -6,7 +6,7 @@ import { Separator } from '@/components/ui/separator';
 import { Loader2, Mail, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { OAuthButtons } from './OAuthButtons';
 
 export function LoginForm() {
@@ -14,7 +14,6 @@ export function LoginForm() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { signIn } = useAuth();
-  const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,12 +28,14 @@ export function LoginForm() {
       if (error) {
         if (error.message.includes('Invalid login credentials')) {
           toast.error('Email ou senha incorretos');
+        } else if (error.message.includes('Email not confirmed')) {
+          toast.error('Confirme seu email antes de entrar');
         } else {
           toast.error(error.message);
         }
       } else {
         toast.success('Login realizado com sucesso!');
-        navigate('/painel');
+        // Navigation is handled by Login.tsx useEffect when user state updates
       }
     } catch {
       toast.error('Erro ao fazer login');

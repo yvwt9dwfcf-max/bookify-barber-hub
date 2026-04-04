@@ -97,7 +97,7 @@ export function TimeInput({ value, onChange, placeholder = '--:--', className, d
       onChange={handleChange}
       onBlur={handleBlur}
       placeholder={placeholder}
-      className={cn('w-[80px] text-center font-mono', className)}
+      className={cn('w-[80px] text-center font-mono tabular-nums', className)}
       disabled={disabled}
       maxLength={5}
     />

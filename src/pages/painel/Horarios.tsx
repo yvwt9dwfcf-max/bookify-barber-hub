@@ -247,39 +247,47 @@ const Horarios = () => {
               </div>
 
               {day.is_open ? (
-                <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
-                <div className="flex items-center gap-2">
-                    <Label className="text-xs text-muted-foreground min-w-[50px]">Início</Label>
-                    <TimeInput
-                      value={day.start_time}
-                      onChange={(val) =>
-                        updateHour(day.day_of_week, 'start_time', val)
-                      }
-                    />
-                    <span className="text-muted-foreground">-</span>
-                    <TimeInput
-                      value={day.end_time}
-                      onChange={(val) =>
-                        updateHour(day.day_of_week, 'end_time', val)
-                      }
-                    />
+                <div className="flex flex-col gap-3 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Label className="text-xs text-muted-foreground w-[52px] shrink-0">Início</Label>
+                    <div className="flex items-center gap-1.5">
+                      <TimeInput
+                        value={day.start_time}
+                        onChange={(val) =>
+                          updateHour(day.day_of_week, 'start_time', val)
+                        }
+                        className="w-[72px] text-center text-sm"
+                      />
+                      <span className="text-muted-foreground text-xs">às</span>
+                      <TimeInput
+                        value={day.end_time}
+                        onChange={(val) =>
+                          updateHour(day.day_of_week, 'end_time', val)
+                        }
+                        className="w-[72px] text-center text-sm"
+                      />
+                    </div>
                   </div>
                   
-                  <div className="flex items-center gap-2">
-                    <Label className="text-xs text-muted-foreground min-w-[50px]">Intervalo</Label>
-                    <TimeInput
-                      value={day.break_start || ''}
-                      onChange={(val) =>
-                        updateHour(day.day_of_week, 'break_start', val || null)
-                      }
-                    />
-                    <span className="text-muted-foreground">-</span>
-                    <TimeInput
-                      value={day.break_end || ''}
-                      onChange={(val) =>
-                        updateHour(day.day_of_week, 'break_end', val || null)
-                      }
-                    />
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Label className="text-xs text-muted-foreground w-[52px] shrink-0">Intervalo</Label>
+                    <div className="flex items-center gap-1.5">
+                      <TimeInput
+                        value={day.break_start || ''}
+                        onChange={(val) =>
+                          updateHour(day.day_of_week, 'break_start', val || null)
+                        }
+                        className="w-[72px] text-center text-sm"
+                      />
+                      <span className="text-muted-foreground text-xs">às</span>
+                      <TimeInput
+                        value={day.break_end || ''}
+                        onChange={(val) =>
+                          updateHour(day.day_of_week, 'break_end', val || null)
+                        }
+                        className="w-[72px] text-center text-sm"
+                      />
+                    </div>
                   </div>
                 </div>
               ) : (
