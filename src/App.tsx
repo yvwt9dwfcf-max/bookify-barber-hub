@@ -1,6 +1,5 @@
-import { lazy, Suspense, useState, useCallback } from "react";
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
-import { SplashScreen } from "@/components/SplashScreen";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -111,32 +110,18 @@ function AnimatedRoutes() {
   );
 }
 
-const App = () => {
-  const [showSplash, setShowSplash] = useState(() => {
-    // Show splash only once per browser session
-    if (sessionStorage.getItem('bookify-splash-shown')) return false;
-    return true;
-  });
-
-  const handleSplashFinished = useCallback(() => {
-    sessionStorage.setItem('bookify-splash-shown', '1');
-    setShowSplash(false);
-  }, []);
-
-  return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        {showSplash && <SplashScreen onFinished={handleSplashFinished} />}
-        <BrowserRouter>
-          <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div>}>
-            <AnimatedRoutes />
-          </Suspense>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
-  );
-};
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div>}>
+          <AnimatedRoutes />
+        </Suspense>
+      </BrowserRouter>
+    </TooltipProvider>
+  </QueryClientProvider>
+);
 
 export default App;
