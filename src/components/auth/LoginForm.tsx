@@ -6,7 +6,7 @@ import { Separator } from '@/components/ui/separator';
 import { Loader2, Mail, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { OAuthButtons } from './OAuthButtons';
 
 export function LoginForm() {
