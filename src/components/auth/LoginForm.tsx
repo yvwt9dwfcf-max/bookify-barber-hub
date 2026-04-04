@@ -29,12 +29,14 @@ export function LoginForm() {
       if (error) {
         if (error.message.includes('Invalid login credentials')) {
           toast.error('Email ou senha incorretos');
+        } else if (error.message.includes('Email not confirmed')) {
+          toast.error('Confirme seu email antes de entrar');
         } else {
           toast.error(error.message);
         }
       } else {
         toast.success('Login realizado com sucesso!');
-        navigate('/painel');
+        // Navigation is handled by Login.tsx useEffect when user state updates
       }
     } catch {
       toast.error('Erro ao fazer login');
