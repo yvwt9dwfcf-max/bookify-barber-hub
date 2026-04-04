@@ -128,11 +128,11 @@ const AgendarBarbearia = () => {
     <div className="min-h-screen bg-background relative overflow-hidden">
       {/* Background effects */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full bg-primary/5 blur-3xl" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full bg-primary/3 blur-3xl" />
       </div>
 
-      {/* Header */}
-      <header className="relative z-10 px-4 sm:px-6 py-4 border-b border-border/50 bg-card/80 backdrop-blur-xl">
+      {/* Header — fixo com blur */}
+      <header className="sticky top-0 z-50 px-4 sm:px-6 py-4 border-b border-border/30 bg-background/80 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto">
           <Logo linkTo={undefined} />
         </div>

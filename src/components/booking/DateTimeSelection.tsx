@@ -180,11 +180,11 @@ export function DateTimeSelection({ barberId, serviceDuration, onSelect }: DateT
                   key={time}
                   onClick={() => handleTimeSelect(time)}
                   className={cn(
-                    'py-3 px-2 rounded-xl border-2 font-semibold text-sm transition-all duration-200 ease-out',
+                    'py-3.5 px-2 rounded-2xl border font-semibold text-sm transition-all duration-200 ease-out',
                     'hover:-translate-y-0.5 hover:shadow-md active:scale-95',
                     selectedTime === time
                       ? 'border-primary text-primary-foreground shadow-md'
-                      : 'border-border/30 hover:border-primary/40 bg-card/60'
+                      : 'border-border/30 hover:border-primary/30 bg-secondary/50'
                   )}
                   style={selectedTime === time ? { background: 'var(--primary-gradient)' } : undefined}
                 >

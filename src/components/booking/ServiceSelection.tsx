@@ -159,11 +159,11 @@ export function ServiceSelection({ barberId, onSelect, onAutoSelect }: ServiceSe
               key={service.id}
               onClick={() => handleSelect(service)}
               className={cn(
-                'flex items-center gap-4 p-4 rounded-xl border-2 transition-all duration-200 ease-out text-left',
+                'flex items-center gap-4 p-5 rounded-2xl border transition-all duration-200 ease-out text-left',
                 'hover:shadow-lg active:scale-[0.98]',
                 selected === service.id
                   ? 'border-primary bg-primary/5 dark:bg-primary/10 shadow-md'
-                  : 'border-border/40 hover:border-primary/40 bg-card/60 dark:bg-card/60'
+                  : 'border-border/30 hover:border-primary/30 bg-secondary/50'
               )}
             >
               <Avatar className="h-12 w-12 rounded-xl flex-shrink-0 transition-all">

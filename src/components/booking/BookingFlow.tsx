@@ -162,8 +162,8 @@ export function BookingFlow({ preselectedBarber, barbershopId, availableBarbers 
     <div className="w-full max-w-2xl mx-auto px-2">
       <StepIndicator currentStep={step} />
       
-      <Card className="mt-8 bg-card/80 backdrop-blur-sm border border-border/30 shadow-xl rounded-2xl">
-        <CardContent className="p-6 md:p-8">
+      <Card className="mt-6 border-border/30 shadow-card-lg rounded-2xl overflow-hidden">
+        <CardContent className="p-5 md:p-8">
           {currentStepIndex > 0 && step !== 'confirmation' && (
             <Button
               variant="ghost"

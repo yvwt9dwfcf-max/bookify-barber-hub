@@ -78,7 +78,7 @@ export function CustomerInfo({ onSubmit, isSubmitting, bookingData }: CustomerIn
       </div>
 
       {/* Booking Summary */}
-      <div className="bg-accent/30 border border-border/30 rounded-xl p-4 space-y-3">
+      <div className="bg-secondary/60 border border-border/30 rounded-2xl p-5 space-y-3">
         <h3 className="font-semibold text-xs text-muted-foreground uppercase tracking-wider">
           Resumo do agendamento
         </h3>
