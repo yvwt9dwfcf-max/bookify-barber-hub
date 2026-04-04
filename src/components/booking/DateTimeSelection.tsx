@@ -134,7 +134,7 @@ export function DateTimeSelection({ barberId, serviceDuration, onSelect }: DateT
               onClick={() => isSelectable && handleDateSelect(day)}
               disabled={!isSelectable}
               className={cn(
-                'flex flex-col items-center p-2.5 rounded-xl border-2 transition-all duration-200 ease-out',
+                'flex flex-col items-center p-2.5 rounded-2xl border transition-all duration-200 ease-out',
                 isSelectable && 'hover:-translate-y-0.5 hover:shadow-md cursor-pointer border-border/30',
                 !isSelectable && 'opacity-40 cursor-not-allowed border-transparent bg-muted/30',
                 isSelectable && !hasSlots && 'opacity-60 border-border/20',
