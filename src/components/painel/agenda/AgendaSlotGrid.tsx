@@ -9,6 +9,7 @@ import { getStatusConfig } from './agendaUtils';
 import { SlotAvailability } from '@/hooks/useAvailability';
 import AgendaEmptyState from './AgendaEmptyState';
 import { Barbershop } from '@/lib/supabase';
+import SwipeableAppointmentCard from './SwipeableAppointmentCard';
 
 interface DaySlot {
   time: string;
