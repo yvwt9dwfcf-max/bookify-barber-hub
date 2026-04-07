@@ -362,7 +362,7 @@ const ManualAppointmentDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[440px] max-h-[90dvh] flex flex-col p-0 gap-0 overflow-hidden">
+      <DialogContent className="sm:max-w-[440px] max-h-[90dvh] flex flex-col p-0 gap-0 overflow-hidden [&>div]:min-h-0">
         <DialogDescription className="sr-only">Criar novo agendamento manual</DialogDescription>
 
         {/* ===== SERVICE PICKER SCREEN ===== */}
