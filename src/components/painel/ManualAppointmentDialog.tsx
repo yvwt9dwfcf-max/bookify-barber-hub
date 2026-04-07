@@ -76,7 +76,7 @@ const ServicePickerScreen = ({
   return (
     <div className="flex flex-col h-full animate-in slide-in-from-right-4 duration-200">
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 pt-4 pb-3 border-b border-border/40">
+      <div className="flex items-center gap-3 px-4 pt-4 pb-3 border-b border-border/40 shrink-0">
         <button
           type="button"
           onClick={onBack}
@@ -88,7 +88,7 @@ const ServicePickerScreen = ({
       </div>
 
       {/* Search */}
-      <div className="px-4 pt-3 pb-2">
+      <div className="px-4 pt-3 pb-2 shrink-0">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -96,13 +96,12 @@ const ServicePickerScreen = ({
             value={search}
             onChange={e => setSearch(e.target.value)}
             className="pl-9 h-10 text-sm"
-            autoFocus
           />
         </div>
       </div>
 
       {/* Service List */}
-      <div className="flex-1 overflow-y-auto px-4 pb-4">
+      <div className="flex-1 overflow-y-auto overscroll-contain px-4 pb-4">
         {loading ? (
           <div className="flex items-center justify-center py-8">
             <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
