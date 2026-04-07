@@ -32,6 +32,9 @@ interface AgendaSlotGridProps {
   checkSlotAvailability: (timeSlot: string, date: Date, durationMinutes: number) => SlotAvailability;
   onSlotClick: (time: string) => void;
   onAppointmentClick: (appointment: Appointment) => void;
+  onAppointmentComplete?: (id: string) => void;
+  onAppointmentDelete?: (id: string) => void;
+  onAppointmentEdit?: (appointment: Appointment) => void;
   getOpeningHoursForDay: (dayOfWeek: number) => any;
 }
 
