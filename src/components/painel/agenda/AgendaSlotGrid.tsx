@@ -43,6 +43,7 @@ const AgendaSlotGrid = ({
   daySlots, appointments, blockedSlots,
   hasAppointments, hideEmptyState, onDismissEmptyState,
   barbershop, checkSlotAvailability, onSlotClick, onAppointmentClick,
+  onAppointmentComplete, onAppointmentDelete, onAppointmentEdit,
 }: AgendaSlotGridProps) => {
   // Map appointments to their time slots
   const { appointmentsBySlot, coveredSlots } = useMemo(() => {
