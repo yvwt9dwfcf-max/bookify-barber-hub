@@ -9,6 +9,7 @@ import { getStatusConfig } from './agendaUtils';
 import { SlotAvailability } from '@/hooks/useAvailability';
 import AgendaEmptyState from './AgendaEmptyState';
 import { Barbershop } from '@/lib/supabase';
+import SwipeableAppointmentCard from './SwipeableAppointmentCard';
 
 interface DaySlot {
   time: string;
@@ -31,6 +32,9 @@ interface AgendaSlotGridProps {
   checkSlotAvailability: (timeSlot: string, date: Date, durationMinutes: number) => SlotAvailability;
   onSlotClick: (time: string) => void;
   onAppointmentClick: (appointment: Appointment) => void;
+  onAppointmentComplete?: (id: string) => void;
+  onAppointmentDelete?: (id: string) => void;
+  onAppointmentEdit?: (appointment: Appointment) => void;
   getOpeningHoursForDay: (dayOfWeek: number) => any;
 }
 
@@ -39,6 +43,7 @@ const AgendaSlotGrid = ({
   daySlots, appointments, blockedSlots,
   hasAppointments, hideEmptyState, onDismissEmptyState,
   barbershop, checkSlotAvailability, onSlotClick, onAppointmentClick,
+  onAppointmentComplete, onAppointmentDelete, onAppointmentEdit,
 }: AgendaSlotGridProps) => {
   // Map appointments to their time slots
   const { appointmentsBySlot, coveredSlots } = useMemo(() => {
@@ -161,7 +166,6 @@ const AgendaSlotGrid = ({
           const slotsSpanned = Math.ceil(durationMin / 15);
           const is15Min = durationMin <= 15;
           const cardMinHeight = is15Min ? 32 : slotsSpanned > 1 ? slotsSpanned * 28 + (slotsSpanned - 1) * 3 : 36;
-          const cfg = getStatusConfig(appointment.status);
 
           return (
             <div key={slot.time} className="relative flex" style={{ animationDelay: `${rowIndex * 0.02}s` }}>
@@ -169,40 +173,16 @@ const AgendaSlotGrid = ({
               <div className="w-12 shrink-0 pt-2 pr-2 text-right">
                 <p className="text-[11px] font-medium tabular-nums text-muted-foreground/70">{slot.time}</p>
               </div>
-              <div
-                className={cn(
-                  "flex-1 rounded-xl overflow-hidden cursor-pointer my-0.5",
-                  "border-l-[3px] px-2.5",
-                  is15Min ? "py-1" : "py-2",
-                  "transition-all duration-200 active:scale-[0.99]",
-                  "bg-secondary/80",
-                  cfg.borderColor,
-                )}
-                onClick={() => onAppointmentClick(appointment)}
-                style={{ minHeight: `${cardMinHeight}px` }}
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0 flex-1">
-                    {appointment.service && (
-                      <p className={cn("font-semibold text-foreground/90 truncate", is15Min ? "text-[11px]" : "text-xs")}>
-                        {appointment.service.name}
-                      </p>
-                    )}
-                    <p className="text-[11px] text-muted-foreground truncate mt-0.5">{appointment.customer_name}</p>
-                    {!is15Min && (
-                      <p className="text-[10px] text-muted-foreground/50 tabular-nums mt-0.5">
-                        {format(new Date(appointment.start_time), 'HH:mm')} — {format(new Date(appointment.end_time), 'HH:mm')}
-                      </p>
-                    )}
-                  </div>
-                  <span className={cn(
-                    "px-2 py-0.5 rounded-full text-[9px] font-semibold shrink-0 border",
-                    appointment.status === 'confirmed' && "bg-primary/10 text-primary border-primary/20",
-                    appointment.status === 'completed' && "bg-success/10 text-success border-success/20",
-                  )}>
-                    {cfg.label}
-                  </span>
-                </div>
+              <div className="flex-1">
+                <SwipeableAppointmentCard
+                  appointment={appointment}
+                  is15Min={is15Min}
+                  cardMinHeight={cardMinHeight}
+                  onTap={onAppointmentClick}
+                  onComplete={onAppointmentComplete}
+                  onDelete={onAppointmentDelete}
+                  onEdit={onAppointmentEdit}
+                />
               </div>
             </div>
           );

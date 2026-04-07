@@ -302,6 +302,9 @@ const Agenda = () => {
                 checkSlotAvailability={checkSlotAvailability}
                 onSlotClick={handleOpenManualDialog}
                 onAppointmentClick={handleCardClick}
+                onAppointmentComplete={(id) => handleStatusChange(id, 'completed')}
+                onAppointmentDelete={handleDeleteAppointment}
+                onAppointmentEdit={handleEditAppointment}
                 getOpeningHoursForDay={getOpeningHoursForDay}
               />
             </div>
