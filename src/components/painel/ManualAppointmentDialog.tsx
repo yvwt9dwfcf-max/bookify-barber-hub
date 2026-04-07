@@ -383,7 +383,7 @@ const ManualAppointmentDialog = ({
               <DialogTitle className="text-base font-semibold">Novo Agendamento</DialogTitle>
             </DialogHeader>
 
-            <div className="flex-1 overflow-y-auto px-4 pb-4 pt-3 space-y-4">
+            <div className="flex-1 overflow-y-auto overscroll-contain px-4 pb-4 pt-3 space-y-4 min-h-0">
               {/* Context Banner — Date + Barber */}
               <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
                 <PopoverTrigger asChild>
