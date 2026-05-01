@@ -18,16 +18,29 @@ serve(async (req) => {
   );
 
   try {
-    const authHeader = req.headers.get("Authorization")!;
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      throw new Error("Sessão expirada. Faça login novamente para continuar.");
+    }
     const token = authHeader.replace("Bearer ", "");
-    const { data } = await supabaseClient.auth.getUser(token);
+    const { data, error: authError } = await supabaseClient.auth.getUser(token);
+    if (authError) {
+      console.error("[create-checkout] auth error:", authError.message);
+      throw new Error("Sessão inválida. Faça login novamente.");
+    }
     const user = data.user;
-    if (!user?.email) throw new Error("User not authenticated or email not available");
+    if (!user?.email) throw new Error("Usuário não autenticado ou email indisponível.");
 
     const { priceId, returnUrl } = await req.json();
-    if (!priceId) throw new Error("priceId is required");
+    if (!priceId) throw new Error("priceId é obrigatório");
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+    if (!stripeKey) {
+      console.error("[create-checkout] STRIPE_SECRET_KEY não configurada");
+      throw new Error("Pagamentos temporariamente indisponíveis. Tente novamente em instantes.");
+    }
+
+    const stripe = new Stripe(stripeKey, {
       apiVersion: "2025-08-27.basil",
     });
 
