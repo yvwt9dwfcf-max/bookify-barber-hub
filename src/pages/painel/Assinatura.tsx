@@ -425,7 +425,7 @@ const Assinatura = () => {
                           ? 'bg-primary/60 text-primary-foreground opacity-60 cursor-default'
                           : 'btn-primary-gradient'
                       )}
-                      disabled={isSubscribedToPlan || selecting !== null || authLoading}
+                      disabled={isSubscribedToPlan || selecting !== null || authLoading || !session?.access_token}
                       onClick={() => handleSelectPlan(plan.id)}
                     >
                       {selecting === plan.id ? (
