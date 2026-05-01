@@ -11,9 +11,10 @@ import { useAuth } from '@/hooks/useAuth';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { getEdgeFunctionErrorMessage } from '@/lib/edge-function-errors';
 
 const TrialExpirado = () => {
-  const { signOut } = useAuth();
+  const { signOut, session, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [selecting, setSelecting] = useState<string | null>(null);
   const [polling, setPolling] = useState(false);
@@ -53,7 +54,14 @@ const TrialExpirado = () => {
 
     setSelecting(planId);
     try {
+      if (!session?.access_token) {
+        throw new Error('Sua sessão expirou. Entre novamente para continuar.');
+      }
+
       const { data, error } = await supabase.functions.invoke('create-checkout', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
         body: { priceId: stripePlan.price_id, returnUrl: `${window.location.origin}/trial-expirado` },
       });
 
@@ -66,7 +74,8 @@ const TrialExpirado = () => {
       throw new Error('URL de checkout não recebida');
     } catch (error: any) {
       console.error('Erro ao iniciar checkout:', error);
-      toast.error(error?.message || 'Erro ao iniciar checkout.');
+      const message = await getEdgeFunctionErrorMessage(error, 'Erro ao iniciar checkout.');
+      toast.error(message);
     } finally {
       setSelecting(null);
     }
@@ -162,7 +171,7 @@ const TrialExpirado = () => {
                 <Button
                   className={cn('w-full', plan.popular ? 'btn-primary-gradient' : '')}
                   variant={plan.popular ? 'default' : 'outline'}
-                  disabled={selecting !== null}
+                  disabled={selecting !== null || authLoading}
                   onClick={() => handleSelectPlan(plan.id)}
                 >
                   {selecting === plan.id ? (
