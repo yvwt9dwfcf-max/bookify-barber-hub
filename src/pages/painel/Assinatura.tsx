@@ -22,6 +22,8 @@ import { AssinaturaSkeleton } from '@/components/painel/skeletons';
 import { cn } from '@/lib/utils';
 import { PLANS } from '@/lib/plans';
 import { STRIPE_PLANS, StripePlanId } from '@/lib/stripe';
+import { useAuth } from '@/hooks/useAuth';
+import { getEdgeFunctionErrorMessage } from '@/lib/edge-function-errors';
 
 interface ContextType {
   barber: Barber | null;
@@ -40,6 +42,7 @@ interface SubscriptionData {
 
 const Assinatura = () => {
   const { barbershop, isMaster } = useOutletContext<ContextType>();
+  const { session, loading: authLoading } = useAuth();
   const [selecting, setSelecting] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState(false);
   const [subscriptionData, setSubscriptionData] = useState<SubscriptionData | null>(null);
@@ -103,7 +106,14 @@ const Assinatura = () => {
 
     setSelecting(planId);
     try {
+      if (!session?.access_token) {
+        throw new Error('Sua sessão expirou. Entre novamente para continuar.');
+      }
+
       const { data, error } = await supabase.functions.invoke('create-checkout', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
         body: { priceId: stripePlan.price_id },
       });
       if (error) throw error;
@@ -115,7 +125,8 @@ const Assinatura = () => {
       throw new Error('URL de checkout não recebida');
     } catch (error: any) {
       console.error('Erro ao iniciar checkout:', error);
-      toast.error(error?.message || 'Erro ao iniciar checkout. Tente novamente.');
+      const message = await getEdgeFunctionErrorMessage(error, 'Erro ao iniciar checkout. Tente novamente.');
+      toast.error(message);
     } finally {
       setSelecting(null);
     }
