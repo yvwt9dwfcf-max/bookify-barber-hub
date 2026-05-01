@@ -171,7 +171,7 @@ const TrialExpirado = () => {
                 <Button
                   className={cn('w-full', plan.popular ? 'btn-primary-gradient' : '')}
                   variant={plan.popular ? 'default' : 'outline'}
-                  disabled={selecting !== null || authLoading}
+                  disabled={selecting !== null || authLoading || !session?.access_token}
                   onClick={() => handleSelectPlan(plan.id)}
                 >
                   {selecting === plan.id ? (
