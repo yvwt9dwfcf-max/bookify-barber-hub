@@ -24,6 +24,8 @@ export type Database = {
           end_time: string
           id: string
           notes: string | null
+          paid_at: string | null
+          payment_method: string | null
           service_id: string | null
           start_time: string
           status: string
@@ -38,6 +40,8 @@ export type Database = {
           end_time: string
           id?: string
           notes?: string | null
+          paid_at?: string | null
+          payment_method?: string | null
           service_id?: string | null
           start_time: string
           status?: string
@@ -52,6 +56,8 @@ export type Database = {
           end_time?: string
           id?: string
           notes?: string | null
+          paid_at?: string | null
+          payment_method?: string | null
           service_id?: string | null
           start_time?: string
           status?: string
@@ -367,6 +373,7 @@ export type Database = {
           phone: string | null
           photo_url: string | null
           plan: Database["public"]["Enums"]["plan_type"]
+          products_monthly_goal: number | null
           slug: string | null
           subscription_active: boolean
           subscription_status: string
@@ -388,6 +395,7 @@ export type Database = {
           phone?: string | null
           photo_url?: string | null
           plan?: Database["public"]["Enums"]["plan_type"]
+          products_monthly_goal?: number | null
           slug?: string | null
           subscription_active?: boolean
           subscription_status?: string
@@ -409,6 +417,7 @@ export type Database = {
           phone?: string | null
           photo_url?: string | null
           plan?: Database["public"]["Enums"]["plan_type"]
+          products_monthly_goal?: number | null
           slug?: string | null
           subscription_active?: boolean
           subscription_status?: string
@@ -792,6 +801,102 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      product_sales: {
+        Row: {
+          barber_id: string | null
+          barbershop_id: string
+          created_at: string
+          customer_name: string | null
+          customer_phone: string | null
+          id: string
+          notes: string | null
+          payment_method: string
+          product_id: string
+          quantity: number
+          sold_at: string
+          total_amount: number
+          unit_cost: number
+          unit_price: number
+        }
+        Insert: {
+          barber_id?: string | null
+          barbershop_id: string
+          created_at?: string
+          customer_name?: string | null
+          customer_phone?: string | null
+          id?: string
+          notes?: string | null
+          payment_method?: string
+          product_id: string
+          quantity?: number
+          sold_at?: string
+          total_amount?: number
+          unit_cost?: number
+          unit_price?: number
+        }
+        Update: {
+          barber_id?: string | null
+          barbershop_id?: string
+          created_at?: string
+          customer_name?: string | null
+          customer_phone?: string | null
+          id?: string
+          notes?: string | null
+          payment_method?: string
+          product_id?: string
+          quantity?: number
+          sold_at?: string
+          total_amount?: number
+          unit_cost?: number
+          unit_price?: number
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          barbershop_id: string
+          cost_price: number
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          min_stock: number
+          name: string
+          photo_url: string | null
+          sale_price: number
+          stock: number
+          updated_at: string
+        }
+        Insert: {
+          barbershop_id: string
+          cost_price?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          min_stock?: number
+          name: string
+          photo_url?: string | null
+          sale_price?: number
+          stock?: number
+          updated_at?: string
+        }
+        Update: {
+          barbershop_id?: string
+          cost_price?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          min_stock?: number
+          name?: string
+          photo_url?: string | null
+          sale_price?: number
+          stock?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       public_profiles: {
         Row: {

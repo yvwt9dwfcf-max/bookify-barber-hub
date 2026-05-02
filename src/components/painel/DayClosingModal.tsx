@@ -33,6 +33,13 @@ interface DayClosingModalProps {
   onCompleted: () => void;
 }
 
+const PAYMENT_METHODS = [
+  { value: 'dinheiro', label: 'Dinheiro' },
+  { value: 'pix', label: 'Pix' },
+  { value: 'debito', label: 'Débito' },
+  { value: 'credito', label: 'Crédito' },
+];
+
 const DayClosingModal = ({
   open,
   onClose,
@@ -46,6 +53,7 @@ const DayClosingModal = ({
     pendingAppointments.forEach(a => { initial[a.id] = 'completed'; });
     return initial;
   });
+  const [payments, setPayments] = useState<Record<string, string>>({});
   const [completing, setCompleting] = useState(false);
 
   const completedCount = Object.values(actions).filter(a => a === 'completed').length;
@@ -102,13 +110,20 @@ const DayClosingModal = ({
         .filter(([, a]) => a === 'no_show')
         .map(([id]) => id);
 
-      // Update completed
+      // Update completed (one by one to apply payment_method)
       if (completedIds.length > 0) {
-        const { error } = await supabase
-          .from('appointments')
-          .update({ status: 'completed' })
-          .in('id', completedIds);
-        if (error) throw error;
+        await Promise.all(
+          completedIds.map(id =>
+            supabase
+              .from('appointments')
+              .update({
+                status: 'completed',
+                payment_method: payments[id] || null,
+                paid_at: payments[id] ? new Date().toISOString() : null,
+              })
+              .eq('id', id)
+          )
+        );
 
         // Award loyalty points for completed appointments
         const completedApts = pendingAppointments.filter(a => completedIds.includes(a.id));
@@ -155,63 +170,84 @@ const DayClosingModal = ({
       <div
         key={a.id}
         className={cn(
-          'flex items-center gap-2 p-3 rounded-xl border border-border/50 bg-card/60',
+          'p-3 rounded-xl border border-border/50 bg-card/60',
           'shadow-sm transition-all duration-150',
           action === 'completed' && 'ring-1 ring-primary/40 bg-primary/5',
           action === 'no_show' && 'ring-1 ring-destructive/40 bg-destructive/5 opacity-75'
         )}
       >
-        <div className="flex-1 min-w-0">
-          <p className={cn(
-            'text-sm font-medium truncate',
-            action === 'no_show' && 'line-through text-muted-foreground'
-          )}>
-            {a.customer_name}
-          </p>
-          <div className="flex items-center gap-2 mt-0.5">
-            <span className="text-xs text-muted-foreground">
-              {format(new Date(a.start_time), 'HH:mm')}
-            </span>
-            {a.service?.name && (
-              <>
-                <span className="text-muted-foreground/40">·</span>
-                <span className="text-xs text-primary font-medium truncate">
-                  {a.service.name}
-                </span>
-              </>
-            )}
+        <div className="flex items-center gap-2">
+          <div className="flex-1 min-w-0">
+            <p className={cn(
+              'text-sm font-medium truncate',
+              action === 'no_show' && 'line-through text-muted-foreground'
+            )}>
+              {a.customer_name}
+            </p>
+            <div className="flex items-center gap-2 mt-0.5">
+              <span className="text-xs text-muted-foreground">
+                {format(new Date(a.start_time), 'HH:mm')}
+              </span>
+              {a.service?.name && (
+                <>
+                  <span className="text-muted-foreground/40">·</span>
+                  <span className="text-xs text-primary font-medium truncate">
+                    {a.service.name}
+                  </span>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              type="button"
+              onClick={() => setAction(a.id, 'completed')}
+              className={cn(
+                'h-8 w-8 rounded-full flex items-center justify-center transition-all',
+                action === 'completed'
+                  ? 'bg-primary text-primary-foreground shadow-sm'
+                  : 'bg-muted/50 text-muted-foreground hover:bg-primary/10 hover:text-primary'
+              )}
+              title="Compareceu"
+            >
+              <Check className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setAction(a.id, 'no_show')}
+              className={cn(
+                'h-8 w-8 rounded-full flex items-center justify-center transition-all',
+                action === 'no_show'
+                  ? 'bg-destructive text-destructive-foreground shadow-sm'
+                  : 'bg-muted/50 text-muted-foreground hover:bg-destructive/10 hover:text-destructive'
+              )}
+              title="Faltou"
+            >
+              <X className="h-4 w-4" />
+            </button>
           </div>
         </div>
-
-        {/* Action buttons */}
-        <div className="flex items-center gap-1.5 shrink-0">
-          <button
-            type="button"
-            onClick={() => setAction(a.id, 'completed')}
-            className={cn(
-              'h-8 w-8 rounded-full flex items-center justify-center transition-all',
-              action === 'completed'
-                ? 'bg-primary text-primary-foreground shadow-sm'
-                : 'bg-muted/50 text-muted-foreground hover:bg-primary/10 hover:text-primary'
-            )}
-            title="Compareceu"
-          >
-            <Check className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
-            onClick={() => setAction(a.id, 'no_show')}
-            className={cn(
-              'h-8 w-8 rounded-full flex items-center justify-center transition-all',
-              action === 'no_show'
-                ? 'bg-destructive text-destructive-foreground shadow-sm'
-                : 'bg-muted/50 text-muted-foreground hover:bg-destructive/10 hover:text-destructive'
-            )}
-            title="Faltou"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
+        {action === 'completed' && (
+          <div className="flex flex-wrap gap-1 mt-2 pl-1">
+            {PAYMENT_METHODS.map(m => (
+              <button
+                key={m.value}
+                type="button"
+                onClick={() => setPayments(p => ({ ...p, [a.id]: p[a.id] === m.value ? '' : m.value }))}
+                className={cn(
+                  'px-2.5 py-1 rounded-full text-[10px] font-medium border transition-all',
+                  payments[a.id] === m.value
+                    ? 'border-primary bg-primary/10 text-primary'
+                    : 'border-border bg-muted/30 text-muted-foreground hover:border-primary/40'
+                )}
+              >
+                {m.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     );
   };
