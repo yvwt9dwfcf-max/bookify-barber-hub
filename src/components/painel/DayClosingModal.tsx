@@ -228,6 +228,26 @@ const DayClosingModal = ({
           </button>
         </div>
       </div>
+      {action === 'completed' && (
+        <div className="flex flex-wrap gap-1 mt-2 pl-1">
+          {PAYMENT_METHODS.map(m => (
+            <button
+              key={m.value}
+              type="button"
+              onClick={() => setPayments(p => ({ ...p, [a.id]: p[a.id] === m.value ? '' : m.value }))}
+              className={cn(
+                'px-2.5 py-1 rounded-full text-[10px] font-medium border transition-all',
+                payments[a.id] === m.value
+                  ? 'border-primary bg-primary/10 text-primary'
+                  : 'border-border bg-muted/30 text-muted-foreground hover:border-primary/40'
+              )}
+            >
+              {m.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </>
     );
   };
 
