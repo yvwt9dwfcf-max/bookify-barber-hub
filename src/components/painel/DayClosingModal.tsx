@@ -33,6 +33,13 @@ interface DayClosingModalProps {
   onCompleted: () => void;
 }
 
+const PAYMENT_METHODS = [
+  { value: 'dinheiro', label: 'Dinheiro' },
+  { value: 'pix', label: 'Pix' },
+  { value: 'debito', label: 'Débito' },
+  { value: 'credito', label: 'Crédito' },
+];
+
 const DayClosingModal = ({
   open,
   onClose,
@@ -46,6 +53,7 @@ const DayClosingModal = ({
     pendingAppointments.forEach(a => { initial[a.id] = 'completed'; });
     return initial;
   });
+  const [payments, setPayments] = useState<Record<string, string>>({});
   const [completing, setCompleting] = useState(false);
 
   const completedCount = Object.values(actions).filter(a => a === 'completed').length;
