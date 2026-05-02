@@ -110,13 +110,20 @@ const DayClosingModal = ({
         .filter(([, a]) => a === 'no_show')
         .map(([id]) => id);
 
-      // Update completed
+      // Update completed (one by one to apply payment_method)
       if (completedIds.length > 0) {
-        const { error } = await supabase
-          .from('appointments')
-          .update({ status: 'completed' })
-          .in('id', completedIds);
-        if (error) throw error;
+        await Promise.all(
+          completedIds.map(id =>
+            supabase
+              .from('appointments')
+              .update({
+                status: 'completed',
+                payment_method: payments[id] || null,
+                paid_at: payments[id] ? new Date().toISOString() : null,
+              })
+              .eq('id', id)
+          )
+        );
 
         // Award loyalty points for completed appointments
         const completedApts = pendingAppointments.filter(a => completedIds.includes(a.id));
