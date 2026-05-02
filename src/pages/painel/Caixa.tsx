@@ -17,7 +17,7 @@ import { ptBR } from 'date-fns/locale';
 
 interface ContextType {
   barber: Barber | null;
-  barbershop: Barbershop & { products_monthly_goal?: number | null } | null;
+  barbershop: (Barbershop & { monthly_goal?: number | null; products_monthly_goal?: number | null }) | null;
   isMaster: boolean;
 }
 
