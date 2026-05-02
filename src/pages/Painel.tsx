@@ -27,6 +27,9 @@ import {
   Stamp,
   Contact,
   AlertTriangle,
+  Wallet,
+  Package,
+  Receipt,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -52,6 +55,9 @@ const panelModules = [
   () => import('./painel/Assinatura'),
   () => import('./painel/Suporte'),
   () => import('./painel/ExcluirConta'),
+  () => import('./painel/Caixa'),
+  () => import('./painel/Produtos'),
+  () => import('./painel/Despesas'),
 ];
 
 const Painel = () => {
@@ -115,6 +121,9 @@ const Painel = () => {
     { icon: Timer, label: 'Horários', path: '/painel/horarios' },
     { icon: CalendarX2, label: 'Bloqueios', path: '/painel/bloqueios' },
     ...(isMaster ? [{ icon: UsersRound, label: 'Equipe', path: '/painel/barbeiros' }] : []),
+    ...(isMaster ? [{ icon: Wallet, label: 'Caixa', path: '/painel/caixa' }] : []),
+    ...(isMaster ? [{ icon: Package, label: 'Produtos', path: '/painel/produtos' }] : []),
+    ...(isMaster ? [{ icon: Receipt, label: 'Despesas', path: '/painel/despesas' }] : []),
     { icon: PieChart, label: 'Relatórios', path: '/painel/relatorios' },
     ...(isMaster ? [{ icon: Contact, label: 'Clientes', path: '/painel/clientes' }] : []),
     ...(isMaster ? [{ icon: Percent, label: 'Comissões', path: '/painel/comissoes' }] : []),
