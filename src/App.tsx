@@ -29,6 +29,7 @@ const Clientes = lazy(() => import("./pages/painel/Clientes"));
 const Despesas = lazy(() => import("./pages/painel/Despesas"));
 const Produtos = lazy(() => import("./pages/painel/Produtos"));
 const Caixa = lazy(() => import("./pages/painel/Caixa"));
+const Financeiro = lazy(() => import("./pages/painel/Financeiro"));
 const Suporte = lazy(() => import("./pages/painel/Suporte"));
 const ExcluirConta = lazy(() => import("./pages/painel/ExcluirConta"));
 const AgendarBarbearia = lazy(() => import("./pages/AgendarBarbearia"));
@@ -93,6 +94,7 @@ function AnimatedRoutes() {
             <Route path="despesas" element={<Despesas />} />
             <Route path="produtos" element={<Produtos />} />
             <Route path="caixa" element={<Caixa />} />
+            <Route path="financeiro" element={<Financeiro />} />
             <Route path="configuracoes" element={<Configuracoes />} />
             <Route path="excluir-conta" element={<ExcluirConta />} />
             <Route path="suporte" element={<Suporte />} />
