@@ -330,9 +330,24 @@ const MetasTab = ({ barbershop, isMaster }: { barbershop: any; isMaster: boolean
 
 const Financeiro = () => {
   const ctx = useOutletContext<ContextType>();
+  const qc = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const initial = searchParams.get('tab') || 'resumo';
   const [tab, setTab] = useState(initial);
+
+  // Auto-materialize recurring expenses for the current month on mount
+  useEffect(() => {
+    if (!ctx.barbershop?.id || !ctx.isMaster) return;
+    (supabase.rpc as any)('materialize_recurring_expenses', { _barbershop_id: ctx.barbershop.id })
+      .then(({ data }: any) => {
+        if (data && Number(data) > 0) {
+          qc.invalidateQueries({ queryKey: ['expenses'] });
+          qc.invalidateQueries({ queryKey: ['cash-flow'] });
+          qc.invalidateQueries({ queryKey: ['financeiro-resumo'] });
+        }
+      })
+      .catch(() => {});
+  }, [ctx.barbershop?.id, ctx.isMaster, qc]);
 
   const handleTab = (v: string) => {
     setTab(v);
