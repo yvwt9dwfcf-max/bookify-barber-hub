@@ -30,6 +30,7 @@ interface AppointmentDetailsSheetProps {
   onEdit: (appointment: Appointment) => void;
   onComplete: (id: string) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
+  onOpenComanda?: (appointment: Appointment) => void;
 }
 
 const AppointmentDetailsSheet = ({
@@ -39,6 +40,7 @@ const AppointmentDetailsSheet = ({
   onEdit,
   onComplete,
   onDelete,
+  onOpenComanda,
 }: AppointmentDetailsSheetProps) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showCompleteConfirm, setShowCompleteConfirm] = useState(false);
@@ -232,7 +234,17 @@ const AppointmentDetailsSheet = ({
               Editar agendamento
             </Button>
 
-            {appointment.status === 'confirmed' && (
+            {appointment.status === 'confirmed' && onOpenComanda && (
+              <Button
+                className="w-full justify-start gap-2 h-11 btn-primary-gradient"
+                onClick={() => { onOpenComanda(appointment); onOpenChange(false); }}
+              >
+                <Check className="h-4 w-4" />
+                Fechar comanda
+              </Button>
+            )}
+
+            {appointment.status === 'confirmed' && !onOpenComanda && (
               <Button
                 variant="outline"
                 className="w-full justify-start gap-2 h-11 text-success hover:text-success hover:bg-success/10"

@@ -804,6 +804,7 @@ export type Database = {
       }
       product_sales: {
         Row: {
+          appointment_id: string | null
           barber_id: string | null
           barbershop_id: string
           created_at: string
@@ -820,6 +821,7 @@ export type Database = {
           unit_price: number
         }
         Insert: {
+          appointment_id?: string | null
           barber_id?: string | null
           barbershop_id: string
           created_at?: string
@@ -836,6 +838,7 @@ export type Database = {
           unit_price?: number
         }
         Update: {
+          appointment_id?: string | null
           barber_id?: string | null
           barbershop_id?: string
           created_at?: string
@@ -1145,6 +1148,10 @@ export type Database = {
       is_subscription_active: {
         Args: { _barbershop_id: string }
         Returns: boolean
+      }
+      materialize_recurring_expenses: {
+        Args: { _barbershop_id: string }
+        Returns: number
       }
     }
     Enums: {

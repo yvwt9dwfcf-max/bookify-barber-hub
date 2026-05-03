@@ -66,6 +66,7 @@ const AppointmentDetailsSheet = lazy(() => import('@/components/painel/Appointme
 const EditAppointmentDialog = lazy(() => import('@/components/painel/EditAppointmentDialog'));
 const QuickBlockDialog = lazy(() => import('@/components/painel/QuickBlockDialog'));
 const DashboardCards = lazy(() => import('@/components/painel/DashboardCards'));
+const ComandaSheet = lazy(() => import('@/components/painel/ComandaSheet'));
 
 const Agenda = () => {
   const { barber, barbershop, isMaster } = useOutletContext<AgendaContextType>();
@@ -88,6 +89,8 @@ const Agenda = () => {
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [showDetailsSheet, setShowDetailsSheet] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showComanda, setShowComanda] = useState(false);
+  const [comandaAppointment, setComandaAppointment] = useState<Appointment | null>(null);
   const [selectedBarberId, setSelectedBarberId] = useState<string | null>(null);
   const [displayMonth, setDisplayMonth] = useState(() => startOfMonth(getTodayLocalDate()));
 
@@ -318,6 +321,32 @@ const Agenda = () => {
           onEdit={handleEditAppointment}
           onComplete={(id) => handleStatusChange(id, 'completed')}
           onDelete={handleDeleteAppointment}
+          onOpenComanda={(apt) => {
+            if (!checkCanPerformAction('complete_appointment')) return;
+            setComandaAppointment(apt);
+            setShowComanda(true);
+          }}
+        />
+
+        <ComandaSheet
+          open={showComanda}
+          onOpenChange={setShowComanda}
+          appointment={comandaAppointment ? {
+            id: comandaAppointment.id,
+            customer_name: comandaAppointment.customer_name,
+            customer_phone: comandaAppointment.customer_phone,
+            barbershop_id: comandaAppointment.barbershop_id ?? barbershop?.id ?? null,
+            barber_id: comandaAppointment.barber_id ?? null,
+            start_time: comandaAppointment.start_time,
+            service: comandaAppointment.service ? {
+              name: comandaAppointment.service.name,
+              price: Number(comandaAppointment.service.price || 0),
+            } : null,
+          } : null}
+          onCompleted={() => {
+            fetchAppointments();
+            setDashboardRefreshKey((k) => k + 1);
+          }}
         />
 
         <EditAppointmentDialog

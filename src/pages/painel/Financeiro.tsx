@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Wallet, Package, Receipt, ChartPie, Target, TrendingUp, Sparkles, ShoppingCart } from 'lucide-react';
+import { Wallet, Package, Receipt, ChartPie, Target, TrendingUp, Sparkles, ShoppingCart, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -17,6 +17,7 @@ import Caixa from './Caixa';
 import Produtos from './Produtos';
 import Despesas from './Despesas';
 import Relatorios from './Relatorios';
+import BarbersReport from '@/components/painel/BarbersReport';
 
 interface ContextType {
   barber: any;
@@ -33,6 +34,7 @@ const TABS = [
   { value: 'produtos', label: 'Produtos', icon: Package },
   { value: 'despesas', label: 'Despesas', icon: Receipt },
   { value: 'relatorios', label: 'Relatórios', icon: ChartPie },
+  { value: 'barbeiros', label: 'Barbeiros', icon: Users },
   { value: 'metas', label: 'Metas', icon: Target },
 ];
 
@@ -328,9 +330,24 @@ const MetasTab = ({ barbershop, isMaster }: { barbershop: any; isMaster: boolean
 
 const Financeiro = () => {
   const ctx = useOutletContext<ContextType>();
+  const qc = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const initial = searchParams.get('tab') || 'resumo';
   const [tab, setTab] = useState(initial);
+
+  // Auto-materialize recurring expenses for the current month on mount
+  useEffect(() => {
+    if (!ctx.barbershop?.id || !ctx.isMaster) return;
+    (supabase.rpc as any)('materialize_recurring_expenses', { _barbershop_id: ctx.barbershop.id })
+      .then(({ data }: any) => {
+        if (data && Number(data) > 0) {
+          qc.invalidateQueries({ queryKey: ['expenses'] });
+          qc.invalidateQueries({ queryKey: ['cash-flow'] });
+          qc.invalidateQueries({ queryKey: ['financeiro-resumo'] });
+        }
+      })
+      .catch(() => {});
+  }, [ctx.barbershop?.id, ctx.isMaster, qc]);
 
   const handleTab = (v: string) => {
     setTab(v);
@@ -349,7 +366,7 @@ const Financeiro = () => {
 
       <Tabs value={tab} onValueChange={handleTab}>
         <div className="-mx-3 md:mx-0 overflow-x-auto scrollbar-hide">
-          <TabsList className="inline-flex h-11 rounded-lg p-1 mx-3 md:mx-0 w-max md:w-full md:grid md:grid-cols-6">
+          <TabsList className="inline-flex h-11 rounded-lg p-1 mx-3 md:mx-0 w-max md:w-full md:grid md:grid-cols-7">
             {TABS.map((t) => (
               <TabsTrigger key={t.value} value={t.value} className="rounded-md h-full px-3 text-xs gap-1.5 whitespace-nowrap">
                 <t.icon className="h-3.5 w-3.5" />
@@ -364,6 +381,15 @@ const Financeiro = () => {
         <TabsContent value="produtos"><Produtos /></TabsContent>
         <TabsContent value="despesas"><Despesas /></TabsContent>
         <TabsContent value="relatorios"><Relatorios /></TabsContent>
+        <TabsContent value="barbeiros">
+          {ctx.isMaster && ctx.barbershop?.id ? (
+            <BarbersReport barbershopId={ctx.barbershop.id} />
+          ) : (
+            <div className="pt-12 text-center text-sm text-muted-foreground">
+              Apenas administradores podem ver os relatórios por barbeiro.
+            </div>
+          )}
+        </TabsContent>
         <TabsContent value="metas"><MetasTab barbershop={ctx.barbershop} isMaster={ctx.isMaster} /></TabsContent>
       </Tabs>
     </div>
