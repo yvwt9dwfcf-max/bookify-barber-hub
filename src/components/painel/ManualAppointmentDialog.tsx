@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { format, addMinutes, setHours, setMinutes, addDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { z } from 'zod';
