@@ -206,7 +206,8 @@ const Painel = () => {
         navigate('/onboarding', { replace: true });
       }
     }
-  }, [barbershop, roleLoading, navigate, location.pathname, refetchRole]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [barbershop?.id, barbershop?.subscription_status, barbershop?.trial_ends_at, barbershop?.onboarding_completed, roleLoading]);
 
   const handleSignOut = async () => {
     try {
