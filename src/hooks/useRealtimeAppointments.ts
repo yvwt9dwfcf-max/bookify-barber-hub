@@ -72,14 +72,32 @@ export function useRealtimeAppointments({ barberId, onNewAppointment }: UseRealt
             status: string;
             customer_name: string;
           };
+          const oldAppointment = payload.old as { status?: string };
 
-          if (updatedAppointment.status === 'cancelled') {
+          if (
+            updatedAppointment.status === 'cancelled' &&
+            oldAppointment?.status !== 'cancelled'
+          ) {
             toast.info('Agendamento cancelado', {
               description: `O agendamento de ${updatedAppointment.customer_name} foi cancelado`,
               duration: 2200,
             });
-            callbackRef.current?.();
           }
+
+          // Always refetch so status changes (completed, comanda, edits) propagate
+          callbackRef.current?.();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'appointments',
+          filter: `barber_id=eq.${barberId}`,
+        },
+        () => {
+          callbackRef.current?.();
         }
       )
       .subscribe();
