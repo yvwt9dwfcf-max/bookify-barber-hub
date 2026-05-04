@@ -234,24 +234,20 @@ const AppointmentDetailsSheet = ({
               Editar agendamento
             </Button>
 
-            {appointment.status === 'confirmed' && onOpenComanda && (
+            {appointment.status === 'confirmed' && (
               <Button
                 className="w-full justify-start gap-2 h-11 btn-primary-gradient"
-                onClick={() => { onOpenComanda(appointment); onOpenChange(false); }}
+                onClick={() => {
+                  if (onOpenComanda) {
+                    onOpenComanda(appointment);
+                    onOpenChange(false);
+                  } else {
+                    setShowCompleteConfirm(true);
+                  }
+                }}
               >
                 <Check className="h-4 w-4" />
                 Fechar comanda
-              </Button>
-            )}
-
-            {appointment.status === 'confirmed' && !onOpenComanda && (
-              <Button
-                variant="outline"
-                className="w-full justify-start gap-2 h-11 text-success hover:text-success hover:bg-success/10"
-                onClick={() => setShowCompleteConfirm(true)}
-              >
-                <Check className="h-4 w-4" />
-                Concluir atendimento
               </Button>
             )}
 
