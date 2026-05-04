@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { format, addMinutes, setHours, setMinutes, addDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { z } from 'zod';
@@ -218,12 +218,19 @@ const ManualAppointmentDialog = ({
     }
   }, [effectiveBarberId]);
 
+  const isFirstDateRef = useRef(true);
   useEffect(() => {
     if (open) {
       refetchAvailability();
+      if (isFirstDateRef.current) {
+        isFirstDateRef.current = false;
+        return;
+      }
       form.setValue('start_time', '');
+    } else {
+      isFirstDateRef.current = true;
     }
-  }, [internalDate]);
+  }, [internalDate, open]);
 
   const fetchServices = async () => {
     setLoadingServices(true);
