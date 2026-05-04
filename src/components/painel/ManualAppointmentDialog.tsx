@@ -218,12 +218,19 @@ const ManualAppointmentDialog = ({
     }
   }, [effectiveBarberId]);
 
+  const isFirstDateRef = useRef(true);
   useEffect(() => {
     if (open) {
       refetchAvailability();
+      if (isFirstDateRef.current) {
+        isFirstDateRef.current = false;
+        return;
+      }
       form.setValue('start_time', '');
+    } else {
+      isFirstDateRef.current = true;
     }
-  }, [internalDate]);
+  }, [internalDate, open]);
 
   const fetchServices = async () => {
     setLoadingServices(true);
