@@ -449,12 +449,29 @@ const Produtos = () => {
         </SheetContent>
       </Sheet>
 
-      {/* Quick Sale Sheet */}
-      {saleProduct && barbershop && (
-        <QuickSaleSheet
-          open={saleOpen}
-          onOpenChange={setSaleOpen}
-          product={saleProduct}
+      {/* Floating cart button */}
+      {cartCount > 0 && (
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-40 animate-in fade-in slide-in-from-bottom-4 duration-300">
+          <Button
+            onClick={() => setCartOpen(true)}
+            className="btn-primary-gradient shadow-xl rounded-full h-14 px-6 gap-3"
+          >
+            <ShoppingCart className="h-5 w-5" />
+            <span className="font-bold">{cartCount} {cartCount === 1 ? 'item' : 'itens'}</span>
+            <span className="text-sm opacity-90 tabular-nums border-l border-white/30 pl-3">
+              {formatCurrency(cartTotal)}
+            </span>
+          </Button>
+        </div>
+      )}
+
+      {/* Multi-product cart sheet */}
+      {barbershop && (
+        <MultiSaleSheet
+          open={cartOpen}
+          onOpenChange={setCartOpen}
+          items={cart}
+          setItems={setCart}
           barbershopId={barbershop.id}
           defaultBarberId={barber?.id}
         />
