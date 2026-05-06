@@ -169,19 +169,21 @@ const Caixa = () => {
   return (
     <div className="space-y-5 animate-page-enter pb-20">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold flex items-center gap-2">
-            <Wallet className="h-5 w-5 text-primary" />
-            Caixa
-          </h1>
-          <p className="text-xs text-muted-foreground">Movimentação financeira da barbearia</p>
+      {!inFin && (
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-bold flex items-center gap-2">
+              <Wallet className="h-5 w-5 text-primary" />
+              Caixa
+            </h1>
+            <p className="text-xs text-muted-foreground">Movimentação financeira da barbearia</p>
+          </div>
+          <Button size="sm" onClick={() => goTab('produtos')} className="btn-primary-gradient">
+            <ShoppingCart className="h-4 w-4 mr-1" />
+            Vender
+          </Button>
         </div>
-        <Button size="sm" onClick={() => navigate('/painel/produtos')} className="btn-primary-gradient">
-          <ShoppingCart className="h-4 w-4 mr-1" />
-          Vender
-        </Button>
-      </div>
+      )}
 
       {/* Date navigator */}
       <Card>
