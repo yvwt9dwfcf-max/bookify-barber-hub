@@ -15,7 +15,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { PremiumSkeleton } from '@/components/ui/premium-skeleton';
 import { ArrowLeft, Plus, Loader2, Trash2, Package, AlertTriangle, ImagePlus, ShoppingCart } from 'lucide-react';
 import { toast } from 'sonner';
-import QuickSaleSheet from '@/components/painel/QuickSaleSheet';
+import MultiSaleSheet, { CartItem } from '@/components/painel/MultiSaleSheet';
 
 interface ContextType {
   barber: Barber | null;
