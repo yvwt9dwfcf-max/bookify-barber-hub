@@ -53,6 +53,8 @@ const formatCurrency = (value: number) =>
 const Despesas = () => {
   const { barbershop, isMaster } = useOutletContext<ContextType>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const inFin = location.pathname.includes('/painel/financeiro');
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
