@@ -42,11 +42,13 @@ const formatCurrency = (value: number) =>
 const Produtos = () => {
   const { barber, barbershop, isMaster } = useOutletContext<ContextType>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const isInsideFinanceiro = location.pathname.includes('/painel/financeiro');
   const qc = useQueryClient();
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
-  const [saleOpen, setSaleOpen] = useState(false);
-  const [saleProduct, setSaleProduct] = useState<Product | null>(null);
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [cartOpen, setCartOpen] = useState(false);
 
   // form state
   const [name, setName] = useState('');
