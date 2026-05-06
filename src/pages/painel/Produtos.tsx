@@ -183,18 +183,44 @@ const Produtos = () => {
     onError: () => toast.error('Erro ao remover'),
   });
 
-  const openSale = (p: Product) => {
-    setSaleProduct(p);
-    setSaleOpen(true);
+  const addToCart = (p: Product) => {
+    const existing = cart.find((i) => i.product_id === p.id);
+    if (existing) {
+      if (existing.quantity >= p.stock) {
+        toast.error(`Estoque máximo: ${p.stock}`);
+        return;
+      }
+      setCart(cart.map((i) =>
+        i.product_id === p.id ? { ...i, quantity: i.quantity + 1 } : i
+      ));
+    } else {
+      setCart([
+        ...cart,
+        {
+          product_id: p.id,
+          name: p.name,
+          sale_price: Number(p.sale_price),
+          cost_price: Number(p.cost_price),
+          stock: p.stock,
+          quantity: 1,
+        },
+      ]);
+    }
+    toast.success(`${p.name} adicionado`, { duration: 1500 });
   };
 
+  const cartCount = cart.reduce((s, i) => s + i.quantity, 0);
+  const cartTotal = cart.reduce((s, i) => s + i.sale_price * i.quantity, 0);
+
   return (
-    <div className="space-y-5 animate-page-enter pb-20">
+    <div className="space-y-5 animate-page-enter pb-32">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => navigate('/painel/caixa')}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
+        {!isInsideFinanceiro && (
+          <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => navigate('/painel/financeiro?tab=caixa')}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+        )}
         <div className="flex-1 min-w-0">
           <h1 className="text-xl font-bold flex items-center gap-2">
             <Package className="h-5 w-5 text-primary" />
@@ -203,7 +229,7 @@ const Produtos = () => {
           <p className="text-xs text-muted-foreground">Catálogo e estoque para venda</p>
         </div>
         {isMaster && (
-          <Button size="sm" className="btn-primary-gradient" onClick={openNew}>
+          <Button size="sm" variant="outline" onClick={openNew}>
             <Plus className="h-4 w-4 mr-1" />
             Novo
           </Button>
