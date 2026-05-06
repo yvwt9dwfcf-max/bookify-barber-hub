@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useOutletContext, useNavigate, useLocation } from 'react-router-dom';
 import { Barber, Barbershop } from '@/lib/supabase';
 import { supabase } from '@/integrations/supabase/client';
