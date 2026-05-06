@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Info } from 'lucide-react';
 import { useOutletContext } from 'react-router-dom';
@@ -402,6 +402,8 @@ const ReportContent = ({
 const Relatorios = () => {
   const { barber, barbershop, isMaster } = useOutletContext<OutletContext>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const inFin = location.pathname.includes('/painel/financeiro');
   const [period, setPeriod] = useState<PeriodFilter>('7days');
   const [goalDialogOpen, setGoalDialogOpen] = useState(false);
   const [goalValue, setGoalValue] = useState('');
@@ -647,7 +649,7 @@ const Relatorios = () => {
           <p className="text-sm text-muted-foreground">{pageSubtitle}</p>
         </div>
         <div className="flex items-center gap-2">
-          {isMaster && (
+          {isMaster && !inFin && (
             <Button variant="outline" size="sm" onClick={() => navigate('/painel/despesas')} className="h-8 px-3 text-xs gap-1.5 shrink-0">
               <Receipt className="h-3.5 w-3.5" />
               Despesas

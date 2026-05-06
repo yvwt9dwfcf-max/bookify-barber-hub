@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { useOutletContext, useNavigate } from 'react-router-dom';
+import { useState, useMemo, useEffect } from 'react';
+import { useOutletContext, useNavigate, useLocation } from 'react-router-dom';
 import { Barber, Barbershop } from '@/lib/supabase';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -53,6 +53,8 @@ const formatCurrency = (value: number) =>
 const Despesas = () => {
   const { barbershop, isMaster } = useOutletContext<ContextType>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const inFin = location.pathname.includes('/painel/financeiro');
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
@@ -63,6 +65,18 @@ const Despesas = () => {
   const [category, setCategory] = useState('outros');
   const [expenseDate, setExpenseDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [isRecurring, setIsRecurring] = useState(false);
+
+  // Auto-materialize recurring expenses when entering this page
+  useEffect(() => {
+    if (!barbershop?.id || !isMaster) return;
+    (supabase.rpc as any)('materialize_recurring_expenses', { _barbershop_id: barbershop.id })
+      .then(({ data }: any) => {
+        if (data && Number(data) > 0) {
+          queryClient.invalidateQueries({ queryKey: ['expenses'] });
+        }
+      })
+      .catch(() => {});
+  }, [barbershop?.id, isMaster, queryClient]);
 
   const monthStart = startOfMonth(new Date()).toISOString();
   const monthEnd = endOfMonth(new Date()).toISOString();
@@ -215,13 +229,15 @@ const Despesas = () => {
     <div className="space-y-6 animate-page-enter">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate('/painel/relatorios')}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
+        {!inFin && (
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate('/painel/financeiro?tab=relatorios')}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+        )}
         <div className="flex-1">
           <h1 className="text-xl font-bold flex items-center gap-2">
             <Receipt className="h-5 w-5 text-primary" />
-            Controle de Despesas
+            {inFin ? 'Despesas' : 'Controle de Despesas'}
           </h1>
           <p className="text-sm text-muted-foreground">
             {format(new Date(), "MMMM 'de' yyyy", { locale: ptBR })}

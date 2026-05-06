@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useOutletContext, useNavigate } from 'react-router-dom';
+import { useOutletContext, useNavigate, useLocation } from 'react-router-dom';
 import { Barber, Barbershop } from '@/lib/supabase';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
@@ -34,6 +34,9 @@ const PAYMENT_LABELS: Record<string, { label: string; icon: any; color: string }
 const Caixa = () => {
   const { barbershop, isMaster } = useOutletContext<ContextType>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const inFin = location.pathname.includes('/painel/financeiro');
+  const goTab = (tab: string) => navigate(`/painel/financeiro?tab=${tab}`);
   const [selectedDate, setSelectedDate] = useState(new Date());
 
   const dayStart = startOfDay(selectedDate).toISOString();
@@ -166,19 +169,21 @@ const Caixa = () => {
   return (
     <div className="space-y-5 animate-page-enter pb-20">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold flex items-center gap-2">
-            <Wallet className="h-5 w-5 text-primary" />
-            Caixa
-          </h1>
-          <p className="text-xs text-muted-foreground">Movimentação financeira da barbearia</p>
+      {!inFin && (
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-bold flex items-center gap-2">
+              <Wallet className="h-5 w-5 text-primary" />
+              Caixa
+            </h1>
+            <p className="text-xs text-muted-foreground">Movimentação financeira da barbearia</p>
+          </div>
+          <Button size="sm" onClick={() => goTab('produtos')} className="btn-primary-gradient">
+            <ShoppingCart className="h-4 w-4 mr-1" />
+            Vender
+          </Button>
         </div>
-        <Button size="sm" onClick={() => navigate('/painel/produtos')} className="btn-primary-gradient">
-          <ShoppingCart className="h-4 w-4 mr-1" />
-          Vender
-        </Button>
-      </div>
+      )}
 
       {/* Date navigator */}
       <Card>
@@ -260,7 +265,7 @@ const Caixa = () => {
         </Card>
         <Card
           className="cursor-pointer transition-transform active:scale-[0.98]"
-          onClick={() => navigate('/painel/produtos')}
+          onClick={() => goTab('produtos')}
         >
           <CardContent className="p-3">
             <Package className="h-4 w-4 text-primary mb-1.5" />
@@ -337,7 +342,7 @@ const Caixa = () => {
                 variant="outline"
                 size="sm"
                 className="w-full"
-                onClick={() => navigate('/painel/relatorios')}
+                onClick={() => goTab('relatorios')}
               >
                 <Plus className="h-3.5 w-3.5 mr-1" />
                 Definir meta mensal
@@ -435,11 +440,11 @@ const Caixa = () => {
 
       {/* Quick actions */}
       <div className="grid grid-cols-2 gap-2 pt-2">
-        <Button variant="outline" onClick={() => navigate('/painel/produtos')}>
+        <Button variant="outline" onClick={() => goTab('produtos')}>
           <Package className="h-4 w-4 mr-1.5" />
           Produtos
         </Button>
-        <Button variant="outline" onClick={() => navigate('/painel/despesas')}>
+        <Button variant="outline" onClick={() => goTab('despesas')}>
           <Receipt className="h-4 w-4 mr-1.5" />
           Despesas
         </Button>
