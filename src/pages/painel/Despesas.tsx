@@ -66,6 +66,18 @@ const Despesas = () => {
   const [expenseDate, setExpenseDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [isRecurring, setIsRecurring] = useState(false);
 
+  // Auto-materialize recurring expenses when entering this page
+  useEffect(() => {
+    if (!barbershop?.id || !isMaster) return;
+    (supabase.rpc as any)('materialize_recurring_expenses', { _barbershop_id: barbershop.id })
+      .then(({ data }: any) => {
+        if (data && Number(data) > 0) {
+          queryClient.invalidateQueries({ queryKey: ['expenses'] });
+        }
+      })
+      .catch(() => {});
+  }, [barbershop?.id, isMaster, queryClient]);
+
   const monthStart = startOfMonth(new Date()).toISOString();
   const monthEnd = endOfMonth(new Date()).toISOString();
 
