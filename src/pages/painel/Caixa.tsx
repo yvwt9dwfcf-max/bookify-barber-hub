@@ -34,6 +34,9 @@ const PAYMENT_LABELS: Record<string, { label: string; icon: any; color: string }
 const Caixa = () => {
   const { barbershop, isMaster } = useOutletContext<ContextType>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const inFin = location.pathname.includes('/painel/financeiro');
+  const goTab = (tab: string) => navigate(`/painel/financeiro?tab=${tab}`);
   const [selectedDate, setSelectedDate] = useState(new Date());
 
   const dayStart = startOfDay(selectedDate).toISOString();
