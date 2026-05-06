@@ -265,7 +265,7 @@ const Caixa = () => {
         </Card>
         <Card
           className="cursor-pointer transition-transform active:scale-[0.98]"
-          onClick={() => navigate('/painel/produtos')}
+          onClick={() => goTab('produtos')}
         >
           <CardContent className="p-3">
             <Package className="h-4 w-4 text-primary mb-1.5" />
@@ -342,7 +342,7 @@ const Caixa = () => {
                 variant="outline"
                 size="sm"
                 className="w-full"
-                onClick={() => navigate('/painel/relatorios')}
+                onClick={() => goTab('relatorios')}
               >
                 <Plus className="h-3.5 w-3.5 mr-1" />
                 Definir meta mensal
@@ -440,11 +440,11 @@ const Caixa = () => {
 
       {/* Quick actions */}
       <div className="grid grid-cols-2 gap-2 pt-2">
-        <Button variant="outline" onClick={() => navigate('/painel/produtos')}>
+        <Button variant="outline" onClick={() => goTab('produtos')}>
           <Package className="h-4 w-4 mr-1.5" />
           Produtos
         </Button>
-        <Button variant="outline" onClick={() => navigate('/painel/despesas')}>
+        <Button variant="outline" onClick={() => goTab('despesas')}>
           <Receipt className="h-4 w-4 mr-1.5" />
           Despesas
         </Button>
