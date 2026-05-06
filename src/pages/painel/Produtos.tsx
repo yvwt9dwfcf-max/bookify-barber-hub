@@ -316,11 +316,11 @@ const Produtos = () => {
                     size="icon"
                     variant="default"
                     className="h-10 w-10 rounded-xl shrink-0 btn-primary-gradient"
-                    onClick={() => openSale(p)}
+                    onClick={() => addToCart(p)}
                     disabled={!p.is_active || p.stock <= 0}
-                    title="Vender"
+                    title="Adicionar à comanda"
                   >
-                    <ShoppingCart className="h-4 w-4" />
+                    <Plus className="h-4 w-4" />
                   </Button>
                 </CardContent>
               </Card>
