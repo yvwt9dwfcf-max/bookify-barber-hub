@@ -118,6 +118,53 @@ export default function MultiSaleSheet({
     onError: (e: any) => toast.error(e.message || 'Erro ao registrar venda'),
   });
 
+  if (receipt) {
+    const methodLabel = PAYMENT_METHODS.find((m) => m.value === receipt.method)?.label || receipt.method;
+    return (
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent side="bottom" className="h-auto rounded-t-2xl p-0 flex flex-col overscroll-contain">
+          <div className="px-6 py-8 text-center space-y-4">
+            <div className="size-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
+              <CheckCircle2 className="h-8 w-8 text-primary" />
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold mb-1">
+                Venda concluída
+              </p>
+              <p className="text-3xl font-bold tabular-nums text-primary">
+                {formatCurrency(receipt.total)}
+              </p>
+            </div>
+            <div className="rounded-xl bg-muted/40 p-4 text-left space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Itens</span>
+                <span className="font-semibold">{receipt.itemCount}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Pagamento</span>
+                <span className="font-semibold">{methodLabel}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Data</span>
+                <span className="font-semibold tabular-nums">
+                  {receipt.date.toLocaleDateString('pt-BR')} {receipt.date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div className="border-t p-4 flex gap-2 bg-background">
+            <Button variant="outline" className="flex-1" onClick={() => { setReceipt(null); }}>
+              Nova venda
+            </Button>
+            <Button className="flex-1 btn-primary-gradient" onClick={() => onOpenChange(false)}>
+              Concluir
+            </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="h-[92dvh] rounded-t-2xl p-0 flex flex-col overscroll-contain">
