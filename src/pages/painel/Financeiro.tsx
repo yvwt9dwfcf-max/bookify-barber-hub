@@ -8,9 +8,9 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Wallet, Package, Receipt, ChartPie, Target, TrendingUp, Sparkles, ShoppingCart, Users } from 'lucide-react';
+import { Wallet, Package, Receipt, ChartPie, Target, TrendingUp, TrendingDown, Sparkles, ShoppingCart, Users, ArrowUp, ArrowDown } from 'lucide-react';
 import { toast } from 'sonner';
-import { format, startOfMonth, endOfMonth } from 'date-fns';
+import { format, startOfMonth, endOfMonth, subMonths, getDate } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 import Caixa from './Caixa';
