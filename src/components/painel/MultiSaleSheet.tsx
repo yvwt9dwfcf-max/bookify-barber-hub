@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Minus, Plus, Banknote, Smartphone, CreditCard, Trash2, Package, ShoppingBag } from 'lucide-react';
+import { Loader2, Minus, Plus, Banknote, Smartphone, CreditCard, Trash2, Package, ShoppingBag, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export interface CartItem {
