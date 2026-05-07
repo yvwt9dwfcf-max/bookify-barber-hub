@@ -111,9 +111,9 @@ export default function MultiSaleSheet({
       qc.invalidateQueries({ queryKey: ['product_sales'] });
       qc.invalidateQueries({ queryKey: ['cash-flow'] });
       qc.invalidateQueries({ queryKey: ['financeiro-resumo'] });
-      toast.success(`Venda registrada: ${formatCurrency(total)}`);
+      const itemCount = items.reduce((s, i) => s + i.quantity, 0);
+      setReceipt({ total, method: paymentMethod, itemCount, date: new Date() });
       setItems([]);
-      onOpenChange(false);
     },
     onError: (e: any) => toast.error(e.message || 'Erro ao registrar venda'),
   });
