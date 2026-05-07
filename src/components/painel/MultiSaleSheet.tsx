@@ -44,12 +44,14 @@ export default function MultiSaleSheet({
   const [barberId, setBarberId] = useState(defaultBarberId || '');
   const [paymentMethod, setPaymentMethod] = useState('dinheiro');
   const [customerName, setCustomerName] = useState('');
+  const [receipt, setReceipt] = useState<{ total: number; method: string; itemCount: number; date: Date } | null>(null);
 
   useEffect(() => {
     if (open) {
       setBarberId(defaultBarberId || '');
       setPaymentMethod('dinheiro');
       setCustomerName('');
+      setReceipt(null);
     }
   }, [open, defaultBarberId]);
 
