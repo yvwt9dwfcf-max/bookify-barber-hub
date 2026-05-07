@@ -39,102 +39,169 @@ const TABS = [
 ];
 
 const ResumoTab = ({ barbershop, isMaster }: { barbershop: any; isMaster: boolean }) => {
-  const monthStart = startOfMonth(new Date()).toISOString();
-  const monthEnd = endOfMonth(new Date()).toISOString();
-  const dateStr = format(startOfMonth(new Date()), 'yyyy-MM-dd');
-  const endDateStr = format(endOfMonth(new Date()), 'yyyy-MM-dd');
+  const now = new Date();
+  const monthStart = startOfMonth(now).toISOString();
+  const monthEnd = endOfMonth(now).toISOString();
+  const dateStr = format(startOfMonth(now), 'yyyy-MM-dd');
+  const endDateStr = format(endOfMonth(now), 'yyyy-MM-dd');
+
+  const prevMonthDate = subMonths(now, 1);
+  const prevStart = startOfMonth(prevMonthDate).toISOString();
+  const prevEnd = endOfMonth(prevMonthDate).toISOString();
+  const prevDateStr = format(startOfMonth(prevMonthDate), 'yyyy-MM-dd');
+  const prevEndDateStr = format(endOfMonth(prevMonthDate), 'yyyy-MM-dd');
+
+  const fetchPeriod = async (startISO: string, endISO: string, startDate: string, endDate: string) => {
+    const [{ data: apts }, { data: sales }, { data: exps }] = await Promise.all([
+      supabase
+        .from('appointments').select('services(price)')
+        .eq('barbershop_id', barbershop.id).eq('status', 'completed')
+        .gte('start_time', startISO).lte('start_time', endISO),
+      supabase
+        .from('product_sales').select('total_amount, unit_cost, quantity')
+        .eq('barbershop_id', barbershop.id)
+        .gte('sold_at', startISO).lte('sold_at', endISO),
+      supabase
+        .from('expenses').select('amount')
+        .eq('barbershop_id', barbershop.id)
+        .gte('expense_date', startDate).lte('expense_date', endDate),
+    ]);
+    const services = (apts || []).reduce((s, a: any) => s + Number(a.services?.price || 0), 0);
+    const products = (sales || []).reduce((s, x: any) => s + Number(x.total_amount || 0), 0);
+    const cogs = (sales || []).reduce((s, x: any) => s + Number(x.unit_cost || 0) * Number(x.quantity || 0), 0);
+    const expenses = (exps || []).reduce((s, e: any) => s + Number(e.amount || 0), 0);
+    return { services, products, cogs, expenses };
+  };
 
   const { data, isLoading } = useQuery({
     queryKey: ['financeiro-resumo', barbershop?.id],
     queryFn: async () => {
       if (!barbershop?.id) return null;
-      const [{ data: apts }, { data: sales }, { data: exps }] = await Promise.all([
-        supabase
-          .from('appointments')
-          .select('services(price)')
-          .eq('barbershop_id', barbershop.id)
-          .eq('status', 'completed')
-          .gte('start_time', monthStart)
-          .lte('start_time', monthEnd),
-        supabase
-          .from('product_sales')
-          .select('total_amount, unit_cost, quantity')
-          .eq('barbershop_id', barbershop.id)
-          .gte('sold_at', monthStart)
-          .lte('sold_at', monthEnd),
-        supabase
-          .from('expenses')
-          .select('amount')
-          .eq('barbershop_id', barbershop.id)
-          .gte('expense_date', dateStr)
-          .lte('expense_date', endDateStr),
+      const [current, previous] = await Promise.all([
+        fetchPeriod(monthStart, monthEnd, dateStr, endDateStr),
+        fetchPeriod(prevStart, prevEnd, prevDateStr, prevEndDateStr),
       ]);
-      const services = (apts || []).reduce((s, a: any) => s + Number(a.services?.price || 0), 0);
-      const products = (sales || []).reduce((s, x: any) => s + Number(x.total_amount || 0), 0);
-      const cogs = (sales || []).reduce((s, x: any) => s + Number(x.unit_cost || 0) * Number(x.quantity || 0), 0);
-      const expenses = (exps || []).reduce((s, e: any) => s + Number(e.amount || 0), 0);
-      return { services, products, cogs, expenses };
+      return { current, previous };
     },
     enabled: !!barbershop?.id,
   });
 
-  const total = (data?.services || 0) + (data?.products || 0);
-  const profit = total - (data?.expenses || 0) - (data?.cogs || 0);
-  const monthLabel = format(new Date(), 'MMMM', { locale: ptBR });
+  const cur = data?.current || { services: 0, products: 0, cogs: 0, expenses: 0 };
+  const prev = data?.previous || { services: 0, products: 0, cogs: 0, expenses: 0 };
+
+  const total = cur.services + cur.products;
+  const profit = total - cur.expenses - cur.cogs;
+  const prevTotal = prev.services + prev.products;
+  const prevProfit = prevTotal - prev.expenses - prev.cogs;
+
+  const profitDelta = prevProfit !== 0 ? ((profit - prevProfit) / Math.abs(prevProfit)) * 100 : (profit > 0 ? 100 : 0);
+  const dayOfMonth = getDate(now);
+  const avgPerDay = dayOfMonth > 0 ? total / dayOfMonth : 0;
+  const monthLabel = format(now, 'MMMM', { locale: ptBR });
+  const prevMonthLabel = format(prevMonthDate, 'MMMM', { locale: ptBR });
+
+  const insights: string[] = [];
+  if (prevProfit !== 0 && Math.abs(profitDelta) >= 1) {
+    insights.push(
+      profitDelta >= 0
+        ? `Seu lucro aumentou ${profitDelta.toFixed(0)}% em relação a ${prevMonthLabel}`
+        : `Seu lucro caiu ${Math.abs(profitDelta).toFixed(0)}% em relação a ${prevMonthLabel}`
+    );
+  }
+  if (avgPerDay > 0) {
+    insights.push(`Você está faturando em média ${formatCurrency(avgPerDay)} por dia`);
+  }
+  if (cur.products > 0 && total > 0) {
+    const productsPct = (cur.products / total) * 100;
+    if (productsPct >= 15) insights.push(`Produtos representam ${productsPct.toFixed(0)}% do faturamento`);
+  }
 
   return (
-    <div className="space-y-4 pt-4">
-      <Card className="overflow-hidden">
+    <div className="space-y-5 pt-4">
+      <Card className="overflow-hidden border-0 shadow-card">
         <CardContent
-          className="p-5"
+          className="p-6"
           style={{
             background: profit >= 0
-              ? 'linear-gradient(135deg, hsl(var(--primary) / 0.08), transparent)'
-              : 'linear-gradient(135deg, hsl(var(--destructive) / 0.08), transparent)',
+              ? 'linear-gradient(135deg, hsl(var(--primary) / 0.12), hsl(var(--primary) / 0.02))'
+              : 'linear-gradient(135deg, hsl(var(--destructive) / 0.12), hsl(var(--destructive) / 0.02))',
           }}
         >
-          <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-semibold mb-1">
-            Lucro de {monthLabel}
-          </p>
-          <p className={`text-3xl font-bold tabular-nums ${profit >= 0 ? 'text-primary' : 'text-destructive'}`}>
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-semibold">
+              Lucro de {monthLabel}
+            </p>
+            {prevProfit !== 0 && Math.abs(profitDelta) >= 1 && (
+              <div className={`flex items-center gap-0.5 text-[11px] font-semibold ${profitDelta >= 0 ? 'text-primary' : 'text-destructive'}`}>
+                {profitDelta >= 0 ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}
+                {Math.abs(profitDelta).toFixed(0)}%
+              </div>
+            )}
+          </div>
+          <p className={`text-4xl font-bold tabular-nums tracking-tight ${profit >= 0 ? 'text-primary' : 'text-destructive'}`}>
             {isLoading ? '—' : formatCurrency(profit)}
           </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            Faturamento {formatCurrency(total)} − custos {formatCurrency((data?.expenses || 0) + (data?.cogs || 0))}
+          <p className="text-xs text-muted-foreground mt-2">
+            {prevProfit !== 0 ? `${prevMonthLabel}: ${formatCurrency(prevProfit)}` : 'Sem dados do mês anterior'}
           </p>
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-2 gap-2">
+      {insights.length > 0 && !isLoading && (
+        <div className="space-y-1.5">
+          {insights.map((txt, i) => (
+            <div key={i} className="flex items-start gap-2 px-3 py-2 rounded-xl bg-muted/40">
+              <Sparkles className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
+              <p className="text-xs text-foreground/80 leading-relaxed">{txt}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="grid grid-cols-2 gap-3">
         <Card>
-          <CardContent className="p-3">
-            <Sparkles className="h-4 w-4 text-primary mb-1.5" />
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Serviços</p>
-            <p className="text-lg font-bold tabular-nums">{formatCurrency(data?.services || 0)}</p>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-1.5 mb-2">
+              <TrendingUp className="h-3.5 w-3.5 text-primary" />
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Faturamento</p>
+            </div>
+            <p className="text-xl font-bold tabular-nums">{formatCurrency(total)}</p>
+            <p className="text-[10px] text-muted-foreground mt-1">Serviços {formatCurrency(cur.services)}</p>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-3">
-            <ShoppingCart className="h-4 w-4 text-primary mb-1.5" />
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Produtos</p>
-            <p className="text-lg font-bold tabular-nums">{formatCurrency(data?.products || 0)}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-3">
-            <Package className="h-4 w-4 text-amber-500 mb-1.5" />
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Custo produtos</p>
-            <p className="text-lg font-bold tabular-nums">{formatCurrency(data?.cogs || 0)}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-3">
-            <Receipt className="h-4 w-4 text-destructive mb-1.5" />
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Despesas</p>
-            <p className="text-lg font-bold tabular-nums">{formatCurrency(data?.expenses || 0)}</p>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-1.5 mb-2">
+              <TrendingDown className="h-3.5 w-3.5 text-destructive" />
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Custos</p>
+            </div>
+            <p className="text-xl font-bold tabular-nums">{formatCurrency(cur.expenses + cur.cogs)}</p>
+            <p className="text-[10px] text-muted-foreground mt-1">Despesas {formatCurrency(cur.expenses)}</p>
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardContent className="p-4 space-y-2.5">
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">Detalhamento</p>
+          <div className="flex items-center justify-between text-sm">
+            <span className="flex items-center gap-2 text-muted-foreground"><Sparkles className="h-3.5 w-3.5 text-primary" /> Serviços</span>
+            <span className="font-semibold tabular-nums">{formatCurrency(cur.services)}</span>
+          </div>
+          <div className="flex items-center justify-between text-sm">
+            <span className="flex items-center gap-2 text-muted-foreground"><ShoppingCart className="h-3.5 w-3.5 text-primary" /> Produtos</span>
+            <span className="font-semibold tabular-nums">{formatCurrency(cur.products)}</span>
+          </div>
+          <div className="flex items-center justify-between text-sm">
+            <span className="flex items-center gap-2 text-muted-foreground"><Package className="h-3.5 w-3.5 text-amber-500" /> Custo de produtos</span>
+            <span className="font-semibold tabular-nums">−{formatCurrency(cur.cogs)}</span>
+          </div>
+          <div className="flex items-center justify-between text-sm">
+            <span className="flex items-center gap-2 text-muted-foreground"><Receipt className="h-3.5 w-3.5 text-destructive" /> Despesas</span>
+            <span className="font-semibold tabular-nums">−{formatCurrency(cur.expenses)}</span>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
