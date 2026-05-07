@@ -239,43 +239,73 @@ const Caixa = () => {
       </Card>
 
       {/* Balance hero */}
-      <Card className="overflow-hidden">
-        <CardContent
-          className="p-5 relative"
-          style={{
-            background: balance >= 0
-              ? 'linear-gradient(135deg, hsl(var(--primary) / 0.08), transparent)'
-              : 'linear-gradient(135deg, hsl(var(--destructive) / 0.08), transparent)',
-          }}
-        >
-          <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-semibold mb-1">
-            Saldo do dia
-          </p>
-          {isLoading ? (
-            <PremiumSkeleton className="h-9 w-40" />
-          ) : (
-            <p className={`text-3xl font-bold tabular-nums ${balance >= 0 ? 'text-primary' : 'text-destructive'}`}>
-              {formatCurrency(balance)}
-            </p>
-          )}
-          <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-border/40">
-            <div>
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-0.5">
-                <ArrowUpRight className="h-3 w-3 text-primary" />
-                Entradas
+      {(() => {
+        const prevIncome = prevDay?.income || 0;
+        const dayDelta = prevIncome > 0 ? ((totalIncome - prevIncome) / prevIncome) * 100 : (totalIncome > 0 ? 100 : 0);
+        const showDelta = prevIncome > 0 || totalIncome > 0;
+        const goodDay = dayDelta >= 0 && totalIncome > 0;
+        const message = totalIncome === 0
+          ? 'Nenhum movimento ainda hoje'
+          : goodDay
+            ? (dayDelta >= 20 ? 'Excelente desempenho hoje 🔥' : 'Bom desempenho hoje')
+            : (dayDelta <= -20 ? 'Dia mais fraco, pode melhorar' : 'Movimento estável');
+        return (
+          <Card className="overflow-hidden border-0 shadow-card">
+            <CardContent
+              className="p-5 relative"
+              style={{
+                background: balance >= 0
+                  ? 'linear-gradient(135deg, hsl(var(--primary) / 0.10), transparent)'
+                  : 'linear-gradient(135deg, hsl(var(--destructive) / 0.10), transparent)',
+              }}
+            >
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-semibold">
+                  Saldo do dia
+                </p>
+                {isToday(selectedDate) && showDelta && Math.abs(dayDelta) >= 1 && (
+                  <div className={`flex items-center gap-0.5 text-[11px] font-semibold ${dayDelta >= 0 ? 'text-primary' : 'text-destructive'}`}>
+                    {dayDelta >= 0 ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}
+                    {Math.abs(dayDelta).toFixed(0)}% vs ontem
+                  </div>
+                )}
               </div>
-              <p className="text-base font-bold text-primary tabular-nums">{formatCurrency(totalIncome)}</p>
-            </div>
-            <div>
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-0.5">
-                <ArrowDownRight className="h-3 w-3 text-destructive" />
-                Saídas
+              {isLoading ? (
+                <PremiumSkeleton className="h-9 w-40" />
+              ) : (
+                <p className={`text-3xl font-bold tabular-nums ${balance >= 0 ? 'text-primary' : 'text-destructive'}`}>
+                  {formatCurrency(balance)}
+                </p>
+              )}
+              {isToday(selectedDate) && (
+                <p className="text-xs text-muted-foreground mt-1.5">{message}</p>
+              )}
+
+              <div className="grid grid-cols-2 gap-3 mt-4">
+                <div className="rounded-xl p-3 bg-primary/5 border border-primary/15">
+                  <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">
+                    <ArrowUpRight className="h-3 w-3 text-primary" />
+                    Entradas
+                  </div>
+                  <p className="text-lg font-bold text-primary tabular-nums">{formatCurrency(totalIncome)}</p>
+                  {isToday(selectedDate) && prevIncome > 0 && (
+                    <p className="text-[10px] text-muted-foreground mt-0.5 tabular-nums">
+                      Ontem: {formatCurrency(prevIncome)}
+                    </p>
+                  )}
+                </div>
+                <div className="rounded-xl p-3 bg-destructive/5 border border-destructive/15">
+                  <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">
+                    <ArrowDownRight className="h-3 w-3 text-destructive" />
+                    Saídas
+                  </div>
+                  <p className="text-lg font-bold text-destructive tabular-nums">{formatCurrency(totalExpenses)}</p>
+                </div>
               </div>
-              <p className="text-base font-bold text-destructive tabular-nums">{formatCurrency(totalExpenses)}</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        );
+      })()}
 
       {/* Income breakdown */}
       <div className="grid grid-cols-2 gap-2">
