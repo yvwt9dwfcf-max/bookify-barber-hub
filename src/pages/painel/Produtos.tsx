@@ -76,6 +76,44 @@ const Produtos = () => {
     enabled: !!barbershop?.id,
   });
 
+  // Monthly sales history for insights
+  const monthStartIso = useMemo(() => {
+    const d = new Date(); d.setDate(1); d.setHours(0,0,0,0); return d.toISOString();
+  }, []);
+  const { data: monthSales } = useQuery({
+    queryKey: ['product_sales', 'month', barbershop?.id],
+    queryFn: async () => {
+      if (!barbershop?.id) return [];
+      const { data, error } = await supabase
+        .from('product_sales')
+        .select('id, quantity, total_amount, unit_cost, sold_at, payment_method, products(name)')
+        .eq('barbershop_id', barbershop.id)
+        .gte('sold_at', monthStartIso)
+        .order('sold_at', { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!barbershop?.id,
+  });
+
+  const salesInsights = useMemo(() => {
+    if (!monthSales?.length) return null;
+    const byProduct: Record<string, { name: string; qty: number; revenue: number; profit: number }> = {};
+    monthSales.forEach((s: any) => {
+      const name = s.products?.name || 'Produto';
+      if (!byProduct[name]) byProduct[name] = { name, qty: 0, revenue: 0, profit: 0 };
+      byProduct[name].qty += Number(s.quantity || 0);
+      byProduct[name].revenue += Number(s.total_amount || 0);
+      byProduct[name].profit += Number(s.total_amount || 0) - Number(s.unit_cost || 0) * Number(s.quantity || 0);
+    });
+    const arr = Object.values(byProduct);
+    const topSold = [...arr].sort((a, b) => b.qty - a.qty)[0];
+    const topProfit = [...arr].sort((a, b) => b.profit - a.profit)[0];
+    const monthRevenue = arr.reduce((s, x) => s + x.revenue, 0);
+    return { topSold, topProfit, monthRevenue };
+  }, [monthSales]);
+
   const stats = useMemo(() => {
     if (!products?.length) return { total: 0, lowStock: 0, value: 0 };
     return {
@@ -326,6 +364,62 @@ const Produtos = () => {
               </Card>
             );
           })}
+        </div>
+      )}
+
+      {/* Insights & sales history */}
+      {salesInsights && (
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-2">
+            {salesInsights.topSold && (
+              <Card>
+                <CardContent className="p-3">
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">Mais vendido</p>
+                  <p className="text-sm font-bold truncate">{salesInsights.topSold.name}</p>
+                  <p className="text-[11px] text-muted-foreground tabular-nums">
+                    {salesInsights.topSold.qty} un · {formatCurrency(salesInsights.topSold.revenue)}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+            {salesInsights.topProfit && (
+              <Card>
+                <CardContent className="p-3">
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">Maior lucro</p>
+                  <p className="text-sm font-bold truncate">{salesInsights.topProfit.name}</p>
+                  <p className="text-[11px] text-primary tabular-nums">+{formatCurrency(salesInsights.topProfit.profit)}</p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          <div>
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-2 px-1">
+              Vendas recentes
+            </p>
+            <div className="space-y-1.5">
+              {monthSales!.slice(0, 8).map((s: any) => (
+                <Card key={s.id}>
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="size-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                      <Package className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">
+                        {s.products?.name || 'Produto'} <span className="text-muted-foreground">×{s.quantity}</span>
+                      </p>
+                      <p className="text-[10px] text-muted-foreground capitalize">
+                        {new Date(s.sold_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })} · {s.payment_method}
+                      </p>
+                    </div>
+                    <span className="text-sm font-bold text-primary tabular-nums">
+                      {formatCurrency(Number(s.total_amount))}
+                    </span>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 

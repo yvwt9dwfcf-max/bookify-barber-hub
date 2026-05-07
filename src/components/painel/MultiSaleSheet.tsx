@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Minus, Plus, Banknote, Smartphone, CreditCard, Trash2, Package, ShoppingBag } from 'lucide-react';
+import { Loader2, Minus, Plus, Banknote, Smartphone, CreditCard, Trash2, Package, ShoppingBag, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export interface CartItem {
@@ -44,12 +44,14 @@ export default function MultiSaleSheet({
   const [barberId, setBarberId] = useState(defaultBarberId || '');
   const [paymentMethod, setPaymentMethod] = useState('dinheiro');
   const [customerName, setCustomerName] = useState('');
+  const [receipt, setReceipt] = useState<{ total: number; method: string; itemCount: number; date: Date } | null>(null);
 
   useEffect(() => {
     if (open) {
       setBarberId(defaultBarberId || '');
       setPaymentMethod('dinheiro');
       setCustomerName('');
+      setReceipt(null);
     }
   }, [open, defaultBarberId]);
 
@@ -109,12 +111,59 @@ export default function MultiSaleSheet({
       qc.invalidateQueries({ queryKey: ['product_sales'] });
       qc.invalidateQueries({ queryKey: ['cash-flow'] });
       qc.invalidateQueries({ queryKey: ['financeiro-resumo'] });
-      toast.success(`Venda registrada: ${formatCurrency(total)}`);
+      const itemCount = items.reduce((s, i) => s + i.quantity, 0);
+      setReceipt({ total, method: paymentMethod, itemCount, date: new Date() });
       setItems([]);
-      onOpenChange(false);
     },
     onError: (e: any) => toast.error(e.message || 'Erro ao registrar venda'),
   });
+
+  if (receipt) {
+    const methodLabel = PAYMENT_METHODS.find((m) => m.value === receipt.method)?.label || receipt.method;
+    return (
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent side="bottom" className="h-auto rounded-t-2xl p-0 flex flex-col overscroll-contain">
+          <div className="px-6 py-8 text-center space-y-4">
+            <div className="size-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
+              <CheckCircle2 className="h-8 w-8 text-primary" />
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold mb-1">
+                Venda concluída
+              </p>
+              <p className="text-3xl font-bold tabular-nums text-primary">
+                {formatCurrency(receipt.total)}
+              </p>
+            </div>
+            <div className="rounded-xl bg-muted/40 p-4 text-left space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Itens</span>
+                <span className="font-semibold">{receipt.itemCount}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Pagamento</span>
+                <span className="font-semibold">{methodLabel}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Data</span>
+                <span className="font-semibold tabular-nums">
+                  {receipt.date.toLocaleDateString('pt-BR')} {receipt.date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div className="border-t p-4 flex gap-2 bg-background">
+            <Button variant="outline" className="flex-1" onClick={() => { setReceipt(null); }}>
+              Nova venda
+            </Button>
+            <Button className="flex-1 btn-primary-gradient" onClick={() => onOpenChange(false)}>
+              Concluir
+            </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
+    );
+  }
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
