@@ -10,9 +10,9 @@ import { PremiumSkeleton } from '@/components/ui/premium-skeleton';
 import {
   Wallet, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight,
   Banknote, Smartphone, CreditCard, Sparkles, Package, Receipt,
-  ChevronLeft, ChevronRight, Target, Plus, ShoppingCart,
+  ChevronLeft, ChevronRight, Target, Plus, ShoppingCart, ArrowUp, ArrowDown,
 } from 'lucide-react';
-import { format, startOfDay, endOfDay, addDays, startOfMonth, endOfMonth, isToday } from 'date-fns';
+import { format, startOfDay, endOfDay, addDays, subDays, startOfMonth, endOfMonth, isToday } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 interface ContextType {
