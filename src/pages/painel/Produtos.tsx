@@ -76,6 +76,44 @@ const Produtos = () => {
     enabled: !!barbershop?.id,
   });
 
+  // Monthly sales history for insights
+  const monthStartIso = useMemo(() => {
+    const d = new Date(); d.setDate(1); d.setHours(0,0,0,0); return d.toISOString();
+  }, []);
+  const { data: monthSales } = useQuery({
+    queryKey: ['product_sales', 'month', barbershop?.id],
+    queryFn: async () => {
+      if (!barbershop?.id) return [];
+      const { data, error } = await supabase
+        .from('product_sales')
+        .select('id, quantity, total_amount, unit_cost, sold_at, payment_method, products(name)')
+        .eq('barbershop_id', barbershop.id)
+        .gte('sold_at', monthStartIso)
+        .order('sold_at', { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!barbershop?.id,
+  });
+
+  const salesInsights = useMemo(() => {
+    if (!monthSales?.length) return null;
+    const byProduct: Record<string, { name: string; qty: number; revenue: number; profit: number }> = {};
+    monthSales.forEach((s: any) => {
+      const name = s.products?.name || 'Produto';
+      if (!byProduct[name]) byProduct[name] = { name, qty: 0, revenue: 0, profit: 0 };
+      byProduct[name].qty += Number(s.quantity || 0);
+      byProduct[name].revenue += Number(s.total_amount || 0);
+      byProduct[name].profit += Number(s.total_amount || 0) - Number(s.unit_cost || 0) * Number(s.quantity || 0);
+    });
+    const arr = Object.values(byProduct);
+    const topSold = [...arr].sort((a, b) => b.qty - a.qty)[0];
+    const topProfit = [...arr].sort((a, b) => b.profit - a.profit)[0];
+    const monthRevenue = arr.reduce((s, x) => s + x.revenue, 0);
+    return { topSold, topProfit, monthRevenue };
+  }, [monthSales]);
+
   const stats = useMemo(() => {
     if (!products?.length) return { total: 0, lowStock: 0, value: 0 };
     return {
