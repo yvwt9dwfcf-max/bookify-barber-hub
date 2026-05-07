@@ -367,6 +367,62 @@ const Produtos = () => {
         </div>
       )}
 
+      {/* Insights & sales history */}
+      {salesInsights && (
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-2">
+            {salesInsights.topSold && (
+              <Card>
+                <CardContent className="p-3">
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">Mais vendido</p>
+                  <p className="text-sm font-bold truncate">{salesInsights.topSold.name}</p>
+                  <p className="text-[11px] text-muted-foreground tabular-nums">
+                    {salesInsights.topSold.qty} un · {formatCurrency(salesInsights.topSold.revenue)}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+            {salesInsights.topProfit && (
+              <Card>
+                <CardContent className="p-3">
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">Maior lucro</p>
+                  <p className="text-sm font-bold truncate">{salesInsights.topProfit.name}</p>
+                  <p className="text-[11px] text-primary tabular-nums">+{formatCurrency(salesInsights.topProfit.profit)}</p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          <div>
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-2 px-1">
+              Vendas recentes
+            </p>
+            <div className="space-y-1.5">
+              {monthSales!.slice(0, 8).map((s: any) => (
+                <Card key={s.id}>
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="size-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                      <Package className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">
+                        {s.products?.name || 'Produto'} <span className="text-muted-foreground">×{s.quantity}</span>
+                      </p>
+                      <p className="text-[10px] text-muted-foreground capitalize">
+                        {new Date(s.sold_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })} · {s.payment_method}
+                      </p>
+                    </div>
+                    <span className="text-sm font-bold text-primary tabular-nums">
+                      {formatCurrency(Number(s.total_amount))}
+                    </span>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Edit/Create Sheet */}
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
         <SheetContent side="bottom" className="h-[92dvh] rounded-t-2xl p-0 flex flex-col overscroll-contain">
