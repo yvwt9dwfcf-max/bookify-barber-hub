@@ -96,6 +96,30 @@ const Caixa = () => {
     enabled: !!barbershop?.id,
   });
 
+  // === Previous day for comparison ===
+  const prevDayStart = startOfDay(subDays(selectedDate, 1)).toISOString();
+  const prevDayEnd = endOfDay(subDays(selectedDate, 1)).toISOString();
+  const { data: prevDay } = useQuery({
+    queryKey: ['cash-flow', 'prev-day', barbershop?.id, prevDayStart],
+    queryFn: async () => {
+      if (!barbershop?.id) return { income: 0 };
+      const [{ data: a }, { data: s }] = await Promise.all([
+        supabase
+          .from('appointments').select('services(price)')
+          .eq('barbershop_id', barbershop.id).eq('status', 'completed')
+          .gte('start_time', prevDayStart).lte('start_time', prevDayEnd),
+        supabase
+          .from('product_sales').select('total_amount')
+          .eq('barbershop_id', barbershop.id)
+          .gte('sold_at', prevDayStart).lte('sold_at', prevDayEnd),
+      ]);
+      const inc = (a || []).reduce((sum, x: any) => sum + Number(x.services?.price || 0), 0)
+        + (s || []).reduce((sum, x: any) => sum + Number(x.total_amount || 0), 0);
+      return { income: inc };
+    },
+    enabled: !!barbershop?.id,
+  });
+
   // === Month data for goals/projection ===
   const { data: monthData } = useQuery({
     queryKey: ['cash-flow', 'month', barbershop?.id, monthStart],
