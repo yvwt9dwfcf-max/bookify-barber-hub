@@ -137,6 +137,46 @@ const ReportContent = ({
 
   const periodLabel = period === 'today' ? 'Hoje' : period === '7days' ? '7 dias' : 'Mês';
 
+  // ─── Smart insights ───
+  const insights = useMemo(() => {
+    if (!appointments?.length) return null;
+    const dayRevenue: Record<number, number> = {};
+    const hourRevenue: Record<number, number> = {};
+    appointments.forEach((apt: any) => {
+      const d = new Date(apt.start_time);
+      const price = Number(apt.services?.price || 0);
+      dayRevenue[d.getDay()] = (dayRevenue[d.getDay()] || 0) + price;
+      hourRevenue[d.getHours()] = (hourRevenue[d.getHours()] || 0) + price;
+    });
+    const dayNames = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+    const bestDayEntry = Object.entries(dayRevenue).sort((a, b) => b[1] - a[1])[0];
+    const bestHourEntry = Object.entries(hourRevenue).sort((a, b) => b[1] - a[1])[0];
+    return {
+      bestDay: bestDayEntry ? { name: dayNames[Number(bestDayEntry[0])], value: bestDayEntry[1] } : null,
+      bestHour: bestHourEntry ? { hour: `${bestHourEntry[0]}h`, value: bestHourEntry[1] } : null,
+      growth: prevMonthRevenue > 0 ? ((totalRevenue - prevMonthRevenue) / prevMonthRevenue) * 100 : null,
+    };
+  }, [appointments, prevMonthRevenue, totalRevenue]);
+
+  // ─── Goal intelligence ───
+  const goalIntel = useMemo(() => {
+    if (!showGoal || period !== '30days' || !monthlyGoal || monthlyGoal <= 0) return null;
+    const remaining = Math.max(monthlyGoal - totalRevenue, 0);
+    const today = new Date();
+    const monthEnd = endOfMonth(today);
+    const daysLeft = Math.max(Math.ceil((monthEnd.getTime() - today.getTime()) / 86400000), 1);
+    const dailyTarget = remaining / daysLeft;
+    const dayOfMonth = today.getDate();
+    const dailyAvg = totalRevenue / Math.max(dayOfMonth, 1);
+    const projectedDays = dailyAvg > 0 ? Math.ceil(remaining / dailyAvg) : null;
+    const pct = (totalRevenue / monthlyGoal) * 100;
+    let status: 'achieved' | 'close' | 'on_track' | 'behind' = 'behind';
+    if (pct >= 100) status = 'achieved';
+    else if (pct >= 90) status = 'close';
+    else if (pct >= (dayOfMonth / 30) * 100 - 10) status = 'on_track';
+    return { remaining, daysLeft, dailyTarget, projectedDays, status };
+  }, [showGoal, period, monthlyGoal, totalRevenue]);
+
   return (
     <div className="space-y-4">
       {/* Faturamento */}
