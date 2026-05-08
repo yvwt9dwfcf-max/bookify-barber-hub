@@ -308,6 +308,32 @@ const ReportContent = ({
         </CardContent>
       </Card>
 
+      {/* Smart Insights */}
+      {!isLoading && insights && (insights.bestDay || insights.bestHour || insights.growth !== null) && (
+        <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+          <CardContent className="p-3 space-y-1.5">
+            <div className="flex items-center gap-1.5 mb-1">
+              <Sparkles className="h-3.5 w-3.5 text-primary" />
+              <span className="text-xs font-semibold uppercase tracking-wide text-primary">Insights automáticos</span>
+            </div>
+            {insights.bestDay && (
+              <p className="text-xs"><span className="text-muted-foreground">Melhor dia: </span><span className="font-semibold">{insights.bestDay.name}</span> <span className="text-muted-foreground">({formatCurrency(insights.bestDay.value)})</span></p>
+            )}
+            {insights.bestHour && (
+              <p className="text-xs"><span className="text-muted-foreground">Horário mais lucrativo: </span><span className="font-semibold">{insights.bestHour.hour}</span> <span className="text-muted-foreground">({formatCurrency(insights.bestHour.value)})</span></p>
+            )}
+            {insights.growth !== null && period === '30days' && (
+              <p className="text-xs">
+                <span className="text-muted-foreground">Crescimento vs mês anterior: </span>
+                <span className={`font-semibold ${insights.growth >= 0 ? 'text-primary' : 'text-destructive'}`}>
+                  {insights.growth >= 0 ? '+' : ''}{insights.growth.toFixed(1)}%
+                </span>
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {/* Ticket Médio + Cancelamento + Pico */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
