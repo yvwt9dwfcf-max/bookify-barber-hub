@@ -240,21 +240,40 @@ const ReportContent = ({
               </div>
 
               {/* Progress bar for monthly goal */}
-              {showGoal && period === '30days' && monthlyGoal && monthlyGoal > 0 && (
-                <div className="mb-3">
-                  <div className="flex items-center justify-between mb-1">
+              {showGoal && period === '30days' && monthlyGoal && monthlyGoal > 0 && goalIntel && (
+                <div className="mb-3 p-3 rounded-lg bg-muted/40 border border-border/40">
+                  <div className="flex items-center justify-between mb-1.5">
                     <span className="text-xs text-muted-foreground">Progresso da meta</span>
-                    <span className={`text-xs font-semibold ${(totalRevenue / monthlyGoal) >= 1 ? 'text-primary' : (totalRevenue / monthlyGoal) >= 0.7 ? 'text-yellow-500' : 'text-muted-foreground'}`}>
+                    <span className={`text-sm font-bold ${goalIntel.status === 'achieved' ? 'text-primary' : goalIntel.status === 'close' ? 'text-yellow-500' : goalIntel.status === 'on_track' ? 'text-foreground' : 'text-destructive'}`}>
                       {Math.min((totalRevenue / monthlyGoal) * 100, 999).toFixed(1)}%
                     </span>
                   </div>
-                  <div className="h-2.5 w-full rounded-full bg-muted overflow-hidden">
+                  <div className="h-2.5 w-full rounded-full bg-muted overflow-hidden mb-2">
                     <div
-                      className={`h-full rounded-full transition-all duration-700 ease-out ${(totalRevenue / monthlyGoal) >= 1 ? 'bg-primary' : (totalRevenue / monthlyGoal) >= 0.7 ? 'bg-yellow-500' : 'bg-muted-foreground/50'}`}
+                      className={`h-full rounded-full transition-all duration-700 ease-out ${goalIntel.status === 'achieved' ? 'bg-primary' : goalIntel.status === 'close' ? 'bg-yellow-500' : goalIntel.status === 'on_track' ? 'bg-primary/70' : 'bg-destructive/70'}`}
                       style={{ width: `${Math.min((totalRevenue / monthlyGoal) * 100, 100)}%` }}
                     />
                   </div>
-                  {(totalRevenue / monthlyGoal) >= 1 && <p className="text-xs text-primary mt-1 font-medium">🎉 Meta atingida!</p>}
+                  {goalIntel.status === 'achieved' ? (
+                    <p className="text-xs text-primary font-semibold">🎉 Meta batida! Parabéns.</p>
+                  ) : (
+                    <div className="space-y-0.5">
+                      <p className="text-xs">
+                        <span className="text-muted-foreground">Faltam </span>
+                        <span className="font-semibold text-foreground">{formatCurrency(goalIntel.remaining)}</span>
+                        <span className="text-muted-foreground"> em {goalIntel.daysLeft} dia{goalIntel.daysLeft !== 1 ? 's' : ''}</span>
+                      </p>
+                      <p className="text-[11px] text-muted-foreground">
+                        Precisa fazer <span className="font-semibold text-foreground">{formatCurrency(goalIntel.dailyTarget)}/dia</span>
+                        {goalIntel.projectedDays !== null && goalIntel.projectedDays > 0 && (
+                          <> · previsão: meta em {goalIntel.projectedDays} dia{goalIntel.projectedDays !== 1 ? 's' : ''}</>
+                        )}
+                      </p>
+                      <p className={`text-[11px] font-medium mt-1 ${goalIntel.status === 'close' ? 'text-yellow-500' : goalIntel.status === 'on_track' ? 'text-primary' : 'text-destructive'}`}>
+                        {goalIntel.status === 'close' ? '🔥 Falta pouco!' : goalIntel.status === 'on_track' ? '✅ No ritmo certo' : '⚠️ Abaixo do esperado'}
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
 
