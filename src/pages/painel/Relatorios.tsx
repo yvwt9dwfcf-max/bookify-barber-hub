@@ -9,7 +9,7 @@ import { PremiumSkeleton } from '@/components/ui/premium-skeleton';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ChartPie as BarChart3, TrendingUp, TrendingDown, UsersRound as Users, Sparkles as Scissors, Target, Download, Minus, Timer as Clock, CircleX as XCircle, DollarSign, Receipt } from 'lucide-react';
+import { ChartPie as BarChart3, TrendingUp, TrendingDown, UsersRound as Users, Sparkles as Scissors, Sparkles, Target, Download, Minus, Timer as Clock, CircleX as XCircle, DollarSign, Receipt } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, PieChart, Pie, Cell } from 'recharts';
@@ -137,6 +137,46 @@ const ReportContent = ({
 
   const periodLabel = period === 'today' ? 'Hoje' : period === '7days' ? '7 dias' : 'Mês';
 
+  // ─── Smart insights ───
+  const insights = useMemo(() => {
+    if (!appointments?.length) return null;
+    const dayRevenue: Record<number, number> = {};
+    const hourRevenue: Record<number, number> = {};
+    appointments.forEach((apt: any) => {
+      const d = new Date(apt.start_time);
+      const price = Number(apt.services?.price || 0);
+      dayRevenue[d.getDay()] = (dayRevenue[d.getDay()] || 0) + price;
+      hourRevenue[d.getHours()] = (hourRevenue[d.getHours()] || 0) + price;
+    });
+    const dayNames = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+    const bestDayEntry = Object.entries(dayRevenue).sort((a, b) => b[1] - a[1])[0];
+    const bestHourEntry = Object.entries(hourRevenue).sort((a, b) => b[1] - a[1])[0];
+    return {
+      bestDay: bestDayEntry ? { name: dayNames[Number(bestDayEntry[0])], value: bestDayEntry[1] } : null,
+      bestHour: bestHourEntry ? { hour: `${bestHourEntry[0]}h`, value: bestHourEntry[1] } : null,
+      growth: prevMonthRevenue > 0 ? ((totalRevenue - prevMonthRevenue) / prevMonthRevenue) * 100 : null,
+    };
+  }, [appointments, prevMonthRevenue, totalRevenue]);
+
+  // ─── Goal intelligence ───
+  const goalIntel = useMemo(() => {
+    if (!showGoal || period !== '30days' || !monthlyGoal || monthlyGoal <= 0) return null;
+    const remaining = Math.max(monthlyGoal - totalRevenue, 0);
+    const today = new Date();
+    const monthEnd = endOfMonth(today);
+    const daysLeft = Math.max(Math.ceil((monthEnd.getTime() - today.getTime()) / 86400000), 1);
+    const dailyTarget = remaining / daysLeft;
+    const dayOfMonth = today.getDate();
+    const dailyAvg = totalRevenue / Math.max(dayOfMonth, 1);
+    const projectedDays = dailyAvg > 0 ? Math.ceil(remaining / dailyAvg) : null;
+    const pct = (totalRevenue / monthlyGoal) * 100;
+    let status: 'achieved' | 'close' | 'on_track' | 'behind' = 'behind';
+    if (pct >= 100) status = 'achieved';
+    else if (pct >= 90) status = 'close';
+    else if (pct >= (dayOfMonth / 30) * 100 - 10) status = 'on_track';
+    return { remaining, daysLeft, dailyTarget, projectedDays, status };
+  }, [showGoal, period, monthlyGoal, totalRevenue]);
+
   return (
     <div className="space-y-4">
       {/* Faturamento */}
@@ -200,21 +240,40 @@ const ReportContent = ({
               </div>
 
               {/* Progress bar for monthly goal */}
-              {showGoal && period === '30days' && monthlyGoal && monthlyGoal > 0 && (
-                <div className="mb-3">
-                  <div className="flex items-center justify-between mb-1">
+              {showGoal && period === '30days' && monthlyGoal && monthlyGoal > 0 && goalIntel && (
+                <div className="mb-3 p-3 rounded-lg bg-muted/40 border border-border/40">
+                  <div className="flex items-center justify-between mb-1.5">
                     <span className="text-xs text-muted-foreground">Progresso da meta</span>
-                    <span className={`text-xs font-semibold ${(totalRevenue / monthlyGoal) >= 1 ? 'text-primary' : (totalRevenue / monthlyGoal) >= 0.7 ? 'text-yellow-500' : 'text-muted-foreground'}`}>
+                    <span className={`text-sm font-bold ${goalIntel.status === 'achieved' ? 'text-primary' : goalIntel.status === 'close' ? 'text-yellow-500' : goalIntel.status === 'on_track' ? 'text-foreground' : 'text-destructive'}`}>
                       {Math.min((totalRevenue / monthlyGoal) * 100, 999).toFixed(1)}%
                     </span>
                   </div>
-                  <div className="h-2.5 w-full rounded-full bg-muted overflow-hidden">
+                  <div className="h-2.5 w-full rounded-full bg-muted overflow-hidden mb-2">
                     <div
-                      className={`h-full rounded-full transition-all duration-700 ease-out ${(totalRevenue / monthlyGoal) >= 1 ? 'bg-primary' : (totalRevenue / monthlyGoal) >= 0.7 ? 'bg-yellow-500' : 'bg-muted-foreground/50'}`}
+                      className={`h-full rounded-full transition-all duration-700 ease-out ${goalIntel.status === 'achieved' ? 'bg-primary' : goalIntel.status === 'close' ? 'bg-yellow-500' : goalIntel.status === 'on_track' ? 'bg-primary/70' : 'bg-destructive/70'}`}
                       style={{ width: `${Math.min((totalRevenue / monthlyGoal) * 100, 100)}%` }}
                     />
                   </div>
-                  {(totalRevenue / monthlyGoal) >= 1 && <p className="text-xs text-primary mt-1 font-medium">🎉 Meta atingida!</p>}
+                  {goalIntel.status === 'achieved' ? (
+                    <p className="text-xs text-primary font-semibold">🎉 Meta batida! Parabéns.</p>
+                  ) : (
+                    <div className="space-y-0.5">
+                      <p className="text-xs">
+                        <span className="text-muted-foreground">Faltam </span>
+                        <span className="font-semibold text-foreground">{formatCurrency(goalIntel.remaining)}</span>
+                        <span className="text-muted-foreground"> em {goalIntel.daysLeft} dia{goalIntel.daysLeft !== 1 ? 's' : ''}</span>
+                      </p>
+                      <p className="text-[11px] text-muted-foreground">
+                        Precisa fazer <span className="font-semibold text-foreground">{formatCurrency(goalIntel.dailyTarget)}/dia</span>
+                        {goalIntel.projectedDays !== null && goalIntel.projectedDays > 0 && (
+                          <> · previsão: meta em {goalIntel.projectedDays} dia{goalIntel.projectedDays !== 1 ? 's' : ''}</>
+                        )}
+                      </p>
+                      <p className={`text-[11px] font-medium mt-1 ${goalIntel.status === 'close' ? 'text-yellow-500' : goalIntel.status === 'on_track' ? 'text-primary' : 'text-destructive'}`}>
+                        {goalIntel.status === 'close' ? '🔥 Falta pouco!' : goalIntel.status === 'on_track' ? '✅ No ritmo certo' : '⚠️ Abaixo do esperado'}
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -248,6 +307,32 @@ const ReportContent = ({
           )}
         </CardContent>
       </Card>
+
+      {/* Smart Insights */}
+      {!isLoading && insights && (insights.bestDay || insights.bestHour || insights.growth !== null) && (
+        <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+          <CardContent className="p-3 space-y-1.5">
+            <div className="flex items-center gap-1.5 mb-1">
+              <Sparkles className="h-3.5 w-3.5 text-primary" />
+              <span className="text-xs font-semibold uppercase tracking-wide text-primary">Insights automáticos</span>
+            </div>
+            {insights.bestDay && (
+              <p className="text-xs"><span className="text-muted-foreground">Melhor dia: </span><span className="font-semibold">{insights.bestDay.name}</span> <span className="text-muted-foreground">({formatCurrency(insights.bestDay.value)})</span></p>
+            )}
+            {insights.bestHour && (
+              <p className="text-xs"><span className="text-muted-foreground">Horário mais lucrativo: </span><span className="font-semibold">{insights.bestHour.hour}</span> <span className="text-muted-foreground">({formatCurrency(insights.bestHour.value)})</span></p>
+            )}
+            {insights.growth !== null && period === '30days' && (
+              <p className="text-xs">
+                <span className="text-muted-foreground">Crescimento vs mês anterior: </span>
+                <span className={`font-semibold ${insights.growth >= 0 ? 'text-primary' : 'text-destructive'}`}>
+                  {insights.growth >= 0 ? '+' : ''}{insights.growth.toFixed(1)}%
+                </span>
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Ticket Médio + Cancelamento + Pico */}
       <div className="grid gap-4 md:grid-cols-3">

@@ -7,17 +7,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { PremiumSkeleton } from '@/components/ui/premium-skeleton';
 import { Switch } from '@/components/ui/switch';
-import { ArrowLeft, Plus, Loader2, Trash2, Receipt, TrendingDown, TrendingUp, Repeat, DollarSign, PieChart } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ArrowLeft, Plus, Loader2, Trash2, Receipt, TrendingDown, TrendingUp, Repeat, DollarSign, ChartPie as PieChart, Filter, ChevronDown, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
-import { format, startOfMonth, endOfMonth } from 'date-fns';
+import { format, startOfMonth, endOfMonth, subMonths, isSameMonth, isAfter } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart as RePieChart, Pie } from 'recharts';
+import { ResponsiveContainer, Tooltip, Cell, PieChart as RePieChart, Pie } from 'recharts';
 
 interface ContextType {
   barber: Barber | null;
@@ -50,6 +50,8 @@ const CATEGORIES = [
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 
+const PAGE_SIZE = 20;
+
 const Despesas = () => {
   const { barbershop, isMaster } = useOutletContext<ContextType>();
   const navigate = useNavigate();
@@ -59,6 +61,13 @@ const Despesas = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
 
+  // Filters
+  const [filterMonth, setFilterMonth] = useState<string>('all'); // 'all' | 'YYYY-MM'
+  const [filterCategory, setFilterCategory] = useState<string>('all');
+  const [groupByCategory, setGroupByCategory] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [openOlder, setOpenOlder] = useState(false);
+
   // Form state
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
@@ -66,7 +75,6 @@ const Despesas = () => {
   const [expenseDate, setExpenseDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [isRecurring, setIsRecurring] = useState(false);
 
-  // Auto-materialize recurring expenses when entering this page
   useEffect(() => {
     if (!barbershop?.id || !isMaster) return;
     (supabase.rpc as any)('materialize_recurring_expenses', { _barbershop_id: barbershop.id })
@@ -89,14 +97,14 @@ const Despesas = () => {
         .from('expenses')
         .select('*')
         .eq('barbershop_id', barbershop.id)
-        .order('expense_date', { ascending: false });
+        .order('expense_date', { ascending: false })
+        .limit(500);
       if (error) throw error;
       return (data || []) as Expense[];
     },
     enabled: !!barbershop?.id,
   });
 
-  // Revenue query for profit calculation
   const { data: revenueData } = useQuery({
     queryKey: ['monthly-revenue', barbershop?.id],
     queryFn: async () => {
@@ -115,36 +123,62 @@ const Despesas = () => {
   });
 
   const monthlyRevenue = revenueData || 0;
+  const now = new Date();
+  const lastMonth = subMonths(now, 1);
 
   const monthlyExpenses = useMemo(() => {
     if (!expenses?.length) return 0;
-    const now = new Date();
     return expenses
-      .filter((e) => {
-        const eDate = new Date(e.expense_date);
-        return eDate.getMonth() === now.getMonth() && eDate.getFullYear() === now.getFullYear();
-      })
+      .filter((e) => isSameMonth(new Date(e.expense_date + 'T12:00:00'), now))
       .reduce((sum, e) => sum + Number(e.amount), 0);
   }, [expenses]);
 
   const profit = monthlyRevenue - monthlyExpenses;
 
-  const categoryBreakdown = useMemo(() => {
+  // Available months for filter
+  const availableMonths = useMemo(() => {
     if (!expenses?.length) return [];
-    const now = new Date();
-    const monthExpenses = expenses.filter((e) => {
-      const eDate = new Date(e.expense_date);
-      return eDate.getMonth() === now.getMonth() && eDate.getFullYear() === now.getFullYear();
+    const set = new Set<string>();
+    expenses.forEach((e) => set.add(format(new Date(e.expense_date + 'T12:00:00'), 'yyyy-MM')));
+    return Array.from(set).sort().reverse();
+  }, [expenses]);
+
+  // Filtered list
+  const filteredExpenses = useMemo(() => {
+    if (!expenses) return [];
+    return expenses.filter((e) => {
+      if (filterCategory !== 'all' && e.category !== filterCategory) return false;
+      if (filterMonth !== 'all') {
+        const m = format(new Date(e.expense_date + 'T12:00:00'), 'yyyy-MM');
+        if (m !== filterMonth) return false;
+      }
+      return true;
     });
+  }, [expenses, filterCategory, filterMonth]);
+
+  // Bucketing by period (only when no month filter is set)
+  const { thisMonth, lastMonthList, older } = useMemo(() => {
+    const a: Expense[] = [], b: Expense[] = [], c: Expense[] = [];
+    filteredExpenses.forEach((e) => {
+      const d = new Date(e.expense_date + 'T12:00:00');
+      if (isSameMonth(d, now)) a.push(e);
+      else if (isSameMonth(d, lastMonth)) b.push(e);
+      else c.push(e);
+    });
+    return { thisMonth: a, lastMonthList: b, older: c };
+  }, [filteredExpenses]);
+
+  const categoryBreakdown = useMemo(() => {
+    if (!thisMonth.length) return [];
     const byCategory: Record<string, number> = {};
-    monthExpenses.forEach((e) => {
+    thisMonth.forEach((e) => {
       byCategory[e.category] = (byCategory[e.category] || 0) + Number(e.amount);
     });
     return Object.entries(byCategory).map(([cat, total]) => {
       const catInfo = CATEGORIES.find((c) => c.value === cat);
       return { name: catInfo?.label || cat, value: total, color: catInfo?.color || '#6B7280' };
     }).sort((a, b) => b.value - a.value);
-  }, [expenses]);
+  }, [thisMonth]);
 
   const addMutation = useMutation({
     mutationFn: async () => {
@@ -225,6 +259,84 @@ const Despesas = () => {
     );
   }
 
+  // ── Helper to render a single expense row
+  const ExpenseRow = ({ expense }: { expense: Expense }) => {
+    const catInfo = CATEGORIES.find((c) => c.value === expense.category);
+    return (
+      <div
+        className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
+        onClick={() => openEdit(expense)}
+      >
+        <div className="flex items-center gap-3 min-w-0">
+          <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: catInfo?.color || '#6B7280' }} />
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5">
+              <p className="text-sm font-medium truncate">{expense.name}</p>
+              {expense.is_recurring && <Repeat className="h-3 w-3 text-muted-foreground shrink-0" />}
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              {catInfo?.label} • {format(new Date(expense.expense_date + 'T12:00:00'), 'dd/MM/yyyy')}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="text-sm font-semibold text-destructive">-{formatCurrency(Number(expense.amount))}</span>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={(e) => e.stopPropagation()}>
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Remover despesa?</AlertDialogTitle>
+                <AlertDialogDescription>"{expense.name}" será removida permanentemente.</AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={() => deleteMutation.mutate(expense.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Remover</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      </div>
+    );
+  };
+
+  // Group rendering
+  const renderGrouped = (list: Expense[]) => {
+    const grouped: Record<string, Expense[]> = {};
+    list.forEach((e) => {
+      grouped[e.category] = grouped[e.category] || [];
+      grouped[e.category].push(e);
+    });
+    return Object.entries(grouped)
+      .map(([cat, items]) => {
+        const info = CATEGORIES.find((c) => c.value === cat);
+        const total = items.reduce((s, i) => s + Number(i.amount), 0);
+        return { cat, info, items, total };
+      })
+      .sort((a, b) => b.total - a.total)
+      .map(({ cat, info, items, total }) => (
+        <div key={cat} className="space-y-1.5">
+          <div className="flex items-center justify-between px-1">
+            <div className="flex items-center gap-2">
+              <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: info?.color }} />
+              <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{info?.label || cat}</span>
+              <span className="text-[10px] text-muted-foreground">({items.length})</span>
+            </div>
+            <span className="text-xs font-bold text-destructive">-{formatCurrency(total)}</span>
+          </div>
+          <div className="space-y-1.5">
+            {items.map((e) => <ExpenseRow key={e.id} expense={e} />)}
+          </div>
+        </div>
+      ));
+  };
+
+  const usingMonthFilter = filterMonth !== 'all';
+  const flatList = usingMonthFilter ? filteredExpenses.slice(0, visibleCount) : null;
+
   return (
     <div className="space-y-6 animate-page-enter">
       {/* Header */}
@@ -239,9 +351,7 @@ const Despesas = () => {
             <Receipt className="h-5 w-5 text-primary" />
             {inFin ? 'Despesas' : 'Controle de Despesas'}
           </h1>
-          <p className="text-sm text-muted-foreground">
-            {format(new Date(), "MMMM 'de' yyyy", { locale: ptBR })}
-          </p>
+          <p className="text-sm text-muted-foreground">{format(new Date(), "MMMM 'de' yyyy", { locale: ptBR })}</p>
         </div>
         <Button size="sm" className="btn-primary-gradient" onClick={openNew}>
           <Plus className="h-4 w-4 mr-1" />
@@ -269,30 +379,26 @@ const Despesas = () => {
           <CardContent className="p-3 text-center">
             <DollarSign className={`h-4 w-4 mx-auto mb-1 ${profit >= 0 ? 'text-primary' : 'text-destructive'}`} />
             <p className="text-[11px] text-muted-foreground">Lucro</p>
-            <p className={`text-sm font-bold ${profit >= 0 ? 'text-primary' : 'text-destructive'}`}>
-              {formatCurrency(profit)}
-            </p>
+            <p className={`text-sm font-bold ${profit >= 0 ? 'text-primary' : 'text-destructive'}`}>{formatCurrency(profit)}</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Category Breakdown */}
+      {/* Category Pie (current month) */}
       {categoryBreakdown.length > 0 && (
         <Card>
           <CardHeader className="pb-2 pt-4 px-4">
             <CardTitle className="flex items-center gap-2 text-base">
               <PieChart className="h-4 w-4 text-primary" />
-              Despesas por categoria
+              Por categoria · este mês
             </CardTitle>
           </CardHeader>
           <CardContent className="px-4 pb-4">
-            <div className="h-[180px] mb-3">
+            <div className="h-[160px] mb-3">
               <ResponsiveContainer width="100%" height="100%">
                 <RePieChart>
                   <Pie data={categoryBreakdown} cx="50%" cy="50%" innerRadius={40} outerRadius={70} paddingAngle={3} dataKey="value">
-                    {categoryBreakdown.map((entry, i) => (
-                      <Cell key={i} fill={entry.color} />
-                    ))}
+                    {categoryBreakdown.map((entry, i) => (<Cell key={i} fill={entry.color} />))}
                   </Pie>
                   <Tooltip formatter={(value: number) => [formatCurrency(value), '']} contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }} />
                 </RePieChart>
@@ -313,85 +419,136 @@ const Despesas = () => {
         </Card>
       )}
 
-      {/* Expenses List */}
+      {/* Filters */}
       <Card>
-        <CardHeader className="pb-2 pt-4 px-4">
-          <CardTitle className="text-base">Todas as despesas</CardTitle>
-        </CardHeader>
-        <CardContent className="px-4 pb-4">
-          {isLoading ? (
-            <div className="space-y-3">
-              {[1, 2, 3].map((i) => <PremiumSkeleton key={i} className="h-14 w-full" />)}
-            </div>
-          ) : !expenses?.length ? (
-            <div className="py-8 text-center text-muted-foreground text-sm">
-              Nenhuma despesa registrada. Clique em "Nova" para começar.
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {expenses.map((expense) => {
-                const catInfo = CATEGORIES.find((c) => c.value === expense.category);
-                return (
-                  <div
-                    key={expense.id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
-                    onClick={() => openEdit(expense)}
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: catInfo?.color || '#6B7280' }} />
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          <p className="text-sm font-medium truncate">{expense.name}</p>
-                          {expense.is_recurring && (
-                            <Repeat className="h-3 w-3 text-muted-foreground shrink-0" />
-                          )}
-                        </div>
-                        <p className="text-[11px] text-muted-foreground">
-                          {catInfo?.label} • {format(new Date(expense.expense_date + 'T12:00:00'), 'dd/MM/yyyy')}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-sm font-semibold text-destructive">
-                        -{formatCurrency(Number(expense.amount))}
-                      </span>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Remover despesa?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              "{expense.name}" será removida permanentemente.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => deleteMutation.mutate(expense.id)}
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            >
-                              Remover
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+        <CardContent className="p-3 space-y-2">
+          <div className="flex items-center gap-2">
+            <Filter className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+            <Select value={filterMonth} onValueChange={(v) => { setFilterMonth(v); setVisibleCount(PAGE_SIZE); }}>
+              <SelectTrigger className="h-8 text-xs flex-1"><SelectValue placeholder="Período" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os períodos</SelectItem>
+                {availableMonths.map((m) => (
+                  <SelectItem key={m} value={m}>
+                    {format(new Date(m + '-01T12:00:00'), "MMMM 'de' yyyy", { locale: ptBR })}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={filterCategory} onValueChange={(v) => { setFilterCategory(v); setVisibleCount(PAGE_SIZE); }}>
+              <SelectTrigger className="h-8 text-xs flex-1"><SelectValue placeholder="Categoria" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas categorias</SelectItem>
+                {CATEGORIES.map((c) => (<SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center justify-between px-1">
+            <span className="text-[11px] text-muted-foreground">Agrupar por categoria</span>
+            <Switch checked={groupByCategory} onCheckedChange={setGroupByCategory} />
+          </div>
         </CardContent>
       </Card>
+
+      {/* Lists by period */}
+      {isLoading ? (
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => <PremiumSkeleton key={i} className="h-14 w-full" />)}
+        </div>
+      ) : !filteredExpenses.length ? (
+        <div className="py-8 text-center text-muted-foreground text-sm">
+          Nenhuma despesa neste filtro.
+        </div>
+      ) : usingMonthFilter ? (
+        <Card>
+          <CardHeader className="pb-2 pt-4 px-4">
+            <CardTitle className="text-base">
+              {format(new Date(filterMonth + '-01T12:00:00'), "MMMM 'de' yyyy", { locale: ptBR })} · {filteredExpenses.length}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-4 pb-4">
+            {groupByCategory ? (
+              <div className="space-y-4">{renderGrouped(filteredExpenses)}</div>
+            ) : (
+              <div className="space-y-2">
+                {flatList!.map((e) => <ExpenseRow key={e.id} expense={e} />)}
+                {filteredExpenses.length > visibleCount && (
+                  <Button variant="ghost" size="sm" className="w-full text-xs" onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}>
+                    Ver mais ({filteredExpenses.length - visibleCount} restantes)
+                  </Button>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      ) : (
+        <>
+          {thisMonth.length > 0 && (
+            <Card>
+              <CardHeader className="pb-2 pt-4 px-4">
+                <CardTitle className="text-base flex items-center justify-between">
+                  <span>Este mês</span>
+                  <span className="text-xs font-normal text-muted-foreground">{thisMonth.length} item(s)</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-4 pb-4">
+                {groupByCategory ? <div className="space-y-4">{renderGrouped(thisMonth)}</div> : <div className="space-y-2">{thisMonth.map((e) => <ExpenseRow key={e.id} expense={e} />)}</div>}
+              </CardContent>
+            </Card>
+          )}
+
+          {lastMonthList.length > 0 && (
+            <Card>
+              <CardHeader className="pb-2 pt-4 px-4">
+                <CardTitle className="text-base flex items-center justify-between">
+                  <span>Mês passado</span>
+                  <span className="text-xs font-normal text-muted-foreground">{lastMonthList.length} item(s)</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-4 pb-4">
+                {groupByCategory ? <div className="space-y-4">{renderGrouped(lastMonthList)}</div> : <div className="space-y-2">{lastMonthList.map((e) => <ExpenseRow key={e.id} expense={e} />)}</div>}
+              </CardContent>
+            </Card>
+          )}
+
+          {older.length > 0 && (
+            <Card>
+              <Collapsible open={openOlder} onOpenChange={setOpenOlder}>
+                <CollapsibleTrigger asChild>
+                  <CardHeader className="pb-2 pt-4 px-4 cursor-pointer hover:bg-muted/30 transition-colors">
+                    <CardTitle className="text-base flex items-center justify-between">
+                      <span className="flex items-center gap-2">
+                        {openOlder ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                        Histórico anterior
+                      </span>
+                      <span className="text-xs font-normal text-muted-foreground">{older.length} item(s)</span>
+                    </CardTitle>
+                  </CardHeader>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <CardContent className="px-4 pb-4">
+                    {(() => {
+                      const slice = older.slice(0, visibleCount);
+                      return groupByCategory ? (
+                        <div className="space-y-4">{renderGrouped(slice)}</div>
+                      ) : (
+                        <div className="space-y-2">
+                          {slice.map((e) => <ExpenseRow key={e.id} expense={e} />)}
+                          {older.length > visibleCount && (
+                            <Button variant="ghost" size="sm" className="w-full text-xs" onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}>
+                              Ver mais ({older.length - visibleCount} restantes)
+                            </Button>
+                          )}
+                        </div>
+                      );
+                    })()}
+                  </CardContent>
+                </CollapsibleContent>
+              </Collapsible>
+            </Card>
+          )}
+        </>
+      )}
 
       {/* Add/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -406,12 +563,7 @@ const Despesas = () => {
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs">Valor (R$)</Label>
-              <Input
-                placeholder="0,00"
-                inputMode="decimal"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-              />
+              <Input placeholder="0,00" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} />
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs">Categoria</Label>
@@ -436,7 +588,7 @@ const Despesas = () => {
             <div className="flex items-center justify-between">
               <div>
                 <Label className="text-xs">Despesa recorrente</Label>
-                <p className="text-[10px] text-muted-foreground">Marca como gasto fixo mensal</p>
+                <p className="text-[10px] text-muted-foreground">Repete automaticamente todo mês</p>
               </div>
               <Switch checked={isRecurring} onCheckedChange={setIsRecurring} />
             </div>
