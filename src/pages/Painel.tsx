@@ -131,8 +131,9 @@ const Painel = () => {
     { icon: SlidersHorizontal, label: 'Configurações', path: '/painel/configuracoes' },
   ];
 
-  // Check onboarding status using the flag
-  const onboardingChecked = !roleLoading && barbershop?.onboarding_completed === true;
+  // Check onboarding status using the flag without blocking signed-in users forever
+  const isAuthResolved = !authLoading;
+  const shouldShowLoadingState = authLoading || barberLoading || roleLoading;
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -219,7 +220,7 @@ const Painel = () => {
     }
   };
 
-  if (authLoading || barberLoading || roleLoading || !onboardingChecked) {
+  if (shouldShowLoadingState) {
     return (
       <div className="min-h-screen bg-background flex">
         {/* Skeleton sidebar - desktop */}
@@ -270,8 +271,34 @@ const Painel = () => {
     );
   }
 
-  if (!user) {
+  if (!isAuthResolved || !user) {
     return null;
+  }
+
+  if (!barbershop) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 text-center shadow-card-lg space-y-4">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+            <AlertTriangle className="h-6 w-6" />
+          </div>
+          <div className="space-y-2">
+            <h1 className="text-xl font-semibold text-foreground">Não conseguimos abrir seu painel</h1>
+            <p className="text-sm text-muted-foreground">
+              Seus dados de acesso não foram carregados corretamente. Tente sair e entrar novamente.
+            </p>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Button variant="outline" className="w-full" onClick={() => window.location.reload()}>
+              Tentar novamente
+            </Button>
+            <Button className="w-full btn-primary-gradient" onClick={handleSignOut}>
+              Sair da conta
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
