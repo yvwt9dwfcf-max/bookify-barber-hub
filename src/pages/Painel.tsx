@@ -131,8 +131,10 @@ const Painel = () => {
     { icon: SlidersHorizontal, label: 'Configurações', path: '/painel/configuracoes' },
   ];
 
-  // Check onboarding status using the flag
-  const onboardingChecked = !roleLoading && barbershop?.onboarding_completed === true;
+  // Check onboarding status using the flag without blocking signed-in users forever
+  const isAuthResolved = !authLoading;
+  const isRoleResolved = !roleLoading;
+  const shouldShowLoadingState = authLoading || barberLoading || roleLoading || (!!user && isRoleResolved && !barbershop);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -219,7 +221,7 @@ const Painel = () => {
     }
   };
 
-  if (authLoading || barberLoading || roleLoading || !onboardingChecked) {
+  if (shouldShowLoadingState) {
     return (
       <div className="min-h-screen bg-background flex">
         {/* Skeleton sidebar - desktop */}
@@ -270,7 +272,7 @@ const Painel = () => {
     );
   }
 
-  if (!user) {
+  if (!isAuthResolved || !user) {
     return null;
   }
 

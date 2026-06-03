@@ -26,12 +26,16 @@ export function LoginForm() {
     try {
       const { error } = await signIn(email, password);
       if (error) {
-        if (error.message.includes('Invalid login credentials')) {
+        const message = error.message || '';
+
+        if (message.includes('Invalid login credentials')) {
           toast.error('Email ou senha incorretos');
-        } else if (error.message.includes('Email not confirmed')) {
+        } else if (message.includes('Email not confirmed')) {
           toast.error('Confirme seu email antes de entrar');
+        } else if (message.includes('Load failed') || message.includes('Failed to fetch') || message.includes('NetworkError')) {
+          toast.error('Não foi possível conectar ao servidor agora. Tente novamente em instantes.');
         } else {
-          toast.error(error.message);
+          toast.error(message);
         }
       } else {
         toast.success('Login realizado com sucesso!');
