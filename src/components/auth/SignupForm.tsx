@@ -49,8 +49,8 @@ export function SignupForm() {
         toast.error(error.message);
       } else {
         localStorage.removeItem('selected_plan');
-        toast.success('Conta criada com sucesso! Você já pode acessar o painel.');
-        navigate('/painel');
+        toast.success('Conta criada com sucesso! Entrando no painel...');
+        navigate('/painel', { replace: true });
       }
     } catch {
       toast.error('Erro ao criar conta');
