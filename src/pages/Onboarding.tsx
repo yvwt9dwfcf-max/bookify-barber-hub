@@ -63,6 +63,9 @@ const Onboarding = () => {
   // Step 2 & 3: Days and hours
   const [days, setDays] = useState<DayConfig[]>(defaultDays);
 
+  // Step 4: Closing time
+  const [closingTime, setClosingTime] = useState<string>('');
+
   // Redirect if not authenticated
   useEffect(() => {
     if (!authLoading && !user) {
@@ -170,7 +173,7 @@ const Onboarding = () => {
 
       const { error: updateError } = await supabase
         .from('barbershops')
-        .update({ onboarding_completed: true })
+        .update({ onboarding_completed: true, closing_time: closingTime || null } as any)
         .eq('id', barbershop.id);
 
       if (updateError) throw updateError;
@@ -364,7 +367,7 @@ const Onboarding = () => {
                           <TimeInput
                             value={day.break_start}
                             onChange={(val) => updateDay(day.day_of_week, 'break_start', val)}
-                            className="h-10"
+                            className="h-10 w-full"
                           />
                         </div>
                         <span className="text-muted-foreground mt-5">—</span>
@@ -373,12 +376,24 @@ const Onboarding = () => {
                           <TimeInput
                             value={day.break_end}
                             onChange={(val) => updateDay(day.day_of_week, 'break_end', val)}
-                            className="h-10"
+                            className="h-10 w-full"
                           />
                         </div>
                       </div>
                     </div>
                   ))}
+
+                  <div className="p-3.5 rounded-xl border border-primary/30 bg-primary/5 space-y-2">
+                    <Label className="text-sm font-medium">Encerramento do dia</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Horário em que o sistema sugere fechar o caixa do dia (opcional).
+                    </p>
+                    <TimeInput
+                      value={closingTime}
+                      onChange={setClosingTime}
+                      className="h-10 w-full"
+                    />
+                  </div>
                 </div>
               )}
 

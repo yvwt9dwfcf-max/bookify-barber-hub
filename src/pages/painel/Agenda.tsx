@@ -65,7 +65,7 @@ const ManualAppointmentDialog = lazy(() => import('@/components/painel/ManualApp
 const AppointmentDetailsSheet = lazy(() => import('@/components/painel/AppointmentDetailsSheet'));
 const EditAppointmentDialog = lazy(() => import('@/components/painel/EditAppointmentDialog'));
 const QuickBlockDialog = lazy(() => import('@/components/painel/QuickBlockDialog'));
-const DashboardCards = lazy(() => import('@/components/painel/DashboardCards'));
+const GreetingHeader = lazy(() => import('@/components/painel/GreetingHeader'));
 const ComandaSheet = lazy(() => import('@/components/painel/ComandaSheet'));
 
 const Agenda = () => {
@@ -246,7 +246,7 @@ const Agenda = () => {
   return (
     <Suspense fallback={fallback}>
       <div className="space-y-1.5 pb-20 animate-page-enter">
-        <DashboardCards barbershopId={barbershop?.id} selectedDate={selectedDate} refreshKey={dashboardRefreshKey} />
+        <GreetingHeader barber={barber} barbershop={barbershop} isMaster={isMaster} selectedDate={selectedDate} refreshKey={dashboardRefreshKey} />
 
         <AgendaHeader
           selectedDate={selectedDate}
