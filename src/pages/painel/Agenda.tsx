@@ -246,7 +246,7 @@ const Agenda = () => {
   return (
     <Suspense fallback={fallback}>
       <div className="space-y-1.5 pb-20 animate-page-enter">
-        <DashboardCards barbershopId={barbershop?.id} selectedDate={selectedDate} refreshKey={dashboardRefreshKey} />
+        <GreetingHeader barber={barber} barbershop={barbershop} isMaster={isMaster} selectedDate={selectedDate} refreshKey={dashboardRefreshKey} />
 
         <AgendaHeader
           selectedDate={selectedDate}
