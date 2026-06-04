@@ -63,6 +63,9 @@ const Onboarding = () => {
   // Step 2 & 3: Days and hours
   const [days, setDays] = useState<DayConfig[]>(defaultDays);
 
+  // Step 4: Closing time
+  const [closingTime, setClosingTime] = useState<string>('');
+
   // Redirect if not authenticated
   useEffect(() => {
     if (!authLoading && !user) {
