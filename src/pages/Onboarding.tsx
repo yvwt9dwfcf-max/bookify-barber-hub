@@ -173,7 +173,7 @@ const Onboarding = () => {
 
       const { error: updateError } = await supabase
         .from('barbershops')
-        .update({ onboarding_completed: true })
+        .update({ onboarding_completed: true, closing_time: closingTime || null } as any)
         .eq('id', barbershop.id);
 
       if (updateError) throw updateError;
