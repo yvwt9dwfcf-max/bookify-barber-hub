@@ -202,6 +202,26 @@ const BarbeariaPublica = () => {
     ? [publicProfile.endereco, publicProfile.numero, publicProfile.cidade, publicProfile.estado].filter(Boolean).join(', ')
     : null;
 
+  // Booking availability gate
+  const bookingEnabled = publicProfile?.booking_enabled ?? true;
+  const booking24h = publicProfile?.booking_24h ?? true;
+  const bookingStart = (publicProfile?.booking_start_time || '08:00').slice(0, 5);
+  const bookingEnd = (publicProfile?.booking_end_time || '22:00').slice(0, 5);
+
+  const now = new Date();
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  const toMin = (s: string) => {
+    const [h, m] = s.split(':').map(Number);
+    return (h || 0) * 60 + (m || 0);
+  };
+  const withinHours = booking24h || (nowMin >= toMin(bookingStart) && nowMin < toMin(bookingEnd));
+  const bookingAvailable = bookingEnabled && withinHours;
+  const bookingBlockedReason = !bookingEnabled
+    ? 'Agendamento online indisponível no momento.'
+    : !withinHours
+      ? `Os agendamentos estarão disponíveis a partir das ${bookingStart}.`
+      : null;
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background animate-page-enter">
