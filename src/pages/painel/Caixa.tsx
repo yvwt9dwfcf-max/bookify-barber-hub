@@ -492,17 +492,6 @@ const Caixa = () => {
         )}
       </div>
 
-      {/* Quick actions */}
-      <div className="grid grid-cols-2 gap-2 pt-2">
-        <Button variant="outline" onClick={() => goTab('produtos')}>
-          <Package className="h-4 w-4 mr-1.5" />
-          Produtos
-        </Button>
-        <Button variant="outline" onClick={() => goTab('despesas')}>
-          <Receipt className="h-4 w-4 mr-1.5" />
-          Despesas
-        </Button>
-      </div>
     </div>
   );
 };
