@@ -195,6 +195,36 @@ const PerfilPublico = () => {
     } finally { setSaving(false); }
   };
 
+  // Auto-save booking gating fields without full form save
+  const saveBookingSettings = async (patch: {
+    booking_enabled?: boolean;
+    booking_24h?: boolean;
+    booking_start_time?: string;
+    booking_end_time?: string;
+  }) => {
+    if (!barbershop) return;
+    setBookingSaveStatus('saving');
+    try {
+      if (profile) {
+        const { error } = await supabase.from('public_profiles').update(patch).eq('id', profile.id);
+        if (error) throw error;
+      } else {
+        const { data, error } = await supabase
+          .from('public_profiles')
+          .insert({ barbershop_id: barbershop.id, ...patch })
+          .select()
+          .maybeSingle();
+        if (error) throw error;
+        if (data) setProfile(data as PublicProfile);
+      }
+      setBookingSaveStatus('saved');
+      setTimeout(() => setBookingSaveStatus('idle'), 1500);
+    } catch {
+      setBookingSaveStatus('idle');
+      toast.error('Erro ao salvar');
+    }
+  };
+
   const publicSlug = slugPersonalizado || barbershop?.slug || '';
   const publicLinkReal = publicSlug ? `${window.location.origin}/barbearia/${publicSlug}` : '';
   const publicLinkDisplay = publicSlug ? `bookify.app/${publicSlug}` : '';
