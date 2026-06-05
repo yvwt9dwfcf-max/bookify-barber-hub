@@ -362,6 +362,28 @@ const BarbeariaPublica = () => {
 
       {/* Main Content */}
       <main className="px-4 sm:px-6 pb-12 max-w-lg mx-auto space-y-8">
+        {/* Booking unavailable banner */}
+        {bookingBlockedReason && (
+          <section className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 flex items-start gap-3">
+            <Clock className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-semibold text-foreground">Agenda indisponível</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{bookingBlockedReason}</p>
+              {whatsappLink && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="mt-3 h-8 text-xs gap-1.5"
+                  onClick={() => window.open(whatsappLink, '_blank')}
+                >
+                  <MessageCircle className="h-3.5 w-3.5" />
+                  Falar no WhatsApp
+                </Button>
+              )}
+            </div>
+          </section>
+        )}
+
         {/* Map Embed */}
         {mapAddress && (
           <section className="animate-in fade-in duration-500">
