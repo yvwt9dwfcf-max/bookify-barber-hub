@@ -92,6 +92,10 @@ const PerfilPublico = () => {
         setSlugPersonalizado(data.slug_personalizado || barbershop?.slug || '');
         setFotoCapa(data.foto_capa_url);
         setLogoUrl(data.logo_url);
+        setBookingEnabled((data as any).booking_enabled ?? true);
+        setBooking24h((data as any).booking_24h ?? true);
+        setBookingStart(((data as any).booking_start_time || '08:00').slice(0, 5));
+        setBookingEnd(((data as any).booking_end_time || '22:00').slice(0, 5));
       } else {
         setCidade(barbershop?.city || '');
         setSlugPersonalizado(barbershop?.slug || '');
