@@ -17,6 +17,7 @@ const AgendarBarbearia = () => {
   const [preselectedBarber, setPreselectedBarber] = useState<Barber | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [bookingBlocked, setBookingBlocked] = useState<string | null>(null);
 
   useEffect(() => {
     if (slugOrId) {
@@ -51,6 +52,31 @@ const AgendarBarbearia = () => {
       }
 
       setBarbershop(shopData as Barbershop);
+
+      // Check booking availability gating from public_profiles
+      const { data: profile } = await supabase
+        .from('public_profiles')
+        .select('booking_enabled, booking_24h, booking_start_time, booking_end_time')
+        .eq('barbershop_id', shopData.id)
+        .maybeSingle();
+
+      if (profile) {
+        const enabled = (profile as any).booking_enabled ?? true;
+        const h24 = (profile as any).booking_24h ?? true;
+        const start = ((profile as any).booking_start_time || '08:00').slice(0, 5);
+        const end = ((profile as any).booking_end_time || '22:00').slice(0, 5);
+        const toMin = (s: string) => {
+          const [h, m] = s.split(':').map(Number);
+          return (h || 0) * 60 + (m || 0);
+        };
+        const now = new Date();
+        const nowMin = now.getHours() * 60 + now.getMinutes();
+        if (!enabled) {
+          setBookingBlocked('Agendamento online indisponível no momento.');
+        } else if (!h24 && (nowMin < toMin(start) || nowMin >= toMin(end))) {
+          setBookingBlocked(`Os agendamentos estarão disponíveis a partir das ${start}.`);
+        }
+      }
 
       const { data: barbersData, error: barbersError } = await supabase
         .from('barbers')
