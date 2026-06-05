@@ -534,15 +534,21 @@ const BarbeariaPublica = () => {
           </div>
 
           <DrawerFooter className="pt-2">
-            <Button
-              onClick={handleAgendar}
-              onMouseEnter={prefetchBooking}
-              onTouchStart={prefetchBooking}
-              className="btn-primary-gradient h-12 text-base rounded-xl w-full"
-              disabled={barberServices.length === 0}
-            >
-              Agendar agora
-            </Button>
+            {bookingBlockedReason ? (
+              <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-center">
+                <p className="text-xs text-foreground font-medium">{bookingBlockedReason}</p>
+              </div>
+            ) : (
+              <Button
+                onClick={handleAgendar}
+                onMouseEnter={prefetchBooking}
+                onTouchStart={prefetchBooking}
+                className="btn-primary-gradient h-12 text-base rounded-xl w-full"
+                disabled={barberServices.length === 0 || !bookingAvailable}
+              >
+                Agendar agora
+              </Button>
+            )}
           </DrawerFooter>
         </DrawerContent>
       </Drawer>
