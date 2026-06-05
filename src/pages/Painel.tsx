@@ -23,7 +23,7 @@ import {
   MessageCircle,
   PieChart,
   Share2,
-  Percent,
+  
   Stamp,
   Contact,
   AlertTriangle,
@@ -123,7 +123,7 @@ const Painel = () => {
     ...(isMaster ? [{ icon: UsersRound, label: 'Equipe', path: '/painel/barbeiros' }] : []),
     { icon: Wallet, label: 'Financeiro', path: '/painel/financeiro' },
     ...(isMaster ? [{ icon: Contact, label: 'Clientes', path: '/painel/clientes' }] : []),
-    ...(isMaster ? [{ icon: Percent, label: 'Comissões', path: '/painel/comissoes' }] : []),
+    
     { icon: Stamp, label: 'Fidelidade', path: '/painel/fidelidade' },
     
     { icon: MessageCircle, label: 'WhatsApp', path: '/painel/whatsapp' },

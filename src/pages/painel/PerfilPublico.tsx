@@ -5,9 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import { TimeInput } from '@/components/ui/TimeInput';
 import {
   Upload, MapPin, Instagram, Send as MessageCircle, Link2, Save, Loader2,
-  Camera, Copy, CircleCheck as CheckCircle, TriangleAlert as AlertTriangle, ExternalLink, Trash2, Globe
+  Camera, Copy, CircleCheck as CheckCircle, TriangleAlert as AlertTriangle, ExternalLink, Trash2, Globe,
+  CalendarCheck, Clock
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { PerfilPublicoSkeleton } from '@/components/painel/skeletons';
@@ -29,6 +32,10 @@ interface PublicProfile {
   instagram_url: string | null;
   whatsapp_numero: string | null;
   slug_personalizado: string | null;
+  booking_enabled: boolean;
+  booking_24h: boolean;
+  booking_start_time: string;
+  booking_end_time: string;
 }
 
 const PerfilPublico = () => {
@@ -51,6 +58,11 @@ const PerfilPublico = () => {
   const [slugPersonalizado, setSlugPersonalizado] = useState('');
   const [fotoCapa, setFotoCapa] = useState<string | null>(null);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [bookingEnabled, setBookingEnabled] = useState(true);
+  const [booking24h, setBooking24h] = useState(true);
+  const [bookingStart, setBookingStart] = useState('08:00');
+  const [bookingEnd, setBookingEnd] = useState('22:00');
+  const [bookingSaveStatus, setBookingSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
 
   const coverInputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
@@ -80,6 +92,10 @@ const PerfilPublico = () => {
         setSlugPersonalizado(data.slug_personalizado || barbershop?.slug || '');
         setFotoCapa(data.foto_capa_url);
         setLogoUrl(data.logo_url);
+        setBookingEnabled((data as any).booking_enabled ?? true);
+        setBooking24h((data as any).booking_24h ?? true);
+        setBookingStart(((data as any).booking_start_time || '08:00').slice(0, 5));
+        setBookingEnd(((data as any).booking_end_time || '22:00').slice(0, 5));
       } else {
         setCidade(barbershop?.city || '');
         setSlugPersonalizado(barbershop?.slug || '');
@@ -177,6 +193,36 @@ const PerfilPublico = () => {
         toast.error('Erro ao salvar perfil público');
       }
     } finally { setSaving(false); }
+  };
+
+  // Auto-save booking gating fields without full form save
+  const saveBookingSettings = async (patch: {
+    booking_enabled?: boolean;
+    booking_24h?: boolean;
+    booking_start_time?: string;
+    booking_end_time?: string;
+  }) => {
+    if (!barbershop) return;
+    setBookingSaveStatus('saving');
+    try {
+      if (profile) {
+        const { error } = await supabase.from('public_profiles').update(patch).eq('id', profile.id);
+        if (error) throw error;
+      } else {
+        const { data, error } = await supabase
+          .from('public_profiles')
+          .insert({ barbershop_id: barbershop.id, ...patch })
+          .select()
+          .maybeSingle();
+        if (error) throw error;
+        if (data) setProfile(data as PublicProfile);
+      }
+      setBookingSaveStatus('saved');
+      setTimeout(() => setBookingSaveStatus('idle'), 1500);
+    } catch {
+      setBookingSaveStatus('idle');
+      toast.error('Erro ao salvar');
+    }
   };
 
   const publicSlug = slugPersonalizado || barbershop?.slug || '';
@@ -363,6 +409,86 @@ const PerfilPublico = () => {
           </div>
         </div>
       </Section>
+
+      {/* === AGENDAMENTO ONLINE === */}
+      <Section title="Agendamento online" icon={<CalendarCheck className="h-4 w-4" />}>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium">
+              {bookingEnabled ? 'Ativado' : 'Desativado'}
+            </p>
+            <p className="text-[11px] text-muted-foreground">
+              {bookingEnabled
+                ? 'Clientes podem agendar pelo link público'
+                : 'Sua página pública mostrará agenda indisponível'}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            {bookingSaveStatus === 'saving' && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
+            {bookingSaveStatus === 'saved' && <CheckCircle className="h-3.5 w-3.5 text-primary" />}
+            <Switch
+              checked={bookingEnabled}
+              onCheckedChange={(v) => {
+                setBookingEnabled(v);
+                saveBookingSettings({ booking_enabled: v });
+              }}
+            />
+          </div>
+        </div>
+
+        {bookingEnabled && (
+          <div className="pt-3 border-t border-border/40 space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium flex items-center gap-1.5">
+                  <Clock className="h-3.5 w-3.5" /> Aceitar agendamentos 24h
+                </p>
+                <p className="text-[11px] text-muted-foreground">
+                  {booking24h ? 'Sem restrição de horário' : 'Apenas em horário definido'}
+                </p>
+              </div>
+              <Switch
+                checked={booking24h}
+                onCheckedChange={(v) => {
+                  setBooking24h(v);
+                  saveBookingSettings({ booking_24h: v });
+                }}
+              />
+            </div>
+
+            {!booking24h && (
+              <div className="flex items-center gap-3 pt-1">
+                <div className="space-y-1">
+                  <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Abre</Label>
+                  <TimeInput
+                    value={bookingStart}
+                    onChange={(v) => {
+                      setBookingStart(v);
+                      if (/^\d{2}:\d{2}$/.test(v)) saveBookingSettings({ booking_start_time: v });
+                    }}
+                  />
+                </div>
+                <div className="text-muted-foreground text-sm pt-5">—</div>
+                <div className="space-y-1">
+                  <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Fecha</Label>
+                  <TimeInput
+                    value={bookingEnd}
+                    onChange={(v) => {
+                      setBookingEnd(v);
+                      if (/^\d{2}:\d{2}$/.test(v)) saveBookingSettings({ booking_end_time: v });
+                    }}
+                  />
+                </div>
+                <p className="text-[11px] text-muted-foreground self-end pb-2 flex-1">
+                  Fora desse horário, o cliente verá uma mensagem com o próximo horário disponível.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+      </Section>
+
+
 
       {/* === SOBRE === */}
       <Section title="Sobre" icon={<span className="text-sm">📝</span>}>

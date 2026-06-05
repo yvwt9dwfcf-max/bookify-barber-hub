@@ -4,7 +4,18 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ComissoesSkeleton } from '@/components/painel/skeletons';
-import { Coins as DollarSign, UsersRound as Users, ChevronDown, ChevronUp, Save } from 'lucide-react';
+import {
+  Coins as DollarSign,
+  UsersRound as Users,
+  ChevronDown,
+  ChevronUp,
+  Save,
+  TrendingUp,
+  Percent as PercentIcon,
+  Wallet,
+  Receipt,
+  Sparkles,
+} from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -14,6 +25,9 @@ interface OutletContext {
   barbershop: { id: string; name: string } | null;
   isMaster: boolean;
 }
+
+const formatCurrency = (v: number) =>
+  new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
 
 const Comissoes = () => {
   const { barbershop, isMaster } = useOutletContext<OutletContext>();
@@ -78,7 +92,6 @@ const Comissoes = () => {
     enabled: !!barbershop?.id && isMaster,
   });
 
-  // Completed appointments for commission report
   const { data: completedAppointments } = useQuery({
     queryKey: ['comissoes-appointments', barbershop?.id],
     queryFn: async () => {
@@ -142,29 +155,40 @@ const Comissoes = () => {
     onError: () => toast.error('Erro ao salvar'),
   });
 
-  const getCommission = (barberId: string) => {
-    return commissions?.find(c => c.barber_id === barberId)?.default_percentage ?? 50;
-  };
+  const getCommission = (barberId: string) =>
+    commissions?.find(c => c.barber_id === barberId)?.default_percentage ?? 50;
 
-  const getOverride = (barberId: string, serviceId: string) => {
-    return overrides?.find(o => o.barber_id === barberId && o.service_id === serviceId)?.percentage;
-  };
+  const getOverride = (barberId: string, serviceId: string) =>
+    overrides?.find(o => o.barber_id === barberId && o.service_id === serviceId)?.percentage;
 
-  const getBarberMonthlyReport = (barberId: string) => {
-    const barberApts = completedAppointments?.filter(a => a.barber_id === barberId) || [];
-    let totalRevenue = 0;
-    let totalCommission = 0;
-    barberApts.forEach(apt => {
+  const getBarberReport = (barberId: string) => {
+    const apts = completedAppointments?.filter(a => a.barber_id === barberId) || [];
+    let revenue = 0;
+    let commission = 0;
+    apts.forEach((apt: any) => {
       const price = Number(apt.services?.price || 0);
       const override = getOverride(barberId, apt.service_id || '');
       const pct = override ?? getCommission(barberId);
-      totalRevenue += price;
-      totalCommission += price * (pct / 100);
+      revenue += price;
+      commission += price * (pct / 100);
     });
-    return { count: barberApts.length, totalRevenue, totalCommission };
+    const profit = revenue - commission;
+    const avgTicket = apts.length > 0 ? revenue / apts.length : 0;
+    return { count: apts.length, revenue, commission, profit, avgTicket };
   };
 
-  const formatCurrency = (value: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+  // Totals
+  const totals = (barbers || []).reduce(
+    (acc, b) => {
+      const r = getBarberReport(b.id);
+      acc.revenue += r.revenue;
+      acc.commission += r.commission;
+      acc.profit += r.profit;
+      acc.count += r.count;
+      return acc;
+    },
+    { revenue: 0, commission: 0, profit: 0, count: 0 }
+  );
 
   const isLoading = barbersLoading || commissionsLoading;
 
@@ -177,99 +201,160 @@ const Comissoes = () => {
   }
 
   return (
-    <div className="space-y-4 animate-page-enter">
-      <div className="pb-1">
-        <h1 className="text-xl font-bold flex items-center gap-2">
-          <DollarSign className="h-5 w-5 text-primary" />
-          Gestão de Comissões
-        </h1>
-        <p className="text-sm text-muted-foreground">Defina o percentual de comissão para cada barbeiro e acompanhe quanto cada um faturou no mês.</p>
-      </div>
+    <div className="space-y-4 pt-4 animate-page-enter">
+      {/* Header / summary */}
+      <Card className="overflow-hidden border-0">
+        <CardContent
+          className="p-5"
+          style={{
+            background:
+              'linear-gradient(135deg, hsl(var(--primary) / 0.10), hsl(var(--primary) / 0.02))',
+          }}
+        >
+          <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-semibold mb-1">
+            Lucro líquido após comissões
+          </p>
+          <p className="text-3xl font-bold tabular-nums text-primary">
+            {formatCurrency(totals.profit)}
+          </p>
+          <div className="grid grid-cols-3 gap-2 mt-4">
+            <div className="rounded-xl p-2.5 bg-card/50 border border-border/40">
+              <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-semibold">Bruto</p>
+              <p className="text-sm font-bold tabular-nums">{formatCurrency(totals.revenue)}</p>
+            </div>
+            <div className="rounded-xl p-2.5 bg-card/50 border border-border/40">
+              <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-semibold">Comissões</p>
+              <p className="text-sm font-bold tabular-nums text-amber-500">{formatCurrency(totals.commission)}</p>
+            </div>
+            <div className="rounded-xl p-2.5 bg-card/50 border border-border/40">
+              <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-semibold">Atend.</p>
+              <p className="text-sm font-bold tabular-nums">{totals.count}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {isLoading ? (
         <ComissoesSkeleton />
       ) : (
         <div className="space-y-3">
+          {(barbers || []).length === 0 && (
+            <Card>
+              <CardContent className="p-6 text-center text-sm text-muted-foreground">
+                Nenhum barbeiro ativo.
+              </CardContent>
+            </Card>
+          )}
           {barbers?.map(barber => {
             const commission = getCommission(barber.id);
-            const report = getBarberMonthlyReport(barber.id);
+            const r = getBarberReport(barber.id);
             const isExpanded = expandedBarber === barber.id;
             const editKey = `default-${barber.id}`;
             const currentEditValue = editingValues[editKey] ?? commission;
+            const profitPct = r.revenue > 0 ? (r.profit / r.revenue) * 100 : 0;
 
             return (
               <Card key={barber.id} className="overflow-hidden">
                 <CardContent className="p-0">
-                  {/* Barber header */}
-                  <div className="p-4 flex items-center justify-between">
+                  {/* Header */}
+                  <div className="p-4">
                     <div className="flex items-center gap-3">
                       {barber.photo_url ? (
-                        <img src={barber.photo_url} alt={barber.name} className="w-10 h-10 rounded-full object-cover" />
+                        <img src={barber.photo_url} alt={barber.name} className="w-11 h-11 rounded-full object-cover ring-2 ring-border" />
                       ) : (
-                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center ring-2 ring-border">
                           <Users className="h-5 w-5 text-primary" />
                         </div>
                       )}
-                      <div>
-                        <p className="font-semibold text-sm">{barber.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {report.count} atend. este mês • {formatCurrency(report.totalCommission)} comissão
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-sm truncate">{barber.name}</p>
+                        <p className="text-[11px] text-muted-foreground">
+                          {r.count} atend. · ticket {formatCurrency(r.avgTicket)}
                         </p>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="flex items-center gap-1">
-                        <Input
-                          type="number"
-                          min={0}
-                          max={100}
-                          value={currentEditValue}
-                          onChange={(e) => setEditingValues(prev => ({ ...prev, [editKey]: Number(e.target.value) }))}
-                          className="w-16 h-8 text-sm text-center"
-                        />
-                        <span className="text-xs text-muted-foreground">%</span>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <div className="flex items-center gap-0.5 rounded-lg bg-muted/50 border border-border/40 px-1.5 py-1">
+                          <Input
+                            type="number"
+                            min={0}
+                            max={100}
+                            value={currentEditValue}
+                            onChange={(e) =>
+                              setEditingValues(prev => ({ ...prev, [editKey]: Number(e.target.value) }))
+                            }
+                            className="w-12 h-7 text-xs text-center border-0 bg-transparent p-0 focus-visible:ring-0"
+                          />
+                          <PercentIcon className="h-3 w-3 text-muted-foreground" />
+                        </div>
                         <Button
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8"
-                          onClick={() => saveCommissionMutation.mutate({ barberId: barber.id, percentage: currentEditValue })}
+                          onClick={() =>
+                            saveCommissionMutation.mutate({ barberId: barber.id, percentage: currentEditValue })
+                          }
                         >
                           <Save className="h-3.5 w-3.5 text-primary" />
                         </Button>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => setExpandedBarber(isExpanded ? null : barber.id)}
-                      >
-                        {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                      </Button>
                     </div>
+
+                    {/* Metrics row */}
+                    <div className="grid grid-cols-3 gap-2 mt-3">
+                      <Metric icon={<TrendingUp className="h-3 w-3 text-primary" />} label="Bruto" value={formatCurrency(r.revenue)} />
+                      <Metric icon={<Wallet className="h-3 w-3 text-amber-500" />} label="Comissão" value={formatCurrency(r.commission)} accent="amber" />
+                      <Metric icon={<Sparkles className="h-3 w-3 text-primary" />} label="Lucro" value={formatCurrency(r.profit)} accent="primary" />
+                    </div>
+
+                    {/* Profit bar */}
+                    {r.revenue > 0 && (
+                      <div className="mt-3">
+                        <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-1">
+                          <span>Margem da casa</span>
+                          <span className="font-semibold tabular-nums text-foreground">{profitPct.toFixed(0)}%</span>
+                        </div>
+                        <div className="h-1.5 rounded-full bg-muted overflow-hidden flex">
+                          <div className="h-full bg-primary" style={{ width: `${profitPct}%` }} />
+                          <div className="h-full bg-amber-500/70" style={{ width: `${100 - profitPct}%` }} />
+                        </div>
+                      </div>
+                    )}
+
+                    <button
+                      onClick={() => setExpandedBarber(isExpanded ? null : barber.id)}
+                      className="mt-3 w-full flex items-center justify-center gap-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {isExpanded ? <><ChevronUp className="h-3 w-3" /> Recolher</> : <><ChevronDown className="h-3 w-3" /> Comissão por serviço</>}
+                    </button>
                   </div>
 
-                  {/* Per-service overrides */}
                   {isExpanded && services && services.length > 0 && (
                     <div className="border-t border-border px-4 py-3 bg-muted/30 space-y-2">
-                      <p className="text-xs font-medium text-muted-foreground mb-2">Override por serviço (deixe vazio para usar o padrão {commission}%)</p>
+                      <p className="text-[10px] font-medium text-muted-foreground mb-1">
+                        Padrão {commission}% — defina exceções por serviço
+                      </p>
                       {services.map(service => {
                         const overrideKey = `override-${barber.id}-${service.id}`;
                         const existing = getOverride(barber.id, service.id);
                         const editVal = editingOverrides[overrideKey] ?? existing ?? '';
                         return (
-                          <div key={service.id} className="flex items-center justify-between">
-                            <span className="text-sm">{service.name} <span className="text-xs text-muted-foreground">({formatCurrency(service.price)})</span></span>
-                            <div className="flex items-center gap-1">
+                          <div key={service.id} className="flex items-center justify-between gap-2">
+                            <span className="text-xs truncate flex-1">
+                              {service.name} <span className="text-muted-foreground">{formatCurrency(service.price)}</span>
+                            </span>
+                            <div className="flex items-center gap-1 shrink-0">
                               <Input
                                 type="number"
                                 min={0}
                                 max={100}
                                 placeholder={`${commission}`}
                                 value={editVal}
-                                onChange={(e) => setEditingOverrides(prev => ({ ...prev, [overrideKey]: Number(e.target.value) }))}
-                                className="w-16 h-7 text-xs text-center"
+                                onChange={(e) =>
+                                  setEditingOverrides(prev => ({ ...prev, [overrideKey]: Number(e.target.value) }))
+                                }
+                                className="w-14 h-7 text-xs text-center"
                               />
-                              <span className="text-xs text-muted-foreground">%</span>
+                              <span className="text-[10px] text-muted-foreground">%</span>
                               <Button
                                 variant="ghost"
                                 size="icon"
@@ -298,5 +383,19 @@ const Comissoes = () => {
     </div>
   );
 };
+
+const Metric = ({
+  icon, label, value, accent,
+}: { icon: React.ReactNode; label: string; value: string; accent?: 'primary' | 'amber' }) => (
+  <div className="rounded-lg bg-muted/40 border border-border/30 p-2">
+    <div className="flex items-center gap-1 text-[9px] uppercase tracking-wider text-muted-foreground font-semibold">
+      {icon}
+      {label}
+    </div>
+    <p className={`text-xs font-bold tabular-nums mt-0.5 ${accent === 'primary' ? 'text-primary' : accent === 'amber' ? 'text-amber-500' : ''}`}>
+      {value}
+    </p>
+  </div>
+);
 
 export default Comissoes;
