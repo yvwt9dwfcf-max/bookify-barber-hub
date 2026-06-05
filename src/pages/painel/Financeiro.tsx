@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Wallet, Package, Receipt, ChartPie, Target, TrendingUp, TrendingDown, Sparkles, ShoppingCart, Users, ArrowUp, ArrowDown } from 'lucide-react';
+import { Wallet, Package, Receipt, ChartPie, Target, TrendingUp, TrendingDown, Sparkles, ShoppingCart, Users, ArrowUp, ArrowDown, Percent } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, startOfMonth, endOfMonth, subMonths, getDate } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -17,6 +17,7 @@ import Caixa from './Caixa';
 import Produtos from './Produtos';
 import Despesas from './Despesas';
 import Relatorios from './Relatorios';
+import Comissoes from './Comissoes';
 import BarbersReport from '@/components/painel/BarbersReport';
 
 interface ContextType {
@@ -33,6 +34,7 @@ const TABS = [
   { value: 'caixa', label: 'Caixa', icon: Wallet },
   { value: 'produtos', label: 'Produtos', icon: Package },
   { value: 'despesas', label: 'Despesas', icon: Receipt },
+  { value: 'comissoes', label: 'Comissões', icon: Percent },
   { value: 'relatorios', label: 'Relatórios', icon: ChartPie },
   { value: 'barbeiros', label: 'Barbeiros', icon: Users },
   { value: 'metas', label: 'Metas', icon: Target },
@@ -433,7 +435,7 @@ const Financeiro = () => {
 
       <Tabs value={tab} onValueChange={handleTab}>
         <div className="-mx-3 md:mx-0 overflow-x-auto scrollbar-hide">
-          <TabsList className="inline-flex h-11 rounded-lg p-1 mx-3 md:mx-0 w-max md:w-full md:grid md:grid-cols-7">
+          <TabsList className="inline-flex h-11 rounded-lg p-1 mx-3 md:mx-0 w-max md:w-full md:grid md:grid-cols-8">
             {TABS.map((t) => (
               <TabsTrigger key={t.value} value={t.value} className="rounded-md h-full px-3 text-xs gap-1.5 whitespace-nowrap">
                 <t.icon className="h-3.5 w-3.5" />
@@ -447,6 +449,7 @@ const Financeiro = () => {
         <TabsContent value="caixa"><Caixa /></TabsContent>
         <TabsContent value="produtos"><Produtos /></TabsContent>
         <TabsContent value="despesas"><Despesas /></TabsContent>
+        <TabsContent value="comissoes"><Comissoes /></TabsContent>
         <TabsContent value="relatorios"><Relatorios /></TabsContent>
         <TabsContent value="barbeiros">
           {ctx.isMaster && ctx.barbershop?.id ? (
