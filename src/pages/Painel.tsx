@@ -23,7 +23,7 @@ import {
   MessageCircle,
   PieChart,
   Share2,
-  Percent,
+  
   Stamp,
   Contact,
   AlertTriangle,
