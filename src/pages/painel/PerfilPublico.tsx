@@ -5,9 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import { TimeInput } from '@/components/ui/TimeInput';
 import {
   Upload, MapPin, Instagram, Send as MessageCircle, Link2, Save, Loader2,
-  Camera, Copy, CircleCheck as CheckCircle, TriangleAlert as AlertTriangle, ExternalLink, Trash2, Globe
+  Camera, Copy, CircleCheck as CheckCircle, TriangleAlert as AlertTriangle, ExternalLink, Trash2, Globe,
+  CalendarCheck, Clock
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { PerfilPublicoSkeleton } from '@/components/painel/skeletons';
@@ -29,6 +32,10 @@ interface PublicProfile {
   instagram_url: string | null;
   whatsapp_numero: string | null;
   slug_personalizado: string | null;
+  booking_enabled: boolean;
+  booking_24h: boolean;
+  booking_start_time: string;
+  booking_end_time: string;
 }
 
 const PerfilPublico = () => {
@@ -51,6 +58,11 @@ const PerfilPublico = () => {
   const [slugPersonalizado, setSlugPersonalizado] = useState('');
   const [fotoCapa, setFotoCapa] = useState<string | null>(null);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [bookingEnabled, setBookingEnabled] = useState(true);
+  const [booking24h, setBooking24h] = useState(true);
+  const [bookingStart, setBookingStart] = useState('08:00');
+  const [bookingEnd, setBookingEnd] = useState('22:00');
+  const [bookingSaveStatus, setBookingSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
 
   const coverInputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
