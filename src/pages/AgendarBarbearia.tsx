@@ -172,13 +172,25 @@ const AgendarBarbearia = () => {
               {barbershop?.name}
             </h1>
           </div>
-          <Suspense fallback={<SkeletonCard />}>
-            <BookingFlow 
-              barbershopId={barbershop?.id} 
-              availableBarbers={barbers}
-              preselectedBarber={preselectedBarber}
-            />
-          </Suspense>
+          {bookingBlocked ? (
+            <Card className="max-w-md mx-auto border-amber-500/30 bg-amber-500/5">
+              <CardContent className="p-8 text-center space-y-2">
+                <div className="w-12 h-12 rounded-2xl mx-auto flex items-center justify-center bg-amber-500/15">
+                  <Building2 className="h-6 w-6 text-amber-500" />
+                </div>
+                <h2 className="text-lg font-semibold">Agenda indisponível</h2>
+                <p className="text-sm text-muted-foreground">{bookingBlocked}</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <Suspense fallback={<SkeletonCard />}>
+              <BookingFlow
+                barbershopId={barbershop?.id}
+                availableBarbers={barbers}
+                preselectedBarber={preselectedBarber}
+              />
+            </Suspense>
+          )}
         </div>
       </main>
     </div>
