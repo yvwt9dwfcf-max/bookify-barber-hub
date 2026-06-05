@@ -904,6 +904,10 @@ export type Database = {
       public_profiles: {
         Row: {
           barbershop_id: string
+          booking_24h: boolean
+          booking_enabled: boolean
+          booking_end_time: string
+          booking_start_time: string
           cep: string | null
           cidade: string | null
           created_at: string
@@ -924,6 +928,10 @@ export type Database = {
         }
         Insert: {
           barbershop_id: string
+          booking_24h?: boolean
+          booking_enabled?: boolean
+          booking_end_time?: string
+          booking_start_time?: string
           cep?: string | null
           cidade?: string | null
           created_at?: string
@@ -944,6 +952,10 @@ export type Database = {
         }
         Update: {
           barbershop_id?: string
+          booking_24h?: boolean
+          booking_enabled?: boolean
+          booking_end_time?: string
+          booking_start_time?: string
           cep?: string | null
           cidade?: string | null
           created_at?: string
