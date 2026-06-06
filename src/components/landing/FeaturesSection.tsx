@@ -1,100 +1,83 @@
-import { Card, CardContent } from '@/components/ui/card';
-import { 
-  CalendarDays as Calendar, Timer as Clock, UsersRound as Users, Smartphone, 
-  PieChart as BarChart3, ShieldCheck as Shield, Stamp as Gift, Coins as DollarSign, Share2 as Globe 
-} from 'lucide-react';
+import { CalendarDays, Users, BarChart3, Smartphone, Stamp, DollarSign } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const features = [
   {
-    icon: Calendar,
-    title: 'Agenda sem confusão',
-    description: 'Controle seus horários em tempo real. Nada de caderninho ou WhatsApp lotado.',
+    icon: CalendarDays,
+    title: 'Agenda inteligente',
+    description: 'Bloqueios, pausas, recorrências e prevenção de conflitos em tempo real.',
   },
   {
     icon: Smartphone,
-    title: 'Clientes agendam sozinhos',
-    description: 'Mande o link e pronto. Seu cliente escolhe o horário sem te incomodar.',
+    title: 'Agendamento online',
+    description: 'Link público próprio. Seu cliente agenda em 30 segundos, sem login.',
   },
   {
     icon: Users,
     title: 'Equipe organizada',
-    description: 'Cada barbeiro com sua agenda, seus horários e suas permissões.',
-  },
-  {
-    icon: Clock,
-    title: 'Horários do seu jeito',
-    description: 'Defina expediente, pausas e folgas em poucos cliques.',
-  },
-  {
-    icon: BarChart3,
-    title: 'Saiba quanto faturou',
-    description: 'Veja o faturamento, os atendimentos e o desempenho de cada barbeiro.',
-  },
-  {
-    icon: Shield,
-    title: 'Dados sempre seguros',
-    description: 'Criptografia e backups automáticos. Seus dados não se perdem.',
-  },
-  {
-    icon: Gift,
-    title: 'Cliente que volta',
-    description: 'Programa de fidelidade com pontos. Seu cliente volta e indica outros.',
+    description: 'Permissões granulares, agendas individuais e metas por profissional.',
   },
   {
     icon: DollarSign,
-    title: 'Comissões na mão',
-    description: 'Calcule comissão por barbeiro e por serviço. Sem planilha, sem erro.',
+    title: 'Financeiro completo',
+    description: 'Caixa, despesas, comissões automáticas e relatórios de lucro líquido.',
+  },
+  {
+    icon: BarChart3,
+    title: 'Indicadores reais',
+    description: 'Ticket médio, taxa de retorno e desempenho por barbeiro e por serviço.',
+  },
+  {
+    icon: Stamp,
+    title: 'Fidelidade automática',
+    description: 'Programa de pontos integrado ao agendamento. Mais retenção, sem esforço.',
   },
 ];
 
 const fadeInUp = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: 'easeOut' as const } },
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' as const } },
 };
 
-const staggerContainer = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.1 } },
-};
+const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.06 } } };
 
 export function FeaturesSection() {
   return (
-    <section id="features" className="py-20 md:py-28 px-4 sm:px-6 bg-card/30">
+    <section id="features" className="py-20 md:py-28 px-4 sm:px-6">
       <div className="max-w-6xl mx-auto">
-        <motion.div 
-          initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-50px' }}
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: '-50px' }}
           variants={fadeInUp}
-          className="text-center mb-16"
+          className="max-w-2xl mb-14"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-6">
-            <Globe className="h-4 w-4" />
-            Funcionalidades
-          </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-5">
-            Tudo pra você trabalhar tranquilo
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary mb-4">Plataforma completa</p>
+          <h2 className="text-3xl sm:text-4xl md:text-[2.75rem] font-bold tracking-tight leading-[1.1] mb-4 text-foreground">
+            Tudo que sua operação precisa.
+            <br />
+            <span className="text-muted-foreground">Nada que não precisa.</span>
           </h2>
-          <p className="text-muted-foreground text-lg max-w-xl mx-auto leading-relaxed">
-            Organização, controle e mais tempo pra fazer o que você faz de melhor.
-          </p>
         </motion.div>
 
-        <motion.div 
-          initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-80px' }}
-          variants={staggerContainer}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: '-80px' }}
+          variants={stagger}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-border/30 rounded-2xl overflow-hidden border border-border/30"
         >
           {features.map((feature) => (
-            <motion.div key={feature.title} variants={fadeInUp}>
-              <Card className="group border-border/30 bg-card/80 backdrop-blur-sm hover:shadow-card-lg hover:border-primary/20 transition-all duration-300 hover:-translate-y-1 h-full">
-                <CardContent className="p-6">
-                  <div className="w-11 h-11 rounded-xl flex items-center justify-center mb-4 transition-colors duration-300" style={{ background: 'var(--primary-gradient)' }}>
-                    <feature.icon className="h-5 w-5 text-white" />
-                  </div>
-                  <h3 className="font-bold text-base mb-2">{feature.title}</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">{feature.description}</p>
-                </CardContent>
-              </Card>
+            <motion.div
+              key={feature.title}
+              variants={fadeInUp}
+              className="bg-card p-7 hover:bg-secondary/40 transition-colors duration-300"
+            >
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-5">
+                <feature.icon className="h-5 w-5 text-primary" strokeWidth={2} />
+              </div>
+              <h3 className="font-semibold text-base mb-2 text-foreground tracking-tight">{feature.title}</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed">{feature.description}</p>
             </motion.div>
           ))}
         </motion.div>

@@ -1,7 +1,6 @@
 import { LandingNav } from '@/components/landing/LandingNav';
 import { HeroSection } from '@/components/landing/HeroSection';
 import { StatsStrip } from '@/components/landing/StatsStrip';
-import { VideoSection } from '@/components/landing/VideoSection';
 import { FeaturesSection } from '@/components/landing/FeaturesSection';
 import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
 import { SocialProofSection } from '@/components/landing/SocialProofSection';
@@ -13,7 +12,6 @@ const LandingPage = () => {
     <div className="min-h-screen bg-background overflow-hidden">
       <LandingNav />
       <HeroSection />
-      <VideoSection />
       <StatsStrip />
       <FeaturesSection />
       <HowItWorksSection />
