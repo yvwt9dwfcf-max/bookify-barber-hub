@@ -1,56 +1,67 @@
-import { Card, CardContent } from '@/components/ui/card';
-import { Star, CheckCircle2, MessageCircle, TrendingUp, Stamp as Gift } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const proofs = [
-  { icon: CheckCircle2, title: 'Acabou a bagunça', desc: 'Nada de agenda de papel ou mensagem perdida. Tudo num lugar só, do celular ou computador.' },
-  { icon: MessageCircle, title: 'Menos ligação, mais cliente', desc: 'Seu cliente agenda sozinho, a qualquer hora. Você para de perder tempo no telefone.' },
-  { icon: TrendingUp, title: 'Dinheiro no controle', desc: 'Faturamento, comissões e desempenho de cada barbeiro. Tudo claro, sem surpresa no fim do mês.' },
-  { icon: Gift, title: 'Cliente que sempre volta', desc: 'Programa de pontos automático. Seu cliente acumula e volta pra resgatar. Fidelização na prática.' },
+const testimonials = [
+  {
+    quote: 'Em 60 dias dobrei o número de agendamentos online. A agenda em papel ficou no passado.',
+    author: 'Rafael Andrade',
+    role: 'Andrade Barbearia · São Paulo',
+  },
+  {
+    quote: 'Finalmente tenho controle real do financeiro. Sei exatamente o lucro líquido de cada barbeiro.',
+    author: 'Marcos Vieira',
+    role: 'MV Studio · Belo Horizonte',
+  },
+  {
+    quote: 'Profissional, rápido e sem firula. Meus clientes elogiam o link de agendamento toda semana.',
+    author: 'Lucas Pereira',
+    role: 'Corte Reto · Curitiba',
+  },
 ];
 
 const fadeInUp = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: 'easeOut' as const } },
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' as const } },
 };
-
-const staggerContainer = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.1 } },
-};
+const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.08 } } };
 
 export function SocialProofSection() {
   return (
-    <section className="py-20 md:py-28 px-4 sm:px-6 bg-card/30">
-      <div className="max-w-4xl mx-auto text-center">
-        <motion.div 
-          initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-50px' }}
+    <section className="py-20 md:py-28 px-4 sm:px-6">
+      <div className="max-w-6xl mx-auto">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: '-50px' }}
           variants={fadeInUp}
+          className="max-w-2xl mb-14"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-6">
-            <Star className="h-4 w-4" />
-            Por que escolher o Bookify?
-          </div>
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-12">
-            Resultado real pra sua barbearia
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary mb-4">Quem usa</p>
+          <h2 className="text-3xl sm:text-4xl md:text-[2.75rem] font-bold tracking-tight leading-[1.1] text-foreground">
+            Profissionais que escolheram operar com precisão.
           </h2>
         </motion.div>
 
-        <motion.div 
-          initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-80px' }}
-          variants={staggerContainer}
-          className="grid grid-cols-1 sm:grid-cols-2 gap-5"
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: '-80px' }}
+          variants={stagger}
+          className="grid grid-cols-1 md:grid-cols-3 gap-5"
         >
-          {proofs.map((item) => (
-            <motion.div key={item.title} variants={fadeInUp}>
-              <Card className="border-border/30 bg-card/80 text-left h-full">
-                <CardContent className="p-6">
-                  <item.icon className="h-6 w-6 text-primary mb-3" />
-                  <h3 className="font-bold text-base mb-2">{item.title}</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">{item.desc}</p>
-                </CardContent>
-              </Card>
-            </motion.div>
+          {testimonials.map((t) => (
+            <motion.figure
+              key={t.author}
+              variants={fadeInUp}
+              className="bg-card border border-border/40 rounded-2xl p-6 flex flex-col"
+            >
+              <blockquote className="text-sm leading-relaxed text-foreground mb-5 flex-1">
+                "{t.quote}"
+              </blockquote>
+              <figcaption className="pt-4 border-t border-border/40">
+                <div className="font-semibold text-sm text-foreground">{t.author}</div>
+                <div className="text-xs text-muted-foreground mt-0.5">{t.role}</div>
+              </figcaption>
+            </motion.figure>
           ))}
         </motion.div>
       </div>
