@@ -182,7 +182,7 @@
   /* Better touch targets for mobile - only for standalone interactive elements */
   button:not(.inline-size),
   [role="button"]:not(.inline-size) {
-    min-height: 44px;
+    min-height: 36px;
   }
 
   /* Prevent text selection on interactive elements */
