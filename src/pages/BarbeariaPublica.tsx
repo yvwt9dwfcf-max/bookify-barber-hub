@@ -51,7 +51,15 @@ interface ServiceData {
   price: number;
   barber_id: string;
   is_global: boolean;
+  photo_url: string | null;
 }
+
+interface BarberServicePhoto {
+  barber_id: string;
+  service_id: string;
+  photo_url: string;
+}
+
 
 interface GalleryImage {
   id: string;
