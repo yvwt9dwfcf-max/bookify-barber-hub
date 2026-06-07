@@ -51,7 +51,15 @@ interface ServiceData {
   price: number;
   barber_id: string;
   is_global: boolean;
+  photo_url: string | null;
 }
+
+interface BarberServicePhoto {
+  barber_id: string;
+  service_id: string;
+  photo_url: string;
+}
+
 
 interface GalleryImage {
   id: string;
@@ -76,6 +84,7 @@ const BarbeariaPublica = () => {
   const [publicProfile, setPublicProfile] = useState<PublicProfileData | null>(null);
   const [barbers, setBarbers] = useState<BarberData[]>([]);
   const [services, setServices] = useState<ServiceData[]>([]);
+  const [barberServicePhotos, setBarberServicePhotos] = useState<BarberServicePhoto[]>([]);
   const [gallery, setGallery] = useState<GalleryImage[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -166,7 +175,7 @@ const BarbeariaPublica = () => {
           .order('name'),
         supabase
           .from('services')
-          .select('id, name, duration_minutes, price, barber_id, is_global')
+          .select('id, name, duration_minutes, price, barber_id, is_global, photo_url')
           .eq('barbershop_id', shop.id)
           .eq('active', true),
         supabase
@@ -181,10 +190,16 @@ const BarbeariaPublica = () => {
           .maybeSingle(),
       ]);
 
+      const { data: servicePhotosData } = await (supabase as any)
+        .from('barber_service_photos')
+        .select('barber_id, service_id, photo_url')
+        .eq('barbershop_id', shop.id);
+
       setBarbers(barbersRes.data || []);
       setServices(servicesRes.data || []);
       setGallery(galleryRes.data || []);
       setPublicProfile(profileRes.data as PublicProfileData | null);
+      setBarberServicePhotos((servicePhotosData || []) as BarberServicePhoto[]);
     } catch (err) {
       console.error(err);
       setNotFound(true);
@@ -210,7 +225,14 @@ const BarbeariaPublica = () => {
   };
 
   const barberServices = selectedBarber
-    ? services.filter(s => s.is_global || s.barber_id === selectedBarber.id)
+    ? services
+        .filter(s => s.is_global || s.barber_id === selectedBarber.id)
+        .map(s => {
+          const override = barberServicePhotos.find(
+            p => p.barber_id === selectedBarber.id && p.service_id === s.id
+          );
+          return { ...s, display_photo_url: override?.photo_url || s.photo_url || null };
+        })
     : [];
 
   const displayCity = publicProfile?.cidade || barbershop?.city;
@@ -298,15 +320,6 @@ const BarbeariaPublica = () => {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
           </div>
-        ) : barbershop?.photo_url ? (
-          <div className="relative h-56 sm:h-72">
-            <img
-              src={barbershop.photo_url}
-              alt={barbershop.name}
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
-          </div>
         ) : (
           <div className="h-32 sm:h-44 bg-gradient-to-br from-primary/20 via-primary/10 to-background" />
         )}
@@ -318,7 +331,7 @@ const BarbeariaPublica = () => {
               alt="Logo"
               className="w-20 h-20 rounded-2xl mx-auto mb-4 object-cover ring-4 ring-background shadow-lg"
             />
-          ) : !publicProfile?.foto_capa_url && !barbershop?.photo_url ? (
+          ) : !publicProfile?.foto_capa_url ? (
             <div className="w-20 h-20 rounded-2xl mx-auto mb-4 flex items-center justify-center border-2 border-border bg-card shadow-lg">
               <Scissors className="h-8 w-8 text-primary" />
             </div>
@@ -528,9 +541,17 @@ const BarbeariaPublica = () => {
                     key={service.id}
                     className="flex items-center gap-3 p-3 rounded-xl bg-secondary/50 border border-border/30"
                   >
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-primary/10 shrink-0">
-                      <Scissors className="h-4 w-4 text-primary" />
-                    </div>
+                    {service.display_photo_url ? (
+                      <img
+                        src={service.display_photo_url}
+                        alt={service.name}
+                        className="w-12 h-12 rounded-xl object-cover shrink-0 ring-1 ring-border/40"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-primary/10 shrink-0">
+                        <Scissors className="h-4 w-4 text-primary" />
+                      </div>
+                    )}
                     <div className="flex-1 min-w-0">
                       <h4 className="font-medium text-sm truncate">{service.name}</h4>
                       <p className="text-xs text-muted-foreground flex items-center gap-1">
