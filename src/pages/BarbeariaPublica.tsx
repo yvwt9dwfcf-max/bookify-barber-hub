@@ -166,7 +166,7 @@ const BarbeariaPublica = () => {
 
       setBarbershop(shop);
 
-      const [barbersRes, servicesRes, galleryRes, profileRes] = await Promise.all([
+      const [barbersRes, servicesRes, galleryRes, profileRes, servicePhotosRes] = await Promise.all([
         supabase
           .from('barbers')
           .select('id, name, photo_url, is_active')
@@ -175,7 +175,7 @@ const BarbeariaPublica = () => {
           .order('name'),
         supabase
           .from('services')
-          .select('id, name, duration_minutes, price, barber_id, is_global')
+          .select('id, name, duration_minutes, price, barber_id, is_global, photo_url')
           .eq('barbershop_id', shop.id)
           .eq('active', true),
         supabase
@@ -188,12 +188,17 @@ const BarbeariaPublica = () => {
           .select('foto_capa_url, logo_url, descricao, endereco, numero, cidade, estado, instagram_url, whatsapp_numero, latitude, longitude, booking_enabled, booking_24h, booking_start_time, booking_end_time')
           .eq('barbershop_id', shop.id)
           .maybeSingle(),
+        supabase
+          .from('barber_service_photos')
+          .select('barber_id, service_id, photo_url')
+          .eq('barbershop_id', shop.id),
       ]);
 
       setBarbers(barbersRes.data || []);
       setServices(servicesRes.data || []);
       setGallery(galleryRes.data || []);
       setPublicProfile(profileRes.data as PublicProfileData | null);
+      setBarberServicePhotos((servicePhotosRes.data || []) as BarberServicePhoto[]);
     } catch (err) {
       console.error(err);
       setNotFound(true);
