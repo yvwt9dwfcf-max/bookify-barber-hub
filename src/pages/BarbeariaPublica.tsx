@@ -166,7 +166,7 @@ const BarbeariaPublica = () => {
 
       setBarbershop(shop);
 
-      const [barbersRes, servicesRes, galleryRes, profileRes, servicePhotosRes] = await Promise.all([
+      const [barbersRes, servicesRes, galleryRes, profileRes] = await Promise.all([
         supabase
           .from('barbers')
           .select('id, name, photo_url, is_active')
