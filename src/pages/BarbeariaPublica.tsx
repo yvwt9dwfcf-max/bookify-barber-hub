@@ -84,6 +84,7 @@ const BarbeariaPublica = () => {
   const [publicProfile, setPublicProfile] = useState<PublicProfileData | null>(null);
   const [barbers, setBarbers] = useState<BarberData[]>([]);
   const [services, setServices] = useState<ServiceData[]>([]);
+  const [barberServicePhotos, setBarberServicePhotos] = useState<BarberServicePhoto[]>([]);
   const [gallery, setGallery] = useState<GalleryImage[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
