@@ -225,7 +225,14 @@ const BarbeariaPublica = () => {
   };
 
   const barberServices = selectedBarber
-    ? services.filter(s => s.is_global || s.barber_id === selectedBarber.id)
+    ? services
+        .filter(s => s.is_global || s.barber_id === selectedBarber.id)
+        .map(s => {
+          const override = barberServicePhotos.find(
+            p => p.barber_id === selectedBarber.id && p.service_id === s.id
+          );
+          return { ...s, display_photo_url: override?.photo_url || s.photo_url || null };
+        })
     : [];
 
   const displayCity = publicProfile?.cidade || barbershop?.city;
