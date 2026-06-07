@@ -190,7 +190,7 @@ const BarbeariaPublica = () => {
           .maybeSingle(),
       ]);
 
-      const { data: servicePhotosData } = await supabase
+      const { data: servicePhotosData } = await (supabase as any)
         .from('barber_service_photos')
         .select('barber_id, service_id, photo_url')
         .eq('barbershop_id', shop.id);
