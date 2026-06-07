@@ -541,9 +541,17 @@ const BarbeariaPublica = () => {
                     key={service.id}
                     className="flex items-center gap-3 p-3 rounded-xl bg-secondary/50 border border-border/30"
                   >
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-primary/10 shrink-0">
-                      <Scissors className="h-4 w-4 text-primary" />
-                    </div>
+                    {service.display_photo_url ? (
+                      <img
+                        src={service.display_photo_url}
+                        alt={service.name}
+                        className="w-12 h-12 rounded-xl object-cover shrink-0 ring-1 ring-border/40"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-primary/10 shrink-0">
+                        <Scissors className="h-4 w-4 text-primary" />
+                      </div>
+                    )}
                     <div className="flex-1 min-w-0">
                       <h4 className="font-medium text-sm truncate">{service.name}</h4>
                       <p className="text-xs text-muted-foreground flex items-center gap-1">
