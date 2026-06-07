@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense } from 'react';
+import { useState, useRef, useEffect, lazy, Suspense } from 'react';
 import { supabase, Barber, Service, Appointment } from '@/lib/supabase';
 import { StepIndicator } from './StepIndicator';
 import { Card, CardContent } from '@/components/ui/card';
@@ -43,6 +43,11 @@ export function BookingFlow({ preselectedBarber, barbershopId, availableBarbers 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Ref mirrors bookingData so async submit handlers always read fresh values,
+  // avoiding stale-closure issues where selected dateTime appeared "lost" on first submit.
+  const bookingDataRef = useRef(bookingData);
+  useEffect(() => { bookingDataRef.current = bookingData; }, [bookingData]);
+
   const steps: BookingStep[] = preselectedBarber 
     ? ['service', 'datetime', 'info', 'confirmation']
     : ['barber', 'service', 'datetime', 'info', 'confirmation'];
@@ -74,17 +79,19 @@ export function BookingFlow({ preselectedBarber, barbershopId, availableBarbers 
     setIsSubmitting(true);
 
     try {
-      if (!bookingData.barber || !bookingData.service || !bookingData.dateTime) {
-        throw new Error('Dados incompletos');
+      // Read from ref to avoid stale closure missing the freshly selected dateTime
+      const current = bookingDataRef.current;
+      if (!current.barber || !current.service || !current.dateTime) {
+        throw new Error('Dados incompletos. Por favor, refaça a seleção.');
       }
 
-      const startTime = bookingData.dateTime;
-      const endTime = new Date(startTime.getTime() + bookingData.service.duration_minutes * 60000);
+      const startTime = current.dateTime;
+      const endTime = new Date(startTime.getTime() + current.service.duration_minutes * 60000);
 
       const { data: conflicts } = await supabase
         .from('appointments')
         .select('id')
-        .eq('barber_id', bookingData.barber.id)
+        .eq('barber_id', current.barber.id)
         .neq('status', 'cancelled')
         .lt('start_time', endTime.toISOString())
         .gt('end_time', startTime.toISOString());
@@ -96,9 +103,9 @@ export function BookingFlow({ preselectedBarber, barbershopId, availableBarbers 
       const { data: appointment, error: insertError } = await supabase
         .from('appointments')
         .insert({
-          barber_id: bookingData.barber.id,
-          barbershop_id: bookingData.barber.barbershop_id || barbershopId,
-          service_id: bookingData.service.id,
+          barber_id: current.barber.id,
+          barbershop_id: current.barber.barbershop_id || barbershopId,
+          service_id: current.service.id,
           customer_name: name,
           customer_phone: phone,
           start_time: startTime.toISOString(),

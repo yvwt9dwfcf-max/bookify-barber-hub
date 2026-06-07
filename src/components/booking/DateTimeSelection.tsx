@@ -42,12 +42,12 @@ export function DateTimeSelection({ barberId, serviceDuration, onSelect }: DateT
   };
 
   const handleTimeSelect = (time: string) => {
+    if (!selectedDate) return;
     setSelectedTime(time);
-    if (selectedDate) {
-      const [hours, minutes] = time.split(':').map(Number);
-      const dateTime = setMinutes(setHours(selectedDate, hours), minutes);
-      setTimeout(() => onSelect(dateTime), 150);
-    }
+    const [hours, minutes] = time.split(':').map(Number);
+    const dateTime = setMinutes(setHours(selectedDate, hours), minutes);
+    // Call synchronously so parent state is updated in the same React batch
+    onSelect(dateTime);
   };
 
   const goToPreviousWeek = () => {

@@ -87,6 +87,27 @@ const BarbeariaPublica = () => {
     if (slug) fetchData();
   }, [slug]);
 
+  // Realtime sync — refresh when barbers (photo) or public profile change so
+  // the public page reflects updates immediately without manual reload.
+  useEffect(() => {
+    if (!barbershop?.id) return;
+    const channel = supabase
+      .channel(`public-barbershop-${barbershop.id}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'barbers', filter: `barbershop_id=eq.${barbershop.id}` },
+        () => fetchData()
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'public_profiles', filter: `barbershop_id=eq.${barbershop.id}` },
+        () => fetchData()
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [barbershop?.id]);
+
   useEffect(() => {
     if (!loading) {
       requestAnimationFrame(() => setFadeIn(true));
