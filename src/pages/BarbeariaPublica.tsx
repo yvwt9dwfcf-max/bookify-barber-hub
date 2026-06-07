@@ -188,17 +188,18 @@ const BarbeariaPublica = () => {
           .select('foto_capa_url, logo_url, descricao, endereco, numero, cidade, estado, instagram_url, whatsapp_numero, latitude, longitude, booking_enabled, booking_24h, booking_start_time, booking_end_time')
           .eq('barbershop_id', shop.id)
           .maybeSingle(),
-        supabase
-          .from('barber_service_photos')
-          .select('barber_id, service_id, photo_url')
-          .eq('barbershop_id', shop.id),
       ]);
+
+      const { data: servicePhotosData } = await supabase
+        .from('barber_service_photos')
+        .select('barber_id, service_id, photo_url')
+        .eq('barbershop_id', shop.id);
 
       setBarbers(barbersRes.data || []);
       setServices(servicesRes.data || []);
       setGallery(galleryRes.data || []);
       setPublicProfile(profileRes.data as PublicProfileData | null);
-      setBarberServicePhotos((servicePhotosRes.data || []) as BarberServicePhoto[]);
+      setBarberServicePhotos((servicePhotosData || []) as BarberServicePhoto[]);
     } catch (err) {
       console.error(err);
       setNotFound(true);
