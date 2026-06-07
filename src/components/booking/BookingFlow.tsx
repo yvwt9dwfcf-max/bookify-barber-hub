@@ -91,7 +91,7 @@ export function BookingFlow({ preselectedBarber, barbershopId, availableBarbers 
       const { data: conflicts } = await supabase
         .from('appointments')
         .select('id')
-        .eq('barber_id', bookingData.barber.id)
+        .eq('barber_id', current.barber.id)
         .neq('status', 'cancelled')
         .lt('start_time', endTime.toISOString())
         .gt('end_time', startTime.toISOString());
@@ -103,9 +103,9 @@ export function BookingFlow({ preselectedBarber, barbershopId, availableBarbers 
       const { data: appointment, error: insertError } = await supabase
         .from('appointments')
         .insert({
-          barber_id: bookingData.barber.id,
-          barbershop_id: bookingData.barber.barbershop_id || barbershopId,
-          service_id: bookingData.service.id,
+          barber_id: current.barber.id,
+          barbershop_id: current.barber.barbershop_id || barbershopId,
+          service_id: current.service.id,
           customer_name: name,
           customer_phone: phone,
           start_time: startTime.toISOString(),
