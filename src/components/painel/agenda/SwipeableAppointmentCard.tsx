@@ -171,7 +171,7 @@ const SwipeableAppointmentCard = ({
         className={cn(
           "relative rounded-2xl bg-secondary/80 backdrop-blur-sm border border-border/30",
           "border-l-[3px]",
-          is15Min ? "px-3 py-1.5" : "px-3 py-2.5",
+          is15Min ? "px-4 py-2.5" : "px-4 py-3.5",
           cfg.borderColor,
           transitioning && "transition-transform duration-[280ms] ease-[cubic-bezier(0.25,0.46,0.45,0.94)]",
         )}
@@ -184,24 +184,24 @@ const SwipeableAppointmentCard = ({
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        <div className="flex items-center justify-between gap-2">
-          <div className="min-w-0 flex-1">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1 space-y-1">
             {appointment.service && (
               <p className={cn(
-                "font-semibold text-foreground truncate",
-                is15Min ? "text-[11px]" : "text-xs"
+                "font-semibold text-foreground truncate leading-tight",
+                is15Min ? "text-[12px]" : "text-[13px]"
               )}>
                 {appointment.service.name}
               </p>
             )}
-            <p className="text-[11px] text-muted-foreground truncate mt-0.5">
+            <p className="text-[11px] text-muted-foreground truncate leading-tight">
               {appointment.customer_name}
             </p>
             {!is15Min && (
-              <p className="text-[10px] text-muted-foreground/50 tabular-nums mt-0.5">
+              <p className="text-[10px] text-muted-foreground/60 tabular-nums leading-tight pt-0.5">
                 {format(new Date(appointment.start_time), 'HH:mm')} — {format(new Date(appointment.end_time), 'HH:mm')}
                 {price != null && price > 0 && (
-                  <span className="ml-1.5 text-primary/70">
+                  <span className="ml-2 text-primary/80 font-medium">
                     R$ {price.toFixed(0)}
                   </span>
                 )}
@@ -209,7 +209,7 @@ const SwipeableAppointmentCard = ({
             )}
           </div>
           <span className={cn(
-            "px-2 py-0.5 rounded-full text-[9px] font-semibold shrink-0",
+            "px-2.5 py-1 rounded-full text-[9px] font-semibold shrink-0 tracking-wide",
             appointment.status === 'confirmed' && "bg-primary/10 text-primary",
             appointment.status === 'completed' && "bg-success/10 text-success",
           )}>
