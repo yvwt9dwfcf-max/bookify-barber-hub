@@ -52,8 +52,8 @@ const AgendaDaysStrip = ({
 
   return (
     <Card className="border-border/50 shadow-md bg-card/95 backdrop-blur-md overflow-hidden animate-fade-in rounded-xl" style={{ animationDelay: '0.08s' }}>
-      <CardContent className="p-1.5">
-        <div className="flex items-center justify-between mb-1">
+      <CardContent className="px-2 pt-2 pb-2.5">
+        <div className="flex items-center justify-between mb-2">
           <Button
             variant="ghost" size="icon"
             onClick={() => onShiftMonth(-1)}
