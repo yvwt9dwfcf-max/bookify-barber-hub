@@ -118,92 +118,92 @@ const ResumoTab = ({ barbershop, isMaster }: { barbershop: any; isMaster: boolea
     if (productsPct >= 15) insights.push(`Produtos representam ${productsPct.toFixed(0)}% do faturamento`);
   }
 
+  const breakdown = [
+    { label: 'Serviços', value: cur.services, sign: '+' as const },
+    { label: 'Produtos', value: cur.products, sign: '+' as const },
+    { label: 'Custo de produtos', value: cur.cogs, sign: '−' as const },
+    { label: 'Despesas', value: cur.expenses, sign: '−' as const },
+  ];
+  const maxBar = Math.max(...breakdown.map(b => b.value), 1);
+
   return (
-    <div className="space-y-5 pt-4">
-      <Card className="overflow-hidden border-0 shadow-card">
-        <CardContent
-          className="p-6"
-          style={{
-            background: profit >= 0
-              ? 'linear-gradient(135deg, hsl(var(--primary) / 0.12), hsl(var(--primary) / 0.02))'
-              : 'linear-gradient(135deg, hsl(var(--destructive) / 0.12), hsl(var(--destructive) / 0.02))',
-          }}
-        >
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-semibold">
-              Lucro de {monthLabel}
-            </p>
-            {prevProfit !== 0 && Math.abs(profitDelta) >= 1 && (
-              <div className={`flex items-center gap-0.5 text-[11px] font-semibold ${profitDelta >= 0 ? 'text-primary' : 'text-destructive'}`}>
-                {profitDelta >= 0 ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}
-                {Math.abs(profitDelta).toFixed(0)}%
-              </div>
-            )}
-          </div>
-          <p className={`text-4xl font-bold tabular-nums tracking-tight ${profit >= 0 ? 'text-primary' : 'text-destructive'}`}>
-            {isLoading ? '—' : formatCurrency(profit)}
+    <div className="space-y-8 pt-5">
+      {/* Lucro — número em destaque, sem cartão pesado */}
+      <div className="space-y-1.5">
+        <div className="flex items-center justify-between">
+          <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground/70 font-medium">
+            Lucro · {monthLabel}
           </p>
-          <p className="text-xs text-muted-foreground mt-2">
-            {prevProfit !== 0 ? `${prevMonthLabel}: ${formatCurrency(prevProfit)}` : 'Sem dados do mês anterior'}
-          </p>
-        </CardContent>
-      </Card>
+          {prevProfit !== 0 && Math.abs(profitDelta) >= 1 && (
+            <span className={`text-[11px] font-medium tabular-nums ${profitDelta >= 0 ? 'text-primary' : 'text-destructive'}`}>
+              {profitDelta >= 0 ? '+' : '−'}{Math.abs(profitDelta).toFixed(0)}%
+            </span>
+          )}
+        </div>
+        <p className={`text-[40px] leading-none font-semibold tabular-nums tracking-tight ${profit >= 0 ? 'text-foreground' : 'text-destructive'}`}>
+          {isLoading ? '—' : formatCurrency(profit)}
+        </p>
+        <p className="text-[11px] text-muted-foreground/80 pt-1">
+          {prevProfit !== 0 ? `${prevMonthLabel}: ${formatCurrency(prevProfit)}` : 'Sem dados do mês anterior'}
+        </p>
+      </div>
 
       {insights.length > 0 && !isLoading && (
-        <div className="space-y-1.5">
+        <div className="space-y-2 border-t border-border/30 pt-4">
           {insights.map((txt, i) => (
-            <div key={i} className="flex items-start gap-2 px-3 py-2 rounded-xl bg-muted/40">
-              <Sparkles className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
-              <p className="text-xs text-foreground/80 leading-relaxed">{txt}</p>
-            </div>
+            <p key={i} className="text-[12px] text-muted-foreground leading-relaxed">
+              {txt}
+            </p>
           ))}
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-3">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-1.5 mb-2">
-              <TrendingUp className="h-3.5 w-3.5 text-primary" />
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Faturamento</p>
-            </div>
-            <p className="text-xl font-bold tabular-nums">{formatCurrency(total)}</p>
-            <p className="text-[10px] text-muted-foreground mt-1">Serviços {formatCurrency(cur.services)}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-1.5 mb-2">
-              <TrendingDown className="h-3.5 w-3.5 text-destructive" />
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Custos</p>
-            </div>
-            <p className="text-xl font-bold tabular-nums">{formatCurrency(cur.expenses + cur.cogs)}</p>
-            <p className="text-[10px] text-muted-foreground mt-1">Despesas {formatCurrency(cur.expenses)}</p>
-          </CardContent>
-        </Card>
+      {/* Métricas — blocos limpos com hierarchy tipográfica */}
+      <div className="grid grid-cols-3 gap-4 border-y border-border/30 py-5">
+        <div>
+          <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground/70 font-medium">Faturamento</p>
+          <p className="text-lg font-semibold tabular-nums tracking-tight mt-1.5">{formatCurrency(total)}</p>
+        </div>
+        <div>
+          <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground/70 font-medium">Serviços</p>
+          <p className="text-lg font-semibold tabular-nums tracking-tight mt-1.5">{formatCurrency(cur.services)}</p>
+        </div>
+        <div>
+          <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground/70 font-medium">Ticket médio</p>
+          <p className="text-lg font-semibold tabular-nums tracking-tight mt-1.5">
+            {formatCurrency(avgPerDay)}
+          </p>
+        </div>
       </div>
 
-      <Card>
-        <CardContent className="p-4 space-y-2.5">
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">Detalhamento</p>
-          <div className="flex items-center justify-between text-sm">
-            <span className="flex items-center gap-2 text-muted-foreground"><Sparkles className="h-3.5 w-3.5 text-primary" /> Serviços</span>
-            <span className="font-semibold tabular-nums">{formatCurrency(cur.services)}</span>
-          </div>
-          <div className="flex items-center justify-between text-sm">
-            <span className="flex items-center gap-2 text-muted-foreground"><ShoppingCart className="h-3.5 w-3.5 text-primary" /> Produtos</span>
-            <span className="font-semibold tabular-nums">{formatCurrency(cur.products)}</span>
-          </div>
-          <div className="flex items-center justify-between text-sm">
-            <span className="flex items-center gap-2 text-muted-foreground"><Package className="h-3.5 w-3.5 text-amber-500" /> Custo de produtos</span>
-            <span className="font-semibold tabular-nums">−{formatCurrency(cur.cogs)}</span>
-          </div>
-          <div className="flex items-center justify-between text-sm">
-            <span className="flex items-center gap-2 text-muted-foreground"><Receipt className="h-3.5 w-3.5 text-destructive" /> Despesas</span>
-            <span className="font-semibold tabular-nums">−{formatCurrency(cur.expenses)}</span>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Detalhamento como gráfico de barras minimalista */}
+      <div className="space-y-4">
+        <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground/70 font-medium">
+          Detalhamento
+        </p>
+        <div className="space-y-3.5">
+          {breakdown.map((b) => {
+            const pct = (b.value / maxBar) * 100;
+            const isNeg = b.sign === '−';
+            return (
+              <div key={b.label} className="space-y-1.5">
+                <div className="flex items-baseline justify-between">
+                  <span className="text-[12px] text-foreground/80">{b.label}</span>
+                  <span className={`text-[13px] font-semibold tabular-nums ${isNeg ? 'text-destructive/90' : 'text-foreground'}`}>
+                    {isNeg ? '−' : ''}{formatCurrency(b.value)}
+                  </span>
+                </div>
+                <div className="relative h-[6px] w-full rounded-full bg-border/40 overflow-hidden">
+                  <div
+                    className={`absolute inset-y-0 left-0 rounded-full ${isNeg ? 'bg-destructive/60' : 'bg-primary'}`}
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 };
