@@ -85,17 +85,33 @@ export function CustomerInfo({ onSubmit, isSubmitting, bookingData }: CustomerIn
         <div className="space-y-2.5">
           {bookingData.barber && (
             <div className="flex items-center gap-2.5 text-sm">
-              <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
-                <User className="h-3.5 w-3.5 text-primary" />
-              </div>
+              {bookingData.barber.photo_url ? (
+                <img
+                  src={bookingData.barber.photo_url}
+                  alt={bookingData.barber.name}
+                  className="w-7 h-7 rounded-full object-cover ring-1 ring-primary/20"
+                />
+              ) : (
+                <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <User className="h-3.5 w-3.5 text-primary" />
+                </div>
+              )}
               <span className="font-medium">{bookingData.barber.name}</span>
             </div>
           )}
           {bookingData.service && (
             <div className="flex items-center gap-2.5 text-sm">
-              <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Scissors className="h-3.5 w-3.5 text-primary" />
-              </div>
+              {bookingData.service.photo_url ? (
+                <img
+                  src={bookingData.service.photo_url}
+                  alt={bookingData.service.name}
+                  className="w-7 h-7 rounded-lg object-cover ring-1 ring-primary/20"
+                />
+              ) : (
+                <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Scissors className="h-3.5 w-3.5 text-primary" />
+                </div>
+              )}
               <div>
                 <span className="font-medium">{bookingData.service.name}</span>
                 <span className="text-muted-foreground ml-2 text-xs">
