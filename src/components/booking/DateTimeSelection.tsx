@@ -153,19 +153,15 @@ export function DateTimeSelection({ barberId, serviceDuration, onSelect }: DateT
         })}
       </div>
 
-      {/* Time Slots - GRID */}
+      {/* Time Slots - GROUPED BY PERIOD */}
       {selectedDate && (
-        <div className="space-y-4 animate-fade-in">
-          <h3 className="font-semibold text-sm flex items-center gap-2">
-            <Clock className="h-4 w-4 text-primary" />
-            Horários disponíveis para {format(selectedDate, "d 'de' MMMM", { locale: ptBR })}
+        <div className="space-y-6 animate-fade-in">
+          <h3 className="font-semibold text-sm">
+            Horários para {format(selectedDate, "d 'de' MMMM", { locale: ptBR })}
           </h3>
-          
+
           {availableSlots.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 px-4 text-center rounded-xl border border-border/20 bg-muted/10">
-              <div className="w-12 h-12 rounded-full bg-muted/30 flex items-center justify-center mb-4">
-                <Clock className="h-5 w-5 text-muted-foreground/60" />
-              </div>
               <p className="font-bold text-sm tracking-wide uppercase">
                 Todos os horários deste dia já foram reservados.
               </p>
@@ -174,24 +170,48 @@ export function DateTimeSelection({ barberId, serviceDuration, onSelect }: DateT
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-4 sm:grid-cols-5 gap-2.5">
-              {availableSlots.map((time) => (
-                <button
-                  key={time}
-                  onClick={() => handleTimeSelect(time)}
-                  className={cn(
-                    'py-3.5 px-2 rounded-2xl border font-semibold text-sm transition-all duration-200 ease-out',
-                    'hover:-translate-y-0.5 hover:shadow-md active:scale-95',
-                    selectedTime === time
-                      ? 'border-primary text-primary-foreground shadow-md'
-                      : 'border-border/30 hover:border-primary/30 bg-secondary/50'
-                  )}
-                  style={selectedTime === time ? { background: 'var(--primary-gradient)' } : undefined}
-                >
-                  {time}
-                </button>
-              ))}
-            </div>
+            (() => {
+              const periods: { label: string; slots: string[] }[] = [
+                { label: 'Manhã', slots: [] },
+                { label: 'Tarde', slots: [] },
+                { label: 'Noite', slots: [] },
+              ];
+              availableSlots.forEach((t) => {
+                const h = parseInt(t.split(':')[0], 10);
+                if (h < 12) periods[0].slots.push(t);
+                else if (h < 18) periods[1].slots.push(t);
+                else periods[2].slots.push(t);
+              });
+              return (
+                <div className="space-y-7">
+                  {periods.filter(p => p.slots.length > 0).map((period) => (
+                    <div key={period.label} className="space-y-3">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">
+                        {period.label}
+                      </p>
+                      <div className="grid grid-cols-4 sm:grid-cols-5 gap-2.5">
+                        {period.slots.map((time) => (
+                          <button
+                            key={time}
+                            onClick={() => handleTimeSelect(time)}
+                            className={cn(
+                              'py-3.5 px-2 rounded-2xl border font-semibold text-sm transition-colors duration-150',
+                              'active:scale-[0.97]',
+                              selectedTime === time
+                                ? 'border-primary text-primary-foreground shadow-md'
+                                : 'border-border/30 bg-secondary/50 active:bg-secondary'
+                            )}
+                            style={selectedTime === time ? { background: 'var(--primary-gradient)' } : undefined}
+                          >
+                            {time}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()
           )}
         </div>
       )}
