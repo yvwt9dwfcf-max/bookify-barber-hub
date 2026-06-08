@@ -165,13 +165,13 @@ const AgendaSlotGrid = ({
           const durationMin = appointment.service?.duration_minutes || 30;
           const slotsSpanned = Math.ceil(durationMin / 15);
           const is15Min = durationMin <= 15;
-          const cardMinHeight = is15Min ? 32 : slotsSpanned > 1 ? slotsSpanned * 28 + (slotsSpanned - 1) * 3 : 36;
+          const cardMinHeight = is15Min ? 28 : slotsSpanned > 1 ? slotsSpanned * 24 + (slotsSpanned - 1) * 2 : 32;
 
           return (
             <div key={slot.time} className="relative flex" style={{ animationDelay: `${rowIndex * 0.02}s` }}>
               {separator}
-              <div className="w-12 shrink-0 pt-2 pr-2 text-right">
-                <p className="text-[11px] font-medium tabular-nums text-muted-foreground/70">{slot.time}</p>
+              <div className="w-11 shrink-0 pt-1.5 pr-2 text-right">
+                <p className="text-[10px] font-medium tabular-nums text-muted-foreground/70">{slot.time}</p>
               </div>
               <div className="flex-1">
                 <SwipeableAppointmentCard
@@ -188,7 +188,7 @@ const AgendaSlotGrid = ({
           );
         }
 
-        const mergedHeight = row.merged ? 'py-3.5' : 'py-2';
+        const mergedHeight = row.merged ? 'py-3' : 'py-1.5';
 
         // Blocked
         if (isBlocked || (row.merged && secondIsBlocked)) {

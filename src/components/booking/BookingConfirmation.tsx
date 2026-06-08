@@ -119,9 +119,17 @@ export function BookingConfirmation({ appointment, onNewBooking, barbershopId, p
         }}
       >
         <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-            <User className="h-5 w-5 text-primary" />
-          </div>
+          {appointment.barber?.photo_url ? (
+            <img
+              src={appointment.barber.photo_url}
+              alt={appointment.barber?.name || 'Profissional'}
+              className="w-10 h-10 rounded-full object-cover ring-2 ring-primary/20 flex-shrink-0"
+            />
+          ) : (
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <User className="h-5 w-5 text-primary" />
+            </div>
+          )}
           <div>
             <p className="text-sm text-muted-foreground">Profissional</p>
             <p className="font-medium">{appointment.barber?.name || 'Barbeiro'}</p>
@@ -129,9 +137,17 @@ export function BookingConfirmation({ appointment, onNewBooking, barbershopId, p
         </div>
 
         <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-            <Scissors className="h-5 w-5 text-primary" />
-          </div>
+          {appointment.service?.photo_url ? (
+            <img
+              src={appointment.service.photo_url}
+              alt={appointment.service?.name || 'Serviço'}
+              className="w-10 h-10 rounded-xl object-cover ring-2 ring-primary/20 flex-shrink-0"
+            />
+          ) : (
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <Scissors className="h-5 w-5 text-primary" />
+            </div>
+          )}
           <div>
             <p className="text-sm text-muted-foreground">Serviço</p>
             <p className="font-medium">{appointment.service?.name || 'Serviço'}</p>
