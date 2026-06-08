@@ -85,7 +85,7 @@ const AgendaDaysStrip = ({
                 key={day.toISOString()}
                 onClick={() => onSelectDate(toLocalDate(day))}
                 className={cn(
-                  'flex flex-col items-center py-1 px-2 rounded-lg transition-all duration-200 snap-center shrink-0',
+                  'flex flex-col items-center pt-1.5 pb-1 px-2 rounded-lg transition-all duration-200 snap-center shrink-0',
                   'hover:bg-accent/50 active:scale-95',
                   isSelected && 'text-primary-foreground hover:bg-primary shadow-md',
                   isDayToday && !isSelected && 'ring-1 ring-primary/50'
@@ -95,10 +95,10 @@ const AgendaDaysStrip = ({
                   minWidth: '42px',
                 }}
               >
-                <span className="text-[9px] font-medium uppercase opacity-70">
+                <span className="text-[9px] font-medium uppercase opacity-70 leading-none mb-1">
                   {format(day, 'EEE', { locale: ptBR })}
                 </span>
-                <span className="text-sm font-semibold mt-0.5">{format(day, 'd')}</span>
+                <span className="text-sm font-semibold leading-none">{format(day, 'd')}</span>
               </button>
             );
           })}
