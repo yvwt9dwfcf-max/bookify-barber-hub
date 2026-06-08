@@ -10,8 +10,8 @@ interface CustomerInfoProps {
   onSubmit: (name: string, phone: string) => void;
   isSubmitting: boolean;
   bookingData: {
-    barber: { name: string } | null;
-    service: { name: string; duration_minutes: number; price: number } | null;
+    barber: { name: string; photo_url?: string | null } | null;
+    service: { name: string; duration_minutes: number; price: number; photo_url?: string | null } | null;
     dateTime: Date | null;
   };
 }
