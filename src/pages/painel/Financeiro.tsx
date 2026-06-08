@@ -119,83 +119,96 @@ const ResumoTab = ({ barbershop, isMaster }: { barbershop: any; isMaster: boolea
   }
 
   const breakdown = [
-    { label: 'Serviços', value: cur.services, sign: '+' as const },
-    { label: 'Produtos', value: cur.products, sign: '+' as const },
-    { label: 'Custo de produtos', value: cur.cogs, sign: '−' as const },
-    { label: 'Despesas', value: cur.expenses, sign: '−' as const },
+    { label: 'Serviços', value: cur.services, sign: '+' as const, icon: Sparkles },
+    { label: 'Produtos', value: cur.products, sign: '+' as const, icon: ShoppingCart },
+    { label: 'Custo de produtos', value: cur.cogs, sign: '−' as const, icon: Package },
+    { label: 'Despesas', value: cur.expenses, sign: '−' as const, icon: Receipt },
   ];
   const maxBar = Math.max(...breakdown.map(b => b.value), 1);
 
   return (
-    <div className="space-y-8 pt-5">
-      {/* Lucro — número em destaque, sem cartão pesado */}
-      <div className="space-y-1.5">
-        <div className="flex items-center justify-between">
-          <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground/70 font-medium">
-            Lucro · {monthLabel}
-          </p>
+    <div className="space-y-7 pt-5">
+      {/* Lucro hero — destaque com gradiente sutil */}
+      <div className="relative overflow-hidden rounded-2xl border border-border/40 bg-gradient-to-br from-card via-card to-primary/5 p-5">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${profit >= 0 ? 'bg-primary/15 text-primary' : 'bg-destructive/15 text-destructive'}`}>
+              {profit >= 0 ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
+            </div>
+            <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground/80 font-semibold">
+              Lucro · {monthLabel}
+            </p>
+          </div>
           {prevProfit !== 0 && Math.abs(profitDelta) >= 1 && (
-            <span className={`text-[11px] font-medium tabular-nums ${profitDelta >= 0 ? 'text-primary' : 'text-destructive'}`}>
-              {profitDelta >= 0 ? '+' : '−'}{Math.abs(profitDelta).toFixed(0)}%
+            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold tabular-nums ${profitDelta >= 0 ? 'bg-primary/10 text-primary' : 'bg-destructive/10 text-destructive'}`}>
+              {profitDelta >= 0 ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}
+              {Math.abs(profitDelta).toFixed(0)}%
             </span>
           )}
         </div>
-        <p className={`text-[40px] leading-none font-semibold tabular-nums tracking-tight ${profit >= 0 ? 'text-foreground' : 'text-destructive'}`}>
+        <p className={`text-[38px] leading-none font-bold tabular-nums tracking-tight ${profit >= 0 ? 'text-foreground' : 'text-destructive'}`}>
           {isLoading ? '—' : formatCurrency(profit)}
         </p>
-        <p className="text-[11px] text-muted-foreground/80 pt-1">
+        <p className="text-[11px] text-muted-foreground/80 mt-2">
           {prevProfit !== 0 ? `${prevMonthLabel}: ${formatCurrency(prevProfit)}` : 'Sem dados do mês anterior'}
         </p>
       </div>
 
       {insights.length > 0 && !isLoading && (
-        <div className="space-y-2 border-t border-border/30 pt-4">
+        <div className="space-y-1.5">
           {insights.map((txt, i) => (
-            <p key={i} className="text-[12px] text-muted-foreground leading-relaxed">
-              {txt}
-            </p>
+            <div key={i} className="flex items-start gap-2 text-[12px] text-muted-foreground leading-relaxed">
+              <span className="mt-1 h-1 w-1 rounded-full bg-primary/60 shrink-0" />
+              <span>{txt}</span>
+            </div>
           ))}
         </div>
       )}
 
       {/* Métricas — blocos limpos com hierarchy tipográfica */}
-      <div className="grid grid-cols-3 gap-4 border-y border-border/30 py-5">
+      <div className="grid grid-cols-3 gap-3 border-y border-border/30 py-4">
         <div>
-          <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground/70 font-medium">Faturamento</p>
-          <p className="text-lg font-semibold tabular-nums tracking-tight mt-1.5">{formatCurrency(total)}</p>
+          <p className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground/70 font-medium">Faturamento</p>
+          <p className="text-base font-semibold tabular-nums tracking-tight mt-1.5">{formatCurrency(total)}</p>
         </div>
         <div>
-          <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground/70 font-medium">Serviços</p>
-          <p className="text-lg font-semibold tabular-nums tracking-tight mt-1.5">{formatCurrency(cur.services)}</p>
+          <p className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground/70 font-medium">Serviços</p>
+          <p className="text-base font-semibold tabular-nums tracking-tight mt-1.5">{formatCurrency(cur.services)}</p>
         </div>
         <div>
-          <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground/70 font-medium">Ticket médio</p>
-          <p className="text-lg font-semibold tabular-nums tracking-tight mt-1.5">
+          <p className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground/70 font-medium">Ticket médio</p>
+          <p className="text-base font-semibold tabular-nums tracking-tight mt-1.5">
             {formatCurrency(avgPerDay)}
           </p>
         </div>
       </div>
 
-      {/* Detalhamento como gráfico de barras minimalista */}
-      <div className="space-y-4">
-        <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground/70 font-medium">
+      {/* Detalhamento — barras minimalistas com ícone-chip */}
+      <div className="space-y-3">
+        <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground/70 font-semibold">
           Detalhamento
         </p>
-        <div className="space-y-3.5">
+        <div className="space-y-3">
           {breakdown.map((b) => {
             const pct = (b.value / maxBar) * 100;
             const isNeg = b.sign === '−';
+            const Icon = b.icon;
             return (
               <div key={b.label} className="space-y-1.5">
-                <div className="flex items-baseline justify-between">
-                  <span className="text-[12px] text-foreground/80">{b.label}</span>
-                  <span className={`text-[13px] font-semibold tabular-nums ${isNeg ? 'text-destructive/90' : 'text-foreground'}`}>
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className={`w-6 h-6 rounded-md flex items-center justify-center shrink-0 ${isNeg ? 'bg-destructive/10 text-destructive/80' : 'bg-primary/10 text-primary'}`}>
+                      <Icon className="h-3 w-3" />
+                    </div>
+                    <span className="text-[12px] text-foreground/85 truncate">{b.label}</span>
+                  </div>
+                  <span className={`text-[13px] font-semibold tabular-nums shrink-0 ${isNeg ? 'text-destructive/90' : 'text-foreground'}`}>
                     {isNeg ? '−' : ''}{formatCurrency(b.value)}
                   </span>
                 </div>
-                <div className="relative h-[6px] w-full rounded-full bg-border/40 overflow-hidden">
+                <div className="relative h-[5px] w-full rounded-full bg-border/30 overflow-hidden ml-8" style={{ width: 'calc(100% - 2rem)' }}>
                   <div
-                    className={`absolute inset-y-0 left-0 rounded-full ${isNeg ? 'bg-destructive/60' : 'bg-primary'}`}
+                    className={`absolute inset-y-0 left-0 rounded-full transition-all duration-500 ${isNeg ? 'bg-gradient-to-r from-destructive/50 to-destructive/70' : 'bg-gradient-to-r from-primary/80 to-primary'}`}
                     style={{ width: `${pct}%` }}
                   />
                 </div>
