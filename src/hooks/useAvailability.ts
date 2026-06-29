@@ -25,7 +25,7 @@ interface UseAvailabilityReturn {
   blockedSlots: BlockedSlot[];
   appointments: Appointment[];
   loading: boolean;
-  checkSlotAvailability: (timeSlot: string, date: Date, durationMinutes: number) => SlotAvailability;
+  checkSlotAvailability: (timeSlot: string, date: Date, durationMinutes: number, excludeAppointmentId?: string) => SlotAvailability;
   getAvailableSlotsForDate: (date: Date, durationMinutes: number) => string[];
   getOpeningHoursForDay: (dayOfWeek: number) => OpeningHours | undefined;
   refetch: () => Promise<void>;
