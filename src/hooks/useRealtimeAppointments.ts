@@ -7,12 +7,15 @@ import { ptBR } from 'date-fns/locale';
 interface UseRealtimeAppointmentsOptions {
   barberId: string | undefined;
   onNewAppointment?: () => void;
+  shouldHandleEvent?: () => boolean;
 }
 
-export function useRealtimeAppointments({ barberId, onNewAppointment }: UseRealtimeAppointmentsOptions) {
+export function useRealtimeAppointments({ barberId, onNewAppointment, shouldHandleEvent }: UseRealtimeAppointmentsOptions) {
   // Use ref for callback to avoid resubscribing channel on callback changes
   const callbackRef = useRef(onNewAppointment);
+  const shouldHandleRef = useRef(shouldHandleEvent);
   useEffect(() => { callbackRef.current = onNewAppointment; }, [onNewAppointment]);
+  useEffect(() => { shouldHandleRef.current = shouldHandleEvent; }, [shouldHandleEvent]);
 
   useEffect(() => {
     if (!barberId) return;
@@ -28,6 +31,7 @@ export function useRealtimeAppointments({ barberId, onNewAppointment }: UseRealt
           filter: `barber_id=eq.${barberId}`,
         },
         (payload) => {
+          if (shouldHandleRef.current && !shouldHandleRef.current()) return;
           // Avoid N+1: don't fetch service name on each event; the upcoming
           // refresh (callbackRef) will repopulate the grid with full data.
           const newAppointment = payload.new as {
@@ -56,6 +60,7 @@ export function useRealtimeAppointments({ barberId, onNewAppointment }: UseRealt
           filter: `barber_id=eq.${barberId}`,
         },
         (payload) => {
+          if (shouldHandleRef.current && !shouldHandleRef.current()) return;
           const updatedAppointment = payload.new as {
             status: string;
             customer_name: string;
@@ -85,6 +90,7 @@ export function useRealtimeAppointments({ barberId, onNewAppointment }: UseRealt
           filter: `barber_id=eq.${barberId}`,
         },
         () => {
+          if (shouldHandleRef.current && !shouldHandleRef.current()) return;
           callbackRef.current?.();
         }
       )

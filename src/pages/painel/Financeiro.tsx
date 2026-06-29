@@ -29,14 +29,14 @@ interface ContextType {
 import { formatCurrency } from '@/lib/formatters';
 
 const TABS = [
-  { value: 'resumo', label: 'Resumo', icon: TrendingUp },
-  { value: 'caixa', label: 'Caixa', icon: Wallet },
-  { value: 'produtos', label: 'Produtos', icon: Package },
-  { value: 'despesas', label: 'Despesas', icon: Receipt },
-  { value: 'comissoes', label: 'Comissões', icon: Percent },
-  { value: 'relatorios', label: 'Relatórios', icon: ChartPie },
-  { value: 'barbeiros', label: 'Barbeiros', icon: Users },
-  { value: 'metas', label: 'Metas', icon: Target },
+  { value: 'resumo', label: 'Resumo', icon: TrendingUp, masterOnly: false },
+  { value: 'caixa', label: 'Caixa', icon: Wallet, masterOnly: false },
+  { value: 'produtos', label: 'Produtos', icon: Package, masterOnly: false },
+  { value: 'relatorios', label: 'Relatórios', icon: ChartPie, masterOnly: false },
+  { value: 'despesas', label: 'Despesas', icon: Receipt, masterOnly: true },
+  { value: 'comissoes', label: 'Comissões', icon: Percent, masterOnly: true },
+  { value: 'barbeiros', label: 'Barbeiros', icon: Users, masterOnly: true },
+  { value: 'metas', label: 'Metas', icon: Target, masterOnly: true },
 ];
 
 const ResumoTab = ({ barbershop, isMaster }: { barbershop: any; isMaster: boolean }) => {
@@ -414,7 +414,9 @@ const Financeiro = () => {
   const qc = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const initial = searchParams.get('tab') || 'resumo';
-  const [tab, setTab] = useState(initial);
+  const visibleTabs = useMemo(() => TABS.filter((t) => ctx.isMaster || !t.masterOnly), [ctx.isMaster]);
+  const isAllowedTab = useCallback((value: string) => visibleTabs.some((t) => t.value === value), [visibleTabs]);
+  const [tab, setTab] = useState(() => (visibleTabs.some((t) => t.value === initial) ? initial : 'resumo'));
 
   // Auto-materialize recurring expenses for the current month on mount
   useEffect(() => {
@@ -431,9 +433,17 @@ const Financeiro = () => {
   }, [ctx.barbershop?.id, ctx.isMaster, qc]);
 
   const handleTab = (v: string) => {
+    if (!isAllowedTab(v)) return;
     setTab(v);
     setSearchParams({ tab: v }, { replace: true });
   };
+
+  useEffect(() => {
+    const requested = searchParams.get('tab') || 'resumo';
+    const next = isAllowedTab(requested) ? requested : 'resumo';
+    if (tab !== next) setTab(next);
+    if (requested !== next) setSearchParams({ tab: next }, { replace: true });
+  }, [searchParams, setSearchParams, isAllowedTab, tab]);
 
   return (
     <div className="space-y-4 animate-page-enter pb-20">
@@ -447,8 +457,11 @@ const Financeiro = () => {
 
       <Tabs value={tab} onValueChange={handleTab}>
         <div className="-mx-3 md:mx-0 overflow-x-auto scrollbar-hide">
-          <TabsList className="inline-flex h-11 rounded-lg p-1 mx-3 md:mx-0 w-max md:w-full md:grid md:grid-cols-8">
-            {TABS.map((t) => (
+          <TabsList
+            className="inline-flex h-11 rounded-lg p-1 mx-3 md:mx-0 w-max md:w-full md:grid"
+            style={{ gridTemplateColumns: `repeat(${visibleTabs.length}, minmax(0, 1fr))` }}
+          >
+            {visibleTabs.map((t) => (
               <TabsTrigger key={t.value} value={t.value} className="rounded-md h-full px-3 text-xs gap-1.5 whitespace-nowrap">
                 <t.icon className="h-3.5 w-3.5" />
                 {t.label}
