@@ -198,16 +198,8 @@ const EditAppointmentDialog = ({
   };
 
   const getSlotStatus = (timeSlot: string, durationMinutes: number) => {
-    // Permitir o horário atual do agendamento
-    if (appointment) {
-      const currentTime = format(new Date(appointment.start_time), 'HH:mm');
-      const currentDate = startOfDay(new Date(appointment.start_time));
-      if (timeSlot === currentTime && selectedDate.getTime() === currentDate.getTime() && selectedBarberId === appointment.barber_id) {
-        return { occupied: false, reason: '' };
-      }
-    }
-
-    const availability = checkSlotAvailability(timeSlot, selectedDate, durationMinutes);
+    // Excluir o próprio agendamento sendo editado para não conflitar consigo mesmo
+    const availability = checkSlotAvailability(timeSlot, selectedDate, durationMinutes, appointment?.id);
     return {
       occupied: !availability.available,
       reason: availability.reason,

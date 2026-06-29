@@ -24,6 +24,7 @@ export type Database = {
           end_time: string
           id: string
           notes: string | null
+          origin: string
           paid_at: string | null
           payment_method: string | null
           service_id: string | null
@@ -40,6 +41,7 @@ export type Database = {
           end_time: string
           id?: string
           notes?: string | null
+          origin?: string
           paid_at?: string | null
           payment_method?: string | null
           service_id?: string | null
@@ -56,6 +58,7 @@ export type Database = {
           end_time?: string
           id?: string
           notes?: string | null
+          origin?: string
           paid_at?: string | null
           payment_method?: string | null
           service_id?: string | null

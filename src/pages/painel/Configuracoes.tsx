@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Loader2, Building2, Crown, Link2, Copy, CircleCheck as CheckCircle, CreditCard, ChevronRight, Sun, Moon, TriangleAlert as AlertTriangle, Trash2, Camera, CircleHelp as HelpCircle, Mail, Clock } from 'lucide-react';
+import { Loader2, Building2, Crown, Link2, Copy, CircleCheck as CheckCircle, CreditCard, ChevronRight, Sun, Moon, TriangleAlert as AlertTriangle, Trash2, Camera, CircleHelp as HelpCircle, Mail, Clock, Lock } from 'lucide-react';
+import { ChangePasswordDialog } from '@/components/painel/ChangePasswordDialog';
 import { toast } from 'sonner';
 import { Switch } from '@/components/ui/switch';
 import { supabase } from '@/integrations/supabase/client';
@@ -29,6 +30,7 @@ const Configuracoes = () => {
   const navigate = useNavigate();
   
   const [copied, setCopied] = useState(false);
+  const [changePasswordOpen, setChangePasswordOpen] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [photoUrl, setPhotoUrl] = useState('');
   const barbershopFileInputRef = useRef<HTMLInputElement>(null);
@@ -449,6 +451,30 @@ const Configuracoes = () => {
           </div>
         </div>
       </section>
+
+      {/* Seção Segurança */}
+      <section className="space-y-4">
+        <h2 className="text-lg font-semibold flex items-center gap-2">
+          <Lock className="h-4 w-4" />
+          Segurança
+        </h2>
+
+        <div className="rounded-lg border divide-y">
+          <div
+            className="flex items-center gap-3 p-4 cursor-pointer hover:bg-accent/50 transition-colors"
+            onClick={() => setChangePasswordOpen(true)}
+          >
+            <Lock className="h-4 w-4 text-muted-foreground shrink-0" />
+            <div className="flex-1">
+              <p className="text-sm font-medium">Alterar senha</p>
+              <p className="text-xs text-muted-foreground">Atualize sua senha de acesso</p>
+            </div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </div>
+        </div>
+      </section>
+
+      <ChangePasswordDialog open={changePasswordOpen} onOpenChange={setChangePasswordOpen} />
 
       {/* Termos e Política */}
       <div className="flex items-center justify-center gap-3 pt-2">
