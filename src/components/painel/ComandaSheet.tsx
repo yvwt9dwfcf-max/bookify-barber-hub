@@ -49,8 +49,7 @@ interface CartItem {
 // so the comanda can be finalized in a single tap.
 const DEFAULT_PAYMENT_METHOD = 'dinheiro';
 
-const formatCurrency = (v: number) =>
-  new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
+import { formatCurrency } from '@/lib/formatters';
 
 const ComandaSheet = ({ open, onOpenChange, appointment, onCompleted }: ComandaSheetProps) => {
   const qc = useQueryClient();

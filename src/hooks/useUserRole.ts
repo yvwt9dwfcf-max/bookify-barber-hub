@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase, UserRole, Barbershop, AppRole } from '@/lib/supabase';
 import { useAuth } from './useAuth';
 
@@ -16,17 +16,19 @@ export function useUserRole(): UseUserRoleReturn {
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [barbershop, setBarbershop] = useState<Barbershop | null>(null);
   const [loading, setLoading] = useState(true);
+  const inFlightRef = useRef(false);
 
-  const fetchUserRole = async () => {
+  const fetchUserRole = useCallback(async () => {
     if (!user) {
       setUserRole(null);
       setBarbershop(null);
       setLoading(false);
       return;
     }
+    if (inFlightRef.current) return; // guard against Strict Mode double invoke
+    inFlightRef.current = true;
 
     try {
-      // Fetch user role
       const { data: roleData, error: roleError } = await supabase
         .from('user_roles')
         .select('*')
@@ -34,10 +36,9 @@ export function useUserRole(): UseUserRoleReturn {
         .maybeSingle();
 
       if (roleError) throw roleError;
-      
+
       setUserRole(roleData as UserRole | null);
 
-      // If we have a role, fetch the barbershop
       if (roleData?.barbershop_id) {
         const { data: shopData, error: shopError } = await supabase
           .from('barbershops')
@@ -52,12 +53,13 @@ export function useUserRole(): UseUserRoleReturn {
       console.error('Erro ao buscar role do usuário:', error);
     } finally {
       setLoading(false);
+      inFlightRef.current = false;
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     fetchUserRole();
-  }, [user]);
+  }, [fetchUserRole]);
 
   return {
     userRole,

@@ -47,8 +47,7 @@ const CATEGORIES = [
   { value: 'outros', label: 'Outros', color: '#6B7280' },
 ];
 
-const formatCurrency = (value: number) =>
-  new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+import { formatCurrency } from '@/lib/formatters';
 
 const PAGE_SIZE = 20;
 

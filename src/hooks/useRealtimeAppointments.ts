@@ -27,32 +27,20 @@ export function useRealtimeAppointments({ barberId, onNewAppointment }: UseRealt
           table: 'appointments',
           filter: `barber_id=eq.${barberId}`,
         },
-        async (payload) => {
+        (payload) => {
+          // Avoid N+1: don't fetch service name on each event; the upcoming
+          // refresh (callbackRef) will repopulate the grid with full data.
           const newAppointment = payload.new as {
             id: string;
             customer_name: string;
             start_time: string;
-            service_id: string | null;
           };
-
-          let serviceName = 'Serviço';
-          if (newAppointment.service_id) {
-            const { data: service } = await supabase
-              .from('services')
-              .select('name')
-              .eq('id', newAppointment.service_id)
-              .maybeSingle();
-            
-            if (service) {
-              serviceName = service.name;
-            }
-          }
 
           const appointmentDate = new Date(newAppointment.start_time);
           const formattedDate = format(appointmentDate, "d 'de' MMMM 'às' HH:mm", { locale: ptBR });
 
           toast.success('Novo agendamento!', {
-            description: `${newAppointment.customer_name} • ${serviceName} • ${formattedDate}`,
+            description: `${newAppointment.customer_name} • ${formattedDate}`,
             duration: 2500,
           });
 

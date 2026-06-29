@@ -36,8 +36,7 @@ interface Product {
   is_active: boolean;
 }
 
-const formatCurrency = (value: number) =>
-  new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+import { formatCurrency } from '@/lib/formatters';
 
 const Produtos = () => {
   const { barber, barbershop, isMaster } = useOutletContext<ContextType>();
