@@ -452,6 +452,30 @@ const Configuracoes = () => {
         </div>
       </section>
 
+      {/* Seção Segurança */}
+      <section className="space-y-4">
+        <h2 className="text-lg font-semibold flex items-center gap-2">
+          <Lock className="h-4 w-4" />
+          Segurança
+        </h2>
+
+        <div className="rounded-lg border divide-y">
+          <div
+            className="flex items-center gap-3 p-4 cursor-pointer hover:bg-accent/50 transition-colors"
+            onClick={() => setChangePasswordOpen(true)}
+          >
+            <Lock className="h-4 w-4 text-muted-foreground shrink-0" />
+            <div className="flex-1">
+              <p className="text-sm font-medium">Alterar senha</p>
+              <p className="text-xs text-muted-foreground">Atualize sua senha de acesso</p>
+            </div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </div>
+        </div>
+      </section>
+
+      <ChangePasswordDialog open={changePasswordOpen} onOpenChange={setChangePasswordOpen} />
+
       {/* Termos e Política */}
       <div className="flex items-center justify-center gap-3 pt-2">
         <a href="/termos-de-uso" target="_blank" className="text-xs text-muted-foreground/60 hover:text-primary transition-colors">
