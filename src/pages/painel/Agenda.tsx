@@ -146,10 +146,26 @@ const Agenda = () => {
   useEffect(() => { fetchRef.current = fetchAppointments; }, [fetchAppointments]);
   useEffect(() => { refetchAvailabilityRef.current = refetchAvailability; }, [refetchAvailability]);
 
-  const handleNewAppointment = useCallback(() => {
-    fetchRef.current();
-    refetchAvailabilityRef.current();
+  // Coalesce burst-refreshes: when the user creates/edits/closes an appointment
+  // we get a local onSuccess AND a realtime UPDATE for the same row almost
+  // simultaneously. Without debouncing, the grid re-renders twice and produces
+  // a visible "blink". 250ms is short enough to feel instant.
+  const refreshTimer = useRef<number | null>(null);
+  const scheduleRefresh = useCallback(() => {
+    if (refreshTimer.current !== null) window.clearTimeout(refreshTimer.current);
+    refreshTimer.current = window.setTimeout(() => {
+      refreshTimer.current = null;
+      fetchRef.current();
+      refetchAvailabilityRef.current();
+    }, 250);
   }, []);
+  useEffect(() => () => {
+    if (refreshTimer.current !== null) window.clearTimeout(refreshTimer.current);
+  }, []);
+
+  const handleNewAppointment = useCallback(() => {
+    scheduleRefresh();
+  }, [scheduleRefresh]);
 
   useRealtimeAppointments({ barberId: selectedBarberId || undefined, onNewAppointment: handleNewAppointment });
 
