@@ -363,6 +363,9 @@ const Agenda = () => {
         <ComandaSheet
           open={showComanda}
           onOpenChange={setShowComanda}
+          onBeforeComplete={() => {
+            suppressRealtimeUntilRef.current = Date.now() + 1800;
+          }}
           appointment={comandaAppointment ? {
             id: comandaAppointment.id,
             customer_name: comandaAppointment.customer_name,
