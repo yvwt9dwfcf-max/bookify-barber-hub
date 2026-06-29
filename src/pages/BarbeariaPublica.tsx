@@ -190,15 +190,10 @@ const BarbeariaPublica = () => {
           .maybeSingle(),
       ]);
 
-      // barber_service_photos doesn't carry barbershop_id — scope it by the
-      // barbers we just loaded so the per-barber service photos actually show up.
-      const barberIds = (barbersRes.data || []).map((b) => b.id);
-      const { data: servicePhotosData } = barberIds.length
-        ? await (supabase as any)
-            .from('barber_service_photos')
-            .select('barber_id, service_id, photo_url')
-            .in('barber_id', barberIds)
-        : { data: [] };
+      const { data: servicePhotosData } = await (supabase as any)
+        .from('barber_service_photos')
+        .select('barber_id, service_id, photo_url')
+        .eq('barbershop_id', shop.id);
 
       setBarbers(barbersRes.data || []);
       setServices(servicesRes.data || []);

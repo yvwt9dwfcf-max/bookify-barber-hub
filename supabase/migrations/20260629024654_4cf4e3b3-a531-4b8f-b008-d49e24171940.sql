@@ -1,1 +1,0 @@
-ALTER TABLE public.appointments ADD COLUMN IF NOT EXISTS origin text NOT NULL DEFAULT 'online';

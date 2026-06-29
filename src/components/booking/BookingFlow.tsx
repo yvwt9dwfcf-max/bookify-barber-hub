@@ -111,7 +111,6 @@ export function BookingFlow({ preselectedBarber, barbershopId, availableBarbers 
           start_time: startTime.toISOString(),
           end_time: endTime.toISOString(),
           status: 'confirmed',
-          origin: 'online',
         })
         .select(`
           *,

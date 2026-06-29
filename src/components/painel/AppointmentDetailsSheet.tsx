@@ -101,34 +101,20 @@ const AppointmentDetailsSheet = ({
     onOpenChange(false);
   };
 
-  const origin = (appointment as any).origin === 'manual' ? 'manual' : 'online';
-
   return (
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetContent side="bottom" className="rounded-t-2xl max-h-[90vh] flex flex-col p-0">
           <SheetHeader className="text-left p-4 pr-12 pb-2 flex-shrink-0">
             <SheetTitle className="text-lg">Detalhes do Agendamento</SheetTitle>
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span
-                className={cn(
-                  'px-2.5 py-1 rounded-full text-xs font-medium',
-                  getStatusColor(appointment.status)
-                )}
-              >
-                {getStatusLabel(appointment.status)}
-              </span>
-              <span
-                className={cn(
-                  'px-2.5 py-1 rounded-full text-[11px] font-medium border',
-                  origin === 'online'
-                    ? 'bg-primary/5 text-primary border-primary/20'
-                    : 'bg-muted text-muted-foreground border-border'
-                )}
-              >
-                {origin === 'online' ? 'Agendamento Online' : 'Agendamento Manual'}
-              </span>
-            </div>
+            <span
+              className={cn(
+                'px-2.5 py-1 rounded-full text-xs font-medium w-fit',
+                getStatusColor(appointment.status)
+              )}
+            >
+              {getStatusLabel(appointment.status)}
+            </span>
             <SheetDescription className="sr-only">
               Informações completas do agendamento
             </SheetDescription>
@@ -177,17 +163,9 @@ const AppointmentDetailsSheet = ({
               )}
 
               <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                {(appointment.service as any)?.photo_url ? (
-                  <img
-                    src={(appointment.service as any).photo_url}
-                    alt={appointment.service?.name || 'Serviço'}
-                    className="h-10 w-10 rounded-lg object-cover flex-shrink-0 ring-1 ring-border/40"
-                  />
-                ) : (
-                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <Scissors className="h-5 w-5 text-primary" />
-                  </div>
-                )}
+                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Scissors className="h-5 w-5 text-primary" />
+                </div>
                 <div className="min-w-0">
                   <p className="font-medium truncate">
                     {appointment.service?.name || 'Serviço não especificado'}
@@ -226,17 +204,9 @@ const AppointmentDetailsSheet = ({
 
               {appointment.barber && (
                 <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                  {appointment.barber.photo_url ? (
-                    <img
-                      src={appointment.barber.photo_url}
-                      alt={appointment.barber.name}
-                      className="h-10 w-10 rounded-full object-cover flex-shrink-0 ring-1 ring-border/40"
-                    />
-                  ) : (
-                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <User className="h-5 w-5 text-primary" />
-                    </div>
-                  )}
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <User className="h-5 w-5 text-primary" />
+                  </div>
                   <div className="min-w-0">
                     <p className="font-medium truncate">{appointment.barber.name}</p>
                     <p className="text-sm text-muted-foreground">Profissional</p>

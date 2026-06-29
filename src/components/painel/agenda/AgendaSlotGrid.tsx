@@ -131,8 +131,9 @@ const AgendaSlotGrid = ({
 
   return (
     <div className="relative">
-      {/* Empty state intentionally removed — when no appointments exist
-          we just show the available time slots without any banner. */}
+      {!hasAppointments && !hideEmptyState && (
+        <AgendaEmptyState isToday={isToday} barbershop={barbershop} onDismiss={onDismissEmptyState} />
+      )}
 
       {displayRows.map((row, rowIndex) => {
         const slot = row.slots[0];

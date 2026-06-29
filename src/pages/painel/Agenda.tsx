@@ -146,26 +146,10 @@ const Agenda = () => {
   useEffect(() => { fetchRef.current = fetchAppointments; }, [fetchAppointments]);
   useEffect(() => { refetchAvailabilityRef.current = refetchAvailability; }, [refetchAvailability]);
 
-  // Coalesce burst-refreshes: when the user creates/edits/closes an appointment
-  // we get a local onSuccess AND a realtime UPDATE for the same row almost
-  // simultaneously. Without debouncing, the grid re-renders twice and produces
-  // a visible "blink". 250ms is short enough to feel instant.
-  const refreshTimer = useRef<number | null>(null);
-  const scheduleRefresh = useCallback(() => {
-    if (refreshTimer.current !== null) window.clearTimeout(refreshTimer.current);
-    refreshTimer.current = window.setTimeout(() => {
-      refreshTimer.current = null;
-      fetchRef.current();
-      refetchAvailabilityRef.current();
-    }, 250);
-  }, []);
-  useEffect(() => () => {
-    if (refreshTimer.current !== null) window.clearTimeout(refreshTimer.current);
-  }, []);
-
   const handleNewAppointment = useCallback(() => {
-    scheduleRefresh();
-  }, [scheduleRefresh]);
+    fetchRef.current();
+    refetchAvailabilityRef.current();
+  }, []);
 
   useRealtimeAppointments({ barberId: selectedBarberId || undefined, onNewAppointment: handleNewAppointment });
 
@@ -282,7 +266,7 @@ const Agenda = () => {
             onOpenChange={(open) => { setShowManualDialog(open); if (!open) setPreselectedTime(null); }}
             barber={canCreateForOthers ? selectedBarber! : barber!}
             selectedDate={selectedDate}
-            onSuccess={scheduleRefresh}
+            onSuccess={() => { fetchAppointments(); refetchAvailability(); }}
             canCreateForOthers={canCreateForOthers}
             barbers={barbers}
             preselectedTime={preselectedTime}
@@ -357,11 +341,10 @@ const Agenda = () => {
             service: comandaAppointment.service ? {
               name: comandaAppointment.service.name,
               price: Number(comandaAppointment.service.price || 0),
-              photo_url: (comandaAppointment.service as any).photo_url ?? null,
             } : null,
           } : null}
           onCompleted={() => {
-            scheduleRefresh();
+            fetchAppointments();
             setDashboardRefreshKey((k) => k + 1);
           }}
         />
@@ -370,7 +353,7 @@ const Agenda = () => {
           appointment={selectedAppointment}
           open={showEditDialog}
           onOpenChange={setShowEditDialog}
-          onSuccess={scheduleRefresh}
+          onSuccess={fetchAppointments}
           isMaster={isMaster}
         />
 
@@ -381,7 +364,7 @@ const Agenda = () => {
             barber={selectedBarber || barber!}
             selectedDate={selectedDate}
             preselectedTime={blockTime}
-            onSuccess={scheduleRefresh}
+            onSuccess={() => { fetchAppointments(); refetchAvailability(); }}
           />
         )}
 
