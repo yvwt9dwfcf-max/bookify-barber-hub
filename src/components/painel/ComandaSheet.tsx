@@ -30,7 +30,7 @@ interface ComandaAppointment {
   barbershop_id: string | null;
   barber_id?: string | null;
   start_time: string;
-  service?: { name: string; price: number } | null;
+  service?: { name: string; price: number; photo_url?: string | null } | null;
 }
 
 interface ComandaSheetProps {
@@ -45,26 +45,21 @@ interface CartItem {
   quantity: number;
 }
 
-const PAYMENT_METHODS = [
-  { value: 'dinheiro', label: 'Dinheiro', icon: Banknote, color: 'text-emerald-500' },
-  { value: 'pix', label: 'Pix', icon: Smartphone, color: 'text-blue-500' },
-  { value: 'debito', label: 'Débito', icon: CreditCard, color: 'text-purple-500' },
-  { value: 'credito', label: 'Crédito', icon: CreditCard, color: 'text-amber-500' },
-];
+// Payment method is no longer asked at close-out; defaults to "dinheiro"
+// so the comanda can be finalized in a single tap.
+const DEFAULT_PAYMENT_METHOD = 'dinheiro';
 
 const formatCurrency = (v: number) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
 
 const ComandaSheet = ({ open, onOpenChange, appointment, onCompleted }: ComandaSheetProps) => {
   const qc = useQueryClient();
-  const [paymentMethod, setPaymentMethod] = useState('dinheiro');
   const [cart, setCart] = useState<Record<string, CartItem>>({});
   const [search, setSearch] = useState('');
   const [showProducts, setShowProducts] = useState(false);
 
   useEffect(() => {
     if (open) {
-      setPaymentMethod('dinheiro');
       setCart({});
       setSearch('');
       setShowProducts(false);
