@@ -282,7 +282,7 @@ const Agenda = () => {
             onOpenChange={(open) => { setShowManualDialog(open); if (!open) setPreselectedTime(null); }}
             barber={canCreateForOthers ? selectedBarber! : barber!}
             selectedDate={selectedDate}
-            onSuccess={() => { fetchAppointments(); refetchAvailability(); }}
+            onSuccess={scheduleRefresh}
             canCreateForOthers={canCreateForOthers}
             barbers={barbers}
             preselectedTime={preselectedTime}
@@ -360,7 +360,7 @@ const Agenda = () => {
             } : null,
           } : null}
           onCompleted={() => {
-            fetchAppointments();
+            scheduleRefresh();
             setDashboardRefreshKey((k) => k + 1);
           }}
         />
@@ -369,7 +369,7 @@ const Agenda = () => {
           appointment={selectedAppointment}
           open={showEditDialog}
           onOpenChange={setShowEditDialog}
-          onSuccess={fetchAppointments}
+          onSuccess={scheduleRefresh}
           isMaster={isMaster}
         />
 
@@ -380,7 +380,7 @@ const Agenda = () => {
             barber={selectedBarber || barber!}
             selectedDate={selectedDate}
             preselectedTime={blockTime}
-            onSuccess={() => { fetchAppointments(); refetchAvailability(); }}
+            onSuccess={scheduleRefresh}
           />
         )}
 
