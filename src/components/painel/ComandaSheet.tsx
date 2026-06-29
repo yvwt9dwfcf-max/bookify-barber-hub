@@ -30,7 +30,7 @@ interface ComandaAppointment {
   barbershop_id: string | null;
   barber_id?: string | null;
   start_time: string;
-  service?: { name: string; price: number } | null;
+  service?: { name: string; price: number; photo_url?: string | null } | null;
 }
 
 interface ComandaSheetProps {
@@ -45,26 +45,21 @@ interface CartItem {
   quantity: number;
 }
 
-const PAYMENT_METHODS = [
-  { value: 'dinheiro', label: 'Dinheiro', icon: Banknote, color: 'text-emerald-500' },
-  { value: 'pix', label: 'Pix', icon: Smartphone, color: 'text-blue-500' },
-  { value: 'debito', label: 'Débito', icon: CreditCard, color: 'text-purple-500' },
-  { value: 'credito', label: 'Crédito', icon: CreditCard, color: 'text-amber-500' },
-];
+// Payment method is no longer asked at close-out; defaults to "dinheiro"
+// so the comanda can be finalized in a single tap.
+const DEFAULT_PAYMENT_METHOD = 'dinheiro';
 
 const formatCurrency = (v: number) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
 
 const ComandaSheet = ({ open, onOpenChange, appointment, onCompleted }: ComandaSheetProps) => {
   const qc = useQueryClient();
-  const [paymentMethod, setPaymentMethod] = useState('dinheiro');
   const [cart, setCart] = useState<Record<string, CartItem>>({});
   const [search, setSearch] = useState('');
   const [showProducts, setShowProducts] = useState(false);
 
   useEffect(() => {
     if (open) {
-      setPaymentMethod('dinheiro');
       setCart({});
       setSearch('');
       setShowProducts(false);
@@ -142,7 +137,7 @@ const ComandaSheet = ({ open, onOpenChange, appointment, onCompleted }: ComandaS
         .from('appointments')
         .update({
           status: 'completed',
-          payment_method: paymentMethod,
+          payment_method: DEFAULT_PAYMENT_METHOD,
           paid_at: new Date().toISOString(),
         })
         .eq('id', appointment.id);
@@ -162,7 +157,7 @@ const ComandaSheet = ({ open, onOpenChange, appointment, onCompleted }: ComandaS
           total_amount: Number(i.product.sale_price) * i.quantity,
           customer_name: appointment.customer_name,
           customer_phone: appointment.customer_phone,
-          payment_method: paymentMethod,
+          payment_method: DEFAULT_PAYMENT_METHOD,
         }));
         const { error: salesErr } = await supabase.from('product_sales').insert(rows);
         if (salesErr) throw salesErr;
@@ -215,9 +210,17 @@ const ComandaSheet = ({ open, onOpenChange, appointment, onCompleted }: ComandaS
               Serviço
             </p>
             <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/50">
-              <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
-                <Sparkles className="h-4 w-4 text-primary" />
-              </div>
+              {appointment.service?.photo_url ? (
+                <img
+                  src={appointment.service.photo_url}
+                  alt={appointment.service.name}
+                  className="h-9 w-9 rounded-lg object-cover ring-1 ring-border/40"
+                />
+              ) : (
+                <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                </div>
+              )}
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">
                   {appointment.service?.name || 'Atendimento'}
@@ -350,34 +353,7 @@ const ComandaSheet = ({ open, onOpenChange, appointment, onCompleted }: ComandaS
             )}
           </div>
 
-          {/* Payment */}
-          <div>
-            <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold mb-2">
-              Forma de pagamento
-            </p>
-            <div className="grid grid-cols-4 gap-2">
-              {PAYMENT_METHODS.map((m) => {
-                const Icon = m.icon;
-                const active = paymentMethod === m.value;
-                return (
-                  <button
-                    key={m.value}
-                    type="button"
-                    onClick={() => setPaymentMethod(m.value)}
-                    className={cn(
-                      'flex flex-col items-center gap-1 py-3 rounded-xl border-2 transition-all active:scale-95',
-                      active
-                        ? 'border-primary bg-primary/10'
-                        : 'border-border bg-muted/30 text-muted-foreground',
-                    )}
-                  >
-                    <Icon className={cn('h-4 w-4', active ? 'text-primary' : m.color)} />
-                    <span className={cn('text-[10px] font-medium', active && 'text-primary')}>{m.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+          {/* Payment selection intentionally removed — finalization is one-tap. */}
         </div>
 
         {/* Footer */}

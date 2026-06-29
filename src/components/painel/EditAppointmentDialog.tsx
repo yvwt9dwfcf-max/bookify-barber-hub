@@ -198,16 +198,9 @@ const EditAppointmentDialog = ({
   };
 
   const getSlotStatus = (timeSlot: string, durationMinutes: number) => {
-    // Permitir o horário atual do agendamento
-    if (appointment) {
-      const currentTime = format(new Date(appointment.start_time), 'HH:mm');
-      const currentDate = startOfDay(new Date(appointment.start_time));
-      if (timeSlot === currentTime && selectedDate.getTime() === currentDate.getTime() && selectedBarberId === appointment.barber_id) {
-        return { occupied: false, reason: '' };
-      }
-    }
-
-    const availability = checkSlotAvailability(timeSlot, selectedDate, durationMinutes);
+    const availability = checkSlotAvailability(timeSlot, selectedDate, durationMinutes, {
+      excludeAppointmentId: appointment?.id,
+    });
     return {
       occupied: !availability.available,
       reason: availability.reason,
@@ -216,7 +209,7 @@ const EditAppointmentDialog = ({
 
   const onSubmit = async (data: AppointmentFormData) => {
     if (!appointment) return;
-    
+
     setLoading(true);
     try {
       const selectedService = services.find((s) => s.id === data.service_id);
@@ -234,11 +227,29 @@ const EditAppointmentDialog = ({
       const startTime = setMinutes(setHours(selectedDate, hours), minutes);
       const endTime = addMinutes(startTime, durationMinutes);
 
-      // Check for conflicts before submitting
+      // Client-side availability check (excluding the current appointment from conflicts)
       const slotCheck = getSlotStatus(data.start_time, durationMinutes);
       if (slotCheck.occupied) {
         const reasonText = slotCheck.reason === 'intervalo' ? 'no intervalo' : slotCheck.reason;
         toast.error(`Horário indisponível (${reasonText}). Escolha outro horário.`);
+        setLoading(false);
+        return;
+      }
+
+      // Server-side overlap check — guarantees the new duration doesn't
+      // collide with any other appointment for the same barber.
+      const { data: conflicts, error: conflictErr } = await supabase
+        .from('appointments')
+        .select('id')
+        .eq('barber_id', data.barber_id)
+        .neq('status', 'cancelled')
+        .neq('id', appointment.id)
+        .lt('start_time', endTime.toISOString())
+        .gt('end_time', startTime.toISOString());
+
+      if (conflictErr) throw conflictErr;
+      if (conflicts && conflicts.length > 0) {
+        toast.error('Conflito de horário: já existe outro agendamento neste intervalo.');
         setLoading(false);
         return;
       }

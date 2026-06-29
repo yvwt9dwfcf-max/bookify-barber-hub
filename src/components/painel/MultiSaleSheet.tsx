@@ -233,31 +233,7 @@ export default function MultiSaleSheet({
                 <span className="text-2xl font-bold tabular-nums">{formatCurrency(total)}</span>
               </div>
 
-              {/* Payment method */}
-              <div className="space-y-2">
-                <Label className="text-xs">Forma de pagamento</Label>
-                <div className="grid grid-cols-4 gap-2">
-                  {PAYMENT_METHODS.map((m) => {
-                    const Icon = m.icon;
-                    const active = paymentMethod === m.value;
-                    return (
-                      <button
-                        key={m.value}
-                        type="button"
-                        onClick={() => setPaymentMethod(m.value)}
-                        className={`flex flex-col items-center gap-1 py-3 rounded-xl border-2 transition-all active:scale-95 ${
-                          active
-                            ? 'border-primary bg-primary/10 text-primary'
-                            : 'border-border bg-muted/30 text-muted-foreground'
-                        }`}
-                      >
-                        <Icon className="h-4 w-4" />
-                        <span className="text-[10px] font-medium">{m.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+              {/* Payment method selection removed — sale is finalized in one tap (default "dinheiro"). */}
 
               {/* Barber */}
               <div className="space-y-1.5">
