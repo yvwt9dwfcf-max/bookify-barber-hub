@@ -21,8 +21,7 @@ interface ContextType {
   isMaster: boolean;
 }
 
-const formatCurrency = (v: number) =>
-  new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
+import { formatCurrency } from '@/lib/formatters';
 
 const PAYMENT_LABELS: Record<string, { label: string; icon: any; color: string }> = {
   dinheiro: { label: 'Dinheiro', icon: Banknote, color: '#22C55E' },
