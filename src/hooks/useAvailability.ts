@@ -25,7 +25,7 @@ interface UseAvailabilityReturn {
   blockedSlots: BlockedSlot[];
   appointments: Appointment[];
   loading: boolean;
-  checkSlotAvailability: (timeSlot: string, date: Date, durationMinutes: number) => SlotAvailability;
+  checkSlotAvailability: (timeSlot: string, date: Date, durationMinutes: number, options?: { excludeAppointmentId?: string }) => SlotAvailability;
   getAvailableSlotsForDate: (date: Date, durationMinutes: number) => string[];
   getOpeningHoursForDay: (dayOfWeek: number) => OpeningHours | undefined;
   refetch: () => Promise<void>;
@@ -93,9 +93,10 @@ export function useAvailability({
    * Unified slot availability check - used by both public and internal booking
    */
   const checkSlotAvailability = useCallback((
-    timeSlot: string, 
-    date: Date, 
-    durationMinutes: number
+    timeSlot: string,
+    date: Date,
+    durationMinutes: number,
+    options?: { excludeAppointmentId?: string }
   ): SlotAvailability => {
     const [hours, minutes] = timeSlot.split(':').map(Number);
     const slotStart = setMinutes(setHours(date, hours), minutes);
@@ -141,8 +142,9 @@ export function useAvailability({
       return { available: false, reason: 'bloqueado' };
     }
 
-    // 5. Check existing appointments
+    // 5. Check existing appointments (optionally excluding one — used when editing)
     const hasAppointment = appointments.some((apt) => {
+      if (options?.excludeAppointmentId && apt.id === options.excludeAppointmentId) return false;
       const aptStart = new Date(apt.start_time);
       const aptEnd = new Date(apt.end_time);
       
