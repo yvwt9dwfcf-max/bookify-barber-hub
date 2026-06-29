@@ -357,6 +357,7 @@ const Agenda = () => {
             service: comandaAppointment.service ? {
               name: comandaAppointment.service.name,
               price: Number(comandaAppointment.service.price || 0),
+              photo_url: (comandaAppointment.service as any).photo_url ?? null,
             } : null,
           } : null}
           onCompleted={() => {
