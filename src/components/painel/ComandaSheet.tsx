@@ -210,9 +210,17 @@ const ComandaSheet = ({ open, onOpenChange, appointment, onCompleted }: ComandaS
               Serviço
             </p>
             <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/50">
-              <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
-                <Sparkles className="h-4 w-4 text-primary" />
-              </div>
+              {appointment.service?.photo_url ? (
+                <img
+                  src={appointment.service.photo_url}
+                  alt={appointment.service.name}
+                  className="h-9 w-9 rounded-lg object-cover ring-1 ring-border/40"
+                />
+              ) : (
+                <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                </div>
+              )}
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">
                   {appointment.service?.name || 'Atendimento'}
