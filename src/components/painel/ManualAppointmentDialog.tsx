@@ -345,6 +345,7 @@ const ManualAppointmentDialog = ({
           end_time: addDays(endTime, w * 7).toISOString(),
           notes: data.notes?.trim() || null,
           status: 'confirmed',
+          origin: 'manual',
         });
       }
 
