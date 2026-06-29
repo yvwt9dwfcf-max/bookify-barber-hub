@@ -30,6 +30,7 @@ const Configuracoes = () => {
   const navigate = useNavigate();
   
   const [copied, setCopied] = useState(false);
+  const [changePasswordOpen, setChangePasswordOpen] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [photoUrl, setPhotoUrl] = useState('');
   const barbershopFileInputRef = useRef<HTMLInputElement>(null);
