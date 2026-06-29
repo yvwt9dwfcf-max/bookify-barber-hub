@@ -186,17 +186,17 @@ const SwipeableAppointmentCard = ({
       >
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1 space-y-0.5">
+            <p className={cn(
+              "font-semibold text-foreground truncate leading-tight",
+              is15Min ? "text-[11px]" : "text-[12px]"
+            )}>
+              {appointment.customer_name}
+            </p>
             {appointment.service && (
-              <p className={cn(
-                "font-semibold text-foreground truncate leading-tight",
-                is15Min ? "text-[11px]" : "text-[12px]"
-              )}>
+              <p className="text-[10px] text-muted-foreground truncate leading-tight">
                 {appointment.service.name}
               </p>
             )}
-            <p className="text-[10px] text-muted-foreground truncate leading-tight">
-              {appointment.customer_name}
-            </p>
             {!is15Min && (
               <p className="text-[9px] text-muted-foreground/60 tabular-nums leading-tight pt-0.5">
                 {format(new Date(appointment.start_time), 'HH:mm')} — {format(new Date(appointment.end_time), 'HH:mm')}
