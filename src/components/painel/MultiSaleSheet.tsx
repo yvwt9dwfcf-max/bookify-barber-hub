@@ -34,7 +34,8 @@ const PAYMENT_METHODS = [
   { value: 'credito', label: 'Crédito', icon: CreditCard },
 ];
 
-import { formatCurrency } from '@/lib/formatters';
+const formatCurrency = (v: number) =>
+  new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
 
 export default function MultiSaleSheet({
   open, onOpenChange, items, setItems, barbershopId, defaultBarberId,

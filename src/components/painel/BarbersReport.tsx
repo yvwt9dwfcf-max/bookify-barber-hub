@@ -13,7 +13,8 @@ interface Props {
   barbershopId: string;
 }
 
-import { formatCurrency } from '@/lib/formatters';
+const formatCurrency = (v: number) =>
+  new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
 
 const BarbersReport = ({ barbershopId }: Props) => {
   const [filterBarber, setFilterBarber] = useState<string>('all');

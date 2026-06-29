@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase, Barber, BarberPermissions } from '@/lib/supabase';
 import { useAuth } from './useAuth';
 
@@ -10,13 +10,19 @@ export function useBarber() {
   const { user } = useAuth();
   const [barber, setBarber] = useState<BarberWithPermissions | null>(null);
   const [loading, setLoading] = useState(true);
-  const inFlightRef = useRef(false);
 
-  const fetchBarber = useCallback(async () => {
+  useEffect(() => {
+    if (user) {
+      fetchBarber();
+    } else {
+      setBarber(null);
+      setLoading(false);
+    }
+  }, [user]);
+
+  const fetchBarber = async () => {
     if (!user) return;
-    if (inFlightRef.current) return; // guard against Strict Mode double invoke
-    inFlightRef.current = true;
-
+    
     try {
       const { data, error } = await supabase
         .from('barbers')
@@ -28,7 +34,8 @@ export function useBarber() {
         .maybeSingle();
 
       if (error) throw error;
-
+      
+      // Flatten permissions
       if (data) {
         const barberData = {
           ...data,
@@ -42,18 +49,8 @@ export function useBarber() {
       console.error('Erro ao buscar barbeiro:', error);
     } finally {
       setLoading(false);
-      inFlightRef.current = false;
     }
-  }, [user]);
-
-  useEffect(() => {
-    if (user) {
-      fetchBarber();
-    } else {
-      setBarber(null);
-      setLoading(false);
-    }
-  }, [user, fetchBarber]);
+  };
 
   const updateBarber = async (updates: Partial<Barber>) => {
     if (!barber) return { error: new Error('Barbeiro não encontrado') };

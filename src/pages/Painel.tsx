@@ -114,15 +114,17 @@ const Painel = () => {
     barberId: barber?.id,
   });
 
-  // Build menu items based on role. Financeiro remains available to staff;
-  // restricted financial tabs are hidden inside the module itself.
+  // Build menu items based on role.
+  // Employees (non-master) only see their own scope: agenda, services they perform,
+  // their schedule/blocks, their clients, fidelity & WhatsApp.
+  // All shop-wide items (Equipe, Financeiro, Perfil Público, Configurações) stay master-only.
   const menuItems = [
     { icon: CalendarDays, label: 'Agenda', path: '/painel' },
     { icon: Sparkles, label: 'Serviços', path: '/painel/servicos' },
     { icon: Timer, label: 'Horários', path: '/painel/horarios' },
     { icon: CalendarX2, label: 'Bloqueios', path: '/painel/bloqueios' },
     ...(isMaster ? [{ icon: UsersRound, label: 'Equipe', path: '/painel/barbeiros' }] : []),
-    { icon: Wallet, label: 'Financeiro', path: '/painel/financeiro' },
+    ...(isMaster ? [{ icon: Wallet, label: 'Financeiro', path: '/painel/financeiro' }] : []),
     { icon: Contact, label: 'Clientes', path: '/painel/clientes' },
     { icon: Stamp, label: 'Fidelidade', path: '/painel/fidelidade' },
     { icon: MessageCircle, label: 'WhatsApp', path: '/painel/whatsapp' },

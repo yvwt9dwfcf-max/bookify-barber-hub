@@ -51,12 +51,11 @@ export function useAvailability({
         .select('*')
         .eq('barber_id', barberId);
 
-      // Fetch blocked slots (only those still relevant: not ended yet)
+      // Fetch blocked slots (only future)
       const blockedPromise = supabase
         .from('blocked_slots')
         .select('*')
-        .eq('barber_id', barberId)
-        .gte('end_time', startOfDay(new Date()).toISOString());
+        .eq('barber_id', barberId);
 
       // Fetch appointments (only future, not cancelled)
       const appointmentsPromise = supabase

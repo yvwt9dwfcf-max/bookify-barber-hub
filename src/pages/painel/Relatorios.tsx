@@ -28,7 +28,9 @@ interface OutletContext {
 
 const PIE_COLORS = ['#22C55E', '#F59E0B', '#4ADE80', '#EF4444', '#A1A1A1'];
 
-import { formatCurrency } from '@/lib/formatters';
+const formatCurrency = (value: number) => {
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+};
 
 // ─── Reusable report content component ───
 interface ReportContentProps {

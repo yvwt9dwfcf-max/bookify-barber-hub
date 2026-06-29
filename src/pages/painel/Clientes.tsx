@@ -36,7 +36,8 @@ interface ClientData {
   }[];
 }
 
-import { formatCurrency } from '@/lib/formatters';
+const formatCurrency = (value: number) =>
+  new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 
 const getInitials = (name: string) =>
   name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();

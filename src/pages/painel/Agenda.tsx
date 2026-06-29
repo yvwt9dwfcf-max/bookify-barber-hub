@@ -143,7 +143,6 @@ const Agenda = () => {
 
   const fetchRef = useRef(fetchAppointments);
   const refetchAvailabilityRef = useRef(refetchAvailability);
-  const suppressRealtimeUntilRef = useRef(0);
   useEffect(() => { fetchRef.current = fetchAppointments; }, [fetchAppointments]);
   useEffect(() => { refetchAvailabilityRef.current = refetchAvailability; }, [refetchAvailability]);
 
@@ -160,13 +159,6 @@ const Agenda = () => {
       refetchAvailabilityRef.current();
     }, 250);
   }, []);
-
-  const handleLocalMutationSuccess = useCallback(() => {
-    suppressRealtimeUntilRef.current = Date.now() + 1800;
-    scheduleRefresh();
-  }, [scheduleRefresh]);
-
-  const shouldHandleRealtimeEvent = useCallback(() => Date.now() > suppressRealtimeUntilRef.current, []);
   useEffect(() => () => {
     if (refreshTimer.current !== null) window.clearTimeout(refreshTimer.current);
   }, []);
@@ -175,11 +167,7 @@ const Agenda = () => {
     scheduleRefresh();
   }, [scheduleRefresh]);
 
-  useRealtimeAppointments({
-    barberId: selectedBarberId || undefined,
-    onNewAppointment: handleNewAppointment,
-    shouldHandleEvent: shouldHandleRealtimeEvent,
-  });
+  useRealtimeAppointments({ barberId: selectedBarberId || undefined, onNewAppointment: handleNewAppointment });
 
   useEffect(() => {
     if (selectedBarberId) fetchAppointments();
@@ -198,17 +186,14 @@ const Agenda = () => {
   }, []);
 
   const handleDeleteAppointment = async (id: string) => {
-    suppressRealtimeUntilRef.current = Date.now() + 1800;
     const { error } = await supabase.from('appointments').delete().eq('id', id);
     if (error) { toast.error('Erro ao excluir agendamento'); throw error; }
     toast.success('Agendamento excluído');
-    setAppointments((items) => items.filter((item) => item.id !== id));
-    scheduleRefresh();
+    fetchAppointments();
   };
 
   const handleStatusChange = async (id: string, status: 'confirmed' | 'completed' | 'cancelled') => {
     if (status === 'completed' && !checkCanPerformAction('complete_appointment')) return;
-    suppressRealtimeUntilRef.current = Date.now() + 1800;
     const { error } = await supabase.from('appointments').update({ status }).eq('id', id);
     if (error) { toast.error('Erro ao atualizar status'); throw error; }
     if (status === 'completed') {
@@ -221,8 +206,7 @@ const Agenda = () => {
       }
     }
     toast.success('Status atualizado');
-    setAppointments((items) => items.map((item) => (item.id === id ? { ...item, status } : item)));
-    scheduleRefresh();
+    fetchAppointments();
     setDashboardRefreshKey(k => k + 1);
   };
 
@@ -298,7 +282,7 @@ const Agenda = () => {
             onOpenChange={(open) => { setShowManualDialog(open); if (!open) setPreselectedTime(null); }}
             barber={canCreateForOthers ? selectedBarber! : barber!}
             selectedDate={selectedDate}
-            onSuccess={handleLocalMutationSuccess}
+            onSuccess={scheduleRefresh}
             canCreateForOthers={canCreateForOthers}
             barbers={barbers}
             preselectedTime={preselectedTime}
@@ -363,9 +347,6 @@ const Agenda = () => {
         <ComandaSheet
           open={showComanda}
           onOpenChange={setShowComanda}
-          onBeforeComplete={() => {
-            suppressRealtimeUntilRef.current = Date.now() + 1800;
-          }}
           appointment={comandaAppointment ? {
             id: comandaAppointment.id,
             customer_name: comandaAppointment.customer_name,
@@ -380,12 +361,7 @@ const Agenda = () => {
             } : null,
           } : null}
           onCompleted={() => {
-            if (comandaAppointment) {
-              setAppointments((items) => items.map((item) => (
-                item.id === comandaAppointment.id ? { ...item, status: 'completed' } : item
-              )));
-            }
-            handleLocalMutationSuccess();
+            scheduleRefresh();
             setDashboardRefreshKey((k) => k + 1);
           }}
         />
@@ -394,7 +370,7 @@ const Agenda = () => {
           appointment={selectedAppointment}
           open={showEditDialog}
           onOpenChange={setShowEditDialog}
-          onSuccess={handleLocalMutationSuccess}
+          onSuccess={scheduleRefresh}
           isMaster={isMaster}
         />
 
@@ -405,7 +381,7 @@ const Agenda = () => {
             barber={selectedBarber || barber!}
             selectedDate={selectedDate}
             preselectedTime={blockTime}
-            onSuccess={handleLocalMutationSuccess}
+            onSuccess={scheduleRefresh}
           />
         )}
 
