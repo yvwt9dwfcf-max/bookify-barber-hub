@@ -37,6 +37,7 @@ interface ComandaSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   appointment: ComandaAppointment | null;
+  onBeforeComplete?: () => void;
   onCompleted: () => void;
 }
 
@@ -51,7 +52,7 @@ const DEFAULT_PAYMENT_METHOD = 'dinheiro';
 
 import { formatCurrency } from '@/lib/formatters';
 
-const ComandaSheet = ({ open, onOpenChange, appointment, onCompleted }: ComandaSheetProps) => {
+const ComandaSheet = ({ open, onOpenChange, appointment, onBeforeComplete, onCompleted }: ComandaSheetProps) => {
   const qc = useQueryClient();
   const [cart, setCart] = useState<Record<string, CartItem>>({});
   const [search, setSearch] = useState('');
@@ -130,6 +131,7 @@ const ComandaSheet = ({ open, onOpenChange, appointment, onCompleted }: ComandaS
   const finishMutation = useMutation({
     mutationFn: async () => {
       if (!appointment) throw new Error('Atendimento inválido');
+      onBeforeComplete?.();
 
       // Update the appointment as completed with payment method
       const { error: aptErr } = await supabase
