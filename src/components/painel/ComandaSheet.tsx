@@ -57,7 +57,6 @@ const ComandaSheet = ({ open, onOpenChange, appointment, onCompleted }: ComandaS
 
   useEffect(() => {
     if (open) {
-      setPaymentMethod('dinheiro');
       setCart({});
       setSearch('');
       setShowProducts(false);
@@ -130,14 +129,10 @@ const ComandaSheet = ({ open, onOpenChange, appointment, onCompleted }: ComandaS
     mutationFn: async () => {
       if (!appointment) throw new Error('Atendimento inválido');
 
-      // Update the appointment as completed with payment method
+      // Mark the appointment as completed
       const { error: aptErr } = await supabase
         .from('appointments')
-        .update({
-          status: 'completed',
-          payment_method: paymentMethod,
-          paid_at: new Date().toISOString(),
-        })
+        .update({ status: 'completed' })
         .eq('id', appointment.id);
       if (aptErr) throw aptErr;
 
@@ -155,7 +150,6 @@ const ComandaSheet = ({ open, onOpenChange, appointment, onCompleted }: ComandaS
           total_amount: Number(i.product.sale_price) * i.quantity,
           customer_name: appointment.customer_name,
           customer_phone: appointment.customer_phone,
-          payment_method: paymentMethod,
         }));
         const { error: salesErr } = await supabase.from('product_sales').insert(rows);
         if (salesErr) throw salesErr;
