@@ -337,34 +337,6 @@ const ComandaSheet = ({ open, onOpenChange, appointment, onCompleted }: ComandaS
             )}
           </div>
 
-          {/* Payment */}
-          <div>
-            <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold mb-2">
-              Forma de pagamento
-            </p>
-            <div className="grid grid-cols-4 gap-2">
-              {PAYMENT_METHODS.map((m) => {
-                const Icon = m.icon;
-                const active = paymentMethod === m.value;
-                return (
-                  <button
-                    key={m.value}
-                    type="button"
-                    onClick={() => setPaymentMethod(m.value)}
-                    className={cn(
-                      'flex flex-col items-center gap-1 py-3 rounded-xl border-2 transition-all active:scale-95',
-                      active
-                        ? 'border-primary bg-primary/10'
-                        : 'border-border bg-muted/30 text-muted-foreground',
-                    )}
-                  >
-                    <Icon className={cn('h-4 w-4', active ? 'text-primary' : m.color)} />
-                    <span className={cn('text-[10px] font-medium', active && 'text-primary')}>{m.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
         </div>
 
         {/* Footer */}
