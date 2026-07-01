@@ -33,12 +33,6 @@ interface DayClosingModalProps {
   onCompleted: () => void;
 }
 
-const PAYMENT_METHODS = [
-  { value: 'dinheiro', label: 'Dinheiro' },
-  { value: 'pix', label: 'Pix' },
-  { value: 'debito', label: 'Débito' },
-  { value: 'credito', label: 'Crédito' },
-];
 
 const DayClosingModal = ({
   open,
@@ -53,7 +47,6 @@ const DayClosingModal = ({
     pendingAppointments.forEach(a => { initial[a.id] = 'completed'; });
     return initial;
   });
-  const [payments, setPayments] = useState<Record<string, string>>({});
   const [completing, setCompleting] = useState(false);
 
   const completedCount = Object.values(actions).filter(a => a === 'completed').length;
@@ -110,17 +103,13 @@ const DayClosingModal = ({
         .filter(([, a]) => a === 'no_show')
         .map(([id]) => id);
 
-      // Update completed (one by one to apply payment_method)
+      // Update completed appointments
       if (completedIds.length > 0) {
         await Promise.all(
           completedIds.map(id =>
             supabase
               .from('appointments')
-              .update({
-                status: 'completed',
-                payment_method: payments[id] || null,
-                paid_at: payments[id] ? new Date().toISOString() : null,
-              })
+              .update({ status: 'completed' })
               .eq('id', id)
           )
         );
@@ -229,25 +218,6 @@ const DayClosingModal = ({
             </button>
           </div>
         </div>
-        {action === 'completed' && (
-          <div className="flex flex-wrap gap-1 mt-2 pl-1">
-            {PAYMENT_METHODS.map(m => (
-              <button
-                key={m.value}
-                type="button"
-                onClick={() => setPayments(p => ({ ...p, [a.id]: p[a.id] === m.value ? '' : m.value }))}
-                className={cn(
-                  'px-2.5 py-1 rounded-full text-[10px] font-medium border transition-all',
-                  payments[a.id] === m.value
-                    ? 'border-primary bg-primary/10 text-primary'
-                    : 'border-border bg-muted/30 text-muted-foreground hover:border-primary/40'
-                )}
-              >
-                {m.label}
-              </button>
-            ))}
-          </div>
-        )}
       </div>
     );
   };

@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
-  Loader2, Banknote, Smartphone, CreditCard, Plus, Minus, Search,
+  Loader2, Plus, Minus, Search,
   Package, Sparkles, Receipt, Trash2,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -45,26 +45,18 @@ interface CartItem {
   quantity: number;
 }
 
-const PAYMENT_METHODS = [
-  { value: 'dinheiro', label: 'Dinheiro', icon: Banknote, color: 'text-emerald-500' },
-  { value: 'pix', label: 'Pix', icon: Smartphone, color: 'text-blue-500' },
-  { value: 'debito', label: 'Débito', icon: CreditCard, color: 'text-purple-500' },
-  { value: 'credito', label: 'Crédito', icon: CreditCard, color: 'text-amber-500' },
-];
 
 const formatCurrency = (v: number) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
 
 const ComandaSheet = ({ open, onOpenChange, appointment, onCompleted }: ComandaSheetProps) => {
   const qc = useQueryClient();
-  const [paymentMethod, setPaymentMethod] = useState('dinheiro');
   const [cart, setCart] = useState<Record<string, CartItem>>({});
   const [search, setSearch] = useState('');
   const [showProducts, setShowProducts] = useState(false);
 
   useEffect(() => {
     if (open) {
-      setPaymentMethod('dinheiro');
       setCart({});
       setSearch('');
       setShowProducts(false);
@@ -137,14 +129,10 @@ const ComandaSheet = ({ open, onOpenChange, appointment, onCompleted }: ComandaS
     mutationFn: async () => {
       if (!appointment) throw new Error('Atendimento inválido');
 
-      // Update the appointment as completed with payment method
+      // Mark the appointment as completed
       const { error: aptErr } = await supabase
         .from('appointments')
-        .update({
-          status: 'completed',
-          payment_method: paymentMethod,
-          paid_at: new Date().toISOString(),
-        })
+        .update({ status: 'completed' })
         .eq('id', appointment.id);
       if (aptErr) throw aptErr;
 
@@ -162,7 +150,6 @@ const ComandaSheet = ({ open, onOpenChange, appointment, onCompleted }: ComandaS
           total_amount: Number(i.product.sale_price) * i.quantity,
           customer_name: appointment.customer_name,
           customer_phone: appointment.customer_phone,
-          payment_method: paymentMethod,
         }));
         const { error: salesErr } = await supabase.from('product_sales').insert(rows);
         if (salesErr) throw salesErr;
@@ -350,34 +337,6 @@ const ComandaSheet = ({ open, onOpenChange, appointment, onCompleted }: ComandaS
             )}
           </div>
 
-          {/* Payment */}
-          <div>
-            <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold mb-2">
-              Forma de pagamento
-            </p>
-            <div className="grid grid-cols-4 gap-2">
-              {PAYMENT_METHODS.map((m) => {
-                const Icon = m.icon;
-                const active = paymentMethod === m.value;
-                return (
-                  <button
-                    key={m.value}
-                    type="button"
-                    onClick={() => setPaymentMethod(m.value)}
-                    className={cn(
-                      'flex flex-col items-center gap-1 py-3 rounded-xl border-2 transition-all active:scale-95',
-                      active
-                        ? 'border-primary bg-primary/10'
-                        : 'border-border bg-muted/30 text-muted-foreground',
-                    )}
-                  >
-                    <Icon className={cn('h-4 w-4', active ? 'text-primary' : m.color)} />
-                    <span className={cn('text-[10px] font-medium', active && 'text-primary')}>{m.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
         </div>
 
         {/* Footer */}
