@@ -47,7 +47,6 @@ const DayClosingModal = ({
     pendingAppointments.forEach(a => { initial[a.id] = 'completed'; });
     return initial;
   });
-  const [payments, setPayments] = useState<Record<string, string>>({});
   const [completing, setCompleting] = useState(false);
 
   const completedCount = Object.values(actions).filter(a => a === 'completed').length;
@@ -104,17 +103,13 @@ const DayClosingModal = ({
         .filter(([, a]) => a === 'no_show')
         .map(([id]) => id);
 
-      // Update completed (one by one to apply payment_method)
+      // Update completed appointments
       if (completedIds.length > 0) {
         await Promise.all(
           completedIds.map(id =>
             supabase
               .from('appointments')
-              .update({
-                status: 'completed',
-                payment_method: payments[id] || null,
-                paid_at: payments[id] ? new Date().toISOString() : null,
-              })
+              .update({ status: 'completed' })
               .eq('id', id)
           )
         );
