@@ -87,7 +87,7 @@ const AgendarBarbearia = () => {
         .order('name');
 
       if (barbersError) throw barbersError;
-      setBarbers(barbersData || []);
+      setBarbers((barbersData || []) as unknown as Barber[]);
 
       // Pre-select barber if specified in URL
       if (preselectedBarberId && barbersData) {

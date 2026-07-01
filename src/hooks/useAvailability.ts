@@ -71,9 +71,9 @@ export function useAvailability({
         appointmentsPromise,
       ]);
 
-      setOpeningHours(hoursRes.data || []);
-      setBlockedSlots(blockedRes.data || []);
-      setAppointments((appointmentsRes.data as Appointment[]) || []);
+      setOpeningHours((hoursRes.data || []) as unknown as OpeningHours[]);
+      setBlockedSlots((blockedRes.data || []) as unknown as BlockedSlot[]);
+      setAppointments((appointmentsRes.data as unknown as Appointment[]) || []);
     } catch (error) {
       console.error('Erro ao buscar dados de disponibilidade:', error);
     } finally {

@@ -34,7 +34,7 @@ const AgendarBarbeiro = () => {
       if (!data) {
         setNotFound(true);
       } else {
-        setBarber(data);
+        setBarber(data as unknown as Barber);
       }
     } catch (error) {
       console.error('Erro ao buscar barbeiro:', error);
