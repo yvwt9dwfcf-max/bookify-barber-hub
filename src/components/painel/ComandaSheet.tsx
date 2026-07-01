@@ -45,12 +45,6 @@ interface CartItem {
   quantity: number;
 }
 
-const PAYMENT_METHODS = [
-  { value: 'dinheiro', label: 'Dinheiro', icon: Banknote, color: 'text-emerald-500' },
-  { value: 'pix', label: 'Pix', icon: Smartphone, color: 'text-blue-500' },
-  { value: 'debito', label: 'Débito', icon: CreditCard, color: 'text-purple-500' },
-  { value: 'credito', label: 'Crédito', icon: CreditCard, color: 'text-amber-500' },
-];
 
 const formatCurrency = (v: number) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
