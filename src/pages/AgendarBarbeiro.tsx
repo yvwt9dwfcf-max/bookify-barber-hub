@@ -24,7 +24,7 @@ const AgendarBarbeiro = () => {
     try {
       const { data, error } = await supabase
         .from('barbers')
-        .select('*')
+        .select('id, name, photo_url, is_active, barbershop_id')
         .eq('id', barberId)
         .eq('is_active', true)
         .maybeSingle();
@@ -34,7 +34,7 @@ const AgendarBarbeiro = () => {
       if (!data) {
         setNotFound(true);
       } else {
-        setBarber(data);
+        setBarber(data as unknown as Barber);
       }
     } catch (error) {
       console.error('Erro ao buscar barbeiro:', error);

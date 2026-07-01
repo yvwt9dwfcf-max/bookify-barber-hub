@@ -29,7 +29,7 @@ export function BarberSelection({ onSelect, barbershopId, availableBarbers }: Ba
     try {
       let query = supabase
         .from('barbers')
-        .select('*')
+        .select('id, name, photo_url, is_active, barbershop_id')
         .eq('is_active', true)
         .order('name');
 
@@ -40,7 +40,7 @@ export function BarberSelection({ onSelect, barbershopId, availableBarbers }: Ba
       const { data, error } = await query;
 
       if (error) throw error;
-      setBarbers(data || []);
+      setBarbers((data || []) as unknown as Barber[]);
     } catch (error) {
       console.error('Erro ao buscar barbeiros:', error);
     } finally {
