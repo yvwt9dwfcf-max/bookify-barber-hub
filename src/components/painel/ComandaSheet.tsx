@@ -51,7 +51,6 @@ const formatCurrency = (v: number) =>
 
 const ComandaSheet = ({ open, onOpenChange, appointment, onCompleted }: ComandaSheetProps) => {
   const qc = useQueryClient();
-  const [paymentMethod, setPaymentMethod] = useState('dinheiro');
   const [cart, setCart] = useState<Record<string, CartItem>>({});
   const [search, setSearch] = useState('');
   const [showProducts, setShowProducts] = useState(false);
