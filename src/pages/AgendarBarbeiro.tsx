@@ -24,7 +24,7 @@ const AgendarBarbeiro = () => {
     try {
       const { data, error } = await supabase
         .from('barbers')
-        .select('*')
+        .select('id, name, photo_url, is_active, barbershop_id')
         .eq('id', barberId)
         .eq('is_active', true)
         .maybeSingle();

@@ -29,9 +29,10 @@ const AgendarBarbearia = () => {
     try {
       let shopData: any = null;
 
+      const shopCols = 'id, name, slug, phone, photo_url, city, google_maps_url';
       const { data: bySlug } = await supabase
         .from('barbershops')
-        .select('*')
+        .select(shopCols)
         .eq('slug', slugOrId)
         .maybeSingle();
 
@@ -40,7 +41,7 @@ const AgendarBarbearia = () => {
       } else {
         const { data: byId } = await supabase
           .from('barbershops')
-          .select('*')
+          .select(shopCols)
           .eq('id', slugOrId)
           .maybeSingle();
         shopData = byId;
@@ -80,7 +81,7 @@ const AgendarBarbearia = () => {
 
       const { data: barbersData, error: barbersError } = await supabase
         .from('barbers')
-        .select('*')
+        .select('id, name, photo_url, is_active, barbershop_id')
         .eq('barbershop_id', shopData.id)
         .eq('is_active', true)
         .order('name');

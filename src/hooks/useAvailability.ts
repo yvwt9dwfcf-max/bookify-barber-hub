@@ -48,19 +48,19 @@ export function useAvailability({
       // Fetch opening hours (all days)
       const hoursPromise = supabase
         .from('opening_hours')
-        .select('*')
+        .select('id, barber_id, barbershop_id, day_of_week, start_time, end_time, is_open, break_start, break_end')
         .eq('barber_id', barberId);
 
       // Fetch blocked slots (only future)
       const blockedPromise = supabase
         .from('blocked_slots')
-        .select('*')
+        .select('id, barber_id, barbershop_id, start_time, end_time, created_at')
         .eq('barber_id', barberId);
 
       // Fetch appointments (only future, not cancelled)
       const appointmentsPromise = supabase
         .from('appointments')
-        .select('*')
+        .select('id, barber_id, service_id, start_time, end_time, status, barbershop_id')
         .eq('barber_id', barberId)
         .neq('status', 'cancelled')
         .gte('start_time', startOfDay(new Date()).toISOString());
