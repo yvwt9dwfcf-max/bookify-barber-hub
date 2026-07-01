@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
-  Loader2, Banknote, Smartphone, CreditCard, Plus, Minus, Search,
+  Loader2, Plus, Minus, Search,
   Package, Sparkles, Receipt, Trash2,
 } from 'lucide-react';
 import { toast } from 'sonner';
