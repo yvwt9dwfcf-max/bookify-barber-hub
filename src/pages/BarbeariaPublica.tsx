@@ -190,16 +190,21 @@ const BarbeariaPublica = () => {
           .maybeSingle(),
       ]);
 
-      const { data: servicePhotosData } = await (supabase as any)
-        .from('barber_service_photos')
-        .select('barber_id, service_id, photo_url')
-        .eq('barbershop_id', shop.id);
+      const barberIds = (barbersRes.data || []).map((b) => b.id);
+      let servicePhotosData: any[] = [];
+      if (barberIds.length > 0) {
+        const { data } = await supabase
+          .from('barber_service_photos')
+          .select('barber_id, service_id, photo_url')
+          .in('barber_id', barberIds);
+        servicePhotosData = data || [];
+      }
 
       setBarbers(barbersRes.data || []);
       setServices(servicesRes.data || []);
       setGallery(galleryRes.data || []);
       setPublicProfile(profileRes.data as PublicProfileData | null);
-      setBarberServicePhotos((servicePhotosData || []) as BarberServicePhoto[]);
+      setBarberServicePhotos(servicePhotosData);
     } catch (err) {
       console.error(err);
       setNotFound(true);
