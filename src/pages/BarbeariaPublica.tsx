@@ -522,11 +522,11 @@ const BarbeariaPublica = () => {
                   <img
                     src={selectedBarber.photo_url}
                     alt={selectedBarber.name}
-                    className="w-16 h-16 rounded-full object-cover ring-2 ring-primary/30"
+                    className="w-14 h-14 rounded-full object-cover ring-2 ring-primary/30"
                   />
                 ) : (
-                  <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center ring-2 ring-primary/30">
-                    <User className="h-7 w-7 text-muted-foreground" />
+                  <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center ring-2 ring-primary/30">
+                    <User className="h-6 w-6 text-muted-foreground" />
                   </div>
                 )}
                 <div>
