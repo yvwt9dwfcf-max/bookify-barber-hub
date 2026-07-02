@@ -106,7 +106,11 @@ export function ServiceSelection({ barberId, onSelect, onAutoSelect }: ServiceSe
 
   const handleSelect = (service: ServiceWithPhoto) => {
     setSelected(service.id);
-    setTimeout(() => onSelect(service), 150);
+    const resolved: Service = {
+      ...service,
+      photo_url: service.barberPhotoUrl || service.photo_url || null,
+    };
+    setTimeout(() => onSelect(resolved), 150);
   };
 
   const formatPrice = (price: number) => {
