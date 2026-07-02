@@ -121,7 +121,16 @@ export function BookingFlow({ preselectedBarber, barbershopId, availableBarbers 
 
       if (insertError) throw insertError;
 
-      setCreatedAppointment(appointment as Appointment);
+      const enriched = appointment as Appointment;
+      // Preserve barber-specific service photo resolved during selection (if any)
+      if (enriched.service && current.service?.photo_url) {
+        enriched.service = { ...enriched.service, photo_url: current.service.photo_url };
+      }
+      // Preserve barber photo resolved during selection
+      if (enriched.barber && current.barber?.photo_url) {
+        enriched.barber = { ...enriched.barber, photo_url: current.barber.photo_url };
+      }
+      setCreatedAppointment(enriched);
       setStep('confirmation');
     } catch (err: any) {
       setError(err.message || 'Erro ao criar agendamento');
