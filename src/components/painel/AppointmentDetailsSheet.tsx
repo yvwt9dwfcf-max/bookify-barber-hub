@@ -228,21 +228,12 @@ const AppointmentDetailsSheet = ({
                 </div>
               )}
 
-              {appointment.origin && (
-                <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <MousePointerClick className="h-5 w-5 text-primary" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="font-medium truncate">
-                      {appointment.origin === 'online' ? 'Agendamento Online' : 'Agendamento Manual'}
-                    </p>
-                    <p className="text-sm text-muted-foreground">Origem do agendamento</p>
-                  </div>
+              {appointment.notes && (
+                <div className="p-3 rounded-lg bg-muted/50">
+                  <p className="text-sm text-muted-foreground mb-1">Observações</p>
+                  <p className="text-sm">{appointment.notes}</p>
                 </div>
               )}
-
-              {appointment.notes && (
                 <div className="p-3 rounded-lg bg-muted/50">
                   <p className="text-sm text-muted-foreground mb-1">Observações</p>
                   <p className="text-sm">{appointment.notes}</p>
