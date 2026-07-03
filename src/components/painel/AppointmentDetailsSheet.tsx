@@ -234,11 +234,6 @@ const AppointmentDetailsSheet = ({
                   <p className="text-sm">{appointment.notes}</p>
                 </div>
               )}
-                <div className="p-3 rounded-lg bg-muted/50">
-                  <p className="text-sm text-muted-foreground mb-1">Observações</p>
-                  <p className="text-sm">{appointment.notes}</p>
-                </div>
-              )}
             </div>
           </div>
 
