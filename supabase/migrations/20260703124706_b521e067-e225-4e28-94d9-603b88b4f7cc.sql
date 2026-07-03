@@ -1,0 +1,1 @@
+ALTER TABLE public.appointments ALTER COLUMN origin SET DEFAULT 'manual';
