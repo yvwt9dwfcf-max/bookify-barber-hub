@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { UserRound as User, Phone, Timer as Clock, Sparkles as Scissors, CalendarDays as Calendar, PenLine as Pencil, Check, Trash2, Loader2, MessageCircle } from 'lucide-react';
+import { UserRound as User, Phone, Timer as Clock, Sparkles as Scissors, CalendarDays as Calendar, PenLine as Pencil, Check, Trash2, Loader2, MessageCircle, MousePointerClick } from 'lucide-react';
 import { Appointment } from '@/lib/supabase';
 import {
   Sheet,
@@ -210,6 +210,20 @@ const AppointmentDetailsSheet = ({
                   <div className="min-w-0">
                     <p className="font-medium truncate">{appointment.barber.name}</p>
                     <p className="text-sm text-muted-foreground">Profissional</p>
+                  </div>
+                </div>
+              )}
+
+              {appointment.origin && (
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <MousePointerClick className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-medium truncate">
+                      {appointment.origin === 'online' ? 'Agendamento Online' : 'Agendamento Manual'}
+                    </p>
+                    <p className="text-sm text-muted-foreground">Origem do agendamento</p>
                   </div>
                 </div>
               )}

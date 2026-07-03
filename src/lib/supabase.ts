@@ -115,6 +115,7 @@ export interface Appointment {
   end_time: string;
   status: 'confirmed' | 'cancelled' | 'completed';
   notes: string | null;
+  origin: string;
   created_at: string;
   updated_at: string;
   service?: Service;
