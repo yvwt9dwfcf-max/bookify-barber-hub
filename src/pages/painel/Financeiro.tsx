@@ -42,6 +42,9 @@ const MASTER_TABS = [
 
 const BARBER_TABS = [
   { value: 'resumo', label: 'Meu Resumo', icon: TrendingUp },
+  { value: 'caixa', label: 'Caixa', icon: Wallet },
+  { value: 'produtos', label: 'Produtos', icon: Package },
+  { value: 'relatorios', label: 'Relatórios', icon: ChartPie },
 ];
 
 const ResumoTab = ({ barbershop, isMaster }: { barbershop: any; isMaster: boolean }) => {
