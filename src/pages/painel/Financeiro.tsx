@@ -414,11 +414,143 @@ const MetasTab = ({ barbershop, isMaster }: { barbershop: any; isMaster: boolean
   );
 };
 
+const BarberResumoTab = ({ barber, barbershop }: { barber: any; barbershop: any }) => {
+  const now = new Date();
+  const monthStart = startOfMonth(now).toISOString();
+  const monthEnd = endOfMonth(now).toISOString();
+  const prevMonthDate = subMonths(now, 1);
+  const prevStart = startOfMonth(prevMonthDate).toISOString();
+  const prevEnd = endOfMonth(prevMonthDate).toISOString();
+
+  const fetchBarberPeriod = async (startISO: string, endISO: string) => {
+    const { data: apts } = await supabase
+      .from('appointments')
+      .select('id, service_id, services(price)')
+      .eq('barber_id', barber.id)
+      .eq('status', 'completed')
+      .gte('start_time', startISO)
+      .lte('start_time', endISO);
+    const revenue = (apts || []).reduce((s, a: any) => s + Number(a.services?.price || 0), 0);
+    return { revenue, count: (apts || []).length, apts: apts || [] };
+  };
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['financeiro-barber-resumo', barber?.id],
+    queryFn: async () => {
+      if (!barber?.id) return null;
+      const [current, previous, { data: defaultComm }, { data: overrides }] = await Promise.all([
+        fetchBarberPeriod(monthStart, monthEnd),
+        fetchBarberPeriod(prevStart, prevEnd),
+        supabase
+          .from('barber_commissions')
+          .select('default_percentage')
+          .eq('barber_id', barber.id)
+          .maybeSingle(),
+        supabase
+          .from('commission_overrides')
+          .select('service_id, percentage')
+          .eq('barber_id', barber.id),
+      ]);
+      const defaultPct = Number(defaultComm?.default_percentage ?? 50);
+      const overrideMap = new Map<string, number>();
+      (overrides || []).forEach((o: any) => overrideMap.set(o.service_id, Number(o.percentage)));
+      const calcCommission = (apts: any[]) =>
+        apts.reduce((sum, a: any) => {
+          const price = Number(a.services?.price || 0);
+          const pct = overrideMap.get(a.service_id) ?? defaultPct;
+          return sum + price * (pct / 100);
+        }, 0);
+      return {
+        current: { ...current, commission: calcCommission(current.apts) },
+        previous: { ...previous, commission: calcCommission(previous.apts) },
+        defaultPct,
+      };
+    },
+    enabled: !!barber?.id,
+  });
+
+  const cur = data?.current || { revenue: 0, count: 0, commission: 0 };
+  const prev = data?.previous || { revenue: 0, count: 0, commission: 0 };
+  const avgTicket = cur.count > 0 ? cur.revenue / cur.count : 0;
+  const commDelta = prev.commission !== 0
+    ? ((cur.commission - prev.commission) / Math.abs(prev.commission)) * 100
+    : (cur.commission > 0 ? 100 : 0);
+  const dayOfMonth = getDate(now);
+  const avgPerDay = dayOfMonth > 0 ? cur.revenue / dayOfMonth : 0;
+  const monthLabel = format(now, 'MMMM', { locale: ptBR });
+  const prevMonthLabel = format(prevMonthDate, 'MMMM', { locale: ptBR });
+
+  return (
+    <div className="space-y-7 pt-5">
+      <div className="relative overflow-hidden rounded-2xl border border-border/40 bg-gradient-to-br from-card via-card to-primary/5 p-5">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-primary/15 text-primary">
+              <Wallet className="h-3.5 w-3.5" />
+            </div>
+            <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground/80 font-semibold">
+              Minha comissão · {monthLabel}
+            </p>
+          </div>
+          {prev.commission !== 0 && Math.abs(commDelta) >= 1 && (
+            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold tabular-nums ${commDelta >= 0 ? 'bg-primary/10 text-primary' : 'bg-destructive/10 text-destructive'}`}>
+              {commDelta >= 0 ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}
+              {Math.abs(commDelta).toFixed(0)}%
+            </span>
+          )}
+        </div>
+        <p className="text-[38px] leading-none font-bold tabular-nums tracking-tight text-foreground">
+          {isLoading ? '—' : formatCurrency(cur.commission)}
+        </p>
+        <p className="text-[11px] text-muted-foreground/80 mt-2">
+          {prev.commission !== 0 ? `${prevMonthLabel}: ${formatCurrency(prev.commission)}` : 'Sem dados do mês anterior'}
+        </p>
+      </div>
+
+      <div className="grid grid-cols-3 gap-3 border-y border-border/30 py-4">
+        <div>
+          <p className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground/70 font-medium">Faturamento</p>
+          <p className="text-base font-semibold tabular-nums tracking-tight mt-1.5">{formatCurrency(cur.revenue)}</p>
+        </div>
+        <div>
+          <p className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground/70 font-medium">Atendimentos</p>
+          <p className="text-base font-semibold tabular-nums tracking-tight mt-1.5">{cur.count}</p>
+        </div>
+        <div>
+          <p className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground/70 font-medium">Ticket médio</p>
+          <p className="text-base font-semibold tabular-nums tracking-tight mt-1.5">{formatCurrency(avgTicket)}</p>
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground/70 font-semibold">
+          Detalhes
+        </p>
+        <div className="space-y-2 text-[12px] text-muted-foreground leading-relaxed">
+          <div className="flex items-start gap-2">
+            <span className="mt-1 h-1 w-1 rounded-full bg-primary/60 shrink-0" />
+            <span>Média de {formatCurrency(avgPerDay)} por dia neste mês</span>
+          </div>
+          {data?.defaultPct != null && (
+            <div className="flex items-start gap-2">
+              <span className="mt-1 h-1 w-1 rounded-full bg-primary/60 shrink-0" />
+              <span>Comissão padrão: {data.defaultPct}%</span>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const Financeiro = () => {
   const ctx = useOutletContext<ContextType>();
   const qc = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
-  const initial = searchParams.get('tab') || 'resumo';
+  const tabs = ctx.isMaster ? MASTER_TABS : BARBER_TABS;
+  const validValues = tabs.map(t => t.value);
+  const requested = searchParams.get('tab') || 'resumo';
+  const initial = validValues.includes(requested) ? requested : 'resumo';
   const [tab, setTab] = useState(initial);
 
   // Auto-materialize recurring expenses for the current month on mount
@@ -440,6 +572,22 @@ const Financeiro = () => {
     setSearchParams({ tab: v }, { replace: true });
   };
 
+  // Barber view: single personal resumo, no tabs UI
+  if (!ctx.isMaster) {
+    return (
+      <div className="space-y-4 animate-page-enter pb-20">
+        <div>
+          <h1 className="text-xl font-bold flex items-center gap-2">
+            <Wallet className="h-5 w-5 text-primary" />
+            Financeiro
+          </h1>
+          <p className="text-sm text-muted-foreground">Seus atendimentos, faturamento e comissão do mês</p>
+        </div>
+        <BarberResumoTab barber={ctx.barber} barbershop={ctx.barbershop} />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4 animate-page-enter pb-20">
       <div>
@@ -452,8 +600,8 @@ const Financeiro = () => {
 
       <Tabs value={tab} onValueChange={handleTab}>
         <div className="-mx-3 md:mx-0 overflow-x-auto scrollbar-hide">
-          <TabsList className="inline-flex h-11 rounded-lg p-1 mx-3 md:mx-0 w-max md:w-full md:grid md:grid-cols-8">
-            {TABS.map((t) => (
+          <TabsList className={`inline-flex h-11 rounded-lg p-1 mx-3 md:mx-0 w-max md:w-full md:grid md:grid-cols-${tabs.length}`}>
+            {tabs.map((t) => (
               <TabsTrigger key={t.value} value={t.value} className="rounded-md h-full px-3 text-xs gap-1.5 whitespace-nowrap">
                 <t.icon className="h-3.5 w-3.5" />
                 {t.label}
