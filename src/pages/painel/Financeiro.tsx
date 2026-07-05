@@ -575,21 +575,7 @@ const Financeiro = () => {
     setSearchParams({ tab: v }, { replace: true });
   };
 
-  // Barber view: single personal resumo, no tabs UI
-  if (!ctx.isMaster) {
-    return (
-      <div className="space-y-4 animate-page-enter pb-20">
-        <div>
-          <h1 className="text-xl font-bold flex items-center gap-2">
-            <Wallet className="h-5 w-5 text-primary" />
-            Financeiro
-          </h1>
-          <p className="text-sm text-muted-foreground">Seus atendimentos, faturamento e comissão do mês</p>
-        </div>
-        <BarberResumoTab barber={ctx.barber} barbershop={ctx.barbershop} />
-      </div>
-    );
-  }
+  const gridColsClass = ctx.isMaster ? 'md:grid-cols-8' : 'md:grid-cols-4';
 
   return (
     <div className="space-y-4 animate-page-enter pb-20">
@@ -598,12 +584,16 @@ const Financeiro = () => {
           <Wallet className="h-5 w-5 text-primary" />
           Financeiro
         </h1>
-        <p className="text-sm text-muted-foreground">Caixa, produtos, despesas, relatórios e metas em um só lugar</p>
+        <p className="text-sm text-muted-foreground">
+          {ctx.isMaster
+            ? 'Caixa, produtos, despesas, relatórios e metas em um só lugar'
+            : 'Seu resumo, caixa, produtos e relatórios pessoais'}
+        </p>
       </div>
 
       <Tabs value={tab} onValueChange={handleTab}>
         <div className="-mx-3 md:mx-0 overflow-x-auto scrollbar-hide">
-          <TabsList className="inline-flex h-11 rounded-lg p-1 mx-3 md:mx-0 w-max md:w-full md:grid md:grid-cols-8">
+          <TabsList className={`inline-flex h-11 rounded-lg p-1 mx-3 md:mx-0 w-max md:w-full md:grid ${gridColsClass}`}>
             {tabs.map((t) => (
               <TabsTrigger key={t.value} value={t.value} className="rounded-md h-full px-3 text-xs gap-1.5 whitespace-nowrap">
                 <t.icon className="h-3.5 w-3.5" />
@@ -613,22 +603,28 @@ const Financeiro = () => {
           </TabsList>
         </div>
 
-        <TabsContent value="resumo"><ResumoTab barbershop={ctx.barbershop} isMaster={ctx.isMaster} /></TabsContent>
+        <TabsContent value="resumo">
+          {ctx.isMaster
+            ? <ResumoTab barbershop={ctx.barbershop} isMaster={ctx.isMaster} />
+            : <BarberResumoTab barber={ctx.barber} barbershop={ctx.barbershop} />}
+        </TabsContent>
         <TabsContent value="caixa"><Caixa /></TabsContent>
         <TabsContent value="produtos"><Produtos /></TabsContent>
-        <TabsContent value="despesas"><Despesas /></TabsContent>
-        <TabsContent value="comissoes"><Comissoes /></TabsContent>
         <TabsContent value="relatorios"><Relatorios /></TabsContent>
-        <TabsContent value="barbeiros">
-          {ctx.isMaster && ctx.barbershop?.id ? (
-            <BarbersReport barbershopId={ctx.barbershop.id} />
-          ) : (
-            <div className="pt-12 text-center text-sm text-muted-foreground">
-              Apenas administradores podem ver os relatórios por barbeiro.
-            </div>
-          )}
-        </TabsContent>
-        <TabsContent value="metas"><MetasTab barbershop={ctx.barbershop} isMaster={ctx.isMaster} /></TabsContent>
+        {ctx.isMaster && <TabsContent value="despesas"><Despesas /></TabsContent>}
+        {ctx.isMaster && <TabsContent value="comissoes"><Comissoes /></TabsContent>}
+        {ctx.isMaster && (
+          <TabsContent value="barbeiros">
+            {ctx.barbershop?.id ? (
+              <BarbersReport barbershopId={ctx.barbershop.id} />
+            ) : (
+              <div className="pt-12 text-center text-sm text-muted-foreground">
+                Apenas administradores podem ver os relatórios por barbeiro.
+              </div>
+            )}
+          </TabsContent>
+        )}
+        {ctx.isMaster && <TabsContent value="metas"><MetasTab barbershop={ctx.barbershop} isMaster={ctx.isMaster} /></TabsContent>}
       </Tabs>
     </div>
   );
