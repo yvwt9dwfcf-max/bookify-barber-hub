@@ -29,7 +29,7 @@ interface ContextType {
 const formatCurrency = (v: number) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
 
-const TABS = [
+const MASTER_TABS = [
   { value: 'resumo', label: 'Resumo', icon: TrendingUp },
   { value: 'caixa', label: 'Caixa', icon: Wallet },
   { value: 'produtos', label: 'Produtos', icon: Package },
@@ -38,6 +38,10 @@ const TABS = [
   { value: 'relatorios', label: 'Relatórios', icon: ChartPie },
   { value: 'barbeiros', label: 'Barbeiros', icon: Users },
   { value: 'metas', label: 'Metas', icon: Target },
+];
+
+const BARBER_TABS = [
+  { value: 'resumo', label: 'Meu Resumo', icon: TrendingUp },
 ];
 
 const ResumoTab = ({ barbershop, isMaster }: { barbershop: any; isMaster: boolean }) => {
