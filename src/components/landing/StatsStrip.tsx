@@ -1,8 +1,8 @@
 const stats = [
-  { value: '2.000+', label: 'Barbearias ativas' },
-  { value: '180k', label: 'Agendamentos / mês' },
-  { value: '4.9', label: 'Avaliação média' },
-  { value: '99.9%', label: 'Uptime garantido' },
+  { value: 'Agenda', label: 'Online 24/7' },
+  { value: 'Equipe', label: 'Gestão por profissional' },
+  { value: 'Financeiro', label: 'Comissões e caixa' },
+  { value: '99.9%', label: 'Uptime da plataforma' },
 ];
 
 export function StatsStrip() {
