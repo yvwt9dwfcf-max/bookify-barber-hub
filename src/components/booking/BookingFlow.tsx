@@ -113,26 +113,23 @@ export function BookingFlow({ preselectedBarber, barbershopId, availableBarbers 
           status: 'confirmed',
           origin: 'online',
         })
-        .select(`
-          *,
-          service:services(*),
-          barber:barbers(*)
-        `)
+        .select('id, barber_id, barbershop_id, service_id, start_time, end_time, status')
         .single();
 
       if (insertError) throw insertError;
 
-      const enriched = appointment as Appointment;
-      // Preserve barber-specific service photo resolved during selection (if any)
-      if (enriched.service && current.service?.photo_url) {
-        enriched.service = { ...enriched.service, photo_url: current.service.photo_url };
-      }
-      // Preserve barber photo resolved during selection
-      if (enriched.barber && current.barber?.photo_url) {
-        enriched.barber = { ...enriched.barber, photo_url: current.barber.photo_url };
-      }
+      // Build the enriched appointment locally from data already known,
+      // avoiding an anon SELECT on customer PII columns.
+      const enriched: Appointment = {
+        ...(appointment as any),
+        customer_name: name,
+        customer_phone: phone,
+        service: current.service,
+        barber: current.barber,
+      } as Appointment;
       setCreatedAppointment(enriched);
       setStep('confirmation');
+
     } catch (err: any) {
       setError(err.message || 'Erro ao criar agendamento');
     } finally {
