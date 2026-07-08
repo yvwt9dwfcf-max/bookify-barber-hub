@@ -75,6 +75,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "appointments_barber_id_fkey"
+            columns: ["barber_id"]
+            isOneToOne: false
+            referencedRelation: "barbers_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "appointments_barbershop_id_fkey"
             columns: ["barbershop_id"]
             isOneToOne: false
@@ -124,6 +131,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "barber_commissions_barber_id_fkey"
+            columns: ["barber_id"]
+            isOneToOne: true
+            referencedRelation: "barbers_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "barber_commissions_barbershop_id_fkey"
             columns: ["barbershop_id"]
             isOneToOne: false
@@ -168,6 +182,13 @@ export type Database = {
             referencedRelation: "barbers"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "barber_permissions_barber_id_fkey"
+            columns: ["barber_id"]
+            isOneToOne: true
+            referencedRelation: "barbers_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       barber_service_photos: {
@@ -198,6 +219,13 @@ export type Database = {
             columns: ["barber_id"]
             isOneToOne: false
             referencedRelation: "barbers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "barber_service_photos_barber_id_fkey"
+            columns: ["barber_id"]
+            isOneToOne: false
+            referencedRelation: "barbers_public"
             referencedColumns: ["id"]
           },
           {
@@ -234,6 +262,13 @@ export type Database = {
             columns: ["barber_id"]
             isOneToOne: false
             referencedRelation: "barbers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "barber_services_barber_id_fkey"
+            columns: ["barber_id"]
+            isOneToOne: false
+            referencedRelation: "barbers_public"
             referencedColumns: ["id"]
           },
           {
@@ -276,6 +311,13 @@ export type Database = {
             columns: ["barber_id"]
             isOneToOne: true
             referencedRelation: "barbers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "barber_whatsapp_barber_id_fkey"
+            columns: ["barber_id"]
+            isOneToOne: true
+            referencedRelation: "barbers_public"
             referencedColumns: ["id"]
           },
         ]
@@ -468,6 +510,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "blocked_slots_barber_id_fkey"
+            columns: ["barber_id"]
+            isOneToOne: false
+            referencedRelation: "barbers_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "blocked_slots_barbershop_id_fkey"
             columns: ["barbershop_id"]
             isOneToOne: false
@@ -507,6 +556,13 @@ export type Database = {
             columns: ["barber_id"]
             isOneToOne: false
             referencedRelation: "barbers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commission_overrides_barber_id_fkey"
+            columns: ["barber_id"]
+            isOneToOne: false
+            referencedRelation: "barbers_public"
             referencedColumns: ["id"]
           },
           {
@@ -729,6 +785,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "loyalty_transactions_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "loyalty_transactions_barbershop_id_fkey"
             columns: ["barbershop_id"]
             isOneToOne: false
@@ -794,6 +857,13 @@ export type Database = {
             columns: ["barber_id"]
             isOneToOne: false
             referencedRelation: "barbers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "opening_hours_barber_id_fkey"
+            columns: ["barber_id"]
+            isOneToOne: false
+            referencedRelation: "barbers_public"
             referencedColumns: ["id"]
           },
           {
@@ -1036,6 +1106,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "services_barber_id_fkey"
+            columns: ["barber_id"]
+            isOneToOne: false
+            referencedRelation: "barbers_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "services_barbershop_id_fkey"
             columns: ["barbershop_id"]
             isOneToOne: false
@@ -1116,7 +1193,97 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      appointments_public: {
+        Row: {
+          barber_id: string | null
+          barbershop_id: string | null
+          end_time: string | null
+          id: string | null
+          service_id: string | null
+          start_time: string | null
+          status: string | null
+        }
+        Insert: {
+          barber_id?: string | null
+          barbershop_id?: string | null
+          end_time?: string | null
+          id?: string | null
+          service_id?: string | null
+          start_time?: string | null
+          status?: string | null
+        }
+        Update: {
+          barber_id?: string | null
+          barbershop_id?: string | null
+          end_time?: string | null
+          id?: string | null
+          service_id?: string | null
+          start_time?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointments_barber_id_fkey"
+            columns: ["barber_id"]
+            isOneToOne: false
+            referencedRelation: "barbers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_barber_id_fkey"
+            columns: ["barber_id"]
+            isOneToOne: false
+            referencedRelation: "barbers_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_barbershop_id_fkey"
+            columns: ["barbershop_id"]
+            isOneToOne: false
+            referencedRelation: "barbershops"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      barbers_public: {
+        Row: {
+          barbershop_id: string | null
+          id: string | null
+          is_active: boolean | null
+          name: string | null
+          photo_url: string | null
+        }
+        Insert: {
+          barbershop_id?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          name?: string | null
+          photo_url?: string | null
+        }
+        Update: {
+          barbershop_id?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          name?: string | null
+          photo_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "barbers_barbershop_id_fkey"
+            columns: ["barbershop_id"]
+            isOneToOne: false
+            referencedRelation: "barbershops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       can_add_barber: { Args: { _barbershop_id: string }; Returns: boolean }
