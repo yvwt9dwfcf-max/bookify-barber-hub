@@ -369,52 +369,58 @@ const Barbeiros = () => {
               <div className="flex items-center gap-3 min-w-0">
                 {/* Barber Photo with Upload */}
                 <div className="relative group flex-shrink-0">
-                  {barber.photo_url ? (
-                    <img src={barber.photo_url} alt={barber.name} className="w-12 h-12 rounded-full object-cover ring-2 ring-border" />
-                  ) : (
-                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center ring-2 ring-border">
-                      <User className="h-5 w-5 text-primary" />
-                    </div>
-                  )}
-                  {/* Camera overlay - always visible on mobile, hover on desktop */}
-                  <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-muted border-2 border-background flex items-center justify-center cursor-pointer shadow-sm">
-                    {uploadingPhoto === barber.id ? (
-                      <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+                  <label className="relative block cursor-pointer">
+                    {barber.photo_url ? (
+                      <img src={barber.photo_url} alt={barber.name} className="w-12 h-12 rounded-full object-cover ring-2 ring-border" />
                     ) : (
-                      <Camera className="h-3.5 w-3.5 text-muted-foreground" />
+                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center ring-2 ring-border">
+                        <User className="h-5 w-5 text-primary" />
+                      </div>
                     )}
-                  </div>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="absolute inset-0 opacity-0 cursor-pointer"
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
-                      setUploadingPhoto(barber.id);
-                      try {
-                        const ext = file.name.split('.').pop();
-                        const fileName = `${barber.id}/${Date.now()}.${ext}`;
-                        const { error: uploadErr } = await supabase.storage
-                          .from('barber-photos')
-                          .upload(fileName, file, { upsert: true });
-                        if (uploadErr) throw uploadErr;
-                        const { data: urlData } = supabase.storage
-                          .from('barber-photos')
-                          .getPublicUrl(fileName);
-                        await supabase
-                          .from('barbers')
-                          .update({ photo_url: urlData.publicUrl })
-                          .eq('id', barber.id);
-                        toast.success('Foto atualizada!');
-                        refetch();
-                      } catch {
-                        toast.error('Erro ao enviar foto');
-                      } finally {
-                        setUploadingPhoto(null);
-                      }
-                    }}
-                  />
+                    {/* Camera overlay - always visible */}
+                    <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-muted border-2 border-background flex items-center justify-center shadow-sm">
+                      {uploadingPhoto === barber.id ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+                      ) : (
+                        <Camera className="h-3.5 w-3.5 text-muted-foreground" />
+                      )}
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="sr-only"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        setUploadingPhoto(barber.id);
+                        try {
+                          const ext = file.name.split('.').pop();
+                          const fileName = `${barber.id}/${Date.now()}.${ext}`;
+                          const { error: uploadErr } = await supabase.storage
+                            .from('barber-photos')
+                            .upload(fileName, file, { upsert: true });
+                          if (uploadErr) throw uploadErr;
+                          const { data: urlData } = supabase.storage
+                            .from('barber-photos')
+                            .getPublicUrl(fileName);
+                          const { error: updateErr } = await supabase
+                            .from('barbers')
+                            .update({ photo_url: urlData.publicUrl })
+                            .eq('id', barber.id);
+                          if (updateErr) throw updateErr;
+                          toast.success('Foto atualizada!');
+                          refetch();
+                        } catch (err) {
+                          console.error('Erro ao enviar foto:', err);
+                          toast.error('Erro ao enviar foto');
+                        } finally {
+                          setUploadingPhoto(null);
+                          e.target.value = '';
+                        }
+                      }}
+                    />
+                  </label>
+
                   {/* Remove photo button */}
                   {barber.photo_url && (
                     <button
