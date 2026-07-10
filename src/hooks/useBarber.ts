@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase, Barber, BarberPermissions } from '@/lib/supabase';
 import { useAuth } from './useAuth';
 
@@ -8,53 +8,32 @@ interface BarberWithPermissions extends Barber {
 
 export function useBarber() {
   const { user } = useAuth();
-  const [barber, setBarber] = useState<BarberWithPermissions | null>(null);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const userId = user?.id;
 
-  useEffect(() => {
-    if (user) {
-      fetchBarber();
-    } else {
-      setBarber(null);
-      setLoading(false);
-    }
-  }, [user]);
-
-  const fetchBarber = async () => {
-    if (!user) return;
-    
-    try {
+  const { data: barber, isLoading } = useQuery<BarberWithPermissions | null>({
+    queryKey: ['barber', userId],
+    enabled: !!userId,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    queryFn: async () => {
       const { data, error } = await supabase
         .from('barbers')
-        .select(`
-          *,
-          permissions:barber_permissions(*)
-        `)
-        .eq('auth_id', user.id)
+        .select(`*, permissions:barber_permissions(*)`)
+        .eq('auth_id', userId!)
         .maybeSingle();
-
       if (error) throw error;
-      
-      // Flatten permissions
-      if (data) {
-        const barberData = {
-          ...data,
-          permissions: Array.isArray(data.permissions) ? data.permissions[0] : data.permissions,
-        };
-        setBarber(barberData as BarberWithPermissions);
-      } else {
-        setBarber(null);
-      }
-    } catch (error) {
-      console.error('Erro ao buscar barbeiro:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+      if (!data) return null;
+      return {
+        ...data,
+        permissions: Array.isArray(data.permissions) ? data.permissions[0] : data.permissions,
+      } as BarberWithPermissions;
+    },
+  });
 
   const updateBarber = async (updates: Partial<Barber>) => {
-    if (!barber) return { error: new Error('Barbeiro não encontrado') };
-
+    if (!barber) return { data: null, error: new Error('Barbeiro não encontrado') };
     try {
       const { data, error } = await supabase
         .from('barbers')
@@ -62,9 +41,10 @@ export function useBarber() {
         .eq('id', barber.id)
         .select()
         .single();
-
       if (error) throw error;
-      setBarber({ ...barber, ...data });
+      queryClient.setQueryData<BarberWithPermissions | null>(['barber', userId], (prev) =>
+        prev ? { ...prev, ...data } : prev
+      );
       return { data, error: null };
     } catch (error) {
       return { data: null, error };
@@ -72,9 +52,11 @@ export function useBarber() {
   };
 
   return {
-    barber,
-    loading,
+    barber: barber ?? null,
+    loading: !!userId && isLoading,
     updateBarber,
-    refetch: fetchBarber,
+    refetch: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['barber', userId] });
+    },
   };
 }

@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { supabase, UserRole, Barbershop, AppRole } from '@/lib/supabase';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { supabase, UserRole, Barbershop } from '@/lib/supabase';
 import { useAuth } from './useAuth';
 
 interface UseUserRoleReturn {
@@ -13,58 +13,48 @@ interface UseUserRoleReturn {
 
 export function useUserRole(): UseUserRoleReturn {
   const { user } = useAuth();
-  const [userRole, setUserRole] = useState<UserRole | null>(null);
-  const [barbershop, setBarbershop] = useState<Barbershop | null>(null);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const userId = user?.id;
 
-  const fetchUserRole = async () => {
-    if (!user) {
-      setUserRole(null);
-      setBarbershop(null);
-      setLoading(false);
-      return;
-    }
-
-    try {
-      // Fetch user role
+  const { data, isLoading } = useQuery({
+    queryKey: ['user-role', userId],
+    enabled: !!userId,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    queryFn: async () => {
       const { data: roleData, error: roleError } = await supabase
         .from('user_roles')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', userId!)
         .maybeSingle();
-
       if (roleError) throw roleError;
-      
-      setUserRole(roleData as UserRole | null);
 
-      // If we have a role, fetch the barbershop
+      let barbershop: Barbershop | null = null;
       if (roleData?.barbershop_id) {
         const { data: shopData, error: shopError } = await supabase
           .from('barbershops')
           .select('*')
           .eq('id', roleData.barbershop_id)
           .maybeSingle();
-
         if (shopError) throw shopError;
-        setBarbershop(shopData as Barbershop | null);
+        barbershop = shopData as Barbershop | null;
       }
-    } catch (error) {
-      console.error('Erro ao buscar role do usuário:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+      return { userRole: (roleData as UserRole | null) ?? null, barbershop };
+    },
+  });
 
-  useEffect(() => {
-    fetchUserRole();
-  }, [user]);
+  const userRole = data?.userRole ?? null;
+  const barbershop = data?.barbershop ?? null;
 
   return {
     userRole,
     barbershop,
-    loading,
+    loading: !!userId && isLoading,
     isMaster: userRole?.role === 'master',
     isBarber: userRole?.role === 'barber',
-    refetch: fetchUserRole,
+    refetch: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['user-role', userId] });
+    },
   };
 }
