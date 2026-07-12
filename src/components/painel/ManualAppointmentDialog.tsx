@@ -574,7 +574,7 @@ const ManualAppointmentDialog = ({
                     render={({ field }) => (
                       <FormItem className="space-y-1.5">
                         <FormLabel className="text-xs text-muted-foreground">Horário</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={setStartTime} value={field.value}>
                           <FormControl>
                             <SelectTrigger className="h-11 text-sm rounded-2xl">
                               <SelectValue placeholder={timeSlots.length === 0 ? 'Sem horários' : 'Selecione o horário'} />
