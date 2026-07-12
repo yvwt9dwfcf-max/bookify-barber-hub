@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { format, addMinutes, setHours, setMinutes, addDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { z } from 'zod';
@@ -190,47 +190,57 @@ const ManualAppointmentDialog = ({
     },
   });
 
+  const setStartTime = useCallback((value: string) => {
+    form.setValue('start_time', value, {
+      shouldDirty: Boolean(value),
+      shouldTouch: Boolean(value),
+      shouldValidate: Boolean(value),
+    });
+    if (value) form.clearErrors('start_time');
+  }, [form]);
+
   // Reset when dialog opens
   useEffect(() => {
-    if (open) {
-      setTargetBarberId(barber.id);
-      setInternalDate(initialDate);
-      setScreen('main');
-      setDurationOverride(null);
-      setShowExtras(false);
-      fetchServices();
-      refetchAvailability();
-      form.reset({
-        customer_name: '',
-        customer_phone: '',
-        service_id: '',
-        start_time: preselectedTime || '',
-        notes: '',
-      });
+    if (!open) return;
+
+    const selectedStartTime = preselectedTime || '';
+    let rafId: number | null = null;
+
+    setTargetBarberId(barber.id);
+    setInternalDate(initialDate);
+    setScreen('main');
+    setDurationOverride(null);
+    setShowExtras(false);
+    fetchServices();
+    refetchAvailability();
+    form.reset({
+      customer_name: '',
+      customer_phone: '',
+      service_id: '',
+      start_time: selectedStartTime,
+      notes: '',
+    });
+
+    if (selectedStartTime) {
+      rafId = window.requestAnimationFrame(() => setStartTime(selectedStartTime));
     }
-  }, [open, initialDate, preselectedTime]);
+
+    return () => {
+      if (rafId !== null) window.cancelAnimationFrame(rafId);
+    };
+  }, [open, initialDate, preselectedTime, barber.id, form, refetchAvailability, setStartTime]);
 
   useEffect(() => {
     if (open) {
       fetchServices();
       refetchAvailability();
-      form.setValue('start_time', preselectedTime || '');
+      setStartTime(preselectedTime || form.getValues('start_time') || '');
     }
   }, [effectiveBarberId]);
 
-  const isFirstDateRef = useRef(true);
   useEffect(() => {
-    if (open) {
-      refetchAvailability();
-      if (isFirstDateRef.current) {
-        isFirstDateRef.current = false;
-        return;
-      }
-      form.setValue('start_time', '');
-    } else {
-      isFirstDateRef.current = true;
-    }
-  }, [internalDate, open]);
+    if (open) refetchAvailability();
+  }, [internalDate, open, refetchAvailability]);
 
   const fetchServices = async () => {
     setLoadingServices(true);
@@ -297,7 +307,12 @@ const ManualAppointmentDialog = ({
   };
 
   const handleDateSelect = (date: Date | undefined) => {
-    if (date) { setInternalDate(date); setCalendarOpen(false); }
+    if (!date) return;
+
+    const changedDay = date.toDateString() !== internalDate.toDateString();
+    setInternalDate(date);
+    setCalendarOpen(false);
+    if (changedDay) setStartTime('');
   };
 
   const selectedService = services.find(s => s.id === form.watch('service_id'));
@@ -320,12 +335,19 @@ const ManualAppointmentDialog = ({
       const svc = services.find(s => s.id === data.service_id);
       if (!svc) { toast.error('Selecione um serviço'); setLoading(false); return; }
 
+      const submittedStartTime = data.start_time || form.getValues('start_time') || preselectedTime || '';
+      if (!submittedStartTime) {
+        form.setError('start_time', { type: 'manual', message: 'Horário é obrigatório' });
+        setLoading(false);
+        return;
+      }
+
       const durationMinutes = durationOverride ?? svc.duration_minutes;
-      const [hours, minutes] = data.start_time.split(':').map(Number);
+      const [hours, minutes] = submittedStartTime.split(':').map(Number);
       const startTime = setMinutes(setHours(internalDate, hours), minutes);
       const endTime = addMinutes(startTime, durationMinutes);
 
-      const slotCheck = getSlotStatus(data.start_time, durationMinutes);
+      const slotCheck = getSlotStatus(submittedStartTime, durationMinutes);
       if (slotCheck.occupied) {
         toast.error(`Horário indisponível (${slotCheck.reason === 'intervalo' ? 'no intervalo' : slotCheck.reason}). Escolha outro horário.`);
         setLoading(false);
