@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 import { useBarber } from '@/hooks/useBarber';
@@ -456,7 +456,20 @@ const Painel = () => {
                   </Button>
                 </div>
               )}
-              <Outlet context={{ barber, barbershop, isMaster, refetchRole }} />
+              <Suspense fallback={
+                <div className="space-y-4 py-6">
+                  <div className="h-8 w-48 rounded-lg bg-muted/40 animate-pulse" />
+                  <div className="h-4 w-72 rounded bg-muted/30 animate-pulse" />
+                  <div className="grid grid-cols-3 gap-3 pt-2">
+                    {[0,1,2].map(i => <div key={i} className="h-20 rounded-xl bg-muted/30 animate-pulse" />)}
+                  </div>
+                  <div className="space-y-2 pt-2">
+                    {[0,1,2,3].map(i => <div key={i} className="h-14 rounded-xl bg-muted/20 animate-pulse" />)}
+                  </div>
+                </div>
+              }>
+                <Outlet context={{ barber, barbershop, isMaster, refetchRole }} />
+              </Suspense>
             </motion.div>
           </AnimatePresence>
         </div>
