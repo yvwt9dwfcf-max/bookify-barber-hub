@@ -208,7 +208,7 @@ const ManualAppointmentDialog = ({
     const selectedStartTime = preselectedTime || '';
     let rafId: number | null = null;
 
-    setTargetBarberId(barber.id);
+    setTargetBarberId(preselectedBarberId || barber.id);
     setInternalDate(initialDate);
     setScreen('main');
     setDurationOverride(null);
