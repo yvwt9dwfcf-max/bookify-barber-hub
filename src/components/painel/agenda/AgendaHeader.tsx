@@ -79,10 +79,24 @@ const AgendaHeader = ({
           >
             <CalendarDays className="h-4 w-4" />
           </Button>
+          {canViewOthers && barbers.length > 1 && (
+            <Button
+              variant={viewMode === 'all' ? 'default' : 'ghost'}
+              size="icon"
+              onClick={() => onViewModeChange('all')}
+              className={cn(
+                "h-8 w-8 rounded-xl transition-all active:scale-95",
+                viewMode === 'all' && 'btn-primary-gradient shadow-md'
+              )}
+              title="Ver todos os barbeiros"
+            >
+              <LayoutGrid className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       </div>
 
-      {canViewOthers && barbers.length > 1 && (
+      {viewMode !== 'all' && canViewOthers && barbers.length > 1 && (
         <Card className="border-border/50 shadow-sm bg-card/80 backdrop-blur-sm animate-fade-in rounded-xl" style={{ animationDelay: '0.05s' }}>
           <CardContent className="p-2">
             <div className="flex items-center gap-2">
