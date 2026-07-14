@@ -67,6 +67,7 @@ const EditAppointmentDialog = lazy(() => import('@/components/painel/EditAppoint
 const QuickBlockDialog = lazy(() => import('@/components/painel/QuickBlockDialog'));
 const GreetingHeader = lazy(() => import('@/components/painel/GreetingHeader'));
 const ComandaSheet = lazy(() => import('@/components/painel/ComandaSheet'));
+const AllBarbersGrid = lazy(() => import('@/components/painel/agenda/AllBarbersGrid'));
 
 const Agenda = () => {
   const { barber, barbershop, isMaster } = useOutletContext<AgendaContextType>();
