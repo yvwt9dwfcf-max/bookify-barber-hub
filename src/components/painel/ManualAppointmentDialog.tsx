@@ -52,6 +52,7 @@ interface ManualAppointmentDialogProps {
   canCreateForOthers?: boolean;
   barbers?: Barber[];
   preselectedTime?: string | null;
+  preselectedBarberId?: string | null;
 }
 
 // --- Service Picker Screen ---
@@ -159,6 +160,7 @@ const ManualAppointmentDialog = ({
   canCreateForOthers = false,
   barbers = [],
   preselectedTime = null,
+  preselectedBarberId = null,
 }: ManualAppointmentDialogProps) => {
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(false);
@@ -169,7 +171,7 @@ const ManualAppointmentDialog = ({
   const [durationOverride, setDurationOverride] = useState<number | null>(null);
   const [showExtras, setShowExtras] = useState(false);
 
-  const [targetBarberId, setTargetBarberId] = useState<string>(barber.id);
+  const [targetBarberId, setTargetBarberId] = useState<string>(preselectedBarberId || barber.id);
   const effectiveBarberId = canCreateForOthers ? targetBarberId : barber.id;
   const targetBarber = (canCreateForOthers ? barbers.find(b => b.id === effectiveBarberId) : barber) || barber;
 
@@ -206,7 +208,7 @@ const ManualAppointmentDialog = ({
     const selectedStartTime = preselectedTime || '';
     let rafId: number | null = null;
 
-    setTargetBarberId(barber.id);
+    setTargetBarberId(preselectedBarberId || barber.id);
     setInternalDate(initialDate);
     setScreen('main');
     setDurationOverride(null);
@@ -228,7 +230,7 @@ const ManualAppointmentDialog = ({
     return () => {
       if (rafId !== null) window.cancelAnimationFrame(rafId);
     };
-  }, [open, initialDate, preselectedTime, barber.id, form, refetchAvailability, setStartTime]);
+  }, [open, initialDate, preselectedTime, preselectedBarberId, barber.id, form, refetchAvailability, setStartTime]);
 
   useEffect(() => {
     if (open) {

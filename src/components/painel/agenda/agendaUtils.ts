@@ -6,7 +6,7 @@ export interface AgendaContextType {
   isMaster: boolean;
 }
 
-export type ViewMode = 'daily' | 'monthly';
+export type ViewMode = 'daily' | 'monthly' | 'all';
 
 export const getStatusConfig = (status: string) => {
   switch (status) {

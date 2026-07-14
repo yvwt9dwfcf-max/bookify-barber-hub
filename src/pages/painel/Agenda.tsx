@@ -67,6 +67,7 @@ const EditAppointmentDialog = lazy(() => import('@/components/painel/EditAppoint
 const QuickBlockDialog = lazy(() => import('@/components/painel/QuickBlockDialog'));
 const GreetingHeader = lazy(() => import('@/components/painel/GreetingHeader'));
 const ComandaSheet = lazy(() => import('@/components/painel/ComandaSheet'));
+const AllBarbersGrid = lazy(() => import('@/components/painel/agenda/AllBarbersGrid'));
 
 const Agenda = () => {
   const { barber, barbershop, isMaster } = useOutletContext<AgendaContextType>();
@@ -83,6 +84,7 @@ const Agenda = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('daily');
   const [showManualDialog, setShowManualDialog] = useState(false);
   const [preselectedTime, setPreselectedTime] = useState<string | null>(null);
+  const [preselectedBarberId, setPreselectedBarberId] = useState<string | null>(null);
   const [showQuickBlock, setShowQuickBlock] = useState(false);
   const [blockTime, setBlockTime] = useState<string | null>(null);
   const [hideEmptyState, setHideEmptyState] = useState(false);
@@ -158,9 +160,10 @@ const Agenda = () => {
   }, [fetchAppointments, selectedBarberId]);
 
   // --- Handlers ---
-  const handleOpenManualDialog = useCallback((time?: string) => {
+  const handleOpenManualDialog = useCallback((time?: string, barberIdOverride?: string) => {
     if (!checkCanPerformAction('create_appointment')) return;
     setPreselectedTime(time || null);
+    setPreselectedBarberId(barberIdOverride || null);
     setShowManualDialog(true);
   }, [checkCanPerformAction]);
 
@@ -263,18 +266,43 @@ const Agenda = () => {
         {(selectedBarber || barber) && (
           <ManualAppointmentDialog
             open={showManualDialog}
-            onOpenChange={(open) => { setShowManualDialog(open); if (!open) setPreselectedTime(null); }}
-            barber={canCreateForOthers ? selectedBarber! : barber!}
+            onOpenChange={(open) => {
+              setShowManualDialog(open);
+              if (!open) { setPreselectedTime(null); setPreselectedBarberId(null); }
+            }}
+            barber={canCreateForOthers ? (barbers.find(b => b.id === preselectedBarberId) || selectedBarber!) : barber!}
             selectedDate={selectedDate}
-            onSuccess={() => { fetchAppointments(); refetchAvailability(); }}
+            onSuccess={() => { fetchAppointments(); refetchAvailability(); setDashboardRefreshKey(k => k + 1); }}
             canCreateForOthers={canCreateForOthers}
             barbers={barbers}
             preselectedTime={preselectedTime}
+            preselectedBarberId={preselectedBarberId}
           />
         )}
 
         {viewMode === 'monthly' && selectedBarber && (
           <MonthlyCalendar barber={selectedBarber} onDateSelect={handleDateSelectFromCalendar} selectedDate={selectedDate} />
+        )}
+
+        {viewMode === 'all' && canViewOthers && (
+          <>
+            <StickyDaysStrip
+              selectedDate={selectedDate}
+              displayMonth={displayMonth}
+              onSelectDate={setSelectedDate}
+              onShiftMonth={handleShiftMonth}
+              selectedBarberId={selectedBarberId}
+            />
+            <HolidayBanner date={selectedDate} />
+            <AllBarbersGrid
+              barbers={barbers}
+              barbershop={barbershop}
+              selectedDate={selectedDate}
+              onSlotClick={(time, barberId) => handleOpenManualDialog(time, barberId)}
+              onAppointmentClick={handleCardClick}
+              refreshKey={dashboardRefreshKey}
+            />
+          </>
         )}
 
         {viewMode === 'daily' && (
