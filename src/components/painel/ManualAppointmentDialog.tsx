@@ -52,6 +52,7 @@ interface ManualAppointmentDialogProps {
   canCreateForOthers?: boolean;
   barbers?: Barber[];
   preselectedTime?: string | null;
+  preselectedBarberId?: string | null;
 }
 
 // --- Service Picker Screen ---
