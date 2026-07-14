@@ -160,9 +160,10 @@ const Agenda = () => {
   }, [fetchAppointments, selectedBarberId]);
 
   // --- Handlers ---
-  const handleOpenManualDialog = useCallback((time?: string) => {
+  const handleOpenManualDialog = useCallback((time?: string, barberIdOverride?: string) => {
     if (!checkCanPerformAction('create_appointment')) return;
     setPreselectedTime(time || null);
+    setPreselectedBarberId(barberIdOverride || null);
     setShowManualDialog(true);
   }, [checkCanPerformAction]);
 
