@@ -4,7 +4,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import {
-  CalendarRange as Calendar, CalendarDays, ChevronLeft, ChevronRight, UserRound as User,
+  CalendarRange as Calendar, CalendarDays, ChevronLeft, ChevronRight, UserRound as User, LayoutGrid,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
