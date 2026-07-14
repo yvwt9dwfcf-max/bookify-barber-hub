@@ -230,7 +230,7 @@ const ManualAppointmentDialog = ({
     return () => {
       if (rafId !== null) window.cancelAnimationFrame(rafId);
     };
-  }, [open, initialDate, preselectedTime, barber.id, form, refetchAvailability, setStartTime]);
+  }, [open, initialDate, preselectedTime, preselectedBarberId, barber.id, form, refetchAvailability, setStartTime]);
 
   useEffect(() => {
     if (open) {
