@@ -84,6 +84,7 @@ const Agenda = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('daily');
   const [showManualDialog, setShowManualDialog] = useState(false);
   const [preselectedTime, setPreselectedTime] = useState<string | null>(null);
+  const [preselectedBarberId, setPreselectedBarberId] = useState<string | null>(null);
   const [showQuickBlock, setShowQuickBlock] = useState(false);
   const [blockTime, setBlockTime] = useState<string | null>(null);
   const [hideEmptyState, setHideEmptyState] = useState(false);
