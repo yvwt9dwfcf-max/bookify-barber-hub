@@ -160,6 +160,7 @@ const ManualAppointmentDialog = ({
   canCreateForOthers = false,
   barbers = [],
   preselectedTime = null,
+  preselectedBarberId = null,
 }: ManualAppointmentDialogProps) => {
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(false);
@@ -170,7 +171,7 @@ const ManualAppointmentDialog = ({
   const [durationOverride, setDurationOverride] = useState<number | null>(null);
   const [showExtras, setShowExtras] = useState(false);
 
-  const [targetBarberId, setTargetBarberId] = useState<string>(barber.id);
+  const [targetBarberId, setTargetBarberId] = useState<string>(preselectedBarberId || barber.id);
   const effectiveBarberId = canCreateForOthers ? targetBarberId : barber.id;
   const targetBarber = (canCreateForOthers ? barbers.find(b => b.id === effectiveBarberId) : barber) || barber;
 
