@@ -266,18 +266,43 @@ const Agenda = () => {
         {(selectedBarber || barber) && (
           <ManualAppointmentDialog
             open={showManualDialog}
-            onOpenChange={(open) => { setShowManualDialog(open); if (!open) setPreselectedTime(null); }}
-            barber={canCreateForOthers ? selectedBarber! : barber!}
+            onOpenChange={(open) => {
+              setShowManualDialog(open);
+              if (!open) { setPreselectedTime(null); setPreselectedBarberId(null); }
+            }}
+            barber={canCreateForOthers ? (barbers.find(b => b.id === preselectedBarberId) || selectedBarber!) : barber!}
             selectedDate={selectedDate}
-            onSuccess={() => { fetchAppointments(); refetchAvailability(); }}
+            onSuccess={() => { fetchAppointments(); refetchAvailability(); setDashboardRefreshKey(k => k + 1); }}
             canCreateForOthers={canCreateForOthers}
             barbers={barbers}
             preselectedTime={preselectedTime}
+            preselectedBarberId={preselectedBarberId}
           />
         )}
 
         {viewMode === 'monthly' && selectedBarber && (
           <MonthlyCalendar barber={selectedBarber} onDateSelect={handleDateSelectFromCalendar} selectedDate={selectedDate} />
+        )}
+
+        {viewMode === 'all' && canViewOthers && (
+          <>
+            <StickyDaysStrip
+              selectedDate={selectedDate}
+              displayMonth={displayMonth}
+              onSelectDate={setSelectedDate}
+              onShiftMonth={handleShiftMonth}
+              selectedBarberId={selectedBarberId}
+            />
+            <HolidayBanner date={selectedDate} />
+            <AllBarbersGrid
+              barbers={barbers}
+              barbershop={barbershop}
+              selectedDate={selectedDate}
+              onSlotClick={(time, barberId) => handleOpenManualDialog(time, barberId)}
+              onAppointmentClick={handleCardClick}
+              refreshKey={dashboardRefreshKey}
+            />
+          </>
         )}
 
         {viewMode === 'daily' && (
