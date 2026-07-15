@@ -3,7 +3,8 @@ import { supabase, Appointment, Barber, BlockedSlot, OpeningHours, Barbershop } 
 import { startOfDay, addDays, format, setHours, setMinutes, isBefore, isAfter, addMinutes } from 'date-fns';
 import { CalendarPlus, Ban, Clock, CircleSlash } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { getStatusConfig, getInitials } from './agendaUtils';
+import { getInitials } from './agendaUtils';
+import { useAgendaPalette, getAppointmentAccent } from '@/lib/agendaPalette';
 import { PremiumSkeleton } from '@/components/ui/premium-skeleton';
 import { toast } from 'sonner';
 
@@ -16,9 +17,10 @@ interface AllBarbersGridProps {
   refreshKey?: number;
 }
 
-const COLUMN_WIDTH = 138; // px per barber column
-const TIME_COL_WIDTH = 44; // px
-const ROW_HEIGHT = 44; // px per 30-min slot
+const COLUMN_WIDTH = 138;
+const TIME_COL_WIDTH = 48;
+const ROW_HEIGHT = 44;
+const HEADER_HEIGHT = 56;
 
 const AllBarbersGrid = ({
   barbers,
@@ -28,6 +30,7 @@ const AllBarbersGrid = ({
   onAppointmentClick,
   refreshKey = 0,
 }: AllBarbersGridProps) => {
+  const [palette] = useAgendaPalette();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [blockedSlots, setBlockedSlots] = useState<BlockedSlot[]>([]);
   const [openingHours, setOpeningHours] = useState<OpeningHours[]>([]);
@@ -90,7 +93,6 @@ const AllBarbersGrid = ({
     fetchAll();
   }, [fetchAll, refreshKey]);
 
-  // Realtime: refetch on any appointment change in this barbershop
   useEffect(() => {
     if (!barbershop?.id) return;
     const channel = supabase
@@ -104,7 +106,6 @@ const AllBarbersGrid = ({
     return () => { supabase.removeChannel(channel); };
   }, [barbershop?.id, fetchAll]);
 
-  // Compute grid time range: earliest opening -> latest closing across all barbers
   const { slots, startHour, startMin } = useMemo(() => {
     if (openingHours.length === 0) {
       return { slots: [] as { time: string; hour: number; minute: number }[], startHour: 0, startMin: 0 };
@@ -136,9 +137,7 @@ const AllBarbersGrid = ({
 
   const hoursByBarber = useMemo(() => {
     const map: Record<string, OpeningHours | undefined> = {};
-    openingHours.forEach(h => {
-      if (h.is_open) map[h.barber_id] = h;
-    });
+    openingHours.forEach(h => { if (h.is_open) map[h.barber_id] = h; });
     return map;
   }, [openingHours]);
 
@@ -161,9 +160,7 @@ const AllBarbersGrid = ({
     return map;
   }, [blockedSlots]);
 
-  // Grid total height for a given barber column
   const gridHeight = slots.length * ROW_HEIGHT;
-
   const now = new Date();
 
   const getSlotState = useCallback((barberId: string, slotTime: string) => {
@@ -173,14 +170,12 @@ const AllBarbersGrid = ({
     const slotStart = setMinutes(setHours(selectedDate, h), m);
     const slotEnd = addMinutes(slotStart, 30);
 
-    // Outside barber's hours
     const [sh, sm] = hours.start_time.split(':').map(Number);
     const [eh, em] = hours.end_time.split(':').map(Number);
     const barberStart = setMinutes(setHours(selectedDate, sh), sm);
     const barberEnd = setMinutes(setHours(selectedDate, eh), em);
     if (isBefore(slotStart, barberStart) || !isBefore(slotStart, barberEnd)) return 'closed' as const;
 
-    // Break
     if (hours.break_start && hours.break_end) {
       const [bsh, bsm] = hours.break_start.split(':').map(Number);
       const [beh, bem] = hours.break_end.split(':').map(Number);
@@ -189,7 +184,6 @@ const AllBarbersGrid = ({
       if (isBefore(slotStart, bEnd) && isAfter(slotEnd, bStart)) return 'break' as const;
     }
 
-    // Blocked
     const bs = blockedByBarber[barberId] || [];
     if (bs.some(b => {
       const bst = new Date(b.start_time);
@@ -197,13 +191,11 @@ const AllBarbersGrid = ({
       return isBefore(slotStart, ben) && isAfter(slotEnd, bst);
     })) return 'blocked' as const;
 
-    // Past
     if (isBefore(slotStart, now)) return 'past' as const;
 
     return 'free' as const;
   }, [hoursByBarber, blockedByBarber, selectedDate, now]);
 
-  // Position of an appointment card in the column
   const positionFor = (apt: Appointment) => {
     const st = new Date(apt.start_time);
     const et = new Date(apt.end_time);
@@ -211,7 +203,7 @@ const AllBarbersGrid = ({
     const endTotal = et.getHours() * 60 + et.getMinutes();
     const gridStart = startHour * 60 + startMin;
     const top = ((startTotal - gridStart) / 30) * ROW_HEIGHT;
-    const height = Math.max(((endTotal - startTotal) / 30) * ROW_HEIGHT - 2, 24);
+    const height = Math.max(((endTotal - startTotal) / 30) * ROW_HEIGHT - 2, 26);
     return { top, height };
   };
 
@@ -242,61 +234,71 @@ const AllBarbersGrid = ({
     );
   }
 
+  const totalWidth = TIME_COL_WIDTH + activeBarbers.length * COLUMN_WIDTH;
+
   return (
     <div className="relative -mx-3 md:-mx-5 lg:-mx-8 animate-fade-in">
       <div
         className="overflow-x-auto overflow-y-visible overscroll-x-contain"
         style={{ scrollbarWidth: 'thin' }}
       >
-        <div style={{ width: TIME_COL_WIDTH + activeBarbers.length * COLUMN_WIDTH, minWidth: '100%' }}>
-          {/* Sticky header row: barber names */}
+        <div style={{ width: totalWidth, minWidth: '100%' }}>
+          {/* Header row (barbers) — sits ABOVE body, in normal flow */}
           <div
-            className="sticky top-14 lg:top-0 z-10 flex bg-background/95 backdrop-blur-md border-b border-border/40"
-            style={{ paddingLeft: TIME_COL_WIDTH }}
+            className="sticky top-14 lg:top-0 z-20 flex bg-background border-b border-border/60 shadow-sm"
+            style={{ height: HEADER_HEIGHT }}
           >
+            {/* Time-col corner spacer */}
+            <div
+              className="sticky left-0 z-10 bg-background border-r border-border/40"
+              style={{ width: TIME_COL_WIDTH, height: HEADER_HEIGHT }}
+            />
             {activeBarbers.map(b => (
               <div
                 key={b.id}
-                className="flex items-center gap-2 px-2 py-2 border-l border-border/30"
-                style={{ width: COLUMN_WIDTH }}
+                className="flex items-center gap-2 px-2.5 border-l border-border/40"
+                style={{ width: COLUMN_WIDTH, height: HEADER_HEIGHT }}
               >
                 {b.photo_url ? (
                   <img
                     src={b.photo_url}
                     alt={b.name}
-                    className="h-7 w-7 rounded-full object-cover shrink-0"
+                    className="h-8 w-8 rounded-full object-cover shrink-0 ring-2 ring-border/40"
                     loading="lazy"
                   />
                 ) : (
-                  <div className="h-7 w-7 rounded-full bg-primary/15 text-primary flex items-center justify-center text-[10px] font-semibold shrink-0">
+                  <div
+                    className="h-8 w-8 rounded-full flex items-center justify-center text-[11px] font-semibold shrink-0"
+                    style={{ backgroundColor: palette.tint, color: palette.text }}
+                  >
                     {getInitials(b.name)}
                   </div>
                 )}
-                <p className="text-xs font-semibold truncate">{b.name}</p>
+                <p className="text-xs font-semibold truncate text-foreground">{b.name}</p>
               </div>
             ))}
           </div>
 
-          {/* Body: time column + barber columns */}
+          {/* Body */}
           <div className="relative flex" style={{ height: gridHeight }}>
-            {/* Time labels column (sticky left) */}
+            {/* Time labels column */}
             <div
-              className="sticky left-0 z-[5] bg-background"
+              className="sticky left-0 z-[5] bg-background border-r border-border/40"
               style={{ width: TIME_COL_WIDTH }}
             >
-              {slots.map((s, idx) => (
+              {slots.map((s) => (
                 <div
                   key={s.time}
-                  className="relative flex items-start justify-end pr-1.5"
+                  className="relative flex items-start justify-end pr-2"
                   style={{ height: ROW_HEIGHT }}
                 >
                   <span
                     className={cn(
-                      'text-[10px] tabular-nums -mt-1.5',
-                      s.minute === 0 ? 'text-muted-foreground/80 font-medium' : 'text-muted-foreground/40'
+                      'text-[10px] tabular-nums -mt-1.5 select-none',
+                      s.minute === 0 ? 'text-foreground/70 font-semibold' : 'text-muted-foreground/50'
                     )}
                   >
-                    {s.minute === 0 || idx === 0 ? s.time : ''}
+                    {s.time}
                   </span>
                 </div>
               ))}
@@ -308,10 +310,9 @@ const AllBarbersGrid = ({
               return (
                 <div
                   key={b.id}
-                  className="relative border-l border-border/30"
+                  className="relative border-l border-border/40"
                   style={{ width: COLUMN_WIDTH }}
                 >
-                  {/* Slot cells background */}
                   {slots.map((s) => {
                     const state = getSlotState(b.id, s.time);
                     const isHour = s.minute === 0;
@@ -322,29 +323,31 @@ const AllBarbersGrid = ({
                         disabled={state !== 'free'}
                         onClick={() => onSlotClick(s.time, b.id)}
                         className={cn(
-                          'block w-full text-left group',
-                          'border-b',
-                          isHour ? 'border-border/40' : 'border-border/15',
-                          state === 'free' && 'hover:bg-primary/5 active:bg-primary/10 transition-colors cursor-pointer',
-                          state === 'closed' && 'bg-muted/20',
-                          state === 'break' && 'bg-warning/5',
-                          state === 'blocked' && 'bg-destructive/5',
-                          state === 'past' && 'bg-muted/10'
+                          'block w-full text-left group border-b',
+                          isHour ? 'border-border/50' : 'border-border/20',
+                          state === 'free' && 'bg-card/40 hover:bg-[var(--accent-tint)] active:bg-[var(--accent-tint)] transition-colors cursor-pointer',
+                          state === 'closed' && 'bg-muted/40',
+                          state === 'break' && 'bg-amber-500/10',
+                          state === 'blocked' && 'bg-destructive/10',
+                          state === 'past' && 'bg-muted/25'
                         )}
-                        style={{ height: ROW_HEIGHT }}
+                        style={{
+                          height: ROW_HEIGHT,
+                          ['--accent-tint' as any]: palette.tint,
+                        }}
                       >
                         {state === 'free' && (
                           <span className="flex items-center justify-center h-full opacity-0 group-hover:opacity-100 transition-opacity">
-                            <CalendarPlus className="h-3 w-3 text-muted-foreground/50" />
+                            <CalendarPlus className="h-3.5 w-3.5" style={{ color: palette.accent }} />
                           </span>
                         )}
                         {state === 'break' && s.minute === 0 && (
-                          <span className="flex items-center gap-1 pl-1.5 pt-1 text-[9px] text-warning/70">
+                          <span className="flex items-center gap-1 pl-1.5 pt-1 text-[9px] text-amber-500">
                             <Clock className="h-2.5 w-2.5" /> Intervalo
                           </span>
                         )}
                         {state === 'blocked' && s.minute === 0 && (
-                          <span className="flex items-center gap-1 pl-1.5 pt-1 text-[9px] text-destructive/70">
+                          <span className="flex items-center gap-1 pl-1.5 pt-1 text-[9px] text-destructive">
                             <Ban className="h-2.5 w-2.5" /> Bloqueado
                           </span>
                         )}
@@ -352,33 +355,33 @@ const AllBarbersGrid = ({
                     );
                   })}
 
-                  {/* Appointment overlay cards */}
+                  {/* Appointment cards */}
                   {apts.map(apt => {
                     const { top, height } = positionFor(apt);
-                    const status = getStatusConfig(apt.status);
+                    const c = getAppointmentAccent(apt.status, palette);
                     return (
                       <button
                         key={apt.id}
                         type="button"
                         onClick={(e) => { e.stopPropagation(); onAppointmentClick(apt); }}
-                        className={cn(
-                          'absolute left-1 right-1 rounded-lg border-l-[3px] px-1.5 py-1 text-left shadow-sm',
-                          'transition-transform active:scale-[0.98]',
-                          status.borderColor,
-                          status.bg,
-                          'bg-card border border-border/40'
-                        )}
-                        style={{ top: top + 1, height }}
+                        className="absolute left-1 right-1 rounded-lg px-1.5 py-1 text-left shadow-sm transition-transform active:scale-[0.98] overflow-hidden"
+                        style={{
+                          top: top + 1,
+                          height,
+                          backgroundColor: c.tint,
+                          borderLeft: `3px solid ${c.accent}`,
+                          color: c.text,
+                        }}
                       >
-                        <p className="text-[11px] font-semibold leading-tight truncate">
+                        <p className="text-[11px] font-semibold leading-tight truncate text-foreground">
                           {apt.customer_name}
                         </p>
-                        {apt.service?.name && height > 30 && (
-                          <p className="text-[9px] text-muted-foreground truncate mt-0.5">
+                        {apt.service?.name && height > 32 && (
+                          <p className="text-[9px] truncate mt-0.5 opacity-90">
                             {apt.service.name}
                           </p>
                         )}
-                        <p className="text-[9px] text-muted-foreground/70 tabular-nums mt-0.5">
+                        <p className="text-[9px] tabular-nums mt-0.5 opacity-80">
                           {format(new Date(apt.start_time), 'HH:mm')}
                         </p>
                       </button>
