@@ -15,6 +15,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Separator } from '@/components/ui/separator';
 import { useAutoSave } from '@/hooks/useAutoSave';
 import { AutoSaveIndicator } from '@/components/ui/AutoSaveIndicator';
+import { AGENDA_PALETTES, useAgendaPalette } from '@/lib/agendaPalette';
 
 interface ContextType {
   barber: Barber | null;
