@@ -287,6 +287,49 @@ const Configuracoes = () => {
         </div>
       </div>
 
+      {/* Agenda color palette */}
+      <div className="rounded-lg border p-4 space-y-3">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-sm font-medium">Cor da agenda</p>
+            <p className="text-xs text-muted-foreground">Escolha a cor dos cards de agendamento</p>
+          </div>
+          <span
+            className="h-5 w-5 rounded-full shrink-0 ring-2 ring-background shadow"
+            style={{ backgroundColor: palette.accent }}
+          />
+        </div>
+        <div className="grid grid-cols-6 gap-2">
+          {AGENDA_PALETTES.map((p) => {
+            const isActive = p.id === palette.id;
+            return (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => setPalette(p.id)}
+                aria-label={p.name}
+                title={p.name}
+                className={cn(
+                  'relative h-10 rounded-lg transition-all active:scale-95',
+                  isActive ? 'ring-2 ring-offset-2 ring-offset-background scale-105' : 'hover:scale-105'
+                )}
+                style={{
+                  backgroundColor: p.accent,
+                  ['--tw-ring-color' as any]: p.accent,
+                }}
+              >
+                {isActive && (
+                  <CheckCircle className="h-4 w-4 text-white absolute inset-0 m-auto drop-shadow" />
+                )}
+              </button>
+            );
+          })}
+        </div>
+        <p className="text-[10px] text-muted-foreground/70">
+          Selecionado: <span className="font-medium text-foreground">{palette.name}</span>
+        </p>
+      </div>
+
       {/* Seção Barbearia (Master) */}
       {isMaster && (
         <section className="space-y-4">
