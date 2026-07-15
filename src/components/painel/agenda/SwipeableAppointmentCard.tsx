@@ -39,6 +39,8 @@ const SwipeableAppointmentCard = ({
   const [transitioning, setTransitioning] = useState(false);
 
   const cfg = getStatusConfig(appointment.status);
+  const [palette] = useAgendaPalette();
+  const accent = getAppointmentAccent(appointment.status, palette);
   const isConfirmed = appointment.status === 'confirmed';
   const actionCount = (onEdit ? 1 : 0) + (isConfirmed && onComplete ? 1 : 0) + (onDelete ? 1 : 0);
   const maxSwipe = ACTION_WIDTH * actionCount;
