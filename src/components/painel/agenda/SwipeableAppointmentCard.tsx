@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Appointment } from '@/lib/supabase';
 import { getStatusConfig } from './agendaUtils';
+import { useAgendaPalette, getAppointmentAccent } from '@/lib/agendaPalette';
 
 interface SwipeableAppointmentCardProps {
   appointment: Appointment;
@@ -38,6 +39,8 @@ const SwipeableAppointmentCard = ({
   const [transitioning, setTransitioning] = useState(false);
 
   const cfg = getStatusConfig(appointment.status);
+  const [palette] = useAgendaPalette();
+  const accent = getAppointmentAccent(appointment.status, palette);
   const isConfirmed = appointment.status === 'confirmed';
   const actionCount = (onEdit ? 1 : 0) + (isConfirmed && onComplete ? 1 : 0) + (onDelete ? 1 : 0);
   const maxSwipe = ACTION_WIDTH * actionCount;
@@ -169,16 +172,16 @@ const SwipeableAppointmentCard = ({
       {/* Foreground card */}
       <div
         className={cn(
-          "relative rounded-xl bg-secondary/80 backdrop-blur-sm border border-border/30",
-          "border-l-[3px]",
+          "relative rounded-xl backdrop-blur-sm border border-border/30 border-l-[3px]",
           is15Min ? "px-3 py-1.5" : "px-3 py-2",
-          cfg.borderColor,
           transitioning && "transition-transform duration-[280ms] ease-[cubic-bezier(0.25,0.46,0.45,0.94)]",
         )}
         style={{
           transform: `translateX(${offsetX}px)`,
           minHeight: `${cardMinHeight}px`,
           touchAction: 'pan-y',
+          backgroundColor: accent.tint,
+          borderLeftColor: accent.accent,
         }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
@@ -198,21 +201,24 @@ const SwipeableAppointmentCard = ({
               </p>
             )}
             {!is15Min && (
-              <p className="text-[9px] text-muted-foreground/60 tabular-nums leading-tight pt-0.5">
+              <p className="text-[9px] text-muted-foreground/70 tabular-nums leading-tight pt-0.5">
                 {format(new Date(appointment.start_time), 'HH:mm')} — {format(new Date(appointment.end_time), 'HH:mm')}
                 {price != null && price > 0 && (
-                  <span className="ml-1.5 text-primary/80 font-medium">
+                  <span className="ml-1.5 font-semibold" style={{ color: accent.accent }}>
                     R$ {price.toFixed(0)}
                   </span>
                 )}
               </p>
             )}
           </div>
-          <span className={cn(
-            "px-2 py-0.5 rounded-full text-[9px] font-semibold shrink-0 tracking-wide",
-            appointment.status === 'confirmed' && "bg-primary/10 text-primary",
-            appointment.status === 'completed' && "bg-success/10 text-success",
-          )}>
+          <span
+            className="px-2 py-0.5 rounded-full text-[9px] font-semibold shrink-0 tracking-wide"
+            style={{
+              backgroundColor: accent.tint,
+              color: accent.accent,
+              border: `1px solid ${accent.accent}40`,
+            }}
+          >
             {cfg.label}
           </span>
         </div>
