@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Appointment } from '@/lib/supabase';
 import { getStatusConfig } from './agendaUtils';
+import { useAgendaPalette, getAppointmentAccent } from '@/lib/agendaPalette';
 
 interface SwipeableAppointmentCardProps {
   appointment: Appointment;
