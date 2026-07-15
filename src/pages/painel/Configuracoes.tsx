@@ -16,6 +16,7 @@ import { Separator } from '@/components/ui/separator';
 import { useAutoSave } from '@/hooks/useAutoSave';
 import { AutoSaveIndicator } from '@/components/ui/AutoSaveIndicator';
 import { AGENDA_PALETTES, useAgendaPalette } from '@/lib/agendaPalette';
+import { cn } from '@/lib/utils';
 
 interface ContextType {
   barber: Barber | null;
