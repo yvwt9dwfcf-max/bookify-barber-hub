@@ -225,13 +225,13 @@ const AgendaSlotGrid = ({
         // Past
         if (isPast && (!row.merged || secondIsPast)) {
           return (
-            <div key={slot.time} className="relative flex">
+            <div key={slot.time} className="relative flex bg-muted/20">
               {separator}
               <div className="w-12 shrink-0 pt-2 pr-2 text-right">
-                <p className="text-[11px] font-medium tabular-nums text-muted-foreground/25">{slot.time}</p>
+                <p className="text-[11px] font-medium tabular-nums text-muted-foreground/50">{slot.time}</p>
               </div>
-              <div className={cn("flex-1", mergedHeight)}>
-                <div className="h-px bg-border/10" />
+              <div className={cn("flex-1 flex items-center px-2", mergedHeight)}>
+                <span className="text-[10px] text-muted-foreground/50">Encerrado</span>
               </div>
             </div>
           );
@@ -248,17 +248,17 @@ const AgendaSlotGrid = ({
           >
             {separator}
             <div className="w-12 shrink-0 pt-2 pr-2 text-right">
-              <p className="text-[11px] font-medium tabular-nums text-muted-foreground/60">{displayTime}</p>
+              <p className="text-[11px] font-semibold tabular-nums text-foreground/80">{displayTime}</p>
             </div>
             <div className={cn(
-              "flex-1 flex items-center justify-between px-2 rounded-lg -mx-1",
-              "group-hover:bg-accent/50 transition-colors",
+              "flex-1 flex items-center justify-between px-2 rounded-lg -mx-1 border border-dashed border-border/40",
+              "bg-card/40 group-hover:bg-primary/10 group-hover:border-primary/40 transition-colors",
               mergedHeight
             )}>
-              <span className="text-[11px] text-muted-foreground/40 group-hover:text-muted-foreground/60 transition-colors">
-                {displayTime} <span className="mx-0.5">•</span> Disponível
+              <span className="text-[11px] text-muted-foreground group-hover:text-primary transition-colors">
+                Disponível
               </span>
-              <CalendarPlus className="h-3 w-3 text-transparent group-hover:text-muted-foreground/40 transition-all" />
+              <CalendarPlus className="h-3.5 w-3.5 text-muted-foreground/50 group-hover:text-primary transition-all" />
             </div>
           </button>
         );
