@@ -29,6 +29,7 @@ const Configuracoes = () => {
   const { updateBarber } = useBarber();
   const { barbershop, isMaster, refetch: refetchUserRole } = useUserRole();
   const navigate = useNavigate();
+  const [palette, setPalette] = useAgendaPalette();
   
   const [copied, setCopied] = useState(false);
   const [changePasswordOpen, setChangePasswordOpen] = useState(false);
