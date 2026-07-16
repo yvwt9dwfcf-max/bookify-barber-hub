@@ -1,0 +1,17 @@
+# Bookify
+
+> Plataforma completa de gestão para barbearias: agendamento online, gestão de equipe, comissões, financeiro e relatórios.
+
+Bookify permite que barbearias criem uma página pública de agendamento para seus clientes, gerenciem a agenda de vários profissionais, controlem serviços, produtos, despesas, comissões e acompanhem o desempenho do negócio.
+
+## Pages
+
+- [Início](/): Visão geral, funcionalidades e planos do Bookify.
+- [Entrar](/login): Área de login para donos e profissionais.
+- [Criar conta](/register): Cadastro de nova barbearia com período de teste grátis.
+- [Política de Privacidade](/politica-de-privacidade): Como tratamos os dados dos usuários.
+- [Termos de Uso](/termos-de-uso): Termos e condições da plataforma.
+
+## Optional
+
+- [Recuperar senha](/esqueci-senha): Fluxo de recuperação de senha.

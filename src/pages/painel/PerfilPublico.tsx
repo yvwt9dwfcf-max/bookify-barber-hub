@@ -358,7 +358,7 @@ const PerfilPublico = () => {
           <Label className="text-xs text-muted-foreground mb-2 block">Foto de capa</Label>
           {fotoCapa ? (
             <div className="relative rounded-xl overflow-hidden group">
-              <img src={fotoCapa} alt="Capa" className="w-full h-40 object-cover" />
+              <img src={fotoCapa} alt="Foto de capa do perfil da barbearia" className="w-full h-40 object-cover" />
               <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-2">
                 <Button size="sm" variant="secondary" className="h-8 text-xs" onClick={() => coverInputRef.current?.click()}>
                   <Upload className="h-3.5 w-3.5 mr-1" /> Trocar
@@ -384,7 +384,7 @@ const PerfilPublico = () => {
         <div className="flex items-center gap-4 pt-1">
           {logoUrl ? (
             <div className="relative group shrink-0">
-              <img src={logoUrl} alt="Logo" className="w-16 h-16 rounded-2xl object-cover ring-2 ring-border" />
+              <img src={logoUrl} alt="Logo da barbearia" className="w-16 h-16 rounded-2xl object-cover ring-2 ring-border" />
               <div className="absolute inset-0 bg-black/50 rounded-2xl opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-1">
                 <button className="h-7 w-7 rounded-lg bg-secondary flex items-center justify-center" onClick={() => logoInputRef.current?.click()}>
                   <Upload className="h-3 w-3" />

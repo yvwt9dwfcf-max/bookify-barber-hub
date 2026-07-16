@@ -320,7 +320,7 @@ const BarbeariaPublica = () => {
           <div className="relative h-56 sm:h-72">
             <img
               src={publicProfile.foto_capa_url}
-              alt={barbershop?.name}
+              alt={`Foto de capa da ${barbershop?.name ?? 'barbearia'}`}
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
@@ -333,7 +333,7 @@ const BarbeariaPublica = () => {
           {publicProfile?.logo_url ? (
             <img
               src={publicProfile.logo_url}
-              alt="Logo"
+              alt={`Logo da ${barbershop?.name ?? 'barbearia'}`}
               className="w-20 h-20 rounded-2xl mx-auto mb-4 object-cover ring-4 ring-background shadow-lg"
             />
           ) : !publicProfile?.foto_capa_url ? (
@@ -494,7 +494,7 @@ const BarbeariaPublica = () => {
                 <div key={img.id} className="aspect-square rounded-xl overflow-hidden">
                   <img
                     src={img.image_url}
-                    alt="Foto da barbearia"
+                    alt={`Foto da ${barbershop?.name ?? 'barbearia'}`}
                     className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                     loading="lazy"
                   />
