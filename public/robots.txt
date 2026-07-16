@@ -12,3 +12,9 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /painel
+Disallow: /onboarding
+Disallow: /reset-password
+Disallow: /trial-expirado
+
+Sitemap: https://bookify-barber-hub.lovable.app/sitemap.xml

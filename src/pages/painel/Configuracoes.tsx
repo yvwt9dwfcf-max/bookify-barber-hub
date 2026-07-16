@@ -195,7 +195,7 @@ const Configuracoes = () => {
             {uploadingPhoto ? (
               <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
             ) : photoUrl ? (
-              <img src={photoUrl} alt="Logo" className="w-full h-full object-cover" />
+              <img src={photoUrl} alt={`Logo da barbearia ${barbershop?.name ?? ''}`.trim()} className="w-full h-full object-cover" />
             ) : (
               <Camera className="h-5 w-5 text-muted-foreground/60" />
             )}

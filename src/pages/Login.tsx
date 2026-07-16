@@ -41,6 +41,7 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
 
       <main className="flex-1 flex items-center justify-center p-4 relative z-10">
         <div className="w-full max-w-md space-y-8 animate-fade-in">
+          <h1 className="sr-only">Acesse sua conta no Bookify</h1>
           {/* Logo & Branding */}
           <div className="text-center space-y-3">
             <div className="flex justify-center">
