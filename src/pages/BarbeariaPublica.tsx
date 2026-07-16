@@ -123,6 +123,81 @@ const BarbeariaPublica = () => {
     }
   }, [loading]);
 
+  // Dynamic SEO: per-shop <title>, meta description, canonical, og:*, LocalBusiness JSON-LD
+  useEffect(() => {
+    if (!barbershop) return;
+    const shopName = barbershop.name;
+    const city = publicProfile?.cidade || barbershop.city || '';
+    const desc = publicProfile?.descricao
+      || `Agende online na ${shopName}${city ? ` em ${city}` : ''}. Escolha o profissional, serviço e horário em poucos cliques.`;
+    const title = `${shopName}${city ? ` – ${city}` : ''} | Agende online`.slice(0, 60);
+    const url = typeof window !== 'undefined' ? window.location.href : '';
+    const image = publicProfile?.foto_capa_url || publicProfile?.logo_url || barbershop.photo_url || 'https://bookify-barber-hub.lovable.app/og-image.jpg';
+
+    document.title = title;
+
+    const setMeta = (selector: string, attr: string, key: string, value: string) => {
+      let el = document.head.querySelector<HTMLMetaElement>(selector);
+      if (!el) {
+        el = document.createElement('meta');
+        el.setAttribute(attr, key);
+        document.head.appendChild(el);
+      }
+      el.setAttribute('content', value);
+    };
+    setMeta('meta[name="description"]', 'name', 'description', desc.slice(0, 160));
+    setMeta('meta[property="og:title"]', 'property', 'og:title', title);
+    setMeta('meta[property="og:description"]', 'property', 'og:description', desc.slice(0, 160));
+    setMeta('meta[property="og:url"]', 'property', 'og:url', url);
+    setMeta('meta[property="og:image"]', 'property', 'og:image', image);
+    setMeta('meta[property="og:type"]', 'property', 'og:type', 'business.business');
+    setMeta('meta[name="twitter:title"]', 'name', 'twitter:title', title);
+    setMeta('meta[name="twitter:description"]', 'name', 'twitter:description', desc.slice(0, 160));
+    setMeta('meta[name="twitter:image"]', 'name', 'twitter:image', image);
+
+    let canonical = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+    if (!canonical) {
+      canonical = document.createElement('link');
+      canonical.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonical);
+    }
+    canonical.setAttribute('href', url);
+
+    const ldId = 'ld-localbusiness';
+    document.getElementById(ldId)?.remove();
+    const ld = document.createElement('script');
+    ld.type = 'application/ld+json';
+    ld.id = ldId;
+    ld.textContent = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'HairSalon',
+      name: shopName,
+      image,
+      url,
+      telephone: publicProfile?.whatsapp_numero || barbershop.phone || undefined,
+      description: desc,
+      address: (publicProfile?.endereco || city) ? {
+        '@type': 'PostalAddress',
+        streetAddress: [publicProfile?.endereco, publicProfile?.numero].filter(Boolean).join(', ') || undefined,
+        addressLocality: publicProfile?.cidade || barbershop.city || undefined,
+        addressRegion: publicProfile?.estado || undefined,
+        addressCountry: 'BR',
+      } : undefined,
+      geo: (publicProfile?.latitude && publicProfile?.longitude) ? {
+        '@type': 'GeoCoordinates',
+        latitude: publicProfile.latitude,
+        longitude: publicProfile.longitude,
+      } : undefined,
+      sameAs: publicProfile?.instagram_url ? [publicProfile.instagram_url] : undefined,
+    });
+    document.head.appendChild(ld);
+
+    return () => {
+      document.getElementById(ldId)?.remove();
+    };
+  }, [barbershop, publicProfile]);
+
+
   const fetchData = async () => {
     try {
       let shop: BarbershopData | null = null;
