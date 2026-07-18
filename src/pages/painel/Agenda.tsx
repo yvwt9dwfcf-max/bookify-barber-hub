@@ -102,6 +102,15 @@ const Agenda = () => {
 
   const selectedBarber = barbers.find(b => b.id === selectedBarberId) || barber;
 
+  const [agendaLayout, setAgendaLayout] = useState<AgendaLayout>(() => {
+    if (typeof window === 'undefined') return 'classic';
+    const saved = window.localStorage.getItem(LAYOUT_KEY);
+    return saved === 'team' ? 'team' : 'classic';
+  });
+  useEffect(() => {
+    try { window.localStorage.setItem(LAYOUT_KEY, agendaLayout); } catch { /* noop */ }
+  }, [agendaLayout]);
+
   const {
     checkSlotAvailability, getOpeningHoursForDay, blockedSlots,
     refetch: refetchAvailability, loading: availabilityLoading,
