@@ -264,17 +264,37 @@ const Agenda = () => {
       <div className="space-y-1.5 pb-20 animate-page-enter">
         <GreetingHeader barber={barber} barbershop={barbershop} isMaster={isMaster} selectedDate={selectedDate} refreshKey={dashboardRefreshKey} />
 
-        <AgendaHeader
-          selectedDate={selectedDate}
-          viewMode={viewMode}
-          onViewModeChange={setViewMode}
-          onShiftDay={handleShiftDay}
-          canViewOthers={canViewOthers}
-          barbers={barbers}
-          currentBarber={barber}
-          selectedBarberId={selectedBarberId}
-          onBarberChange={setSelectedBarberId}
-        />
+        {/* Layout selector — Clássica / Equipe */}
+        <div className="flex justify-center pt-1 pb-0.5">
+          <div
+            role="tablist"
+            aria-label="Modo de visualização da agenda"
+            className="inline-flex items-center gap-0.5 rounded-full border border-border/60 bg-card/60 backdrop-blur-sm p-0.5"
+          >
+            {([
+              { id: 'classic' as const, label: 'Clássica' },
+              { id: 'team' as const, label: 'Equipe' },
+            ]).map((opt) => {
+              const active = agendaLayout === opt.id;
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => setAgendaLayout(opt.id)}
+                  className={`px-3.5 h-7 text-[11px] font-medium tracking-wide uppercase rounded-full transition-all ${
+                    active
+                      ? 'bg-foreground text-background shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
         {(selectedBarber || barber) && (
           <ManualAppointmentDialog
@@ -293,67 +313,98 @@ const Agenda = () => {
           />
         )}
 
-        {viewMode === 'monthly' && selectedBarber && (
-          <MonthlyCalendar barber={selectedBarber} onDateSelect={handleDateSelectFromCalendar} selectedDate={selectedDate} />
-        )}
-
-        {viewMode === 'all' && canViewOthers && (
-          <>
-            <StickyDaysStrip
-              selectedDate={selectedDate}
-              displayMonth={displayMonth}
-              onSelectDate={setSelectedDate}
-              onShiftMonth={handleShiftMonth}
-              selectedBarberId={selectedBarberId}
-            />
-            <HolidayBanner date={selectedDate} />
-            <AllBarbersGrid
+        {agendaLayout === 'team' ? (
+          <div key="team" className="animate-fade-in">
+            <TeamAgendaView
               barbers={barbers}
               barbershop={barbershop}
+              currentBarber={barber}
+              canViewOthers={canViewOthers}
               selectedDate={selectedDate}
+              onShiftDay={handleShiftDay}
               onSlotClick={(time, barberId) => handleOpenManualDialog(time, barberId)}
               onAppointmentClick={handleCardClick}
               refreshKey={dashboardRefreshKey}
             />
-          </>
-        )}
-
-        {viewMode === 'daily' && (
-          <>
-            <StickyDaysStrip
+          </div>
+        ) : (
+          <div key="classic" className="animate-fade-in space-y-1.5">
+            <AgendaHeader
               selectedDate={selectedDate}
-              displayMonth={displayMonth}
-              onSelectDate={setSelectedDate}
-              onShiftMonth={handleShiftMonth}
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
+              onShiftDay={handleShiftDay}
+              canViewOthers={canViewOthers}
+              barbers={barbers}
+              currentBarber={barber}
               selectedBarberId={selectedBarberId}
+              onBarberChange={setSelectedBarberId}
             />
 
-            <HolidayBanner date={selectedDate} />
+            {viewMode === 'monthly' && selectedBarber && (
+              <MonthlyCalendar barber={selectedBarber} onDateSelect={handleDateSelectFromCalendar} selectedDate={selectedDate} />
+            )}
 
-            <div className="animate-fade-in" style={{ animationDelay: '0.16s' }}>
-              <AgendaSlotGrid
-                loading={loading || availabilityLoading}
-                isDayClosed={isDayClosed}
-                isToday={isToday}
-                selectedDate={selectedDate}
-                daySlots={daySlots}
-                appointments={appointments}
-                blockedSlots={blockedSlots}
-                hasAppointments={hasAppointments}
-                hideEmptyState={hideEmptyState}
-                onDismissEmptyState={() => setHideEmptyState(true)}
-                barbershop={barbershop}
-                checkSlotAvailability={checkSlotAvailability}
-                onSlotClick={handleOpenManualDialog}
-                onAppointmentClick={handleCardClick}
-                onAppointmentComplete={(id) => handleStatusChange(id, 'completed')}
-                onAppointmentDelete={handleDeleteAppointment}
-                onAppointmentEdit={handleEditAppointment}
-                getOpeningHoursForDay={getOpeningHoursForDay}
-              />
-            </div>
-          </>
+            {viewMode === 'all' && canViewOthers && (
+              <>
+                <StickyDaysStrip
+                  selectedDate={selectedDate}
+                  displayMonth={displayMonth}
+                  onSelectDate={setSelectedDate}
+                  onShiftMonth={handleShiftMonth}
+                  selectedBarberId={selectedBarberId}
+                />
+                <HolidayBanner date={selectedDate} />
+                <AllBarbersGrid
+                  barbers={barbers}
+                  barbershop={barbershop}
+                  selectedDate={selectedDate}
+                  onSlotClick={(time, barberId) => handleOpenManualDialog(time, barberId)}
+                  onAppointmentClick={handleCardClick}
+                  refreshKey={dashboardRefreshKey}
+                />
+              </>
+            )}
+
+            {viewMode === 'daily' && (
+              <>
+                <StickyDaysStrip
+                  selectedDate={selectedDate}
+                  displayMonth={displayMonth}
+                  onSelectDate={setSelectedDate}
+                  onShiftMonth={handleShiftMonth}
+                  selectedBarberId={selectedBarberId}
+                />
+
+                <HolidayBanner date={selectedDate} />
+
+                <div className="animate-fade-in" style={{ animationDelay: '0.16s' }}>
+                  <AgendaSlotGrid
+                    loading={loading || availabilityLoading}
+                    isDayClosed={isDayClosed}
+                    isToday={isToday}
+                    selectedDate={selectedDate}
+                    daySlots={daySlots}
+                    appointments={appointments}
+                    blockedSlots={blockedSlots}
+                    hasAppointments={hasAppointments}
+                    hideEmptyState={hideEmptyState}
+                    onDismissEmptyState={() => setHideEmptyState(true)}
+                    barbershop={barbershop}
+                    checkSlotAvailability={checkSlotAvailability}
+                    onSlotClick={handleOpenManualDialog}
+                    onAppointmentClick={handleCardClick}
+                    onAppointmentComplete={(id) => handleStatusChange(id, 'completed')}
+                    onAppointmentDelete={handleDeleteAppointment}
+                    onAppointmentEdit={handleEditAppointment}
+                    getOpeningHoursForDay={getOpeningHoursForDay}
+                  />
+                </div>
+              </>
+            )}
+          </div>
         )}
+
 
         <AppointmentDetailsSheet
           appointment={selectedAppointment}
