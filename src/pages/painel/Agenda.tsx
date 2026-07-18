@@ -68,6 +68,10 @@ const QuickBlockDialog = lazy(() => import('@/components/painel/QuickBlockDialog
 const GreetingHeader = lazy(() => import('@/components/painel/GreetingHeader'));
 const ComandaSheet = lazy(() => import('@/components/painel/ComandaSheet'));
 const AllBarbersGrid = lazy(() => import('@/components/painel/agenda/AllBarbersGrid'));
+const TeamAgendaView = lazy(() => import('@/components/painel/agenda/TeamAgendaView'));
+
+type AgendaLayout = 'classic' | 'team';
+const LAYOUT_KEY = 'bookify-agenda-layout';
 
 const Agenda = () => {
   const { barber, barbershop, isMaster } = useOutletContext<AgendaContextType>();
