@@ -426,7 +426,7 @@ const Painel = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="lg:ml-[270px] pt-14 lg:pt-0 min-h-screen">
+      <main className="lg:ml-[270px] pt-[calc(64px+env(safe-area-inset-top))] lg:pt-0 min-h-screen">
         <div className="p-3 md:p-5 lg:p-8 max-w-6xl">
           <AnimatePresence mode="wait">
             <motion.div

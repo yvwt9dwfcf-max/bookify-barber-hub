@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 const PoliticaPrivacidade = () => {
   return (
     <div className="min-h-screen bg-background">
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-xl border-b border-border/30">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-xl border-b border-border/30 pt-[env(safe-area-inset-top)]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <Logo size="sm" linkTo="/" />
           <Link to="/">
@@ -18,7 +18,7 @@ const PoliticaPrivacidade = () => {
         </div>
       </nav>
 
-      <main className="pt-28 pb-16 px-4 sm:px-6">
+      <main className="pt-[calc(7rem+env(safe-area-inset-top))] pb-16 px-4 sm:px-6">
         <div className="max-w-3xl mx-auto prose prose-invert prose-green">
           <h1 className="text-3xl font-bold text-foreground mb-2">Política de Privacidade – Bookify</h1>
           <p className="text-muted-foreground text-sm mb-8">Última atualização: {new Date().toLocaleDateString('pt-BR')}</p>
