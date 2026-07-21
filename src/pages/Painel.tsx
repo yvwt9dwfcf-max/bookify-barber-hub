@@ -304,7 +304,7 @@ const Painel = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Mobile Header */}
-      <header className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-card/80 backdrop-blur-xl border-b border-border/50 px-3 py-2 flex items-center justify-between">
+      <header className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-card/80 backdrop-blur-xl border-b border-border/50 px-3 pt-[calc(0.5rem+env(safe-area-inset-top))] pb-2 flex items-center justify-between">
         <Logo size="sm" linkTo="/painel" />
         <Button
           variant="ghost"
@@ -333,7 +333,7 @@ const Painel = () => {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed top-0 left-0 z-50 h-full w-[270px] bg-sidebar text-sidebar-foreground shadow-2xl',
+          'fixed top-0 left-0 z-50 h-full w-[270px] bg-sidebar text-sidebar-foreground shadow-2xl pl-[env(safe-area-inset-left)]',
           'lg:translate-x-0 lg:shadow-xl',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         )}
@@ -343,7 +343,7 @@ const Painel = () => {
       >
         <div className="flex flex-col h-full">
           {/* Sidebar Header */}
-          <div className="p-6 border-b border-sidebar-border">
+          <div className="px-6 pb-6 pt-[calc(1.5rem+env(safe-area-inset-top))] border-b border-sidebar-border">
             <Logo size="md" linkTo="/painel" />
           </div>
 
@@ -426,7 +426,7 @@ const Painel = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="lg:ml-[270px] pt-14 lg:pt-0 min-h-screen">
+      <main className="lg:ml-[270px] pt-[calc(64px+env(safe-area-inset-top))] lg:pt-0 min-h-screen">
         <div className="p-3 md:p-5 lg:p-8 max-w-6xl">
           <AnimatePresence mode="wait">
             <motion.div

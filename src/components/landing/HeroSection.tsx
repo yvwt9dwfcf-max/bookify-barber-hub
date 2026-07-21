@@ -6,7 +6,7 @@ import iphoneMockup from '@/assets/iphone-agenda-mockup.png';
 
 export function HeroSection() {
   return (
-    <section className="relative pt-28 pb-12 md:pt-36 md:pb-20 px-4 sm:px-6 overflow-hidden">
+    <section className="relative pt-[calc(7rem+env(safe-area-inset-top))] pb-12 md:pt-[calc(9rem+env(safe-area-inset-top))] md:pb-20 px-4 sm:px-6 overflow-hidden">
       {/* Subtle background — single soft radial, removed cansa-vista glow */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] rounded-full bg-primary/[0.04] blur-[120px]" />
