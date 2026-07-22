@@ -183,7 +183,6 @@ const Agenda = () => {
   const handleNewAppointment = useCallback(() => {
     scheduleAgendaRefresh(true);
   }, [scheduleAgendaRefresh]);
-  }, []);
 
   useRealtimeAppointments({ barberId: selectedBarberId || undefined, onNewAppointment: handleNewAppointment });
 
