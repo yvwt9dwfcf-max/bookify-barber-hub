@@ -99,6 +99,7 @@ const Agenda = () => {
   const [comandaAppointment, setComandaAppointment] = useState<Appointment | null>(null);
   const [selectedBarberId, setSelectedBarberId] = useState<string | null>(null);
   const [displayMonth, setDisplayMonth] = useState(() => startOfMonth(getTodayLocalDate()));
+  const appointmentsRequestIdRef = useRef(0);
 
   const selectedBarber = barbers.find(b => b.id === selectedBarberId) || barber;
 
@@ -136,6 +137,7 @@ const Agenda = () => {
 
   const fetchAppointments = useCallback(async () => {
     if (!selectedBarberId) return;
+    const requestId = ++appointmentsRequestIdRef.current;
     try {
       const startOfSelectedDay = startOfDay(selectedDate);
       const endOfSelectedDay = addDays(startOfSelectedDay, 1);
@@ -147,24 +149,40 @@ const Agenda = () => {
         .lt('start_time', endOfSelectedDay.toISOString())
         .order('start_time');
       if (error) throw error;
+      if (requestId !== appointmentsRequestIdRef.current) return;
       setAppointments((data as Appointment[]) || []);
     } catch (error) {
+      if (requestId !== appointmentsRequestIdRef.current) return;
       console.error('Erro ao buscar agendamentos:', error);
       toast.error('Erro ao carregar agendamentos');
     } finally {
-      setLoading(false);
+      if (requestId === appointmentsRequestIdRef.current) {
+        setLoading(false);
+      }
     }
   }, [selectedBarberId, selectedDate]);
 
   const fetchRef = useRef(fetchAppointments);
   const refetchAvailabilityRef = useRef(refetchAvailability);
+  const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => { fetchRef.current = fetchAppointments; }, [fetchAppointments]);
   useEffect(() => { refetchAvailabilityRef.current = refetchAvailability; }, [refetchAvailability]);
 
-  const handleNewAppointment = useCallback(() => {
-    fetchRef.current();
-    refetchAvailabilityRef.current();
+  const scheduleAgendaRefresh = useCallback((includeAvailability = false) => {
+    if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
+    refreshTimerRef.current = setTimeout(() => {
+      fetchRef.current();
+      if (includeAvailability) refetchAvailabilityRef.current();
+    }, 120);
   }, []);
+
+  useEffect(() => () => {
+    if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
+  }, []);
+
+  const handleNewAppointment = useCallback(() => {
+    scheduleAgendaRefresh(true);
+  }, [scheduleAgendaRefresh]);
 
   useRealtimeAppointments({ barberId: selectedBarberId || undefined, onNewAppointment: handleNewAppointment });
 
@@ -189,7 +207,7 @@ const Agenda = () => {
     const { error } = await supabase.from('appointments').delete().eq('id', id);
     if (error) { toast.error('Erro ao excluir agendamento'); throw error; }
     toast.success('Agendamento excluído');
-    fetchAppointments();
+    scheduleAgendaRefresh(true);
   };
 
   const handleStatusChange = async (id: string, status: 'confirmed' | 'completed' | 'cancelled') => {
@@ -206,7 +224,7 @@ const Agenda = () => {
       }
     }
     toast.success('Status atualizado');
-    fetchAppointments();
+    scheduleAgendaRefresh(false);
     setDashboardRefreshKey(k => k + 1);
   };
 
@@ -246,9 +264,9 @@ const Agenda = () => {
   }, [selectedDate, getOpeningHoursForDay]);
 
   // --- Loading skeleton ---
-  if (loading && !selectedBarberId) {
+  if (loading && appointments.length === 0 && !selectedBarberId) {
     return (
-      <div className="space-y-4 pb-24 animate-page-enter">
+      <div className="space-y-4 pb-24">
         <PremiumSkeleton className="h-12 w-3/4" />
         <PremiumSkeleton className="h-24 rounded-xl" />
         <SkeletonStats />
@@ -261,7 +279,7 @@ const Agenda = () => {
 
   return (
     <Suspense fallback={fallback}>
-      <div className="space-y-1.5 pb-20 animate-page-enter">
+      <div className="space-y-1.5 pb-20">
         <GreetingHeader barber={barber} barbershop={barbershop} isMaster={isMaster} selectedDate={selectedDate} refreshKey={dashboardRefreshKey} />
 
         {/* Layout selector — Clássica / Equipe */}
@@ -305,7 +323,7 @@ const Agenda = () => {
             }}
             barber={canCreateForOthers ? (barbers.find(b => b.id === preselectedBarberId) || selectedBarber!) : barber!}
             selectedDate={selectedDate}
-            onSuccess={() => { fetchAppointments(); refetchAvailability(); setDashboardRefreshKey(k => k + 1); }}
+            onSuccess={() => { scheduleAgendaRefresh(true); setDashboardRefreshKey(k => k + 1); }}
             canCreateForOthers={canCreateForOthers}
             barbers={barbers}
             preselectedTime={preselectedTime}
@@ -314,7 +332,7 @@ const Agenda = () => {
         )}
 
         {agendaLayout === 'team' ? (
-          <div key="team" className="animate-fade-in">
+          <div key="team">
             <TeamAgendaView
               barbers={barbers}
               barbershop={barbershop}
@@ -328,7 +346,7 @@ const Agenda = () => {
             />
           </div>
         ) : (
-          <div key="classic" className="animate-fade-in space-y-1.5">
+          <div key="classic" className="space-y-1.5">
             <AgendaHeader
               selectedDate={selectedDate}
               viewMode={viewMode}
@@ -378,9 +396,9 @@ const Agenda = () => {
 
                 <HolidayBanner date={selectedDate} />
 
-                <div className="animate-fade-in" style={{ animationDelay: '0.16s' }}>
+                <div>
                   <AgendaSlotGrid
-                    loading={loading || availabilityLoading}
+                    loading={(loading && appointments.length === 0) || (availabilityLoading && daySlots.length === 0)}
                     isDayClosed={isDayClosed}
                     isToday={isToday}
                     selectedDate={selectedDate}
@@ -436,7 +454,7 @@ const Agenda = () => {
             } : null,
           } : null}
           onCompleted={() => {
-            fetchAppointments();
+            scheduleAgendaRefresh(false);
             setDashboardRefreshKey((k) => k + 1);
           }}
         />
@@ -445,7 +463,7 @@ const Agenda = () => {
           appointment={selectedAppointment}
           open={showEditDialog}
           onOpenChange={setShowEditDialog}
-          onSuccess={fetchAppointments}
+          onSuccess={() => scheduleAgendaRefresh(true)}
           isMaster={isMaster}
         />
 
@@ -456,7 +474,7 @@ const Agenda = () => {
             barber={selectedBarber || barber!}
             selectedDate={selectedDate}
             preselectedTime={blockTime}
-            onSuccess={() => { fetchAppointments(); refetchAvailability(); }}
+            onSuccess={() => scheduleAgendaRefresh(true)}
           />
         )}
 
