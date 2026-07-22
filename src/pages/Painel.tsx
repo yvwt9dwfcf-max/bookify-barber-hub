@@ -1,5 +1,4 @@
 import { useEffect, useState, useCallback, Suspense } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 import { useBarber } from '@/hooks/useBarber';
 import { useUserRole } from '@/hooks/useUserRole';
@@ -428,50 +427,40 @@ const Painel = () => {
       {/* Main Content */}
       <main className="lg:ml-[270px] pt-[calc(64px+env(safe-area-inset-top))] lg:pt-0 min-h-screen">
         <div className="p-3 md:p-5 lg:p-8 max-w-6xl">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={location.pathname}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.18, ease: [0.25, 0.1, 0.25, 1] as [number, number, number, number] }}
-            >
-              {/* Payment pending warning banner */}
-              {barbershop?.subscription_status === 'payment_pending' && (
-                <div className="mb-4 flex items-center gap-3 p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-sm">
-                  <AlertTriangle className="h-5 w-5 text-destructive shrink-0" />
-                  <div>
-                    <p className="font-medium text-destructive">Problema no pagamento</p>
-                    <p className="text-muted-foreground text-xs mt-0.5">
-                      Não conseguimos cobrar sua assinatura. Atualize seu método de pagamento para evitar o bloqueio da conta.
-                    </p>
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    className="shrink-0 ml-auto"
-                    onClick={() => navigate('/painel/assinatura')}
-                  >
-                    Resolver
-                  </Button>
-                </div>
-              )}
-              <Suspense fallback={
-                <div className="space-y-4 py-6">
-                  <div className="h-8 w-48 rounded-lg bg-muted/40 animate-pulse" />
-                  <div className="h-4 w-72 rounded bg-muted/30 animate-pulse" />
-                  <div className="grid grid-cols-3 gap-3 pt-2">
-                    {[0,1,2].map(i => <div key={i} className="h-20 rounded-xl bg-muted/30 animate-pulse" />)}
-                  </div>
-                  <div className="space-y-2 pt-2">
-                    {[0,1,2,3].map(i => <div key={i} className="h-14 rounded-xl bg-muted/20 animate-pulse" />)}
-                  </div>
-                </div>
-              }>
-                <Outlet context={{ barber, barbershop, isMaster, refetchRole }} />
-              </Suspense>
-            </motion.div>
-          </AnimatePresence>
+          {/* Payment pending warning banner */}
+          {barbershop?.subscription_status === 'payment_pending' && (
+            <div className="mb-4 flex items-center gap-3 p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-sm">
+              <AlertTriangle className="h-5 w-5 text-destructive shrink-0" />
+              <div>
+                <p className="font-medium text-destructive">Problema no pagamento</p>
+                <p className="text-muted-foreground text-xs mt-0.5">
+                  Não conseguimos cobrar sua assinatura. Atualize seu método de pagamento para evitar o bloqueio da conta.
+                </p>
+              </div>
+              <Button
+                size="sm"
+                variant="destructive"
+                className="shrink-0 ml-auto"
+                onClick={() => navigate('/painel/assinatura')}
+              >
+                Resolver
+              </Button>
+            </div>
+          )}
+          <Suspense fallback={
+            <div className="space-y-4 py-6">
+              <div className="h-8 w-48 rounded-lg bg-muted/40 animate-pulse" />
+              <div className="h-4 w-72 rounded bg-muted/30 animate-pulse" />
+              <div className="grid grid-cols-3 gap-3 pt-2">
+                {[0,1,2].map(i => <div key={i} className="h-20 rounded-xl bg-muted/30 animate-pulse" />)}
+              </div>
+              <div className="space-y-2 pt-2">
+                {[0,1,2,3].map(i => <div key={i} className="h-14 rounded-xl bg-muted/20 animate-pulse" />)}
+              </div>
+            </div>
+          }>
+            <Outlet context={{ barber, barbershop, isMaster, refetchRole }} />
+          </Suspense>
         </div>
       </main>
 
