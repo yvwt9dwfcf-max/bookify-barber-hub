@@ -164,12 +164,25 @@ const Agenda = () => {
 
   const fetchRef = useRef(fetchAppointments);
   const refetchAvailabilityRef = useRef(refetchAvailability);
+  const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => { fetchRef.current = fetchAppointments; }, [fetchAppointments]);
   useEffect(() => { refetchAvailabilityRef.current = refetchAvailability; }, [refetchAvailability]);
 
+  const scheduleAgendaRefresh = useCallback((includeAvailability = false) => {
+    if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
+    refreshTimerRef.current = setTimeout(() => {
+      fetchRef.current();
+      if (includeAvailability) refetchAvailabilityRef.current();
+    }, 120);
+  }, []);
+
+  useEffect(() => () => {
+    if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
+  }, []);
+
   const handleNewAppointment = useCallback(() => {
-    fetchRef.current();
-    refetchAvailabilityRef.current();
+    scheduleAgendaRefresh(true);
+  }, [scheduleAgendaRefresh]);
   }, []);
 
   useRealtimeAppointments({ barberId: selectedBarberId || undefined, onNewAppointment: handleNewAppointment });
@@ -195,7 +208,7 @@ const Agenda = () => {
     const { error } = await supabase.from('appointments').delete().eq('id', id);
     if (error) { toast.error('Erro ao excluir agendamento'); throw error; }
     toast.success('Agendamento excluído');
-    fetchAppointments();
+    scheduleAgendaRefresh(true);
   };
 
   const handleStatusChange = async (id: string, status: 'confirmed' | 'completed' | 'cancelled') => {
@@ -212,7 +225,7 @@ const Agenda = () => {
       }
     }
     toast.success('Status atualizado');
-    fetchAppointments();
+    scheduleAgendaRefresh(false);
     setDashboardRefreshKey(k => k + 1);
   };
 
@@ -311,7 +324,7 @@ const Agenda = () => {
             }}
             barber={canCreateForOthers ? (barbers.find(b => b.id === preselectedBarberId) || selectedBarber!) : barber!}
             selectedDate={selectedDate}
-            onSuccess={() => { fetchAppointments(); refetchAvailability(); setDashboardRefreshKey(k => k + 1); }}
+            onSuccess={() => { scheduleAgendaRefresh(true); setDashboardRefreshKey(k => k + 1); }}
             canCreateForOthers={canCreateForOthers}
             barbers={barbers}
             preselectedTime={preselectedTime}
@@ -442,7 +455,7 @@ const Agenda = () => {
             } : null,
           } : null}
           onCompleted={() => {
-            fetchAppointments();
+            scheduleAgendaRefresh(false);
             setDashboardRefreshKey((k) => k + 1);
           }}
         />
@@ -451,7 +464,7 @@ const Agenda = () => {
           appointment={selectedAppointment}
           open={showEditDialog}
           onOpenChange={setShowEditDialog}
-          onSuccess={fetchAppointments}
+          onSuccess={() => scheduleAgendaRefresh(true)}
           isMaster={isMaster}
         />
 
@@ -462,7 +475,7 @@ const Agenda = () => {
             barber={selectedBarber || barber!}
             selectedDate={selectedDate}
             preselectedTime={blockTime}
-            onSuccess={() => { fetchAppointments(); refetchAvailability(); }}
+            onSuccess={() => scheduleAgendaRefresh(true)}
           />
         )}
 
