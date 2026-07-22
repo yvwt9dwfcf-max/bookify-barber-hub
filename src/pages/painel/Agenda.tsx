@@ -99,6 +99,7 @@ const Agenda = () => {
   const [comandaAppointment, setComandaAppointment] = useState<Appointment | null>(null);
   const [selectedBarberId, setSelectedBarberId] = useState<string | null>(null);
   const [displayMonth, setDisplayMonth] = useState(() => startOfMonth(getTodayLocalDate()));
+  const appointmentsRequestIdRef = useRef(0);
 
   const selectedBarber = barbers.find(b => b.id === selectedBarberId) || barber;
 
@@ -136,6 +137,7 @@ const Agenda = () => {
 
   const fetchAppointments = useCallback(async () => {
     if (!selectedBarberId) return;
+    const requestId = ++appointmentsRequestIdRef.current;
     try {
       const startOfSelectedDay = startOfDay(selectedDate);
       const endOfSelectedDay = addDays(startOfSelectedDay, 1);
@@ -147,12 +149,16 @@ const Agenda = () => {
         .lt('start_time', endOfSelectedDay.toISOString())
         .order('start_time');
       if (error) throw error;
+      if (requestId !== appointmentsRequestIdRef.current) return;
       setAppointments((data as Appointment[]) || []);
     } catch (error) {
+      if (requestId !== appointmentsRequestIdRef.current) return;
       console.error('Erro ao buscar agendamentos:', error);
       toast.error('Erro ao carregar agendamentos');
     } finally {
-      setLoading(false);
+      if (requestId === appointmentsRequestIdRef.current) {
+        setLoading(false);
+      }
     }
   }, [selectedBarberId, selectedDate]);
 
@@ -246,9 +252,9 @@ const Agenda = () => {
   }, [selectedDate, getOpeningHoursForDay]);
 
   // --- Loading skeleton ---
-  if (loading && !selectedBarberId) {
+  if (loading && appointments.length === 0 && !selectedBarberId) {
     return (
-      <div className="space-y-4 pb-24 animate-page-enter">
+      <div className="space-y-4 pb-24">
         <PremiumSkeleton className="h-12 w-3/4" />
         <PremiumSkeleton className="h-24 rounded-xl" />
         <SkeletonStats />
@@ -261,7 +267,7 @@ const Agenda = () => {
 
   return (
     <Suspense fallback={fallback}>
-      <div className="space-y-1.5 pb-20 animate-page-enter">
+      <div className="space-y-1.5 pb-20">
         <GreetingHeader barber={barber} barbershop={barbershop} isMaster={isMaster} selectedDate={selectedDate} refreshKey={dashboardRefreshKey} />
 
         {/* Layout selector — Clássica / Equipe */}
@@ -314,7 +320,7 @@ const Agenda = () => {
         )}
 
         {agendaLayout === 'team' ? (
-          <div key="team" className="animate-fade-in">
+          <div key="team">
             <TeamAgendaView
               barbers={barbers}
               barbershop={barbershop}
@@ -328,7 +334,7 @@ const Agenda = () => {
             />
           </div>
         ) : (
-          <div key="classic" className="animate-fade-in space-y-1.5">
+          <div key="classic" className="space-y-1.5">
             <AgendaHeader
               selectedDate={selectedDate}
               viewMode={viewMode}
@@ -378,9 +384,9 @@ const Agenda = () => {
 
                 <HolidayBanner date={selectedDate} />
 
-                <div className="animate-fade-in" style={{ animationDelay: '0.16s' }}>
+                <div>
                   <AgendaSlotGrid
-                    loading={loading || availabilityLoading}
+                    loading={(loading && appointments.length === 0) || (availabilityLoading && daySlots.length === 0)}
                     isDayClosed={isDayClosed}
                     isToday={isToday}
                     selectedDate={selectedDate}
