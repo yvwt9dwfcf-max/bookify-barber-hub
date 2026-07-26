@@ -15,24 +15,94 @@ const ResetPassword = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [isRecovery, setIsRecovery] = useState(false);
+  const [checking, setChecking] = useState(true);
+  const [linkError, setLinkError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Listen for PASSWORD_RECOVERY event
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') {
+    let active = true;
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!active) return;
+      if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && session)) {
         setIsRecovery(true);
+        setChecking(false);
       }
     });
 
-    // Check hash for recovery token
-    const hash = window.location.hash;
-    if (hash && hash.includes('type=recovery')) {
-      setIsRecovery(true);
-    }
+    const resolveRecovery = async () => {
+      const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+      const query = new URLSearchParams(window.location.search);
 
-    return () => subscription.unsubscribe();
+      // Erro explícito vindo do link (expirado / já usado)
+      const errDesc = hash.get('error_description') || query.get('error_description');
+      if (errDesc) {
+        if (!active) return;
+        setLinkError(decodeURIComponent(errDesc));
+        setChecking(false);
+        return;
+      }
+
+      try {
+        // 1) Fluxo hash (implicit): access_token + refresh_token
+        const accessToken = hash.get('access_token');
+        const refreshToken = hash.get('refresh_token');
+        if (accessToken && refreshToken) {
+          const { error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+          if (error) throw error;
+          if (!active) return;
+          setIsRecovery(true);
+          setChecking(false);
+          return;
+        }
+
+        // 2) Fluxo PKCE: ?code=
+        const code = query.get('code');
+        if (code) {
+          const { error } = await supabase.auth.exchangeCodeForSession(code);
+          if (error) throw error;
+          if (!active) return;
+          setIsRecovery(true);
+          setChecking(false);
+          return;
+        }
+
+        // 3) Fluxo token_hash: ?token_hash=...&type=recovery
+        const tokenHash = query.get('token_hash') || hash.get('token_hash');
+        if (tokenHash) {
+          const { error } = await supabase.auth.verifyOtp({ type: 'recovery', token_hash: tokenHash });
+          if (error) throw error;
+          if (!active) return;
+          setIsRecovery(true);
+          setChecking(false);
+          return;
+        }
+
+        // 4) Sessão já ativa (detectSessionInUrl processou antes)
+        const { data } = await supabase.auth.getSession();
+        if (!active) return;
+        if (data.session) {
+          setIsRecovery(true);
+        }
+        setChecking(false);
+      } catch (err) {
+        if (!active) return;
+        setLinkError(err instanceof Error ? err.message : 'Link inválido');
+        setChecking(false);
+      }
+    };
+
+    void resolveRecovery();
+
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
   }, []);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,6 +163,14 @@ const ResetPassword = () => {
     );
   }
 
+  if (checking) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
   if (!isRecovery) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
@@ -106,8 +184,9 @@ const ResetPassword = () => {
             <CardContent className="pt-8 pb-8">
               <h2 className="text-xl font-semibold mb-2">Link inválido</h2>
               <p className="text-muted-foreground mb-6">
-                Este link de recuperação de senha é inválido ou já expirou. Solicite um novo link.
+                {linkError || 'Este link de recuperação de senha é inválido ou já expirou. Solicite um novo link.'}
               </p>
+
               <Button asChild variant="outline">
                 <Link to="/esqueci-senha">Solicitar novo link</Link>
               </Button>
