@@ -163,6 +163,14 @@ const ResetPassword = () => {
     );
   }
 
+  if (checking) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
   if (!isRecovery) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
@@ -176,8 +184,9 @@ const ResetPassword = () => {
             <CardContent className="pt-8 pb-8">
               <h2 className="text-xl font-semibold mb-2">Link inválido</h2>
               <p className="text-muted-foreground mb-6">
-                Este link de recuperação de senha é inválido ou já expirou. Solicite um novo link.
+                {linkError || 'Este link de recuperação de senha é inválido ou já expirou. Solicite um novo link.'}
               </p>
+
               <Button asChild variant="outline">
                 <Link to="/esqueci-senha">Solicitar novo link</Link>
               </Button>
