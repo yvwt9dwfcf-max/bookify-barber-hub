@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Loader2, Building2, Crown, Link2, Copy, CircleCheck as CheckCircle, CreditCard, ChevronRight, Sun, Moon, TriangleAlert as AlertTriangle, Trash2, Camera, CircleHelp as HelpCircle, Mail, Clock, Lock } from 'lucide-react';
+import { Loader2, Building2, Crown, Link2, Copy, CircleCheck as CheckCircle, CreditCard, ChevronRight, Sun, Moon, TriangleAlert as AlertTriangle, Trash2, Camera, CircleHelp as HelpCircle, Mail, Clock, Lock, Phone, Timer, CalendarX2, Share2, UsersRound } from 'lucide-react';
 import { ChangePasswordDialog } from '@/components/painel/ChangePasswordDialog';
 import { toast } from 'sonner';
 import { Switch } from '@/components/ui/switch';
