@@ -1,8 +1,8 @@
-# Welcome to your Lovable project
+# Bookify — Gestão para Barbearias
 
 ## Project info
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+**URL**: https://lovable.dev/projects/281ddf3b-1cf7-40cb-aed2-7dd0810b4713
 
 ## How can I edit this code?
 
@@ -10,7 +10,7 @@ There are several ways of editing your application.
 
 **Use Lovable**
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+Simply visit the [Lovable Project](https://lovable.dev/projects/281ddf3b-1cf7-40cb-aed2-7dd0810b4713) and start prompting.
 
 Changes made via Lovable will be committed automatically to this repo.
 
@@ -62,7 +62,7 @@ This project is built with:
 
 ## How can I deploy this project?
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+Simply open [Lovable](https://lovable.dev/projects/281ddf3b-1cf7-40cb-aed2-7dd0810b4713) and click on Share -> Publish.
 
 ## Can I connect a custom domain to my Lovable project?
 
