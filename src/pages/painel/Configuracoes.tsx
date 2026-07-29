@@ -341,7 +341,19 @@ const Configuracoes = () => {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="phone" className="text-xs">Telefone</Label>
+              <Label htmlFor="shop-phone" className="text-xs">Telefone da barbearia</Label>
+              <Input
+                id="shop-phone"
+                placeholder="(00) 00000-0000"
+                value={barbershopPhoneAutoSave.value}
+                onChange={(e) => barbershopPhoneAutoSave.setValue(formatPhone(e.target.value))}
+                onBlur={barbershopPhoneAutoSave.onBlur}
+              />
+              <p className="text-[11px] text-muted-foreground">Contato usado para falar com a barbearia</p>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="phone" className="text-xs">Seu telefone</Label>
               <Input
                 id="phone"
                 placeholder="(00) 00000-0000"
@@ -350,9 +362,52 @@ const Configuracoes = () => {
                 onBlur={barberPhoneAutoSave.onBlur}
               />
             </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs">E-mail da conta</Label>
+              <Input value={barber?.email || ''} readOnly disabled className="opacity-60" />
+            </div>
           </div>
         </section>
       )}
+
+      {/* Atalhos rápidos */}
+      <section className="space-y-4">
+        <div>
+          <h2 className="text-lg font-semibold flex items-center gap-2">
+            <SlidersHorizontalIcon />
+            Atalhos
+          </h2>
+          <p className="text-xs text-muted-foreground">Configurações que ficam em outras telas</p>
+        </div>
+
+        <div className="rounded-lg border divide-y">
+          {[
+            { icon: Timer, label: 'Horários de funcionamento', desc: 'Dias, turnos e intervalos', path: '/painel/horarios' },
+            { icon: CalendarX2, label: 'Bloqueios de agenda', desc: 'Folgas e horários indisponíveis', path: '/painel/bloqueios' },
+            ...(isMaster
+              ? [
+                  { icon: UsersRound, label: 'Equipe', desc: 'Profissionais e permissões', path: '/painel/barbeiros' },
+                  { icon: Share2, label: 'Perfil público', desc: 'Página de agendamento online', path: '/painel/perfil-publico' },
+                ]
+              : []),
+          ].map((item) => (
+            <div
+              key={item.path}
+              className="flex items-center gap-3 p-4 cursor-pointer hover:bg-accent/50 transition-colors"
+              onClick={() => navigate(item.path)}
+            >
+              <item.icon className="h-4 w-4 text-muted-foreground shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium">{item.label}</p>
+                <p className="text-xs text-muted-foreground truncate">{item.desc}</p>
+              </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            </div>
+          ))}
+        </div>
+      </section>
+
 
       {/* Seção Perfil (Funcionário) */}
       {!isMaster && (
