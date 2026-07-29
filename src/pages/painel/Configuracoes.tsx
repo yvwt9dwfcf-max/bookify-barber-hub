@@ -106,15 +106,33 @@ const Configuracoes = () => {
     onSave: saveBarberPhone,
   });
 
+  // Auto-save: barbershop phone (contato público)
+  const saveBarbershopPhone = useCallback(async (val: string) => {
+    if (!barbershop) return;
+    const { error } = await supabase
+      .from('barbershops')
+      .update({ phone: val || null })
+      .eq('id', barbershop.id);
+    if (error) throw error;
+    await refetchUserRole();
+    await refetchRole();
+  }, [barbershop, refetchUserRole, refetchRole]);
+
+  const barbershopPhoneAutoSave = useAutoSave({
+    serverValue: barbershop?.phone || '',
+    onSave: saveBarbershopPhone,
+  });
+
   // Combined auto-save status for the indicator
   const combinedStatus = 
-    barbershopNameAutoSave.status === 'saving' || barberNameAutoSave.status === 'saving' || barberPhoneAutoSave.status === 'saving'
+    [barbershopNameAutoSave.status, barberNameAutoSave.status, barberPhoneAutoSave.status, barbershopPhoneAutoSave.status].includes('saving')
       ? 'saving' as const
-      : barbershopNameAutoSave.status === 'error' || barberNameAutoSave.status === 'error' || barberPhoneAutoSave.status === 'error'
+      : [barbershopNameAutoSave.status, barberNameAutoSave.status, barberPhoneAutoSave.status, barbershopPhoneAutoSave.status].includes('error')
         ? 'error' as const
-        : barbershopNameAutoSave.status === 'saved' || barberNameAutoSave.status === 'saved' || barberPhoneAutoSave.status === 'saved'
+        : [barbershopNameAutoSave.status, barberNameAutoSave.status, barberPhoneAutoSave.status, barbershopPhoneAutoSave.status].includes('saved')
           ? 'saved' as const
           : 'idle' as const;
+
 
   const barbershopSlug = barbershop?.slug || barbershop?.id || '';
   const publicLinkReal = barbershop
