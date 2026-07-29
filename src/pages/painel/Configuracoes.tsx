@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Loader2, Building2, Crown, Link2, Copy, CircleCheck as CheckCircle, CreditCard, ChevronRight, Sun, Moon, TriangleAlert as AlertTriangle, Trash2, Camera, CircleHelp as HelpCircle, Mail, Clock, Lock } from 'lucide-react';
+import { SlidersHorizontal, Loader2, Building2, Crown, Link2, Copy, CircleCheck as CheckCircle, CreditCard, ChevronRight, Sun, Moon, TriangleAlert as AlertTriangle, Trash2, Camera, CircleHelp as HelpCircle, Mail, Clock, Lock, Timer, CalendarX2, Share2, UsersRound } from 'lucide-react';
 import { ChangePasswordDialog } from '@/components/painel/ChangePasswordDialog';
 import { toast } from 'sonner';
 import { Switch } from '@/components/ui/switch';
@@ -106,15 +106,33 @@ const Configuracoes = () => {
     onSave: saveBarberPhone,
   });
 
+  // Auto-save: barbershop phone (contato público)
+  const saveBarbershopPhone = useCallback(async (val: string) => {
+    if (!barbershop) return;
+    const { error } = await supabase
+      .from('barbershops')
+      .update({ phone: val || null })
+      .eq('id', barbershop.id);
+    if (error) throw error;
+    await refetchUserRole();
+    await refetchRole();
+  }, [barbershop, refetchUserRole, refetchRole]);
+
+  const barbershopPhoneAutoSave = useAutoSave({
+    serverValue: barbershop?.phone || '',
+    onSave: saveBarbershopPhone,
+  });
+
   // Combined auto-save status for the indicator
   const combinedStatus = 
-    barbershopNameAutoSave.status === 'saving' || barberNameAutoSave.status === 'saving' || barberPhoneAutoSave.status === 'saving'
+    [barbershopNameAutoSave.status, barberNameAutoSave.status, barberPhoneAutoSave.status, barbershopPhoneAutoSave.status].includes('saving')
       ? 'saving' as const
-      : barbershopNameAutoSave.status === 'error' || barberNameAutoSave.status === 'error' || barberPhoneAutoSave.status === 'error'
+      : [barbershopNameAutoSave.status, barberNameAutoSave.status, barberPhoneAutoSave.status, barbershopPhoneAutoSave.status].includes('error')
         ? 'error' as const
-        : barbershopNameAutoSave.status === 'saved' || barberNameAutoSave.status === 'saved' || barberPhoneAutoSave.status === 'saved'
+        : [barbershopNameAutoSave.status, barberNameAutoSave.status, barberPhoneAutoSave.status, barbershopPhoneAutoSave.status].includes('saved')
           ? 'saved' as const
           : 'idle' as const;
+
 
   const barbershopSlug = barbershop?.slug || barbershop?.id || '';
   const publicLinkReal = barbershop
@@ -323,7 +341,19 @@ const Configuracoes = () => {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="phone" className="text-xs">Telefone</Label>
+              <Label htmlFor="shop-phone" className="text-xs">Telefone da barbearia</Label>
+              <Input
+                id="shop-phone"
+                placeholder="(00) 00000-0000"
+                value={barbershopPhoneAutoSave.value}
+                onChange={(e) => barbershopPhoneAutoSave.setValue(formatPhone(e.target.value))}
+                onBlur={barbershopPhoneAutoSave.onBlur}
+              />
+              <p className="text-[11px] text-muted-foreground">Contato usado para falar com a barbearia</p>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="phone" className="text-xs">Seu telefone</Label>
               <Input
                 id="phone"
                 placeholder="(00) 00000-0000"
@@ -332,9 +362,15 @@ const Configuracoes = () => {
                 onBlur={barberPhoneAutoSave.onBlur}
               />
             </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs">E-mail da conta</Label>
+              <Input value={barber?.email || ''} readOnly disabled className="opacity-60" />
+            </div>
           </div>
         </section>
       )}
+
 
       {/* Seção Perfil (Funcionário) */}
       {!isMaster && (
@@ -385,6 +421,43 @@ const Configuracoes = () => {
           </div>
         </section>
       )}
+
+      {/* Atalhos rápidos */}
+      <section className="space-y-4">
+        <div>
+          <h2 className="text-lg font-semibold flex items-center gap-2">
+            <SlidersHorizontal className="h-4 w-4" />
+            Atalhos
+          </h2>
+          <p className="text-xs text-muted-foreground">Configurações que ficam em outras telas</p>
+        </div>
+
+        <div className="rounded-lg border divide-y">
+          {[
+            { icon: Timer, label: 'Horários de funcionamento', desc: 'Dias, turnos e intervalos', path: '/painel/horarios' },
+            { icon: CalendarX2, label: 'Bloqueios de agenda', desc: 'Folgas e horários indisponíveis', path: '/painel/bloqueios' },
+            ...(isMaster
+              ? [
+                  { icon: UsersRound, label: 'Equipe', desc: 'Profissionais e permissões', path: '/painel/barbeiros' },
+                  { icon: Share2, label: 'Perfil público', desc: 'Página de agendamento online', path: '/painel/perfil-publico' },
+                ]
+              : []),
+          ].map((item) => (
+            <div
+              key={item.path}
+              className="flex items-center gap-3 p-4 cursor-pointer hover:bg-accent/50 transition-colors"
+              onClick={() => navigate(item.path)}
+            >
+              <item.icon className="h-4 w-4 text-muted-foreground shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium">{item.label}</p>
+                <p className="text-xs text-muted-foreground truncate">{item.desc}</p>
+              </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            </div>
+          ))}
+        </div>
+      </section>
 
       {/* Seção Assinatura */}
       {isMaster && (
