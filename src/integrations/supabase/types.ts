@@ -200,6 +200,7 @@ export type Database = {
           is_active: boolean
           name: string
           phone: string | null
+          photo_url: string | null
           updated_at: string
         }
         Insert: {
@@ -211,6 +212,7 @@ export type Database = {
           is_active?: boolean
           name: string
           phone?: string | null
+          photo_url?: string | null
           updated_at?: string
         }
         Update: {
@@ -222,6 +224,7 @@ export type Database = {
           is_active?: boolean
           name?: string
           phone?: string | null
+          photo_url?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -234,38 +237,91 @@ export type Database = {
           },
         ]
       }
+      barbershop_gallery: {
+        Row: {
+          barbershop_id: string
+          created_at: string
+          id: string
+          image_url: string
+          sort_order: number
+        }
+        Insert: {
+          barbershop_id: string
+          created_at?: string
+          id?: string
+          image_url: string
+          sort_order?: number
+        }
+        Update: {
+          barbershop_id?: string
+          created_at?: string
+          id?: string
+          image_url?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "barbershop_gallery_barbershop_id_fkey"
+            columns: ["barbershop_id"]
+            isOneToOne: false
+            referencedRelation: "barbershops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       barbershops: {
         Row: {
+          city: string | null
           closing_time: string | null
           created_at: string
+          google_maps_url: string | null
           id: string
           max_barbers: number
           monthly_goal: number | null
           name: string
+          onboarding_completed: boolean
+          phone: string | null
+          photo_url: string | null
           plan: Database["public"]["Enums"]["plan_type"]
           slug: string | null
+          trial_ends_at: string | null
+          trial_started_at: string | null
           updated_at: string
         }
         Insert: {
+          city?: string | null
           closing_time?: string | null
           created_at?: string
+          google_maps_url?: string | null
           id?: string
           max_barbers?: number
           monthly_goal?: number | null
           name: string
+          onboarding_completed?: boolean
+          phone?: string | null
+          photo_url?: string | null
           plan?: Database["public"]["Enums"]["plan_type"]
           slug?: string | null
+          trial_ends_at?: string | null
+          trial_started_at?: string | null
           updated_at?: string
         }
         Update: {
+          city?: string | null
           closing_time?: string | null
           created_at?: string
+          google_maps_url?: string | null
           id?: string
           max_barbers?: number
           monthly_goal?: number | null
           name?: string
+          onboarding_completed?: boolean
+          phone?: string | null
+          photo_url?: string | null
           plan?: Database["public"]["Enums"]["plan_type"]
           slug?: string | null
+          trial_ends_at?: string | null
+          trial_started_at?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -369,6 +425,74 @@ export type Database = {
           },
         ]
       }
+      public_profiles: {
+        Row: {
+          barbershop_id: string
+          cep: string | null
+          cidade: string | null
+          created_at: string
+          descricao: string | null
+          endereco: string | null
+          estado: string | null
+          foto_capa_url: string | null
+          id: string
+          instagram_url: string | null
+          latitude: number | null
+          logo_url: string | null
+          longitude: number | null
+          numero: string | null
+          slug_personalizado: string | null
+          updated_at: string
+          whatsapp_numero: string | null
+        }
+        Insert: {
+          barbershop_id: string
+          cep?: string | null
+          cidade?: string | null
+          created_at?: string
+          descricao?: string | null
+          endereco?: string | null
+          estado?: string | null
+          foto_capa_url?: string | null
+          id?: string
+          instagram_url?: string | null
+          latitude?: number | null
+          logo_url?: string | null
+          longitude?: number | null
+          numero?: string | null
+          slug_personalizado?: string | null
+          updated_at?: string
+          whatsapp_numero?: string | null
+        }
+        Update: {
+          barbershop_id?: string
+          cep?: string | null
+          cidade?: string | null
+          created_at?: string
+          descricao?: string | null
+          endereco?: string | null
+          estado?: string | null
+          foto_capa_url?: string | null
+          id?: string
+          instagram_url?: string | null
+          latitude?: number | null
+          logo_url?: string | null
+          longitude?: number | null
+          numero?: string | null
+          slug_personalizado?: string | null
+          updated_at?: string
+          whatsapp_numero?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "public_profiles_barbershop_id_fkey"
+            columns: ["barbershop_id"]
+            isOneToOne: true
+            referencedRelation: "barbershops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       services: {
         Row: {
           active: boolean
@@ -377,6 +501,7 @@ export type Database = {
           created_at: string
           duration_minutes: number
           id: string
+          is_global: boolean
           name: string
           price: number
           updated_at: string
@@ -388,6 +513,7 @@ export type Database = {
           created_at?: string
           duration_minutes?: number
           id?: string
+          is_global?: boolean
           name: string
           price?: number
           updated_at?: string
@@ -399,6 +525,7 @@ export type Database = {
           created_at?: string
           duration_minutes?: number
           id?: string
+          is_global?: boolean
           name?: string
           price?: number
           updated_at?: string
@@ -508,6 +635,7 @@ export type Database = {
         Args: { _barbershop_id: string }
         Returns: number
       }
+      generate_slug: { Args: { input_name: string }; Returns: string }
       get_barber_permissions: {
         Args: { _barber_id: string }
         Returns: {
@@ -517,6 +645,7 @@ export type Database = {
         }[]
       }
       get_current_barber_id: { Args: never; Returns: string }
+      get_plan_limit: { Args: { plan_name: string }; Returns: number }
       get_user_barbershop_id: { Args: { _user_id: string }; Returns: string }
       get_user_role: {
         Args: { _user_id: string }
