@@ -119,6 +119,77 @@ export type Database = {
           },
         ]
       }
+      barber_services: {
+        Row: {
+          barber_id: string
+          created_at: string
+          id: string
+          service_id: string
+        }
+        Insert: {
+          barber_id: string
+          created_at?: string
+          id?: string
+          service_id: string
+        }
+        Update: {
+          barber_id?: string
+          created_at?: string
+          id?: string
+          service_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "barber_services_barber_id_fkey"
+            columns: ["barber_id"]
+            isOneToOne: false
+            referencedRelation: "barbers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "barber_services_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      barber_whatsapp: {
+        Row: {
+          barber_id: string
+          created_at: string
+          id: string
+          message: string | null
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          barber_id: string
+          created_at?: string
+          id?: string
+          message?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          barber_id?: string
+          created_at?: string
+          id?: string
+          message?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "barber_whatsapp_barber_id_fkey"
+            columns: ["barber_id"]
+            isOneToOne: true
+            referencedRelation: "barbers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       barbers: {
         Row: {
           auth_id: string
@@ -165,27 +236,33 @@ export type Database = {
       }
       barbershops: {
         Row: {
+          closing_time: string | null
           created_at: string
           id: string
           max_barbers: number
+          monthly_goal: number | null
           name: string
           plan: Database["public"]["Enums"]["plan_type"]
           slug: string | null
           updated_at: string
         }
         Insert: {
+          closing_time?: string | null
           created_at?: string
           id?: string
           max_barbers?: number
+          monthly_goal?: number | null
           name: string
           plan?: Database["public"]["Enums"]["plan_type"]
           slug?: string | null
           updated_at?: string
         }
         Update: {
+          closing_time?: string | null
           created_at?: string
           id?: string
           max_barbers?: number
+          monthly_goal?: number | null
           name?: string
           plan?: Database["public"]["Enums"]["plan_type"]
           slug?: string | null
@@ -242,6 +319,8 @@ export type Database = {
         Row: {
           barber_id: string
           barbershop_id: string | null
+          break_end: string | null
+          break_start: string | null
           created_at: string
           day_of_week: number
           end_time: string
@@ -252,6 +331,8 @@ export type Database = {
         Insert: {
           barber_id: string
           barbershop_id?: string | null
+          break_end?: string | null
+          break_start?: string | null
           created_at?: string
           day_of_week: number
           end_time: string
@@ -262,6 +343,8 @@ export type Database = {
         Update: {
           barber_id?: string
           barbershop_id?: string | null
+          break_end?: string | null
+          break_start?: string | null
           created_at?: string
           day_of_week?: number
           end_time?: string
@@ -364,6 +447,44 @@ export type Database = {
             foreignKeyName: "user_roles_barbershop_id_fkey"
             columns: ["barbershop_id"]
             isOneToOne: false
+            referencedRelation: "barbershops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      whatsapp_settings: {
+        Row: {
+          barbershop_id: string
+          created_at: string
+          global_message: string | null
+          global_phone: string | null
+          id: string
+          mode: string
+          updated_at: string
+        }
+        Insert: {
+          barbershop_id: string
+          created_at?: string
+          global_message?: string | null
+          global_phone?: string | null
+          id?: string
+          mode?: string
+          updated_at?: string
+        }
+        Update: {
+          barbershop_id?: string
+          created_at?: string
+          global_message?: string | null
+          global_phone?: string | null
+          id?: string
+          mode?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_settings_barbershop_id_fkey"
+            columns: ["barbershop_id"]
+            isOneToOne: true
             referencedRelation: "barbershops"
             referencedColumns: ["id"]
           },
