@@ -283,7 +283,12 @@ const MetasTab = ({ barbershop, isMaster }: { barbershop: any; isMaster: boolean
     mutationFn: async (payload: { field: 'monthly_goal' | 'products_monthly_goal'; value: number | null }) => {
       const { error } = await supabase
         .from('barbershops')
-        .update({ [payload.field]: payload.value } as Record<string, number | null>)
+        .update(
+          payload.field === 'monthly_goal'
+            ? { monthly_goal: payload.value }
+            : { products_monthly_goal: payload.value }
+        )
+
         .eq('id', barbershop.id);
       if (error) throw error;
     },
