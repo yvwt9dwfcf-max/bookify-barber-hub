@@ -81,6 +81,48 @@ export type Database = {
           },
         ]
       }
+      barber_commissions: {
+        Row: {
+          barber_id: string
+          barbershop_id: string
+          created_at: string
+          default_percentage: number
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          barber_id: string
+          barbershop_id: string
+          created_at?: string
+          default_percentage?: number
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          barber_id?: string
+          barbershop_id?: string
+          created_at?: string
+          default_percentage?: number
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "barber_commissions_barber_id_fkey"
+            columns: ["barber_id"]
+            isOneToOne: true
+            referencedRelation: "barbers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "barber_commissions_barbershop_id_fkey"
+            columns: ["barbershop_id"]
+            isOneToOne: false
+            referencedRelation: "barbershops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       barber_permissions: {
         Row: {
           barber_id: string
@@ -115,6 +157,45 @@ export type Database = {
             columns: ["barber_id"]
             isOneToOne: true
             referencedRelation: "barbers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      barber_service_photos: {
+        Row: {
+          barber_id: string
+          created_at: string
+          id: string
+          photo_url: string
+          service_id: string
+        }
+        Insert: {
+          barber_id: string
+          created_at?: string
+          id?: string
+          photo_url: string
+          service_id: string
+        }
+        Update: {
+          barber_id?: string
+          created_at?: string
+          id?: string
+          photo_url?: string
+          service_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "barber_service_photos_barber_id_fkey"
+            columns: ["barber_id"]
+            isOneToOne: false
+            referencedRelation: "barbers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "barber_service_photos_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
             referencedColumns: ["id"]
           },
         ]
@@ -198,6 +279,7 @@ export type Database = {
           email: string | null
           id: string
           is_active: boolean
+          monthly_goal: number | null
           name: string
           phone: string | null
           photo_url: string | null
@@ -210,6 +292,7 @@ export type Database = {
           email?: string | null
           id?: string
           is_active?: boolean
+          monthly_goal?: number | null
           name: string
           phone?: string | null
           photo_url?: string | null
@@ -222,6 +305,7 @@ export type Database = {
           email?: string | null
           id?: string
           is_active?: boolean
+          monthly_goal?: number | null
           name?: string
           phone?: string | null
           photo_url?: string | null
@@ -284,8 +368,11 @@ export type Database = {
           photo_url: string | null
           plan: Database["public"]["Enums"]["plan_type"]
           slug: string | null
+          subscription_active: boolean
+          subscription_status: string
           trial_ends_at: string | null
           trial_started_at: string | null
+          tutorial_completed: boolean
           updated_at: string
         }
         Insert: {
@@ -302,8 +389,11 @@ export type Database = {
           photo_url?: string | null
           plan?: Database["public"]["Enums"]["plan_type"]
           slug?: string | null
+          subscription_active?: boolean
+          subscription_status?: string
           trial_ends_at?: string | null
           trial_started_at?: string | null
+          tutorial_completed?: boolean
           updated_at?: string
         }
         Update: {
@@ -320,8 +410,11 @@ export type Database = {
           photo_url?: string | null
           plan?: Database["public"]["Enums"]["plan_type"]
           slug?: string | null
+          subscription_active?: boolean
+          subscription_status?: string
           trial_ends_at?: string | null
           trial_started_at?: string | null
+          tutorial_completed?: boolean
           updated_at?: string
         }
         Relationships: []
@@ -367,6 +460,281 @@ export type Database = {
             columns: ["barbershop_id"]
             isOneToOne: false
             referencedRelation: "barbershops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      commission_overrides: {
+        Row: {
+          barber_id: string
+          barbershop_id: string
+          created_at: string
+          id: string
+          percentage: number
+          service_id: string
+        }
+        Insert: {
+          barber_id: string
+          barbershop_id: string
+          created_at?: string
+          id?: string
+          percentage: number
+          service_id: string
+        }
+        Update: {
+          barber_id?: string
+          barbershop_id?: string
+          created_at?: string
+          id?: string
+          percentage?: number
+          service_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commission_overrides_barber_id_fkey"
+            columns: ["barber_id"]
+            isOneToOne: false
+            referencedRelation: "barbers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commission_overrides_barbershop_id_fkey"
+            columns: ["barbershop_id"]
+            isOneToOne: false
+            referencedRelation: "barbershops"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commission_overrides_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      expenses: {
+        Row: {
+          amount: number
+          barbershop_id: string
+          category: string
+          created_at: string
+          expense_date: string
+          id: string
+          is_recurring: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          barbershop_id: string
+          category?: string
+          created_at?: string
+          expense_date?: string
+          id?: string
+          is_recurring?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          barbershop_id?: string
+          category?: string
+          created_at?: string
+          expense_date?: string
+          id?: string
+          is_recurring?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expenses_barbershop_id_fkey"
+            columns: ["barbershop_id"]
+            isOneToOne: false
+            referencedRelation: "barbershops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      loyalty_cards: {
+        Row: {
+          barbershop_id: string
+          created_at: string
+          customer_name: string
+          customer_phone: string
+          id: string
+          total_points: number
+          total_visits: number
+          updated_at: string
+        }
+        Insert: {
+          barbershop_id: string
+          created_at?: string
+          customer_name: string
+          customer_phone: string
+          id?: string
+          total_points?: number
+          total_visits?: number
+          updated_at?: string
+        }
+        Update: {
+          barbershop_id?: string
+          created_at?: string
+          customer_name?: string
+          customer_phone?: string
+          id?: string
+          total_points?: number
+          total_visits?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loyalty_cards_barbershop_id_fkey"
+            columns: ["barbershop_id"]
+            isOneToOne: false
+            referencedRelation: "barbershops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      loyalty_config: {
+        Row: {
+          barbershop_id: string
+          created_at: string
+          goal_points: number
+          id: string
+          is_active: boolean
+          points_per_visit: number
+          reward_name: string
+          updated_at: string
+        }
+        Insert: {
+          barbershop_id: string
+          created_at?: string
+          goal_points?: number
+          id?: string
+          is_active?: boolean
+          points_per_visit?: number
+          reward_name?: string
+          updated_at?: string
+        }
+        Update: {
+          barbershop_id?: string
+          created_at?: string
+          goal_points?: number
+          id?: string
+          is_active?: boolean
+          points_per_visit?: number
+          reward_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loyalty_config_barbershop_id_fkey"
+            columns: ["barbershop_id"]
+            isOneToOne: true
+            referencedRelation: "barbershops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      loyalty_rewards: {
+        Row: {
+          barbershop_id: string
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          points_required: number
+        }
+        Insert: {
+          barbershop_id: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          points_required: number
+        }
+        Update: {
+          barbershop_id?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          points_required?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loyalty_rewards_barbershop_id_fkey"
+            columns: ["barbershop_id"]
+            isOneToOne: false
+            referencedRelation: "barbershops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      loyalty_transactions: {
+        Row: {
+          appointment_id: string | null
+          barbershop_id: string
+          created_at: string
+          description: string | null
+          id: string
+          loyalty_card_id: string
+          points: number
+          reward_id: string | null
+          type: string
+        }
+        Insert: {
+          appointment_id?: string | null
+          barbershop_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          loyalty_card_id: string
+          points: number
+          reward_id?: string | null
+          type: string
+        }
+        Update: {
+          appointment_id?: string | null
+          barbershop_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          loyalty_card_id?: string
+          points?: number
+          reward_id?: string | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loyalty_transactions_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loyalty_transactions_barbershop_id_fkey"
+            columns: ["barbershop_id"]
+            isOneToOne: false
+            referencedRelation: "barbershops"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loyalty_transactions_loyalty_card_id_fkey"
+            columns: ["loyalty_card_id"]
+            isOneToOne: false
+            referencedRelation: "loyalty_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loyalty_transactions_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "loyalty_rewards"
             referencedColumns: ["id"]
           },
         ]
@@ -442,6 +810,7 @@ export type Database = {
           longitude: number | null
           numero: string | null
           slug_personalizado: string | null
+          theme_color: string | null
           updated_at: string
           whatsapp_numero: string | null
         }
@@ -461,6 +830,7 @@ export type Database = {
           longitude?: number | null
           numero?: string | null
           slug_personalizado?: string | null
+          theme_color?: string | null
           updated_at?: string
           whatsapp_numero?: string | null
         }
@@ -480,6 +850,7 @@ export type Database = {
           longitude?: number | null
           numero?: string | null
           slug_personalizado?: string | null
+          theme_color?: string | null
           updated_at?: string
           whatsapp_numero?: string | null
         }
@@ -503,6 +874,7 @@ export type Database = {
           id: string
           is_global: boolean
           name: string
+          photo_url: string | null
           price: number
           updated_at: string
         }
@@ -515,6 +887,7 @@ export type Database = {
           id?: string
           is_global?: boolean
           name: string
+          photo_url?: string | null
           price?: number
           updated_at?: string
         }
@@ -527,6 +900,7 @@ export type Database = {
           id?: string
           is_global?: boolean
           name?: string
+          photo_url?: string | null
           price?: number
           updated_at?: string
         }
