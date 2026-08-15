@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, Mail, Lock, User } from 'lucide-react';
+import { Loader2, Mail, Lock, User, MailCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate, Link } from 'react-router-dom';
@@ -17,7 +17,8 @@ export function SignupForm() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { signUp } = useAuth();
+  const [awaitingConfirmation, setAwaitingConfirmation] = useState(false);
+  const { signUp, signIn } = useAuth();
   const navigate = useNavigate();
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -41,23 +42,70 @@ export function SignupForm() {
 
     setIsLoading(true);
     try {
-      const { error } = await signUp(email, password, {
+      const { data, error } = await signUp(email, password, {
         name: name.trim() || undefined,
         selected_plan: 'pro',
       });
       if (error) {
         toast.error(error.message);
-      } else {
-        localStorage.removeItem('selected_plan');
-        toast.success('Conta criada com sucesso! Entrando no painel...');
-        navigate('/painel', { replace: true });
+        return;
       }
+
+      localStorage.removeItem('selected_plan');
+
+      const signUpSession = (data as { session?: unknown } | null)?.session ?? null;
+      if (signUpSession) {
+        toast.success('Conta criada! Vamos configurar sua barbearia.');
+        navigate('/onboarding', { replace: true });
+        return;
+      }
+
+      // Sem sessão imediata: tenta entrar (caso a confirmação de e-mail esteja desativada)
+      const { data: signInData, error: signInError } = await signIn(email, password);
+      const signedIn = (signInData as { session?: unknown } | null)?.session ?? null;
+
+      if (!signInError && signedIn) {
+        toast.success('Conta criada! Vamos configurar sua barbearia.');
+        navigate('/onboarding', { replace: true });
+        return;
+      }
+
+      // Confirmação de e-mail obrigatória: mostra estado claro, sem voltar para a tela inicial
+      setAwaitingConfirmation(true);
     } catch {
       toast.error('Erro ao criar conta');
     } finally {
       setIsLoading(false);
     }
   };
+
+  if (awaitingConfirmation) {
+    return (
+      <div className="space-y-4 text-center py-2">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
+          <MailCheck className="h-7 w-7 text-primary" />
+        </div>
+        <div className="space-y-1">
+          <h2 className="text-base font-semibold">Confirme seu e-mail</h2>
+          <p className="text-sm text-muted-foreground">
+            Enviamos um link de confirmação para <span className="font-medium text-foreground">{email}</span>.
+            Toque no link e você entrará direto na configuração da sua barbearia.
+          </p>
+        </div>
+        <p className="text-xs text-muted-foreground/80">
+          Não recebeu? Verifique a caixa de spam.
+        </p>
+        <Button
+          variant="outline"
+          className="w-full h-11 rounded-xl"
+          onClick={() => setAwaitingConfirmation(false)}
+        >
+          Voltar
+        </Button>
+      </div>
+    );
+  }
+
 
   return (
     <div className="space-y-4">
