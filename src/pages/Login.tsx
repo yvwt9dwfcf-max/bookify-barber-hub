@@ -3,6 +3,7 @@ import { Logo } from '@/components/ui/Logo';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserRole } from '@/hooks/useUserRole';
 import { useNavigate } from 'react-router-dom';
 import { Loader2, Scissors } from 'lucide-react';
 import { LoginForm } from '@/components/auth/LoginForm';
@@ -15,15 +16,24 @@ interface LoginProps {
 const Login = ({ initialTab = 'login' }: LoginProps) => {
   const [activeTab, setActiveTab] = useState(initialTab);
   const { user, loading: authLoading } = useAuth();
+  const { barbershop, loading: roleLoading } = useUserRole();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (!authLoading && user) {
-      navigate('/painel', { replace: true });
-    }
-  }, [user, authLoading, navigate]);
+      const destination = sessionStorage.getItem('bookify-auth-destination');
+      if (destination === 'onboarding') {
+        navigate('/onboarding', { replace: true });
+        return;
+      }
 
-  if (authLoading) {
+      if (!roleLoading && barbershop) {
+        navigate(barbershop.onboarding_completed ? '/painel' : '/onboarding', { replace: true });
+      }
+    }
+  }, [user, authLoading, roleLoading, barbershop, navigate]);
+
+  if (authLoading || (!!user && roleLoading)) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />

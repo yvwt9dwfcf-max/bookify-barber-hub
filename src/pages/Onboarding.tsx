@@ -48,12 +48,13 @@ const stepDescriptions = [
 
 const Onboarding = () => {
   const { user, loading: authLoading } = useAuth();
-  const { barber, loading: barberLoading } = useBarber();
-  const { barbershop, loading: roleLoading } = useUserRole();
+  const { barber, loading: barberLoading, refetch: refetchBarber } = useBarber();
+  const { barbershop, loading: roleLoading, refetch: refetchRole } = useUserRole();
   const navigate = useNavigate();
 
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
+  const [setupAttempts, setSetupAttempts] = useState(0);
 
   // Step 1: Personal info + Barbershop
   const [barberName, setBarberName] = useState('');
@@ -91,10 +92,23 @@ const Onboarding = () => {
   useEffect(() => {
     if (!roleLoading && barbershop) {
       if (barbershop.onboarding_completed) {
+        sessionStorage.removeItem('bookify-auth-destination');
         navigate('/painel', { replace: true });
       }
     }
   }, [barbershop, roleLoading, navigate]);
+
+  // The account trigger may finish a moment after Supabase returns the new session.
+  useEffect(() => {
+    if (authLoading || !user || barberLoading || roleLoading || (barber && barbershop) || setupAttempts >= 12) return;
+
+    const timer = window.setTimeout(async () => {
+      await Promise.all([refetchBarber(), refetchRole()]);
+      setSetupAttempts((current) => current + 1);
+    }, 500);
+
+    return () => window.clearTimeout(timer);
+  }, [authLoading, user, barberLoading, roleLoading, barber, barbershop, setupAttempts, refetchBarber, refetchRole]);
 
   const updateDay = (dayOfWeek: number, field: keyof DayConfig, value: string | boolean) => {
     setDays(prev => prev.map(d => 
@@ -114,20 +128,22 @@ const Onboarding = () => {
       }
 
       if (barber) {
-        await supabase
+        const { error: barberError } = await supabase
           .from('barbers')
           .update({ name: barberName.trim() })
           .eq('id', barber.id);
+        if (barberError) throw barberError;
       }
 
       if (barbershop) {
-        await supabase
+        const { error: shopError } = await supabase
           .from('barbershops')
           .update({ 
             name: barbershopName.trim(),
             phone: barbershopPhone.trim() || null,
           })
           .eq('id', barbershop.id);
+        if (shopError) throw shopError;
       }
 
       setStep(2);
@@ -149,10 +165,11 @@ const Onboarding = () => {
     setSaving(true);
     try {
       // Delete any existing opening_hours for this barber (in case of retry)
-      await supabase
+      const { error: deleteHoursError } = await supabase
         .from('opening_hours')
         .delete()
         .eq('barber_id', barber.id);
+      if (deleteHoursError) throw deleteHoursError;
 
       const toInsert = days.map(d => ({
         barber_id: barber.id,
@@ -178,6 +195,8 @@ const Onboarding = () => {
 
       if (updateError) throw updateError;
 
+      await Promise.all([refetchBarber(), refetchRole()]);
+      sessionStorage.removeItem('bookify-auth-destination');
       toast.success('Barbearia configurada com sucesso! 🎉');
       navigate('/painel', { replace: true });
     } catch (error) {
@@ -197,6 +216,30 @@ const Onboarding = () => {
   }
 
   if (!user) return null;
+
+  if (!barber || !barbershop) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+        <div className="max-w-sm text-center space-y-4">
+          {setupAttempts < 12 ? (
+            <>
+              <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
+              <div>
+                <h1 className="font-semibold text-foreground">Preparando sua conta</h1>
+                <p className="mt-1 text-sm text-muted-foreground">Estamos configurando sua barbearia. Isso leva só alguns segundos.</p>
+              </div>
+            </>
+          ) : (
+            <>
+              <h1 className="font-semibold text-foreground">Não foi possível preparar sua conta</h1>
+              <p className="text-sm text-muted-foreground">Tente novamente para concluir a configuração.</p>
+              <Button onClick={() => setSetupAttempts(0)} className="w-full">Tentar novamente</Button>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   const StepIcon = stepIcons[step - 1];
 

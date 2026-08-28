@@ -23,10 +23,11 @@ export function useUserRole(): UseUserRoleReturn {
     gcTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
     queryFn: async () => {
+      if (!userId) return { userRole: null, barbershop: null };
       const { data: roleData, error: roleError } = await supabase
         .from('user_roles')
         .select('*')
-        .eq('user_id', userId!)
+        .eq('user_id', userId)
         .maybeSingle();
       if (roleError) throw roleError;
 

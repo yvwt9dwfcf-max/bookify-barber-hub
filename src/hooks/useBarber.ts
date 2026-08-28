@@ -18,10 +18,11 @@ export function useBarber() {
     gcTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
     queryFn: async () => {
+      if (!userId) return null;
       const { data, error } = await supabase
         .from('barbers')
         .select(`*, permissions:barber_permissions(*)`)
-        .eq('auth_id', userId!)
+        .eq('auth_id', userId)
         .maybeSingle();
       if (error) throw error;
       if (!data) return null;

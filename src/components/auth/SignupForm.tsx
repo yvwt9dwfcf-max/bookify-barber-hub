@@ -41,12 +41,14 @@ export function SignupForm() {
     }
 
     setIsLoading(true);
+    sessionStorage.setItem('bookify-auth-destination', 'onboarding');
     try {
       const { data, error } = await signUp(email, password, {
         name: name.trim() || undefined,
         selected_plan: 'pro',
       });
       if (error) {
+        sessionStorage.removeItem('bookify-auth-destination');
         toast.error(error.message);
         return;
       }
@@ -73,6 +75,7 @@ export function SignupForm() {
       // Confirmação de e-mail obrigatória: mostra estado claro, sem voltar para a tela inicial
       setAwaitingConfirmation(true);
     } catch {
+      sessionStorage.removeItem('bookify-auth-destination');
       toast.error('Erro ao criar conta');
     } finally {
       setIsLoading(false);
