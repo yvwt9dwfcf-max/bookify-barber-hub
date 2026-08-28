@@ -23,6 +23,7 @@ export function LoginForm() {
     }
 
     setIsLoading(true);
+    sessionStorage.removeItem('bookify-auth-destination');
     try {
       const { error } = await signIn(email, password);
       if (error) {
