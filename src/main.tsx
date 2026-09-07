@@ -2,6 +2,9 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 import "./lib/silence-toasts";
+import { installStorageImageFallback } from "./lib/storageImages";
+
+installStorageImageFallback();
 
 // Apply saved theme
 const savedTheme = localStorage.getItem('bookify-theme');
