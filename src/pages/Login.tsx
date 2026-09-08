@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Logo } from '@/components/ui/Logo';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useNavigate } from 'react-router-dom';
-import { Loader2, Scissors } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { SignupForm } from '@/components/auth/SignupForm';
 
@@ -42,47 +40,19 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
-      {/* Background effects */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full bg-primary/5 blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full bg-primary/5 blur-3xl" />
-      </div>
-
-      <main className="flex-1 flex items-center justify-center p-4 relative z-10">
-        <div className="w-full max-w-md space-y-8 animate-fade-in">
+    <div className="relative flex min-h-screen flex-col overflow-x-hidden bg-background">
+      <main className="relative z-10 flex flex-1 items-center justify-center px-5 py-10 sm:py-14">
+        <div className="w-full max-w-[420px] space-y-9 animate-fade-in">
           <h1 className="sr-only">Acesse sua conta no Bookify</h1>
-          {/* Logo & Branding */}
-          <div className="text-center space-y-3">
-            <div className="flex justify-center">
-              <Logo size="lg" linkTo="/" />
-            </div>
-            <p className="text-muted-foreground">
-              Gerencie sua barbearia de forma simples e profissional
-            </p>
+          <div className="text-center">
+            <a href="/" className="font-display text-3xl font-bold text-foreground" aria-label="Bookify — página inicial">Bookify</a>
           </div>
 
-          {/* Auth Card */}
-          <Card className="shadow-card-lg border-border/40 bg-card/80 backdrop-blur-sm">
-            <CardHeader className="text-center pb-4">
-              <CardTitle className="text-xl flex items-center justify-center gap-2">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'var(--primary-gradient)' }}>
-                  <Scissors className="h-4 w-4 text-primary-foreground" />
-                </div>
-                Área do Profissional
-              </CardTitle>
-              <CardDescription>
-                {activeTab === 'login' 
-                  ? 'Entre para acessar seu painel' 
-                  : 'Crie sua conta para começar'
-                }
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
+          <section className="border-y border-border py-7 sm:px-4">
               <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'login' | 'signup')}>
-                <TabsList className="grid w-full grid-cols-2 mb-6 h-11 rounded-lg p-1">
-                  <TabsTrigger value="login" className="rounded-md h-full text-sm">Entrar</TabsTrigger>
-                  <TabsTrigger value="signup" className="rounded-md h-full text-sm">Criar conta</TabsTrigger>
+                <TabsList className="mb-8 grid h-10 w-full grid-cols-2 rounded-none border-b border-border bg-transparent p-0">
+                  <TabsTrigger value="login" className="h-full rounded-none border-b border-transparent bg-transparent font-editorial-mono text-[11px] uppercase text-muted-foreground shadow-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none">Entrar</TabsTrigger>
+                  <TabsTrigger value="signup" className="h-full rounded-none border-b border-transparent bg-transparent font-editorial-mono text-[11px] uppercase text-muted-foreground shadow-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none">Criar conta</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="login">
@@ -93,8 +63,7 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
                   <SignupForm />
                 </TabsContent>
               </Tabs>
-            </CardContent>
-          </Card>
+          </section>
 
           <p className="text-center text-xs text-muted-foreground">
             © {new Date().getFullYear()} Bookify. Todos os direitos reservados.

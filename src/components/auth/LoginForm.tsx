@@ -2,8 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
-import { Loader2, Mail, Lock } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { Link } from 'react-router-dom';
@@ -50,48 +49,47 @@ export function LoginForm() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-7">
+      <header className="space-y-2 text-center">
+        <p className="font-editorial-mono text-[11px] uppercase text-primary">— Bem-vindo de volta</p>
+        <h2 className="font-display text-3xl font-semibold text-foreground">Acesse sua conta</h2>
+        <p className="text-sm text-muted-foreground">Entre para continuar cuidando da sua barbearia.</p>
+      </header>
+
       <OAuthButtons mode="login" />
 
-      <div className="relative">
-        <Separator />
-        <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-card px-2 text-xs text-muted-foreground">
-          ou
-        </span>
+      <div className="flex items-center gap-3" aria-hidden="true">
+        <span className="h-px flex-1 bg-border" />
+        <span className="font-editorial-mono text-[10px] uppercase text-muted-foreground">ou use seu e-mail</span>
+        <span className="h-px flex-1 bg-border" />
       </div>
 
-      <form onSubmit={handleLogin} className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="login-email">Email</Label>
-          <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              id="login-email"
-              type="email"
-              placeholder="seu@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="pl-10 h-11"
-            />
-          </div>
+      <form onSubmit={handleLogin} className="space-y-6">
+        <div className="space-y-1">
+          <Label htmlFor="login-email" className="font-editorial-mono text-[10px] uppercase text-muted-foreground">E-mail</Label>
+          <Input
+            id="login-email"
+            type="email"
+            placeholder="seu@email.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="h-11 rounded-none border-x-0 border-t-0 border-b border-border bg-transparent px-0 text-base shadow-none focus-visible:border-primary focus-visible:ring-0"
+          />
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="login-password">Senha</Label>
-          <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              id="login-password"
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="pl-10 h-11"
-            />
-          </div>
+        <div className="space-y-1">
+          <Label htmlFor="login-password" className="font-editorial-mono text-[10px] uppercase text-muted-foreground">Senha</Label>
+          <Input
+            id="login-password"
+            type="password"
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="h-11 rounded-none border-x-0 border-t-0 border-b border-border bg-transparent px-0 text-base shadow-none focus-visible:border-primary focus-visible:ring-0"
+          />
         </div>
         <Button
           type="submit"
-          className="w-full btn-primary-gradient h-11 rounded-xl"
+          className="h-12 w-full rounded-lg btn-primary-gradient font-editorial-mono text-xs uppercase"
           disabled={isLoading}
         >
           {isLoading ? (
@@ -104,7 +102,7 @@ export function LoginForm() {
           )}
         </Button>
         <div className="text-center">
-          <Link to="/esqueci-senha" className="text-sm text-primary hover:underline">
+          <Link to="/esqueci-senha" className="text-sm text-muted-foreground underline underline-offset-4 transition-colors hover:text-foreground">
             Esqueci minha senha
           </Link>
         </div>
