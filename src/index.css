@@ -79,6 +79,7 @@
     --paper-soft: 40 14% 84%; /* #D8D4C8 */
     --bordeaux: 352 65% 33%; /* #8B1E2B */
     --landing-line: rgba(242, 238, 228, 0.14);
+    --editorial-surface: 60 26% 5%; /* #101009 */
   }
 
   .font-display {

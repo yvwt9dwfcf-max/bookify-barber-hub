@@ -2,9 +2,8 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, Mail, Lock, User, MailCheck } from 'lucide-react';
+import { Loader2, MailCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate, Link } from 'react-router-dom';
@@ -84,12 +83,13 @@ export function SignupForm() {
 
   if (awaitingConfirmation) {
     return (
-      <div className="space-y-4 text-center py-2">
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
+      <div className="space-y-5 py-2 text-center">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-lg border border-border bg-primary/10">
           <MailCheck className="h-7 w-7 text-primary" />
         </div>
         <div className="space-y-1">
-          <h2 className="text-base font-semibold">Confirme seu e-mail</h2>
+          <p className="font-editorial-mono text-[11px] uppercase text-primary">— Último passo</p>
+          <h2 className="font-display text-3xl font-semibold">Confirme seu e-mail</h2>
           <p className="text-sm text-muted-foreground">
             Enviamos um link de confirmação para <span className="font-medium text-foreground">{email}</span>.
             Toque no link e você entrará direto na configuração da sua barbearia.
@@ -100,7 +100,7 @@ export function SignupForm() {
         </p>
         <Button
           variant="outline"
-          className="w-full h-11 rounded-xl"
+          className="h-12 w-full rounded-lg border-border bg-transparent font-editorial-mono text-xs uppercase"
           onClick={() => setAwaitingConfirmation(false)}
         >
           Voltar
@@ -111,78 +111,40 @@ export function SignupForm() {
 
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-7">
+      <header className="space-y-2 text-center">
+        <p className="font-editorial-mono text-[11px] uppercase text-primary">— Comece agora</p>
+        <h2 className="font-display text-3xl font-semibold text-foreground">Crie sua conta</h2>
+        <p className="text-sm text-muted-foreground">Sua barbearia organizada desde o primeiro dia.</p>
+      </header>
+
       <OAuthButtons mode="signup" />
 
-      <div className="relative">
-        <Separator />
-        <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-card px-2 text-xs text-muted-foreground">
-          ou
-        </span>
+      <div className="flex items-center gap-3" aria-hidden="true">
+        <span className="h-px flex-1 bg-border" />
+        <span className="font-editorial-mono text-[10px] uppercase text-muted-foreground">ou use seu e-mail</span>
+        <span className="h-px flex-1 bg-border" />
       </div>
 
-      <form onSubmit={handleSignup} className="space-y-4">
-        <div className="rounded-lg bg-primary/10 text-primary text-sm p-3 text-center font-medium">
+      <form onSubmit={handleSignup} className="space-y-5">
+        <div className="border-y border-border py-3 text-center font-editorial-mono text-[10px] uppercase text-primary">
           Teste grátis por 3 dias. Após isso, escolha um plano para continuar.
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="signup-name">Seu nome</Label>
-          <div className="relative">
-            <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              id="signup-name"
-              type="text"
-              placeholder="Seu nome completo"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="pl-10 h-11"
-            />
-          </div>
+        <div className="space-y-1">
+          <Label htmlFor="signup-name" className="font-editorial-mono text-[10px] uppercase text-muted-foreground">Seu nome</Label>
+          <Input id="signup-name" type="text" placeholder="Seu nome completo" value={name} onChange={(e) => setName(e.target.value)} className="h-11 rounded-none border-x-0 border-t-0 border-b border-border bg-transparent px-0 text-base shadow-none focus-visible:border-primary focus-visible:ring-0" />
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="signup-email">Email *</Label>
-          <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              id="signup-email"
-              type="email"
-              placeholder="seu@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="pl-10 h-11"
-              required
-            />
-          </div>
+        <div className="space-y-1">
+          <Label htmlFor="signup-email" className="font-editorial-mono text-[10px] uppercase text-muted-foreground">E-mail *</Label>
+          <Input id="signup-email" type="email" placeholder="seu@email.com" value={email} onChange={(e) => setEmail(e.target.value)} className="h-11 rounded-none border-x-0 border-t-0 border-b border-border bg-transparent px-0 text-base shadow-none focus-visible:border-primary focus-visible:ring-0" required />
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="signup-password">Senha *</Label>
-          <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              id="signup-password"
-              type="password"
-              placeholder="Mínimo 6 caracteres"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="pl-10 h-11"
-              required
-            />
-          </div>
+        <div className="space-y-1">
+          <Label htmlFor="signup-password" className="font-editorial-mono text-[10px] uppercase text-muted-foreground">Senha *</Label>
+          <Input id="signup-password" type="password" placeholder="Mínimo 6 caracteres" value={password} onChange={(e) => setPassword(e.target.value)} className="h-11 rounded-none border-x-0 border-t-0 border-b border-border bg-transparent px-0 text-base shadow-none focus-visible:border-primary focus-visible:ring-0" required />
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="signup-confirm">Confirmar senha *</Label>
-          <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              id="signup-confirm"
-              type="password"
-              placeholder="••••••••"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="pl-10 h-11"
-              required
-            />
-          </div>
+        <div className="space-y-1">
+          <Label htmlFor="signup-confirm" className="font-editorial-mono text-[10px] uppercase text-muted-foreground">Confirmar senha *</Label>
+          <Input id="signup-confirm" type="password" placeholder="••••••••" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="h-11 rounded-none border-x-0 border-t-0 border-b border-border bg-transparent px-0 text-base shadow-none focus-visible:border-primary focus-visible:ring-0" required />
         </div>
 
         <div className="flex items-start gap-2 py-1">
@@ -190,15 +152,15 @@ export function SignupForm() {
             id="accept-terms"
             checked={acceptedTerms}
             onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
-            className="mt-0.5 h-3.5 w-3.5"
+            className="mt-0.5 h-4 w-4 rounded-[3px] border-border data-[state=checked]:border-primary data-[state=checked]:bg-primary"
           />
-          <label htmlFor="accept-terms" className="text-[11px] text-muted-foreground/80 cursor-pointer leading-relaxed">
+          <label htmlFor="accept-terms" className="cursor-pointer text-[11px] leading-relaxed text-muted-foreground">
             Li e concordo com os{' '}
-            <Link to="/termos-de-uso" target="_blank" className="underline text-primary hover:text-primary/80">
+            <Link to="/termos-de-uso" target="_blank" className="text-foreground underline underline-offset-2 hover:text-primary">
               Termos de Uso
             </Link>{' '}
             e{' '}
-            <Link to="/politica-de-privacidade" target="_blank" className="underline text-primary hover:text-primary/80">
+            <Link to="/politica-de-privacidade" target="_blank" className="text-foreground underline underline-offset-2 hover:text-primary">
               Política de Privacidade
             </Link>.
           </label>
@@ -212,7 +174,7 @@ export function SignupForm() {
 
         <Button
           type="submit"
-          className="w-full btn-primary-gradient h-11 rounded-xl"
+          className="h-12 w-full rounded-lg btn-primary-gradient font-editorial-mono text-xs uppercase"
           disabled={isLoading || !acceptedTerms}
         >
           {isLoading ? (
@@ -221,7 +183,7 @@ export function SignupForm() {
               Criando conta...
             </>
           ) : (
-            'Criar conta'
+            'Criar conta grátis'
           )}
         </Button>
       </form>
