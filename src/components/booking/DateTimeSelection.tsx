@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { DAY_NAMES_SHORT } from '@/lib/supabase';
 import { useAvailability } from '@/hooks/useAvailability';
-import { Timer as Clock, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { PremiumSkeleton } from '@/components/ui/premium-skeleton';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { format, addDays, startOfDay, isSameDay, isAfter, isBefore, setHours, setMinutes } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -14,18 +13,29 @@ interface DateTimeSelectionProps {
   onSelect: (dateTime: Date) => void;
 }
 
+const LINE = 'rgba(242,238,228,0.14)';
+type Period = 'Manhã' | 'Tarde' | 'Noite';
+
+const periodOf = (time: string): Period => {
+  const h = parseInt(time.split(':')[0], 10);
+  if (h < 12) return 'Manhã';
+  if (h < 18) return 'Tarde';
+  return 'Noite';
+};
+
 export function DateTimeSelection({ barberId, serviceDuration, onSelect }: DateTimeSelectionProps) {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [weekStart, setWeekStart] = useState(startOfDay(new Date()));
+  const [period, setPeriod] = useState<Period>('Manhã');
 
-  const { 
-    loading, 
-    getAvailableSlotsForDate, 
-    getOpeningHoursForDay 
-  } = useAvailability({ 
-    barberId, 
-    serviceDuration 
+  const {
+    loading,
+    getAvailableSlotsForDate,
+    getOpeningHoursForDay,
+  } = useAvailability({
+    barberId,
+    serviceDuration,
   });
 
   const getDaysToShow = () => {
@@ -68,9 +78,9 @@ export function DateTimeSelection({ barberId, serviceDuration, onSelect }: DateT
           <PremiumSkeleton variant="text" className="w-52 h-6" />
           <PremiumSkeleton variant="text" className="w-64 h-4 mt-2" />
         </div>
-        <div className="grid grid-cols-7 gap-2">
+        <div className="flex gap-2">
           {Array.from({ length: 7 }).map((_, i) => (
-            <PremiumSkeleton key={i} className="h-16 rounded-xl" />
+            <PremiumSkeleton key={i} className="h-16 w-14 rounded-xl" />
           ))}
         </div>
         <div className="grid grid-cols-4 sm:grid-cols-5 gap-2.5">
@@ -84,49 +94,78 @@ export function DateTimeSelection({ barberId, serviceDuration, onSelect }: DateT
 
   const days = getDaysToShow();
   const availableSlots = selectedDate ? getAvailableSlotsForDate(selectedDate, serviceDuration) : [];
+  const availableSet = new Set(availableSlots);
+
+  // Build the visible grid from opening hours so booked times stay listed (struck through),
+  // while availability itself keeps coming from the existing engine.
+  const buildGrid = (): string[] => {
+    if (!selectedDate) return [];
+    const dayHours = getOpeningHoursForDay(selectedDate.getDay());
+    if (!dayHours) return availableSlots;
+    const [sh, sm] = dayHours.start_time.split(':').map(Number);
+    const [eh, em] = dayHours.end_time.split(':').map(Number);
+    const start = sh * 60 + sm;
+    const end = eh * 60 + em;
+    const times = new Set<string>(availableSlots);
+    for (let t = start; t + serviceDuration <= end; t += 30) {
+      const h = Math.floor(t / 60);
+      const m = t % 60;
+      times.add(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
+    }
+    return [...times].sort();
+  };
+
+  const grid = buildGrid();
+  const periods: Period[] = ['Manhã', 'Tarde', 'Noite'];
+  const gridForPeriod = grid.filter(t => periodOf(t) === period);
 
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-xl font-bold">Escolha a data e horário</h2>
-        <p className="text-muted-foreground text-sm mt-1">
+        <p
+          className="font-editorial-mono text-[10px] uppercase tracking-[0.18em] mb-2"
+          style={{ color: '#22C55E' }}
+        >
+          — Data e horário
+        </p>
+        <h2 className="font-display text-2xl font-semibold">Escolha a data e horário</h2>
+        <p className="text-sm mt-1" style={{ color: '#8C887C' }}>
           Selecione quando deseja ser atendido
         </p>
       </div>
 
-      {/* Calendar Navigation */}
+      {/* Navegação de semana */}
       <div className="flex items-center justify-between">
-        <Button
-          variant="outline"
-          size="icon"
+        <button
           onClick={goToPreviousWeek}
           disabled={isSameDay(weekStart, startOfDay(new Date()))}
-          className="transition-all duration-200 ease-out hover:-translate-y-0.5 active:scale-95 rounded-xl"
+          className="w-9 h-9 rounded-lg flex items-center justify-center disabled:opacity-30 transition-colors"
+          style={{ border: `1px solid ${LINE}` }}
+          aria-label="Semana anterior"
         >
           <ChevronLeft className="h-4 w-4" />
-        </Button>
-        <span className="font-semibold text-sm capitalize">
+        </button>
+        <span className="font-editorial-mono text-[11px] uppercase tracking-[0.16em]" style={{ color: '#8C887C' }}>
           {format(weekStart, "MMMM 'de' yyyy", { locale: ptBR })}
         </span>
-        <Button 
-          variant="outline" 
-          size="icon" 
+        <button
           onClick={goToNextWeek}
-          className="transition-all duration-200 ease-out hover:-translate-y-0.5 active:scale-95 rounded-xl"
+          className="w-9 h-9 rounded-lg flex items-center justify-center transition-colors"
+          style={{ border: `1px solid ${LINE}` }}
+          aria-label="Próxima semana"
         >
           <ChevronRight className="h-4 w-4" />
-        </Button>
+        </button>
       </div>
 
-      {/* Days Grid */}
-      <div className="grid grid-cols-7 gap-2">
+      {/* Pills de dias */}
+      <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-none">
         {days.map((day) => {
           const dayOfWeek = day.getDay();
           const isOpen = !!getOpeningHoursForDay(dayOfWeek);
           const isPast = isBefore(day, startOfDay(new Date()));
           const isSelected = selectedDate && isSameDay(day, selectedDate);
           const isSelectable = !isPast && isOpen;
-          const hasSlots = isSelectable && getAvailableSlotsForDate(day, serviceDuration).length > 0;
 
           return (
             <button
@@ -134,84 +173,86 @@ export function DateTimeSelection({ barberId, serviceDuration, onSelect }: DateT
               onClick={() => isSelectable && handleDateSelect(day)}
               disabled={!isSelectable}
               className={cn(
-                'flex flex-col items-center p-2.5 rounded-2xl border transition-all duration-200 ease-out',
-                isSelectable && 'hover:-translate-y-0.5 hover:shadow-md cursor-pointer border-border/30',
-                !isSelectable && 'opacity-40 cursor-not-allowed border-transparent bg-muted/30',
-                isSelectable && !hasSlots && 'opacity-60 border-border/20',
-                isSelected && 'text-primary-foreground border-primary shadow-md hover:border-primary !opacity-100'
+                'flex flex-col items-center justify-center flex-shrink-0 w-14 py-2.5 rounded-xl font-sans transition-colors duration-200',
+                !isSelectable && 'opacity-35 cursor-not-allowed'
               )}
-              style={isSelected ? { background: 'var(--primary-gradient)' } : undefined}
+              style={{
+                border: `1px solid ${isSelected ? '#22C55E' : LINE}`,
+                background: isSelected ? '#22C55E' : 'transparent',
+                color: isSelected ? '#0A0A08' : undefined,
+              }}
             >
-              <span className="text-[10px] font-semibold uppercase">
+              <span className="text-[10px] font-semibold uppercase tracking-wide">
                 {DAY_NAMES_SHORT[dayOfWeek]}
               </span>
-              <span className="text-lg font-bold mt-0.5">
-                {format(day, 'd')}
-              </span>
+              <span className="text-base font-semibold mt-0.5">{format(day, 'd')}</span>
             </button>
           );
         })}
       </div>
 
-      {/* Time Slots - GROUPED BY PERIOD */}
       {selectedDate && (
-        <div className="space-y-6 animate-fade-in">
-          <h3 className="font-semibold text-sm">
-            Horários para {format(selectedDate, "d 'de' MMMM", { locale: ptBR })}
-          </h3>
+        <div className="space-y-5 animate-fade-in">
+          {/* Abas de período */}
+          <div className="flex gap-2">
+            {periods.map((p) => {
+              const active = p === period;
+              return (
+                <button
+                  key={p}
+                  onClick={() => setPeriod(p)}
+                  className="px-4 py-1.5 rounded-full font-editorial-mono text-[10px] uppercase tracking-[0.16em] transition-colors"
+                  style={{
+                    border: `1px solid ${active ? '#F2EEE4' : LINE}`,
+                    color: active ? '#F2EEE4' : '#8C887C',
+                  }}
+                >
+                  {p}
+                </button>
+              );
+            })}
+          </div>
 
-          {availableSlots.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 px-4 text-center rounded-xl border border-border/20 bg-muted/10">
-              <p className="font-bold text-sm tracking-wide uppercase">
-                Todos os horários deste dia já foram reservados.
-              </p>
-              <p className="text-muted-foreground text-xs mt-2">
+          {grid.length === 0 ? (
+            <div
+              className="flex flex-col items-center justify-center py-12 px-4 text-center rounded-xl"
+              style={{ border: `1px solid ${LINE}` }}
+            >
+              <p className="font-display text-base">Todos os horários deste dia já foram reservados.</p>
+              <p className="text-xs mt-2" style={{ color: '#8C887C' }}>
                 Tente selecionar outro dia ou fale com a barbearia.
               </p>
             </div>
+          ) : gridForPeriod.length === 0 ? (
+            <p className="text-xs py-8 text-center" style={{ color: '#8C887C' }}>
+              Nenhum horário neste período.
+            </p>
           ) : (
-            (() => {
-              const periods: { label: string; slots: string[] }[] = [
-                { label: 'Manhã', slots: [] },
-                { label: 'Tarde', slots: [] },
-                { label: 'Noite', slots: [] },
-              ];
-              availableSlots.forEach((t) => {
-                const h = parseInt(t.split(':')[0], 10);
-                if (h < 12) periods[0].slots.push(t);
-                else if (h < 18) periods[1].slots.push(t);
-                else periods[2].slots.push(t);
-              });
-              return (
-                <div className="space-y-7">
-                  {periods.filter(p => p.slots.length > 0).map((period) => (
-                    <div key={period.label} className="space-y-3">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">
-                        {period.label}
-                      </p>
-                      <div className="grid grid-cols-4 sm:grid-cols-5 gap-2.5">
-                        {period.slots.map((time) => (
-                          <button
-                            key={time}
-                            onClick={() => handleTimeSelect(time)}
-                            className={cn(
-                              'py-3.5 px-2 rounded-2xl border font-semibold text-sm transition-colors duration-150',
-                              'active:scale-[0.97]',
-                              selectedTime === time
-                                ? 'border-primary text-primary-foreground shadow-md'
-                                : 'border-border/30 bg-secondary/50 active:bg-secondary'
-                            )}
-                            style={selectedTime === time ? { background: 'var(--primary-gradient)' } : undefined}
-                          >
-                            {time}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              );
-            })()
+            <div className="grid grid-cols-4 sm:grid-cols-5 gap-2.5">
+              {gridForPeriod.map((time) => {
+                const isAvailable = availableSet.has(time);
+                const isSelected = selectedTime === time;
+                return (
+                  <button
+                    key={time}
+                    onClick={() => isAvailable && handleTimeSelect(time)}
+                    disabled={!isAvailable}
+                    className={cn(
+                      'py-3 px-2 rounded-xl font-editorial-mono text-[13px] transition-colors duration-150',
+                      isAvailable && 'active:scale-[0.97]',
+                      !isAvailable && 'line-through cursor-not-allowed'
+                    )}
+                    style={{
+                      border: `1px solid ${isSelected ? '#22C55E' : LINE}`,
+                      background: isSelected ? '#22C55E' : 'transparent',
+                      color: isSelected ? '#0A0A08' : isAvailable ? undefined : 'rgba(140,136,124,0.55)',
+                    }}
+                  >
+                    {time}
+                  </button>
+                );
+              })}
+            </div>
           )}
         </div>
       )}
