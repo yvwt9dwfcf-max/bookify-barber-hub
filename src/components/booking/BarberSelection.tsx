@@ -11,6 +11,14 @@ interface BarberSelectionProps {
   availableBarbers?: Barber[];
 }
 
+const getInitials = (name: string) =>
+  name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map(part => part[0]?.toUpperCase() ?? '')
+    .join('');
+
 export function BarberSelection({ onSelect, barbershopId, availableBarbers }: BarberSelectionProps) {
   const [barbers, setBarbers] = useState<Barber[]>(availableBarbers || []);
   const [loading, setLoading] = useState(!availableBarbers);
@@ -82,57 +90,61 @@ export function BarberSelection({ onSelect, barbershopId, availableBarbers }: Ba
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold">Escolha o profissional</h2>
-        <p className="text-muted-foreground text-sm mt-1">
+        <p
+          className="font-editorial-mono text-[10px] uppercase tracking-[0.18em] mb-2"
+          style={{ color: '#22C55E' }}
+        >
+          — Profissional
+        </p>
+        <h2 className="font-display text-2xl font-semibold">Escolha o profissional</h2>
+        <p className="text-sm mt-1" style={{ color: '#8C887C' }}>
           Selecione o barbeiro de sua preferência
         </p>
       </div>
 
-      <div className="grid gap-3">
-        {barbers.map((barber) => (
-          <button
-            key={barber.id}
-            onClick={() => handleSelect(barber)}
-            className={cn(
-              'flex items-center gap-4 p-5 rounded-2xl border transition-all duration-200 ease-out text-left',
-              'hover:shadow-lg active:scale-[0.98]',
-              selected === barber.id
-                ? 'border-primary bg-primary/5 dark:bg-primary/10 shadow-md'
-                : 'border-border/30 hover:border-primary/30 bg-secondary/50'
-            )}
-          >
-            {/* Avatar circular com foto */}
-            {barber.photo_url ? (
-              <img 
-                src={barber.photo_url} 
-                alt={barber.name}
-                className={cn(
-                  "w-14 h-14 rounded-full object-cover flex-shrink-0 transition-all ring-2",
-                  selected === barber.id
-                    ? "ring-primary shadow-lg"
-                    : "ring-border/50"
-                )}
-              />
-            ) : (
-              <div className={cn(
-                "w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0 transition-all",
-                selected === barber.id
-                  ? "text-primary-foreground"
-                  : "bg-primary/10"
+      <div className="grid gap-2.5">
+        {barbers.map((barber) => {
+          const isSelected = selected === barber.id;
+          return (
+            <button
+              key={barber.id}
+              onClick={() => handleSelect(barber)}
+              className={cn(
+                'flex items-center gap-4 p-4 rounded-xl border text-left transition-colors duration-200',
+                'active:scale-[0.99]'
               )}
-                style={selected === barber.id ? { background: 'var(--primary-gradient)' } : undefined}
+              style={{
+                borderColor: isSelected ? '#22C55E' : 'rgba(242,238,228,0.14)',
+                background: isSelected ? 'rgba(34,197,94,0.06)' : 'transparent',
+              }}
+            >
+              <div
+                className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 font-sans text-sm font-semibold"
+                style={{
+                  border: `1px solid ${isSelected ? '#22C55E' : 'rgba(242,238,228,0.14)'}`,
+                  color: isSelected ? '#22C55E' : 'inherit',
+                }}
               >
-                <User className={cn("h-7 w-7", selected === barber.id ? "text-primary-foreground" : "text-primary")} />
+                {getInitials(barber.name) || <User className="h-5 w-5" />}
               </div>
-            )}
-            <div className="flex-1 min-w-0">
-              <h3 className="font-bold text-base">{barber.name}</h3>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Profissional
-              </p>
-            </div>
-          </button>
-        ))}
+
+              <div className="flex-1 min-w-0">
+                <h3 className="font-sans text-[15px] font-semibold truncate">{barber.name}</h3>
+                <p className="text-xs mt-0.5" style={{ color: '#8C887C' }}>
+                  Profissional
+                </p>
+              </div>
+
+              <span
+                className="w-4 h-4 rounded-full flex-shrink-0 transition-colors duration-200"
+                style={{
+                  border: `1px solid ${isSelected ? '#22C55E' : 'rgba(242,238,228,0.24)'}`,
+                  background: isSelected ? '#22C55E' : 'transparent',
+                }}
+              />
+            </button>
+          );
+        })}
       </div>
     </div>
   );

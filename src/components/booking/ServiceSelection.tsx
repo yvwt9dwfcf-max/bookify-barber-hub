@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react';
 import { supabase, Service } from '@/lib/supabase';
-import { Sparkles as Scissors, Timer as Clock } from 'lucide-react';
+import { Sparkles as Scissors } from 'lucide-react';
 import { PremiumSkeleton, SkeletonCard } from '@/components/ui/premium-skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { cn } from '@/lib/utils';
 
 interface ServiceSelectionProps {
   barberId: string;
@@ -34,7 +32,7 @@ export function ServiceSelection({ barberId, onSelect, onAutoSelect }: ServiceSe
         .maybeSingle();
 
       if (barberError) throw barberError;
-      
+
       if (!barberData?.barbershop_id) {
         setServices([]);
         setLoading(false);
@@ -149,53 +147,46 @@ export function ServiceSelection({ barberId, onSelect, onAutoSelect }: ServiceSe
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold">Escolha o serviço</h2>
-        <p className="text-muted-foreground text-sm mt-1">
+        <p
+          className="font-editorial-mono text-[10px] uppercase tracking-[0.18em] mb-2"
+          style={{ color: '#22C55E' }}
+        >
+          — Serviço
+        </p>
+        <h2 className="font-display text-2xl font-semibold">Escolha o serviço</h2>
+        <p className="text-sm mt-1" style={{ color: '#8C887C' }}>
           Selecione o serviço que deseja agendar
         </p>
       </div>
 
-      <div className="grid gap-3">
+      <div style={{ borderTop: '1px solid rgba(242,238,228,0.14)' }}>
         {services.map((service) => {
-          const photoUrl = service.barberPhotoUrl || service.photo_url;
+          const isSelected = selected === service.id;
           return (
             <button
               key={service.id}
               onClick={() => handleSelect(service)}
-              className={cn(
-                'flex items-center gap-4 p-5 rounded-2xl border transition-all duration-200 ease-out text-left',
-                'hover:shadow-lg active:scale-[0.98]',
-                selected === service.id
-                  ? 'border-primary bg-primary/5 dark:bg-primary/10 shadow-md'
-                  : 'border-border/30 hover:border-primary/30 bg-secondary/50'
-              )}
+              className="w-full flex items-baseline gap-4 py-4 text-left transition-colors duration-150"
+              style={{
+                borderBottom: '1px solid rgba(242,238,228,0.14)',
+                background: isSelected ? 'rgba(34,197,94,0.06)' : 'transparent',
+              }}
             >
-              <Avatar className="h-12 w-12 rounded-xl flex-shrink-0 transition-all">
-                {photoUrl ? (
-                  <AvatarImage src={photoUrl} alt={service.name} className="object-cover" />
-                ) : null}
-                <AvatarFallback
-                  className={cn(
-                    "rounded-xl",
-                    selected === service.id ? "text-primary-foreground" : "bg-primary/10"
-                  )}
-                  style={selected === service.id ? { background: 'var(--primary-gradient)' } : undefined}
-                >
-                  <Scissors className={cn("h-5 w-5", selected === service.id ? "text-primary-foreground" : "text-primary")} />
-                </AvatarFallback>
-              </Avatar>
               <div className="flex-1 min-w-0">
-                <h3 className="font-bold text-sm">{service.name}</h3>
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-1">
-                  <Clock className="h-3.5 w-3.5" />
-                  <span>{service.duration_minutes} min</span>
-                </div>
+                <h3 className="font-display text-lg font-semibold truncate">{service.name}</h3>
+                <p
+                  className="font-editorial-mono text-[11px] mt-1 uppercase tracking-[0.12em]"
+                  style={{ color: '#8C887C' }}
+                >
+                  {service.duration_minutes} min
+                </p>
               </div>
-              <div className="text-right shrink-0">
-                <span className="text-lg font-bold text-primary">
-                  {formatPrice(Number(service.price))}
-                </span>
-              </div>
+              <span
+                className="font-editorial-mono text-sm font-medium shrink-0"
+                style={{ color: '#22C55E' }}
+              >
+                {formatPrice(Number(service.price))}
+              </span>
             </button>
           );
         })}
