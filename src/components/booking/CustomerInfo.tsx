@@ -198,7 +198,7 @@ export function CustomerInfo({ onSubmit, isSubmitting, bookingData }: CustomerIn
               <>
                 <MessageCircle className="h-[18px] w-[18px]" />
                 <span>
-                  Confirmar agendamento e avisar a barbearia
+                  Confirmar agendamento
                 </span>
               </>
             )}

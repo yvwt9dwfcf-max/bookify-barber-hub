@@ -137,7 +137,7 @@ export function BookingConfirmation({ appointment, onNewBooking, barbershopId, p
             >
               <MessageCircle className="h-[18px] w-[18px]" />
               <span>
-                Avisar a barbearia no WhatsApp
+                Avisar a barbearia
               </span>
             </button>
             <p className="text-center text-xs" style={{ color: '#8C887C' }}>
