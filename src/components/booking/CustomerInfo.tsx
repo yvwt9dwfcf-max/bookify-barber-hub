@@ -185,24 +185,19 @@ export function CustomerInfo({ onSubmit, isSubmitting, bookingData }: CustomerIn
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full h-14 rounded-xl flex items-center justify-center gap-2.5 disabled:opacity-70 active:scale-[0.99] transition-transform"
-            style={{
-              background: 'linear-gradient(135deg, #22C55E 0%, #16A34A 100%)',
-              color: '#0A0A08',
-              boxShadow: '0 8px 24px rgba(34,197,94,0.18)',
-            }}
+            className="btn-primary-solid w-full h-14 flex items-center justify-center gap-2.5 disabled:opacity-70 active:scale-[0.99] transition-transform"
           >
             {isSubmitting ? (
               <>
                 <Loader2 className="h-5 w-5 animate-spin" />
-                  <span className="font-display" style={{ fontSize: 15, fontWeight: 600 }}>
+                <span>
                   Confirmando...
                 </span>
               </>
             ) : (
               <>
                 <MessageCircle className="h-[18px] w-[18px]" />
-                <span className="font-display" style={{ fontSize: 15, fontWeight: 600 }}>
+                <span>
                   Confirmar agendamento e avisar a barbearia
                 </span>
               </>

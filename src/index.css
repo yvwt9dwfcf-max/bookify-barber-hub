@@ -449,3 +449,20 @@
   background: hsl(var(--primary));
   box-shadow: 0 0 8px hsl(var(--primary) / 0.4);
 }
+
+/* Botão primário padrão do app — verde sólido, sem gradiente/glow */
+.btn-primary-solid {
+  background: #22C55E;
+  color: #06210F;
+  border-radius: 10px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0;
+  box-shadow: none;
+  transition: background-color 150ms ease, transform 150ms ease;
+}
+
+.btn-primary-solid:active {
+  background: #1EA850;
+}
