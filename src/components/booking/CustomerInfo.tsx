@@ -68,7 +68,16 @@ export function CustomerInfo({ onSubmit, isSubmitting, bookingData }: CustomerIn
     }).format(price);
   };
 
-  const fieldStyle = (key: string, hasError?: boolean) => ({
+  const fieldStyle: React.CSSProperties = {
+    outline: 'none',
+    WebkitAppearance: 'none',
+    appearance: 'none',
+    boxShadow: 'none',
+    borderRadius: 0,
+    WebkitTapHighlightColor: 'transparent',
+  };
+
+  const underlineStyle = (key: string, hasError?: boolean) => ({
     borderBottom: `1px solid ${hasError ? 'hsl(var(--destructive))' : focused === key ? '#22C55E' : LINE}`,
   });
 
@@ -144,7 +153,7 @@ export function CustomerInfo({ onSubmit, isSubmitting, bookingData }: CustomerIn
             onBlur={() => setFocused(null)}
             maxLength={100}
             className="w-full bg-transparent border-0 outline-none py-2 text-base placeholder:text-muted-foreground/60 transition-colors"
-            style={fieldStyle('name', !!errors.name)}
+            style={{ ...fieldStyle, ...underlineStyle('name', !!errors.name) }}
           />
           {errors.name && <p className="text-xs text-destructive mt-2">{errors.name}</p>}
         </div>
@@ -167,7 +176,7 @@ export function CustomerInfo({ onSubmit, isSubmitting, bookingData }: CustomerIn
             onBlur={() => setFocused(null)}
             maxLength={15}
             className="w-full bg-transparent border-0 outline-none py-2 text-base placeholder:text-muted-foreground/60 transition-colors"
-            style={fieldStyle('phone', !!errors.phone)}
+            style={{ ...fieldStyle, ...underlineStyle('phone', !!errors.phone) }}
           />
           {errors.phone && <p className="text-xs text-destructive mt-2">{errors.phone}</p>}
         </div>
@@ -186,14 +195,14 @@ export function CustomerInfo({ onSubmit, isSubmitting, bookingData }: CustomerIn
             {isSubmitting ? (
               <>
                 <Loader2 className="h-5 w-5 animate-spin" />
-                <span className="font-display italic" style={{ fontSize: 15, fontWeight: 600 }}>
+                  <span className="font-display" style={{ fontSize: 15, fontWeight: 600 }}>
                   Confirmando...
                 </span>
               </>
             ) : (
               <>
                 <MessageCircle className="h-[18px] w-[18px]" />
-                <span className="font-display italic" style={{ fontSize: 15, fontWeight: 600 }}>
+                <span className="font-display" style={{ fontSize: 15, fontWeight: 600 }}>
                   Confirmar agendamento e avisar a barbearia
                 </span>
               </>
