@@ -976,6 +976,7 @@ export type Database = {
       }
       public_profiles: {
         Row: {
+          accent_color: string
           barbershop_id: string
           booking_24h: boolean
           booking_enabled: boolean
@@ -987,7 +988,9 @@ export type Database = {
           descricao: string | null
           endereco: string | null
           estado: string | null
+          font_style: string
           foto_capa_url: string | null
+          gallery_enabled: boolean
           id: string
           instagram_url: string | null
           latitude: number | null
@@ -996,10 +999,12 @@ export type Database = {
           numero: string | null
           slug_personalizado: string | null
           theme_color: string | null
+          theme_style: string
           updated_at: string
           whatsapp_numero: string | null
         }
         Insert: {
+          accent_color?: string
           barbershop_id: string
           booking_24h?: boolean
           booking_enabled?: boolean
@@ -1011,7 +1016,9 @@ export type Database = {
           descricao?: string | null
           endereco?: string | null
           estado?: string | null
+          font_style?: string
           foto_capa_url?: string | null
+          gallery_enabled?: boolean
           id?: string
           instagram_url?: string | null
           latitude?: number | null
@@ -1020,10 +1027,12 @@ export type Database = {
           numero?: string | null
           slug_personalizado?: string | null
           theme_color?: string | null
+          theme_style?: string
           updated_at?: string
           whatsapp_numero?: string | null
         }
         Update: {
+          accent_color?: string
           barbershop_id?: string
           booking_24h?: boolean
           booking_enabled?: boolean
@@ -1035,7 +1044,9 @@ export type Database = {
           descricao?: string | null
           endereco?: string | null
           estado?: string | null
+          font_style?: string
           foto_capa_url?: string | null
+          gallery_enabled?: boolean
           id?: string
           instagram_url?: string | null
           latitude?: number | null
@@ -1044,6 +1055,7 @@ export type Database = {
           numero?: string | null
           slug_personalizado?: string | null
           theme_color?: string | null
+          theme_style?: string
           updated_at?: string
           whatsapp_numero?: string | null
         }
