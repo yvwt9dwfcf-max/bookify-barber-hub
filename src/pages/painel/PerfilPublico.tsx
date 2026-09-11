@@ -10,7 +10,7 @@ import { TimeInput } from '@/components/ui/TimeInput';
 import {
   Upload, MapPin, Instagram, Send as MessageCircle, Link2, Save, Loader2,
   Camera, Copy, CircleCheck as CheckCircle, TriangleAlert as AlertTriangle, ExternalLink, Trash2, Globe,
-  CalendarCheck, Clock
+  CalendarCheck, Clock, Palette, Images, Plus, Check
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { PerfilPublicoSkeleton } from '@/components/painel/skeletons';
@@ -36,7 +36,21 @@ interface PublicProfile {
   booking_24h: boolean;
   booking_start_time: string;
   booking_end_time: string;
+  theme_style: 'editorial' | 'urbano';
+  font_style: 'playfair' | 'anton';
+  accent_color: string;
+  gallery_enabled: boolean;
 }
+
+interface GalleryPhoto {
+  id: string;
+  barbershop_id: string;
+  image_url: string;
+  sort_order: number;
+  created_at: string;
+}
+
+const ACCENT_COLORS = ['#22C55E', '#4DA6FF', '#8B1E2B', '#F2C94C', '#A855F7', '#F2EEE4'];
 
 const PerfilPublico = () => {
   const { barbershop, isMaster } = useUserRole();
@@ -63,9 +77,18 @@ const PerfilPublico = () => {
   const [bookingStart, setBookingStart] = useState('08:00');
   const [bookingEnd, setBookingEnd] = useState('22:00');
   const [bookingSaveStatus, setBookingSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const [themeStyle, setThemeStyle] = useState<'editorial' | 'urbano'>('editorial');
+  const [fontStyle, setFontStyle] = useState<'playfair' | 'anton'>('playfair');
+  const [accentColor, setAccentColor] = useState('#22C55E');
+  const [galleryEnabled, setGalleryEnabled] = useState(true);
+  const [savingAppearance, setSavingAppearance] = useState(false);
+  const [gallery, setGallery] = useState<GalleryPhoto[]>([]);
+  const [uploadingGallery, setUploadingGallery] = useState(false);
+  const [deletingPhotoId, setDeletingPhotoId] = useState<string | null>(null);
 
   const coverInputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (barbershop?.id) fetchProfile();
@@ -73,12 +96,23 @@ const PerfilPublico = () => {
 
   const fetchProfile = async () => {
     try {
-      const { data, error } = await supabase
-        .from('public_profiles')
-        .select('*')
-        .eq('barbershop_id', barbershop!.id)
-        .maybeSingle();
+      if (!barbershop?.id) return;
+      const [profileResult, galleryResult] = await Promise.all([
+        supabase
+          .from('public_profiles')
+          .select('*')
+          .eq('barbershop_id', barbershop.id)
+          .maybeSingle(),
+        supabase
+          .from('barbershop_gallery')
+          .select('*')
+          .eq('barbershop_id', barbershop.id)
+          .order('sort_order', { ascending: true }),
+      ]);
+      const { data, error } = profileResult;
       if (error) throw error;
+      if (galleryResult.error) throw galleryResult.error;
+      setGallery((galleryResult.data || []) as GalleryPhoto[]);
       if (data) {
         setProfile(data as PublicProfile);
         setDescricao(data.descricao || '');
@@ -96,6 +130,10 @@ const PerfilPublico = () => {
         setBooking24h((data as any).booking_24h ?? true);
         setBookingStart(((data as any).booking_start_time || '08:00').slice(0, 5));
         setBookingEnd(((data as any).booking_end_time || '22:00').slice(0, 5));
+        setThemeStyle(data.theme_style === 'urbano' ? 'urbano' : 'editorial');
+        setFontStyle(data.font_style === 'anton' ? 'anton' : 'playfair');
+        setAccentColor(data.accent_color || '#22C55E');
+        setGalleryEnabled(data.gallery_enabled ?? true);
       } else {
         setCidade(barbershop?.city || '');
         setSlugPersonalizado(barbershop?.slug || '');
@@ -139,6 +177,80 @@ const PerfilPublico = () => {
       toast.success('Logo enviada!');
     } catch { toast.error('Erro ao enviar logo'); }
     finally { setUploadingLogo(false); }
+  };
+
+  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length || !barbershop) return;
+    setUploadingGallery(true);
+    try {
+      let nextOrder = gallery.reduce((max, photo) => Math.max(max, photo.sort_order), -1) + 1;
+      const newPhotos: GalleryPhoto[] = [];
+
+      for (const file of files) {
+        const ext = file.name.split('.').pop() || 'jpg';
+        const storagePath = `${barbershop.id}/gallery/${Date.now()}-${nextOrder}.${ext}`;
+        const { error: uploadError } = await supabase.storage
+          .from('gallery-photos')
+          .upload(storagePath, file, { upsert: false });
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = supabase.storage.from('gallery-photos').getPublicUrl(storagePath);
+        const { data: inserted, error: insertError } = await supabase
+          .from('barbershop_gallery')
+          .insert({
+            barbershop_id: barbershop.id,
+            image_url: urlData.publicUrl,
+            sort_order: nextOrder,
+          })
+          .select()
+          .single();
+
+        if (insertError) {
+          await supabase.storage.from('gallery-photos').remove([storagePath]);
+          throw insertError;
+        }
+        newPhotos.push(inserted as GalleryPhoto);
+        nextOrder += 1;
+      }
+
+      setGallery((current) => [...current, ...newPhotos].sort((a, b) => a.sort_order - b.sort_order));
+      toast.success(files.length > 1 ? `${files.length} fotos adicionadas` : 'Foto adicionada');
+    } catch (error) {
+      console.error(error);
+      toast.error('Erro ao adicionar fotos à galeria');
+    } finally {
+      setUploadingGallery(false);
+      e.target.value = '';
+    }
+  };
+
+  const getStoragePath = (url: string) => {
+    const marker = '/storage/v1/object/public/gallery-photos/';
+    const markerIndex = url.indexOf(marker);
+    if (markerIndex === -1) return null;
+    return decodeURIComponent(url.slice(markerIndex + marker.length).split('?')[0]);
+  };
+
+  const handleDeleteGalleryPhoto = async (photo: GalleryPhoto) => {
+    setDeletingPhotoId(photo.id);
+    try {
+      const { error } = await supabase.from('barbershop_gallery').delete().eq('id', photo.id);
+      if (error) throw error;
+
+      const storagePath = getStoragePath(photo.image_url);
+      if (storagePath) {
+        const { error: storageError } = await supabase.storage.from('gallery-photos').remove([storagePath]);
+        if (storageError) console.error(storageError);
+      }
+      setGallery((current) => current.filter((item) => item.id !== photo.id));
+      toast.success('Foto removida');
+    } catch (error) {
+      console.error(error);
+      toast.error('Erro ao remover foto');
+    } finally {
+      setDeletingPhotoId(null);
+    }
   };
 
   const formatPhone = (value: string) => {
@@ -193,6 +305,45 @@ const PerfilPublico = () => {
         toast.error('Erro ao salvar perfil público');
       }
     } finally { setSaving(false); }
+  };
+
+  const handleSaveAppearance = async () => {
+    if (!barbershop) return;
+    setSavingAppearance(true);
+    const appearanceData = {
+      barbershop_id: barbershop.id,
+      theme_style: themeStyle,
+      font_style: fontStyle,
+      accent_color: accentColor,
+      gallery_enabled: galleryEnabled,
+    };
+
+    try {
+      if (profile) {
+        const { data, error } = await supabase
+          .from('public_profiles')
+          .update(appearanceData)
+          .eq('id', profile.id)
+          .select()
+          .single();
+        if (error) throw error;
+        setProfile(data as PublicProfile);
+      } else {
+        const { data, error } = await supabase
+          .from('public_profiles')
+          .insert(appearanceData)
+          .select()
+          .single();
+        if (error) throw error;
+        setProfile(data as PublicProfile);
+      }
+      toast.success('Aparência salva');
+    } catch (error) {
+      console.error(error);
+      toast.error('Erro ao salvar aparência');
+    } finally {
+      setSavingAppearance(false);
+    }
   };
 
   // Auto-save booking gating fields without full form save
@@ -410,6 +561,157 @@ const PerfilPublico = () => {
         </div>
       </Section>
 
+      {/* === APARÊNCIA === */}
+      <Section title="Aparência" icon={<Palette className="h-4 w-4 text-primary" />} editorial>
+        <div className="space-y-2.5">
+          <p className="font-editorial-mono text-[10px] uppercase text-muted-foreground">Estilo</p>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              aria-pressed={themeStyle === 'editorial'}
+              onClick={() => setThemeStyle('editorial')}
+              className={`overflow-hidden rounded-xl border text-left transition-colors ${themeStyle === 'editorial' ? 'border-primary' : 'border-border hover:border-muted-foreground/40'}`}
+            >
+              <div className="flex h-24 items-end bg-background p-3">
+                <span className="font-display text-xl text-[hsl(var(--paper))]">Barbearia</span>
+              </div>
+              <div className="border-t border-border bg-card px-3 py-2.5 text-sm font-medium">Editorial</div>
+            </button>
+            <button
+              type="button"
+              aria-pressed={themeStyle === 'urbano'}
+              onClick={() => setThemeStyle('urbano')}
+              className={`overflow-hidden rounded-xl border text-left transition-colors ${themeStyle === 'urbano' ? 'border-primary' : 'border-border hover:border-muted-foreground/40'}`}
+            >
+              <div className="flex h-24 items-center justify-center bg-background p-3">
+                <span className="font-urban-preview text-xl text-[#4DA6FF]">BARBEARIA</span>
+              </div>
+              <div className="border-t border-border bg-card px-3 py-2.5 text-sm font-medium">Urbano</div>
+            </button>
+          </div>
+        </div>
+
+        <div className="space-y-2.5 border-t border-border pt-4">
+          <p className="font-editorial-mono text-[10px] uppercase text-muted-foreground">Fonte</p>
+          <div className="space-y-2">
+            <button
+              type="button"
+              aria-pressed={fontStyle === 'playfair'}
+              onClick={() => setFontStyle('playfair')}
+              className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left transition-colors ${fontStyle === 'playfair' ? 'border-primary bg-primary/5' : 'border-border'}`}
+            >
+              <div className="min-w-0 flex-1">
+                <p className="font-display text-lg text-foreground">Barbearia do João</p>
+                <p className="font-editorial-mono text-[10px] text-muted-foreground">Formal · Editorial</p>
+              </div>
+              <SelectionRadio selected={fontStyle === 'playfair'} />
+            </button>
+            <button
+              type="button"
+              aria-pressed={fontStyle === 'anton'}
+              onClick={() => setFontStyle('anton')}
+              className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left transition-colors ${fontStyle === 'anton' ? 'border-primary bg-primary/5' : 'border-border'}`}
+            >
+              <div className="min-w-0 flex-1">
+                <p className="font-urban-preview text-lg text-foreground">BARBEARIA DO JOÃO</p>
+                <p className="font-editorial-mono text-[10px] text-muted-foreground">Ousada · Rua</p>
+              </div>
+              <SelectionRadio selected={fontStyle === 'anton'} />
+            </button>
+          </div>
+        </div>
+
+        <div className="space-y-3 border-t border-border pt-4">
+          <p className="font-editorial-mono text-[10px] uppercase text-muted-foreground">Cor de destaque</p>
+          <div className="flex flex-wrap gap-3">
+            {ACCENT_COLORS.map((color) => {
+              const selected = accentColor.toUpperCase() === color;
+              return (
+                <button
+                  key={color}
+                  type="button"
+                  onClick={() => setAccentColor(color)}
+                  aria-label={`Selecionar cor ${color}`}
+                  aria-pressed={selected}
+                  className={`flex h-10 w-10 items-center justify-center rounded-full border-2 transition-transform ${selected ? 'scale-110 border-foreground' : 'border-transparent'}`}
+                  style={{ backgroundColor: color }}
+                >
+                  {selected && <Check className={`h-4 w-4 ${color === '#F2EEE4' || color === '#F2C94C' ? 'text-background' : 'text-white'}`} />}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between gap-4 border-t border-border pt-4">
+          <div>
+            <p className="text-sm font-medium">Mostrar galeria</p>
+            <p className="text-[11px] text-muted-foreground">Se desativado, a seção some da página pública</p>
+          </div>
+          <Switch checked={galleryEnabled} onCheckedChange={setGalleryEnabled} />
+        </div>
+
+        <Button
+          type="button"
+          onClick={handleSaveAppearance}
+          disabled={savingAppearance}
+          className="btn-primary-solid h-11 w-full"
+        >
+          {savingAppearance ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+          {savingAppearance ? 'Salvando...' : 'Salvar aparência'}
+        </Button>
+      </Section>
+
+      {/* === GALERIA === */}
+      <Section title="Galeria" icon={<Images className="h-4 w-4 text-primary" />} editorial>
+        <input
+          ref={galleryInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          onChange={handleGalleryUpload}
+        />
+
+        {gallery.length > 0 ? (
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {gallery.map((photo) => (
+              <div key={photo.id} className="group relative aspect-square overflow-hidden rounded-lg border border-border bg-muted">
+                <img src={photo.image_url} alt="Foto da galeria da barbearia" className="h-full w-full object-cover" />
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="icon"
+                  aria-label="Excluir foto"
+                  disabled={deletingPhotoId === photo.id}
+                  onClick={() => handleDeleteGalleryPhoto(photo)}
+                  className="absolute right-2 top-2 h-9 w-9 opacity-100 shadow-md sm:opacity-0 sm:group-hover:opacity-100"
+                >
+                  {deletingPhotoId === photo.id ? <Loader2 className="animate-spin" /> : <Trash2 />}
+                </Button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="flex min-h-28 flex-col items-center justify-center rounded-xl border border-dashed border-border text-center">
+            <Images className="mb-2 h-5 w-5 text-muted-foreground" />
+            <p className="text-sm font-medium">Sua galeria está vazia</p>
+            <p className="text-[11px] text-muted-foreground">Adicione fotos do ambiente e dos seus trabalhos</p>
+          </div>
+        )}
+
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => galleryInputRef.current?.click()}
+          disabled={uploadingGallery}
+          className="h-11 w-full border-dashed font-medium"
+        >
+          {uploadingGallery ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+          {uploadingGallery ? 'Enviando fotos...' : 'Adicionar fotos'}
+        </Button>
+      </Section>
+
       {/* === AGENDAMENTO ONLINE === */}
       <Section title="Agendamento online" icon={<CalendarCheck className="h-4 w-4" />}>
         <div className="flex items-center justify-between gap-3">
@@ -591,7 +893,7 @@ const PerfilPublico = () => {
       <Button
         onClick={handleSave}
         disabled={saving}
-        className="w-full btn-primary-gradient h-11 text-sm font-semibold rounded-xl"
+        className="w-full btn-primary-solid h-11 text-sm font-semibold"
         size="lg"
       >
         {saving ? (
@@ -605,14 +907,20 @@ const PerfilPublico = () => {
 };
 
 /* Reusable section wrapper — replaces individual Cards */
-const Section = ({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) => (
-  <div className="rounded-2xl border border-border bg-card p-4 space-y-3">
-    <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+const Section = ({ title, icon, children, editorial = false }: { title: string; icon: React.ReactNode; children: React.ReactNode; editorial?: boolean }) => (
+  <div className={`rounded-2xl border border-border bg-card p-4 space-y-4 ${editorial ? 'font-sans' : 'space-y-3'}`}>
+    <div className={`flex items-center gap-2 text-foreground ${editorial ? 'font-display text-lg' : 'text-sm font-semibold'}`}>
       {icon}
       {title}
     </div>
     {children}
   </div>
+);
+
+const SelectionRadio = ({ selected }: { selected: boolean }) => (
+  <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${selected ? 'border-primary bg-primary' : 'border-muted-foreground/50'}`}>
+    {selected && <span className="h-1.5 w-1.5 rounded-full bg-primary-foreground" />}
+  </span>
 );
 
 export default PerfilPublico;
