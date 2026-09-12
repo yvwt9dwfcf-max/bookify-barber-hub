@@ -329,6 +329,17 @@ const BarbeariaPublica = () => {
     ? [publicProfile.endereco, publicProfile.numero, publicProfile.cidade, publicProfile.estado].filter(Boolean).join(', ')
     : null;
 
+  // === Aparência configurada pelo dono da barbearia ===
+  const isUrban = publicProfile?.theme_style === 'urbano';
+  const accent = publicProfile?.accent_color || '#22C55E';
+  const titleFontClass = isUrban || publicProfile?.font_style === 'luckiest_guy'
+    ? 'font-urban-preview'
+    : 'font-display';
+  const galleryVisible = gallery.length > 0 && publicProfile?.gallery_enabled !== false;
+  const initials = (name: string) =>
+    name.trim().split(/\s+/).slice(0, 2).map((p) => p[0]?.toUpperCase() ?? '').join('');
+
+
   // Booking availability gate
   const bookingEnabled = publicProfile?.booking_enabled ?? true;
   const booking24h = publicProfile?.booking_24h ?? true;
