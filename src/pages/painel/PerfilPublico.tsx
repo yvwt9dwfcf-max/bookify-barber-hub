@@ -37,7 +37,7 @@ interface PublicProfile {
   booking_start_time: string;
   booking_end_time: string;
   theme_style: 'editorial' | 'urbano';
-  font_style: 'playfair' | 'anton';
+  font_style: 'playfair' | 'luckiest_guy';
   accent_color: string;
   gallery_enabled: boolean;
 }
@@ -78,7 +78,7 @@ const PerfilPublico = () => {
   const [bookingEnd, setBookingEnd] = useState('22:00');
   const [bookingSaveStatus, setBookingSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const [themeStyle, setThemeStyle] = useState<'editorial' | 'urbano'>('editorial');
-  const [fontStyle, setFontStyle] = useState<'playfair' | 'anton'>('playfair');
+  const [fontStyle, setFontStyle] = useState<'playfair' | 'luckiest_guy'>('playfair');
   const [accentColor, setAccentColor] = useState('#22C55E');
   const [galleryEnabled, setGalleryEnabled] = useState(true);
   const [savingAppearance, setSavingAppearance] = useState(false);
@@ -131,7 +131,7 @@ const PerfilPublico = () => {
         setBookingStart(((data as any).booking_start_time || '08:00').slice(0, 5));
         setBookingEnd(((data as any).booking_end_time || '22:00').slice(0, 5));
         setThemeStyle(data.theme_style === 'urbano' ? 'urbano' : 'editorial');
-        setFontStyle(data.font_style === 'anton' ? 'anton' : 'playfair');
+        setFontStyle(data.font_style === 'luckiest_guy' ? 'luckiest_guy' : 'playfair');
         setAccentColor(data.accent_color || '#22C55E');
         setGalleryEnabled(data.gallery_enabled ?? true);
       } else {
@@ -572,7 +572,7 @@ const PerfilPublico = () => {
               onClick={() => setThemeStyle('editorial')}
               className={`overflow-hidden rounded-xl border text-left transition-colors ${themeStyle === 'editorial' ? 'border-primary' : 'border-border hover:border-muted-foreground/40'}`}
             >
-              <div className="flex h-24 items-end bg-background p-3">
+              <div className="flex h-24 items-center justify-center bg-background p-3">
                 <span className="font-display text-xl text-[hsl(var(--paper))]">Barbearia</span>
               </div>
               <div className="border-t border-border bg-card px-3 py-2.5 text-sm font-medium">Editorial</div>
@@ -608,15 +608,15 @@ const PerfilPublico = () => {
             </button>
             <button
               type="button"
-              aria-pressed={fontStyle === 'anton'}
-              onClick={() => setFontStyle('anton')}
-              className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left transition-colors ${fontStyle === 'anton' ? 'border-primary bg-primary/5' : 'border-border'}`}
+              aria-pressed={fontStyle === 'luckiest_guy'}
+              onClick={() => setFontStyle('luckiest_guy')}
+              className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left transition-colors ${fontStyle === 'luckiest_guy' ? 'border-primary bg-primary/5' : 'border-border'}`}
             >
               <div className="min-w-0 flex-1">
                 <p className="font-urban-preview text-lg text-foreground">BARBEARIA DO JOÃO</p>
                 <p className="font-editorial-mono text-[10px] text-muted-foreground">Ousada · Rua</p>
               </div>
-              <SelectionRadio selected={fontStyle === 'anton'} />
+              <SelectionRadio selected={fontStyle === 'luckiest_guy'} />
             </button>
           </div>
         </div>
