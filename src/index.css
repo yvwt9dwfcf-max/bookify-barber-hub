@@ -90,6 +90,11 @@
     font-family: 'IBM Plex Mono', ui-monospace, monospace;
   }
 
+  .font-urban-preview {
+    font-family: 'Luckiest Guy', 'Anton', 'Impact', system-ui, sans-serif;
+    letter-spacing: 0.02em;
+  }
+
   /* Light mode — Pure white minimalist (Linear / Notion style) */
   .light {
     --background: 0 0% 100%; /* #FFFFFF puro */
