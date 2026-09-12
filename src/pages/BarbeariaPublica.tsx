@@ -35,6 +35,10 @@ interface PublicProfileData {
   booking_24h: boolean;
   booking_start_time: string;
   booking_end_time: string;
+  theme_style: string | null;
+  font_style: string | null;
+  accent_color: string | null;
+  gallery_enabled: boolean | null;
 }
 
 interface BarberData {
@@ -260,7 +264,7 @@ const BarbeariaPublica = () => {
           .order('sort_order'),
         supabase
           .from('public_profiles')
-          .select('foto_capa_url, logo_url, descricao, endereco, numero, cidade, estado, instagram_url, whatsapp_numero, latitude, longitude, booking_enabled, booking_24h, booking_start_time, booking_end_time')
+          .select('foto_capa_url, logo_url, descricao, endereco, numero, cidade, estado, instagram_url, whatsapp_numero, latitude, longitude, booking_enabled, booking_24h, booking_start_time, booking_end_time, theme_style, font_style, accent_color, gallery_enabled')
           .eq('barbershop_id', shop.id)
           .maybeSingle(),
       ]);
