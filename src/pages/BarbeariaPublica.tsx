@@ -35,6 +35,10 @@ interface PublicProfileData {
   booking_24h: boolean;
   booking_start_time: string;
   booking_end_time: string;
+  theme_style: string | null;
+  font_style: string | null;
+  accent_color: string | null;
+  gallery_enabled: boolean | null;
 }
 
 interface BarberData {
@@ -260,7 +264,7 @@ const BarbeariaPublica = () => {
           .order('sort_order'),
         supabase
           .from('public_profiles')
-          .select('foto_capa_url, logo_url, descricao, endereco, numero, cidade, estado, instagram_url, whatsapp_numero, latitude, longitude, booking_enabled, booking_24h, booking_start_time, booking_end_time')
+          .select('foto_capa_url, logo_url, descricao, endereco, numero, cidade, estado, instagram_url, whatsapp_numero, latitude, longitude, booking_enabled, booking_24h, booking_start_time, booking_end_time, theme_style, font_style, accent_color, gallery_enabled')
           .eq('barbershop_id', shop.id)
           .maybeSingle(),
       ]);
@@ -324,6 +328,17 @@ const BarbeariaPublica = () => {
   const mapAddress = publicProfile?.endereco
     ? [publicProfile.endereco, publicProfile.numero, publicProfile.cidade, publicProfile.estado].filter(Boolean).join(', ')
     : null;
+
+  // === Aparência configurada pelo dono da barbearia ===
+  const isUrban = publicProfile?.theme_style === 'urbano';
+  const accent = publicProfile?.accent_color || '#22C55E';
+  const titleFontClass = isUrban || publicProfile?.font_style === 'luckiest_guy'
+    ? 'font-urban-preview'
+    : 'font-display';
+  const galleryVisible = gallery.length > 0 && publicProfile?.gallery_enabled !== false;
+  const initials = (name: string) =>
+    name.trim().split(/\s+/).slice(0, 2).map((p) => p[0]?.toUpperCase() ?? '').join('');
+
 
   // Booking availability gate
   const bookingEnabled = publicProfile?.booking_enabled ?? true;
@@ -401,7 +416,10 @@ const BarbeariaPublica = () => {
             <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
           </div>
         ) : (
-          <div className="h-32 sm:h-44 bg-gradient-to-br from-primary/20 via-primary/10 to-background" />
+          <div
+            className="h-32 sm:h-44"
+            style={{ background: `linear-gradient(135deg, ${accent}33 0%, ${accent}14 45%, transparent 100%)` }}
+          />
         )}
 
         <div className="relative -mt-16 sm:-mt-20 px-4 sm:px-6 pb-6 max-w-lg mx-auto text-center">
@@ -409,67 +427,96 @@ const BarbeariaPublica = () => {
             <img
               src={publicProfile.logo_url}
               alt={`Logo da ${barbershop?.name ?? 'barbearia'}`}
-              className="w-20 h-20 rounded-2xl mx-auto mb-4 object-cover ring-4 ring-background shadow-lg"
+              className={`w-20 h-20 mx-auto mb-4 object-cover ${isUrban ? 'rounded-full border-4 shadow-lg' : 'rounded-2xl'}`}
+              style={isUrban ? { borderColor: accent } : undefined}
             />
           ) : !publicProfile?.foto_capa_url ? (
-            <div className="w-20 h-20 rounded-2xl mx-auto mb-4 flex items-center justify-center border-2 border-border bg-card shadow-lg">
-              <Scissors className="h-8 w-8 text-primary" />
+            <div
+              className={`w-20 h-20 mx-auto mb-4 flex items-center justify-center bg-card ${isUrban ? 'rounded-full border-4 shadow-lg' : 'rounded-2xl border border-border'}`}
+              style={isUrban ? { borderColor: accent } : { borderColor: 'rgba(242,238,228,0.14)' }}
+            >
+              <Scissors className="h-8 w-8" style={{ color: accent }} />
             </div>
           ) : null}
 
-          <h1 className="text-2xl sm:text-3xl font-bold">{barbershop?.name}</h1>
+          <h1
+            className={
+              isUrban
+                ? `${titleFontClass} text-3xl sm:text-4xl uppercase leading-tight`
+                : `${titleFontClass} text-2xl sm:text-3xl font-bold`
+            }
+            style={isUrban ? { color: accent } : undefined}
+          >
+            {barbershop?.name}
+          </h1>
 
           {publicProfile?.descricao && (
-            <p className="text-muted-foreground text-sm mt-2 max-w-md mx-auto">{publicProfile.descricao}</p>
+            <p className={`text-sm mt-2 max-w-md mx-auto ${isUrban ? 'font-medium text-foreground/80' : 'text-muted-foreground'}`}>
+              {publicProfile.descricao}
+            </p>
           )}
 
           {(displayCity || displayState) && (
-            <p className="flex items-center justify-center gap-1.5 text-muted-foreground text-sm mt-2">
+            <p className={`flex items-center justify-center gap-1.5 mt-2 text-muted-foreground ${isUrban ? 'text-sm' : 'font-editorial-mono text-[11px] uppercase tracking-wide'}`}>
               <MapPin className="h-3.5 w-3.5" />
               {[displayCity, displayState].filter(Boolean).join(' - ')}
             </p>
           )}
 
-          <div className="flex gap-3 justify-center mt-5 flex-wrap">
-            {publicProfile?.instagram_url && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="rounded-full gap-2"
-                onClick={() => window.open(publicProfile.instagram_url!, '_blank')}
-              >
-                <Instagram className="h-4 w-4" />
-                Instagram
-              </Button>
-            )}
-            {whatsappLink && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="rounded-full gap-2"
-                onClick={() => window.open(whatsappLink, '_blank')}
-              >
-                <MessageCircle className="h-4 w-4" />
-                WhatsApp
-              </Button>
-            )}
-            {(barbershop?.google_maps_url || mapAddress) && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="rounded-full gap-2"
-                onClick={() => {
+          <div className={`flex justify-center mt-5 flex-wrap ${isUrban ? 'gap-2.5' : 'gap-2'}`}>
+            {[
+              publicProfile?.instagram_url && {
+                key: 'ig',
+                label: 'Instagram',
+                icon: Instagram,
+                onClick: () => window.open(publicProfile.instagram_url!, '_blank'),
+              },
+              whatsappLink && {
+                key: 'wa',
+                label: 'WhatsApp',
+                icon: MessageCircle,
+                onClick: () => window.open(whatsappLink, '_blank'),
+              },
+              (barbershop?.google_maps_url || mapAddress) && {
+                key: 'map',
+                label: 'Ver no mapa',
+                icon: MapPin,
+                onClick: () => {
                   if (barbershop?.google_maps_url) {
                     window.open(barbershop.google_maps_url, '_blank');
                   } else if (mapAddress) {
                     window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapAddress)}`, '_blank');
                   }
-                }}
-              >
-                <MapPin className="h-4 w-4" />
-                Ver no mapa
-              </Button>
-            )}
+                },
+              },
+            ]
+              .filter(Boolean)
+              .map((item) => {
+                const link = item as { key: string; label: string; icon: typeof MapPin; onClick: () => void };
+                const Icon = link.icon;
+                return isUrban ? (
+                  <button
+                    key={link.key}
+                    type="button"
+                    onClick={link.onClick}
+                    className="flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-semibold text-foreground transition-transform active:scale-95"
+                    style={{ backgroundColor: `${accent}1F`, border: `1px solid ${accent}66` }}
+                  >
+                    <Icon className="h-4 w-4" style={{ color: accent }} />
+                    {link.label}
+                  </button>
+                ) : (
+                  <button
+                    key={link.key}
+                    type="button"
+                    onClick={link.onClick}
+                    className="font-editorial-mono text-[11px] uppercase tracking-[0.12em] px-3.5 py-2 text-foreground/80 hover:text-foreground transition-colors"
+                    style={{ border: '1px solid rgba(242,238,228,0.14)' }}
+                  >
+                    {link.label}
+                  </button>
+                );
+              })}
           </div>
         </div>
       </header>
