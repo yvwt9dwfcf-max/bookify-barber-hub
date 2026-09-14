@@ -7,3 +7,7 @@
 - [x] Implementar autosave do Perfil Público
 - [x] Limitar galeria a 12 fotos
 - [x] Validar compilação e telas afetadas
+- [ ] Adicionar preview otimista e compressão aos uploads de imagens
+- [ ] Estabilizar indicadores e erros do auto-save
+- [ ] Adicionar atualização manual à Agenda
+- [ ] Aplicar otimizações pontuais e validar telas
