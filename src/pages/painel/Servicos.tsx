@@ -320,51 +320,6 @@ const Servicos = () => {
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
-                {/* Global service photo upload (master only) */}
-                <div className="space-y-2">
-                  <Label>Foto padrão do serviço</Label>
-                  <div className="flex items-center gap-4">
-                    <div className="relative">
-                      <Avatar className="h-20 w-20 rounded-xl">
-                        {photoPreview ? (
-                          <AvatarImage src={photoPreview} alt="Foto do serviço" className="object-cover" />
-                        ) : null}
-                        <AvatarFallback className="rounded-xl bg-primary/10">
-                          <Scissors className="h-8 w-8 text-primary" />
-                        </AvatarFallback>
-                      </Avatar>
-                      {photoPreview && (
-                        <button
-                          type="button"
-                          onClick={removePhoto}
-                          className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/90 transition-colors"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                      )}
-                    </div>
-                    <div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => fileInputRef.current?.click()}
-                      >
-                        <Camera className="mr-2 h-4 w-4" />
-                        {photoPreview ? 'Trocar foto' : 'Adicionar foto'}
-                      </Button>
-                      <p className="text-xs text-muted-foreground mt-1">JPG ou PNG, até 5MB</p>
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/jpeg,image/png,image/webp"
-                        onChange={handlePhotoChange}
-                        className="hidden"
-                      />
-                    </div>
-                  </div>
-                </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="name">Nome do serviço</Label>
                   <Input
@@ -464,8 +419,8 @@ const Servicos = () => {
                 <DialogClose asChild>
                   <Button variant="outline">Cancelar</Button>
                 </DialogClose>
-                <Button onClick={handleSubmit} disabled={saving || uploadingPhoto}>
-                  {saving || uploadingPhoto ? (
+                <Button onClick={handleSubmit} disabled={saving}>
+                  {saving ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Salvando...
@@ -479,19 +434,6 @@ const Servicos = () => {
           </Dialog>
         )}
       </div>
-
-      {/* Hidden input for per-barber service photo */}
-      <input
-        ref={servicePhotoInputRef}
-        type="file"
-        accept="image/jpeg,image/png,image/webp"
-        onChange={(e) => {
-          if (activeServiceForPhoto) {
-            handleServicePhotoUpload(e, activeServiceForPhoto);
-          }
-        }}
-        className="hidden"
-      />
 
       {/* Services List */}
       {services.length === 0 ? (
@@ -519,48 +461,6 @@ const Servicos = () => {
               <CardContent className="p-4">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-3">
-                    {/* Show my photo or global photo or fallback */}
-                    <div className="relative group">
-                      <Avatar className="h-14 w-14 rounded-xl flex-shrink-0">
-                        {service.myPhotoUrl ? (
-                          <AvatarImage src={service.myPhotoUrl} alt={service.name} className="object-cover" />
-                        ) : service.photo_url ? (
-                          <AvatarImage src={service.photo_url} alt={service.name} className="object-cover" />
-                        ) : null}
-                        <AvatarFallback className="rounded-xl bg-primary/10">
-                          <Scissors className="h-6 w-6 text-primary" />
-                        </AvatarFallback>
-                      </Avatar>
-                      {/* Upload overlay */}
-                      <button
-                        type="button"
-                        disabled={uploadingServicePhoto === service.id}
-                        onClick={() => {
-                          setActiveServiceForPhoto(service.id);
-                          servicePhotoInputRef.current?.click();
-                        }}
-                        className="absolute inset-0 bg-black/50 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-                      >
-                        {uploadingServicePhoto === service.id ? (
-                          <Loader2 className="h-5 w-5 text-white animate-spin" />
-                        ) : (
-                          <Camera className="h-5 w-5 text-white" />
-                        )}
-                      </button>
-                      {/* Remove photo button */}
-                      {service.myPhotoUrl && (
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            removeServicePhoto(service.id);
-                          }}
-                          className="absolute -top-1.5 -right-1.5 bg-destructive text-destructive-foreground rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/90"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                      )}
-                    </div>
                     <div>
                       <h3 className="font-semibold">{service.name}</h3>
                       <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
@@ -572,23 +472,6 @@ const Servicos = () => {
                           {formatPrice(Number(service.price))}
                         </span>
                       </div>
-                      {service.myPhotoUrl ? (
-                        <Badge variant="secondary" className="text-xs mt-1.5">
-                          📸 Minha foto
-                        </Badge>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setActiveServiceForPhoto(service.id);
-                            servicePhotoInputRef.current?.click();
-                          }}
-                          className="text-xs text-primary hover:underline mt-1.5 flex items-center gap-1"
-                        >
-                          <ImagePlus className="h-3 w-3" />
-                          Adicionar minha foto
-                        </button>
-                      )}
                       {!service.active && (
                         <span className="text-xs text-muted-foreground mt-1 block">
                           Inativo
