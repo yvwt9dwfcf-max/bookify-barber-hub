@@ -4,11 +4,13 @@ import { UserRound as User } from 'lucide-react';
 import { PremiumSkeleton, SkeletonCard } from '@/components/ui/premium-skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
 import { cn } from '@/lib/utils';
+import { BookingAppearance, DEFAULT_BOOKING_APPEARANCE, isUrbanAppearance } from './bookingAppearance';
 
 interface BarberSelectionProps {
   onSelect: (barber: Barber) => void;
   barbershopId?: string;
   availableBarbers?: Barber[];
+  appearance?: BookingAppearance;
 }
 
 const getInitials = (name: string) =>
@@ -19,10 +21,11 @@ const getInitials = (name: string) =>
     .map(part => part[0]?.toUpperCase() ?? '')
     .join('');
 
-export function BarberSelection({ onSelect, barbershopId, availableBarbers }: BarberSelectionProps) {
+export function BarberSelection({ onSelect, barbershopId, availableBarbers, appearance = DEFAULT_BOOKING_APPEARANCE }: BarberSelectionProps) {
   const [barbers, setBarbers] = useState<Barber[]>(availableBarbers || []);
   const [loading, setLoading] = useState(!availableBarbers);
   const [selected, setSelected] = useState<string | null>(null);
+  const isUrban = isUrbanAppearance(appearance);
 
   useEffect(() => {
     if (availableBarbers && availableBarbers.length > 0) {
@@ -91,12 +94,14 @@ export function BarberSelection({ onSelect, barbershopId, availableBarbers }: Ba
     <div className="space-y-6">
       <div>
         <p
-          className="font-editorial-mono text-[10px] uppercase tracking-[0.18em] mb-2"
-          style={{ color: '#22C55E' }}
+           className={isUrban ? 'font-sans text-xs font-bold uppercase mb-2' : 'font-editorial-mono text-[10px] uppercase tracking-[0.18em] mb-2'}
+           style={{ color: appearance.accentColor }}
         >
           — Profissional
         </p>
-        <h2 className="font-display text-2xl font-semibold">Escolha o profissional</h2>
+         <h2 className={`${isUrban ? 'font-urban-preview uppercase text-3xl' : 'font-display text-2xl font-semibold'}`}>
+           {isUrban ? <><span style={{ color: appearance.accentColor }}>Escolha o</span> profissional</> : 'Escolha o profissional'}
+         </h2>
         <p className="text-sm mt-1" style={{ color: '#8C887C' }}>
           Selecione o barbeiro de sua preferência
         </p>
@@ -110,26 +115,26 @@ export function BarberSelection({ onSelect, barbershopId, availableBarbers }: Ba
               key={barber.id}
               onClick={() => handleSelect(barber)}
               className={cn(
-                'flex items-center gap-4 p-4 rounded-xl border text-left transition-colors duration-200',
+                 `flex items-center gap-4 p-4 border text-left transition-colors duration-200 ${isUrban ? 'rounded-2xl' : 'rounded-xl'}`,
                 'active:scale-[0.99]'
               )}
               style={{
-                borderColor: isSelected ? '#22C55E' : 'rgba(242,238,228,0.14)',
-                background: isSelected ? 'rgba(34,197,94,0.06)' : 'transparent',
+                 borderColor: isSelected ? appearance.accentColor : 'rgba(242,238,228,0.14)',
+                 background: isSelected ? `${appearance.accentColor}12` : 'transparent',
               }}
             >
               <div
-                className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 font-sans text-sm font-semibold"
+                 className={`w-12 h-12 flex items-center justify-center flex-shrink-0 font-sans text-sm font-semibold ${isUrban ? 'rounded-2xl' : 'rounded-full'}`}
                 style={{
-                  border: `1px solid ${isSelected ? '#22C55E' : 'rgba(242,238,228,0.14)'}`,
-                  color: isSelected ? '#22C55E' : 'inherit',
+                   border: `1px solid ${isSelected ? appearance.accentColor : 'rgba(242,238,228,0.14)'}`,
+                   color: isSelected ? appearance.accentColor : 'inherit',
                 }}
               >
                 {getInitials(barber.name) || <User className="h-5 w-5" />}
               </div>
 
               <div className="flex-1 min-w-0">
-                <h3 className="font-sans text-[15px] font-semibold truncate">{barber.name}</h3>
+                 <h3 className={`${isUrban ? 'font-urban-preview uppercase text-lg' : 'font-sans text-[15px] font-semibold'} truncate`}>{barber.name}</h3>
                 <p className="text-xs mt-0.5" style={{ color: '#8C887C' }}>
                   Profissional
                 </p>
@@ -138,8 +143,8 @@ export function BarberSelection({ onSelect, barbershopId, availableBarbers }: Ba
               <span
                 className="w-4 h-4 rounded-full flex-shrink-0 transition-colors duration-200"
                 style={{
-                  border: `1px solid ${isSelected ? '#22C55E' : 'rgba(242,238,228,0.24)'}`,
-                  background: isSelected ? '#22C55E' : 'transparent',
+                   border: `1px solid ${isSelected ? appearance.accentColor : 'rgba(242,238,228,0.24)'}`,
+                   background: isSelected ? appearance.accentColor : 'transparent',
                 }}
               />
             </button>

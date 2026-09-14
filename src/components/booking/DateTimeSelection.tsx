@@ -6,11 +6,13 @@ import { PremiumSkeleton } from '@/components/ui/premium-skeleton';
 import { cn } from '@/lib/utils';
 import { format, addDays, startOfDay, isSameDay, isAfter, isBefore, setHours, setMinutes } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { BookingAppearance, DEFAULT_BOOKING_APPEARANCE, isUrbanAppearance } from './bookingAppearance';
 
 interface DateTimeSelectionProps {
   barberId: string;
   serviceDuration: number;
   onSelect: (dateTime: Date) => void;
+  appearance?: BookingAppearance;
 }
 
 const LINE = 'rgba(242,238,228,0.14)';
@@ -23,11 +25,12 @@ const periodOf = (time: string): Period => {
   return 'Noite';
 };
 
-export function DateTimeSelection({ barberId, serviceDuration, onSelect }: DateTimeSelectionProps) {
+export function DateTimeSelection({ barberId, serviceDuration, onSelect, appearance = DEFAULT_BOOKING_APPEARANCE }: DateTimeSelectionProps) {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [weekStart, setWeekStart] = useState(startOfDay(new Date()));
   const [period, setPeriod] = useState<Period>('Manhã');
+  const isUrban = isUrbanAppearance(appearance);
 
   const {
     loading,
@@ -123,12 +126,14 @@ export function DateTimeSelection({ barberId, serviceDuration, onSelect }: DateT
     <div className="space-y-8">
       <div>
         <p
-          className="font-editorial-mono text-[10px] uppercase tracking-[0.18em] mb-2"
-          style={{ color: '#22C55E' }}
+           className={isUrban ? 'font-sans text-xs font-bold uppercase mb-2' : 'font-editorial-mono text-[10px] uppercase tracking-[0.18em] mb-2'}
+           style={{ color: appearance.accentColor }}
         >
           — Data e horário
         </p>
-        <h2 className="font-display text-2xl font-semibold">Escolha a data e horário</h2>
+         <h2 className={isUrban ? 'font-urban-preview uppercase text-3xl' : 'font-display text-2xl font-semibold'}>
+           {isUrban ? <><span style={{ color: appearance.accentColor }}>Escolha a data</span> e horário</> : 'Escolha a data e horário'}
+         </h2>
         <p className="text-sm mt-1" style={{ color: '#8C887C' }}>
           Selecione quando deseja ser atendido
         </p>
@@ -177,8 +182,8 @@ export function DateTimeSelection({ barberId, serviceDuration, onSelect }: DateT
                 !isSelectable && 'opacity-35 cursor-not-allowed'
               )}
               style={{
-                border: `1px solid ${isSelected ? '#22C55E' : LINE}`,
-                background: isSelected ? '#22C55E' : 'transparent',
+                 border: `1px solid ${isSelected ? appearance.accentColor : LINE}`,
+                 background: isSelected ? appearance.accentColor : 'transparent',
                 color: isSelected ? '#0A0A08' : undefined,
               }}
             >
@@ -243,8 +248,8 @@ export function DateTimeSelection({ barberId, serviceDuration, onSelect }: DateT
                       !isAvailable && 'line-through cursor-not-allowed'
                     )}
                     style={{
-                      border: `1px solid ${isSelected ? '#22C55E' : LINE}`,
-                      background: isSelected ? '#22C55E' : 'transparent',
+                       border: `1px solid ${isSelected ? appearance.accentColor : LINE}`,
+                       background: isSelected ? appearance.accentColor : 'transparent',
                       color: isSelected ? '#0A0A08' : isAvailable ? undefined : 'rgba(140,136,124,0.55)',
                     }}
                   >

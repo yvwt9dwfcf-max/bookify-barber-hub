@@ -331,13 +331,19 @@ const BarbeariaPublica = () => {
 
   // === Aparência configurada pelo dono da barbearia ===
   const isUrban = publicProfile?.theme_style === 'urbano';
-  const accent = publicProfile?.accent_color || '#22C55E';
+  const accent = publicProfile?.accent_color || '#4da6ff';
   const titleFontClass = isUrban || publicProfile?.font_style === 'luckiest_guy'
     ? 'font-urban-preview'
     : 'font-display';
   const galleryVisible = gallery.length > 0 && publicProfile?.gallery_enabled !== false;
   const initials = (name: string) =>
     name.trim().split(/\s+/).slice(0, 2).map((p) => p[0]?.toUpperCase() ?? '').join('');
+  const renderBicolorText = (text: string) =>
+    text.split(/\s+/).map((word, index) => (
+      <span key={`${word}-${index}`} style={{ color: index % 2 === 0 ? accent : 'hsl(var(--foreground))' }}>
+        {word}{index < text.split(/\s+/).length - 1 ? ' ' : ''}
+      </span>
+    ));
 
 
   // Booking availability gate
@@ -427,12 +433,12 @@ const BarbeariaPublica = () => {
             <img
               src={publicProfile.logo_url}
               alt={`Logo da ${barbershop?.name ?? 'barbearia'}`}
-              className={`w-20 h-20 mx-auto mb-4 object-cover ${isUrban ? 'rounded-full border-4 shadow-lg' : 'rounded-2xl'}`}
+              className={`w-20 h-20 mx-auto mb-4 object-cover ${isUrban ? 'rounded-2xl border-4 shadow-lg' : 'rounded-2xl'}`}
               style={isUrban ? { borderColor: accent } : undefined}
             />
           ) : !publicProfile?.foto_capa_url ? (
             <div
-              className={`w-20 h-20 mx-auto mb-4 flex items-center justify-center bg-card ${isUrban ? 'rounded-full border-4 shadow-lg' : 'rounded-2xl border border-border'}`}
+               className={`w-20 h-20 mx-auto mb-4 flex items-center justify-center bg-card ${isUrban ? 'rounded-2xl border-4 shadow-lg' : 'rounded-2xl border border-border'}`}
               style={isUrban ? { borderColor: accent } : { borderColor: 'rgba(242,238,228,0.14)' }}
             >
               <Scissors className="h-8 w-8" style={{ color: accent }} />
@@ -445,9 +451,8 @@ const BarbeariaPublica = () => {
                 ? `${titleFontClass} text-3xl sm:text-4xl uppercase leading-tight`
                 : `${titleFontClass} text-2xl sm:text-3xl font-bold`
             }
-            style={isUrban ? { color: accent } : undefined}
           >
-            {barbershop?.name}
+            {isUrban && barbershop?.name ? renderBicolorText(barbershop.name) : barbershop?.name}
           </h1>
 
           {publicProfile?.descricao && (
@@ -563,7 +568,12 @@ const BarbeariaPublica = () => {
 
         {/* Barbers Section */}
         <section>
-          <h2 className="text-lg font-semibold mb-4">Nossos Profissionais</h2>
+          <p className="font-editorial-mono text-[10px] uppercase tracking-[0.18em] mb-2" style={{ color: accent }}>
+            — Equipe
+          </p>
+          <h2 className={`${isUrban ? 'font-urban-preview text-2xl uppercase' : 'font-display text-xl font-semibold'} mb-4`}>
+            {isUrban ? renderBicolorText('Nossos Profissionais') : 'Nossos Profissionais'}
+          </h2>
           {barbers.length === 0 ? (
             <EmptyState
               icon={User}
@@ -580,7 +590,8 @@ const BarbeariaPublica = () => {
               {barbers.map((barber) => (
                 <motion.div key={barber.id} variants={itemVariants}>
                   <Card
-                    className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-primary/30 active:scale-[0.98]"
+                    className={`cursor-pointer transition-all duration-200 active:scale-[0.98] ${isUrban ? 'rounded-2xl border-2' : 'rounded-lg border'}`}
+                    style={{ borderColor: isUrban ? `${accent}80` : 'rgba(242,238,228,0.14)' }}
                     onClick={() => handleSelectBarber(barber)}
                   >
                     <CardContent className="p-4 flex items-center gap-4">
@@ -588,16 +599,20 @@ const BarbeariaPublica = () => {
                         <img
                           src={barber.photo_url}
                           alt={barber.name}
-                          className="w-14 h-14 rounded-full object-cover ring-2 ring-border"
+                          className={`w-14 h-14 object-cover ${isUrban ? 'rounded-2xl' : 'rounded-md'}`}
+                          style={{ border: `1px solid ${isUrban ? accent : 'rgba(242,238,228,0.14)'}` }}
                         />
                       ) : (
-                        <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center ring-2 ring-border">
-                          <User className="h-6 w-6 text-muted-foreground" />
+                        <div
+                          className={`w-14 h-14 bg-muted flex items-center justify-center font-semibold ${isUrban ? 'rounded-2xl' : 'rounded-md'}`}
+                          style={{ border: `1px solid ${isUrban ? accent : 'rgba(242,238,228,0.14)'}`, color: accent }}
+                        >
+                          {initials(barber.name) || <User className="h-6 w-6 text-muted-foreground" />}
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold truncate">{barber.name}</h3>
-                        <p className="text-sm text-muted-foreground">Toque para ver serviços</p>
+                        <h3 className={`${isUrban ? 'font-urban-preview text-lg uppercase' : 'font-display font-semibold'} truncate`}>{barber.name}</h3>
+                        <p className="font-sans text-sm text-muted-foreground">Toque para ver serviços</p>
                       </div>
                     </CardContent>
                   </Card>
@@ -608,12 +623,21 @@ const BarbeariaPublica = () => {
         </section>
 
         {/* Gallery Section */}
-        {gallery.length > 0 && (
+        {galleryVisible && (
           <section>
-            <h2 className="text-lg font-semibold mb-4">Galeria</h2>
-            <div className="grid grid-cols-3 gap-2">
+            <p className="font-editorial-mono text-[10px] uppercase tracking-[0.18em] mb-2" style={{ color: accent }}>
+              — Portfólio
+            </p>
+            <h2 className={`${isUrban ? 'font-urban-preview text-2xl uppercase' : 'font-display text-xl font-semibold'} mb-4`}>
+              {isUrban ? renderBicolorText('Nossa Galeria') : 'Galeria'}
+            </h2>
+            <div className={`grid gap-2 ${isUrban ? 'grid-cols-2' : 'grid-cols-3'}`}>
               {gallery.map(img => (
-                <div key={img.id} className="aspect-square rounded-xl overflow-hidden">
+                <div
+                  key={img.id}
+                  className={`overflow-hidden ${isUrban ? 'aspect-[4/5] rounded-2xl' : 'aspect-square rounded-md'}`}
+                  style={{ border: `1px solid ${isUrban ? accent : 'rgba(242,238,228,0.14)'}` }}
+                >
                   <img
                     src={img.image_url}
                     alt={`Foto da ${barbershop?.name ?? 'barbearia'}`}
@@ -686,7 +710,7 @@ const BarbeariaPublica = () => {
                         {service.duration_minutes} min
                       </p>
                     </div>
-                    <span className="text-sm font-semibold text-primary shrink-0">
+                    <span className="text-sm font-semibold shrink-0" style={{ color: accent }}>
                       {service.price > 0 ? `R$ ${service.price.toFixed(2).replace('.', ',')}` : 'Grátis'}
                     </span>
                   </div>
@@ -712,7 +736,8 @@ const BarbeariaPublica = () => {
                 onClick={handleAgendar}
                 onMouseEnter={prefetchBooking}
                 onTouchStart={prefetchBooking}
-                className="btn-primary-gradient h-12 text-base rounded-xl w-full"
+                 className={`h-12 text-[15px] font-semibold w-full shadow-none ${isUrban ? 'rounded-2xl uppercase' : 'rounded-[10px]'}`}
+                 style={{ backgroundColor: accent, color: '#06210F' }}
                 disabled={barberServices.length === 0 || !bookingAvailable}
               >
                 Agendar agora
@@ -728,9 +753,11 @@ const BarbeariaPublica = () => {
           href={whatsappLink}
           target="_blank"
           rel="noopener noreferrer"
-          className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-primary flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
+          className={`fixed bottom-6 right-6 z-50 w-14 h-14 flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 ${isUrban ? 'rounded-2xl' : 'rounded-full'}`}
+          style={{ backgroundColor: accent }}
+          aria-label="Abrir WhatsApp"
         >
-          <MessageCircle className="h-6 w-6 text-white" />
+          <MessageCircle className="h-6 w-6" style={{ color: '#06210F' }} />
         </a>
       )}
     </div>
