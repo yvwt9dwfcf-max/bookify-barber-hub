@@ -95,10 +95,13 @@ export function BookingConfirmation({ appointment, onNewBooking, barbershopId, p
     <div className="w-full max-w-md mx-auto">
       <div className="text-center mb-8">
         <div
-          className="w-14 h-14 mx-auto rounded-full flex items-center justify-center mb-5"
-           style={{ border: `1px solid ${appearance.accentColor}`, background: `${appearance.accentColor}12` }}
+          className="w-[90px] h-[90px] mx-auto rounded-full flex items-center justify-center mb-6"
+          style={{
+            background: `linear-gradient(135deg, ${appearance.accentColor}, color-mix(in srgb, ${appearance.accentColor} 58%, white))`,
+            boxShadow: `0 0 34px ${appearance.accentColor}66`,
+          }}
         >
-           <CheckCircle className="h-6 w-6" style={{ color: appearance.accentColor }} />
+          <CheckCircle className="h-11 w-11 text-[hsl(var(--paper))]" strokeWidth={3.2} />
         </div>
          <p className={isUrban ? 'font-sans text-xs font-bold uppercase' : 'font-editorial-mono text-[10px] uppercase tracking-[0.18em]'} style={{ color: appearance.accentColor }}>
           — Confirmado

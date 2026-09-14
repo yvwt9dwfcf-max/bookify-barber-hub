@@ -28,9 +28,10 @@ export interface BookingFlowProps {
   barbershopId?: string;
   availableBarbers?: Barber[];
   appearance?: BookingAppearance;
+  onConfirmationChange?: (isConfirmation: boolean) => void;
 }
 
-export function BookingFlow({ preselectedBarber, barbershopId, availableBarbers, appearance = DEFAULT_BOOKING_APPEARANCE }: BookingFlowProps) {
+export function BookingFlow({ preselectedBarber, barbershopId, availableBarbers, appearance = DEFAULT_BOOKING_APPEARANCE, onConfirmationChange }: BookingFlowProps) {
   const initialStep = preselectedBarber ? 'service' : 'barber';
   
   const [step, setStep] = useState<BookingStep>(initialStep);
@@ -49,6 +50,10 @@ export function BookingFlow({ preselectedBarber, barbershopId, availableBarbers,
   // avoiding stale-closure issues where selected dateTime appeared "lost" on first submit.
   const bookingDataRef = useRef(bookingData);
   useEffect(() => { bookingDataRef.current = bookingData; }, [bookingData]);
+  useEffect(() => {
+    onConfirmationChange?.(step === 'confirmation');
+    return () => onConfirmationChange?.(false);
+  }, [step, onConfirmationChange]);
 
   const steps: BookingStep[] = preselectedBarber 
     ? ['service', 'datetime', 'info', 'confirmation']
