@@ -58,13 +58,6 @@ interface ServiceData {
   photo_url: string | null;
 }
 
-interface BarberServicePhoto {
-  barber_id: string;
-  service_id: string;
-  photo_url: string;
-}
-
-
 interface GalleryImage {
   id: string;
   image_url: string;
@@ -88,7 +81,6 @@ const BarbeariaPublica = () => {
   const [publicProfile, setPublicProfile] = useState<PublicProfileData | null>(null);
   const [barbers, setBarbers] = useState<BarberData[]>([]);
   const [services, setServices] = useState<ServiceData[]>([]);
-  const [barberServicePhotos, setBarberServicePhotos] = useState<BarberServicePhoto[]>([]);
   const [gallery, setGallery] = useState<GalleryImage[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -269,21 +261,10 @@ const BarbeariaPublica = () => {
           .maybeSingle(),
       ]);
 
-      const barberIds = (barbersRes.data || []).map((b) => b.id);
-      let servicePhotosData: any[] = [];
-      if (barberIds.length > 0) {
-        const { data } = await supabase
-          .from('barber_service_photos')
-          .select('barber_id, service_id, photo_url')
-          .in('barber_id', barberIds);
-        servicePhotosData = data || [];
-      }
-
       setBarbers(barbersRes.data || []);
       setServices(servicesRes.data || []);
       setGallery(galleryRes.data || []);
       setPublicProfile(profileRes.data as PublicProfileData | null);
-      setBarberServicePhotos(servicePhotosData);
     } catch (err) {
       console.error(err);
       setNotFound(true);
@@ -311,12 +292,6 @@ const BarbeariaPublica = () => {
   const barberServices = selectedBarber
     ? services
         .filter(s => s.is_global || s.barber_id === selectedBarber.id)
-        .map(s => {
-          const override = barberServicePhotos.find(
-            p => p.barber_id === selectedBarber.id && p.service_id === s.id
-          );
-          return { ...s, display_photo_url: override?.photo_url || s.photo_url || null };
-        })
     : [];
 
   const displayCity = publicProfile?.cidade || barbershop?.city;
@@ -338,12 +313,17 @@ const BarbeariaPublica = () => {
   const galleryVisible = gallery.length > 0 && publicProfile?.gallery_enabled !== false;
   const initials = (name: string) =>
     name.trim().split(/\s+/).slice(0, 2).map((p) => p[0]?.toUpperCase() ?? '').join('');
-  const renderBicolorText = (text: string) =>
-    text.split(/\s+/).map((word, index) => (
-      <span key={`${word}-${index}`} style={{ color: index % 2 === 0 ? accent : 'hsl(var(--foreground))' }}>
-        {word}{index < text.split(/\s+/).length - 1 ? ' ' : ''}
-      </span>
-    ));
+  const renderBicolorText = (text: string) => {
+    const [firstWord, ...remainingWords] = text.trim().split(/\s+/);
+    return (
+      <>
+        <span style={{ color: accent }}>{firstWord}</span>
+        {remainingWords.length > 0 && (
+          <span style={{ color: 'hsl(var(--paper))' }}> {remainingWords.join(' ')}</span>
+        )}
+      </>
+    );
+  };
 
 
   // Booking availability gate
@@ -600,12 +580,12 @@ const BarbeariaPublica = () => {
                           src={barber.photo_url}
                           alt={barber.name}
                           className={`w-14 h-14 object-cover ${isUrban ? 'rounded-2xl' : 'rounded-md'}`}
-                          style={{ border: `1px solid ${isUrban ? accent : 'rgba(242,238,228,0.14)'}` }}
+                          style={{ border: `1px solid ${accent}` }}
                         />
                       ) : (
                         <div
                           className={`w-14 h-14 bg-muted flex items-center justify-center font-semibold ${isUrban ? 'rounded-2xl' : 'rounded-md'}`}
-                          style={{ border: `1px solid ${isUrban ? accent : 'rgba(242,238,228,0.14)'}`, color: accent }}
+                          style={{ border: `1px solid ${accent}`, color: accent }}
                         >
                           {initials(barber.name) || <User className="h-6 w-6 text-muted-foreground" />}
                         </div>
@@ -668,10 +648,11 @@ const BarbeariaPublica = () => {
                   <img
                     src={selectedBarber.photo_url}
                     alt={selectedBarber.name}
-                    className="w-14 h-14 rounded-full object-cover ring-2 ring-primary/30"
+                    className="w-14 h-14 rounded-full object-cover border-2"
+                    style={{ borderColor: accent }}
                   />
                 ) : (
-                  <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center ring-2 ring-primary/30">
+                  <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center border-2" style={{ borderColor: accent }}>
                     <User className="h-6 w-6 text-muted-foreground" />
                   </div>
                 )}
@@ -692,17 +673,6 @@ const BarbeariaPublica = () => {
                     key={service.id}
                     className="flex items-center gap-3 p-3 rounded-xl bg-secondary/50 border border-border/30"
                   >
-                    {service.display_photo_url ? (
-                      <img
-                        src={service.display_photo_url}
-                        alt={service.name}
-                        className="w-12 h-12 rounded-xl object-cover shrink-0 ring-1 ring-border/40"
-                      />
-                    ) : (
-                      <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-primary/10 shrink-0">
-                        <Scissors className="h-4 w-4 text-primary" />
-                      </div>
-                    )}
                     <div className="flex-1 min-w-0">
                       <h4 className="font-medium text-sm truncate">{service.name}</h4>
                       <p className="text-xs text-muted-foreground flex items-center gap-1">

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { supabase, Service, Barber } from '@/lib/supabase';
 import { Card, CardContent } from '@/components/ui/card';
@@ -24,7 +24,7 @@ import {
   DialogClose,
   DialogDescription,
 } from '@/components/ui/dialog';
-import { Sparkles as Scissors, Plus, PenLine as Pencil, Trash2, Loader2, Timer as Clock, UsersRound as Users, Camera, X, ImagePlus } from 'lucide-react';
+import { Sparkles as Scissors, Plus, PenLine as Pencil, Trash2, Loader2, Timer as Clock, UsersRound as Users } from 'lucide-react';
 import { SkeletonCard } from '@/components/ui/premium-skeleton';
 import { toast } from 'sonner';
 import {
@@ -39,7 +39,6 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 interface ContextType {
   barber: Barber | null;
@@ -49,7 +48,6 @@ interface ContextType {
 
 interface ServiceWithBarbers extends Service {
   assignedBarberIds: string[];
-  myPhotoUrl?: string | null;
 }
 
 const Servicos = () => {
@@ -68,15 +66,6 @@ const Servicos = () => {
   const [active, setActive] = useState(true);
   const [isGlobal, setIsGlobal] = useState(true);
   const [selectedBarberIds, setSelectedBarberIds] = useState<string[]>([]);
-  const [photoFile, setPhotoFile] = useState<File | null>(null);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const [uploadingPhoto, setUploadingPhoto] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Per-barber photo upload state
-  const [uploadingServicePhoto, setUploadingServicePhoto] = useState<string | null>(null);
-  const servicePhotoInputRef = useRef<HTMLInputElement>(null);
-  const [activeServiceForPhoto, setActiveServiceForPhoto] = useState<string | null>(null);
 
   useEffect(() => {
     if (barbershop) {
@@ -111,20 +100,11 @@ const Servicos = () => {
 
       if (bsError) throw bsError;
 
-      // Fetch my service photos
-      const { data: myPhotos } = await supabase
-        .from('barber_service_photos')
-        .select('service_id, photo_url')
-        .eq('barber_id', barber.id);
-
-      const photoMap = new Map((myPhotos || []).map(p => [p.service_id, p.photo_url]));
-
       const servicesWithBarbers = (servicesData || []).map(service => ({
         ...service,
         assignedBarberIds: (barberServicesData || [])
           .filter(bs => bs.service_id === service.id)
           .map(bs => bs.barber_id),
-        myPhotoUrl: photoMap.get(service.id) || null,
       }));
 
       setServices(servicesWithBarbers);
@@ -145,8 +125,6 @@ const Servicos = () => {
     setIsGlobal(true);
     setSelectedBarberIds([]);
     setEditingService(null);
-    setPhotoFile(null);
-    setPhotoPreview(null);
   };
 
   const openEditDialog = (service: ServiceWithBarbers) => {
@@ -157,8 +135,6 @@ const Servicos = () => {
     setActive(service.active);
     setIsGlobal(service.is_global);
     setSelectedBarberIds(service.assignedBarberIds);
-    setPhotoFile(null);
-    setPhotoPreview(service.photo_url || null);
     setDialogOpen(true);
   };
 
@@ -168,112 +144,6 @@ const Servicos = () => {
     setDialogOpen(true);
   };
 
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('A imagem deve ter no máximo 5MB');
-      return;
-    }
-    setPhotoFile(file);
-    setPhotoPreview(URL.createObjectURL(file));
-  };
-
-  const removePhoto = () => {
-    setPhotoFile(null);
-    setPhotoPreview(null);
-  };
-
-  const uploadPhoto = async (serviceId: string): Promise<string | null> => {
-    if (!photoFile) return null;
-    setUploadingPhoto(true);
-    try {
-      const fileExt = photoFile.name.split('.').pop();
-      const filePath = `${barbershop!.id}/${serviceId}.${fileExt}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('service-photos')
-        .upload(filePath, photoFile, { upsert: true });
-
-      if (uploadError) throw uploadError;
-
-      const { data: urlData } = supabase.storage
-        .from('service-photos')
-        .getPublicUrl(filePath);
-
-      return urlData.publicUrl + '?t=' + Date.now();
-    } catch (error) {
-      console.error('Erro ao fazer upload:', error);
-      toast.error('Erro ao enviar foto');
-      return null;
-    } finally {
-      setUploadingPhoto(false);
-    }
-  };
-
-  // Handle per-barber service photo upload
-  const handleServicePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, serviceId: string) => {
-    const file = e.target.files?.[0];
-    if (!file || !barber) return;
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('A imagem deve ter no máximo 5MB');
-      return;
-    }
-
-    setUploadingServicePhoto(serviceId);
-    try {
-      const fileExt = file.name.split('.').pop();
-      const filePath = `${barber.id}/${serviceId}.${fileExt}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('service-photos')
-        .upload(filePath, file, { upsert: true });
-
-      if (uploadError) throw uploadError;
-
-      const { data: urlData } = supabase.storage
-        .from('service-photos')
-        .getPublicUrl(filePath);
-
-      const photoUrl = urlData.publicUrl + '?t=' + Date.now();
-
-      // Upsert into barber_service_photos
-      const { error: dbError } = await supabase
-        .from('barber_service_photos')
-        .upsert({
-          barber_id: barber.id,
-          service_id: serviceId,
-          photo_url: photoUrl,
-        }, { onConflict: 'barber_id,service_id' });
-
-      if (dbError) throw dbError;
-
-      toast.success('Foto do serviço atualizada!');
-      fetchData();
-    } catch (error) {
-      console.error('Erro ao enviar foto:', error);
-      toast.error('Erro ao enviar foto');
-    } finally {
-      setUploadingServicePhoto(null);
-      setActiveServiceForPhoto(null);
-    }
-  };
-
-  const removeServicePhoto = async (serviceId: string) => {
-    if (!barber) return;
-    try {
-      await supabase
-        .from('barber_service_photos')
-        .delete()
-        .eq('barber_id', barber.id)
-        .eq('service_id', serviceId);
-
-      toast.success('Foto removida');
-      fetchData();
-    } catch (error) {
-      toast.error('Erro ao remover foto');
-    }
-  };
 
   const handleSubmit = async () => {
     if (!barbershop || !barber) return;
@@ -333,22 +203,6 @@ const Servicos = () => {
         if (error) throw error;
         serviceId = newService.id;
         toast.success('Serviço criado');
-      }
-
-      // Upload global service photo if selected
-      if (photoFile) {
-        const photoUrl = await uploadPhoto(serviceId);
-        if (photoUrl) {
-          await supabase
-            .from('services')
-            .update({ photo_url: photoUrl })
-            .eq('id', serviceId);
-        }
-      } else if (!photoPreview && editingService?.photo_url) {
-        await supabase
-          .from('services')
-          .update({ photo_url: null })
-          .eq('id', serviceId);
       }
 
       if (!isGlobal && selectedBarberIds.length > 0) {

@@ -15,6 +15,7 @@ const AgendarBarbeiro = () => {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [appearance, setAppearance] = useState<BookingAppearance>(DEFAULT_BOOKING_APPEARANCE);
+  const [showingConfirmation, setShowingConfirmation] = useState(false);
 
   useEffect(() => {
     if (barberId) {
@@ -137,7 +138,7 @@ const AgendarBarbeiro = () => {
       {/* Booking Flow */}
       <main className="section-padding py-8 md:py-12">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-8">
+          {!showingConfirmation && <div className="text-center mb-8">
             <h1 className={`${appearance.themeStyle === 'urbano' ? 'font-urban-preview uppercase text-3xl md:text-4xl' : 'font-display text-2xl md:text-3xl font-bold'} mb-2`}>
               {appearance.themeStyle === 'urbano' ? (
                 <><span style={{ color: appearance.accentColor }}>Agende com</span> {barber?.name}</>
@@ -146,9 +147,9 @@ const AgendarBarbeiro = () => {
             <p className="text-muted-foreground">
               Escolha o serviço e horário para seu atendimento
             </p>
-          </div>
+          </div>}
           <Suspense fallback={<SkeletonCard />}>
-            <BookingFlow preselectedBarber={barber} barbershopId={barber?.barbershop_id || undefined} appearance={appearance} />
+            <BookingFlow preselectedBarber={barber} barbershopId={barber?.barbershop_id || undefined} appearance={appearance} onConfirmationChange={setShowingConfirmation} />
           </Suspense>
         </div>
       </main>

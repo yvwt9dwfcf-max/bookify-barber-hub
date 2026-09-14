@@ -126,7 +126,7 @@ export function BarberSelection({ onSelect, barbershopId, availableBarbers, appe
               <div
                  className={`w-12 h-12 flex items-center justify-center flex-shrink-0 font-sans text-sm font-semibold ${isUrban ? 'rounded-2xl' : 'rounded-full'}`}
                 style={{
-                   border: `1px solid ${isSelected ? appearance.accentColor : 'rgba(242,238,228,0.14)'}`,
+                   border: `1px solid ${appearance.accentColor}`,
                    color: isSelected ? appearance.accentColor : 'inherit',
                 }}
               >

@@ -20,6 +20,7 @@ const AgendarBarbearia = () => {
   const [notFound, setNotFound] = useState(false);
   const [bookingBlocked, setBookingBlocked] = useState<string | null>(null);
   const [appearance, setAppearance] = useState<BookingAppearance>(DEFAULT_BOOKING_APPEARANCE);
+  const [showingConfirmation, setShowingConfirmation] = useState(false);
 
   useEffect(() => {
     if (slugOrId) {
@@ -185,13 +186,13 @@ const AgendarBarbearia = () => {
       {/* Booking Flow */}
       <main className="relative z-10 px-4 sm:px-6 py-8 md:py-12">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-8">
+          {!showingConfirmation && <div className="text-center mb-8">
             <h1 className={`${appearance.themeStyle === 'urbano' ? 'font-urban-preview uppercase text-3xl md:text-4xl' : 'font-display text-2xl md:text-3xl font-bold'} mb-2`}>
               {appearance.themeStyle === 'urbano' ? (
                 <><span style={{ color: appearance.accentColor }}>Escolha seu</span> horário</>
               ) : barbershop?.name}
             </h1>
-          </div>
+          </div>}
           {bookingBlocked ? (
             <Card className="max-w-md mx-auto border-amber-500/30 bg-amber-500/5">
               <CardContent className="p-8 text-center space-y-2">
@@ -209,6 +210,7 @@ const AgendarBarbearia = () => {
                 availableBarbers={barbers}
                 preselectedBarber={preselectedBarber}
                 appearance={appearance}
+                onConfirmationChange={setShowingConfirmation}
               />
             </Suspense>
           )}
