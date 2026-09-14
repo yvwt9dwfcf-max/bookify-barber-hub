@@ -459,17 +459,23 @@ const PerfilPublico = () => {
           <h1 className="text-xl font-bold">Perfil Público</h1>
           <p className="text-sm text-muted-foreground mt-0.5">Sua página de agendamento online</p>
         </div>
-        {publicLinkReal && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="shrink-0 gap-1.5 text-xs"
-            onClick={() => window.open(publicLinkReal, '_blank')}
-          >
-            <Globe className="h-3.5 w-3.5" />
-            Ver página
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          <span className="flex min-w-16 items-center justify-end gap-1 text-xs text-muted-foreground" aria-live="polite">
+            {autoSaveStatus === 'saving' && <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Salvando</>}
+            {autoSaveStatus === 'saved' && <><CheckCircle className="h-3.5 w-3.5 text-primary" /> Salvo</>}
+          </span>
+          {publicLinkReal && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="shrink-0 gap-1.5 text-xs"
+              onClick={() => window.open(publicLinkReal, '_blank')}
+            >
+              <Globe className="h-3.5 w-3.5" />
+              Ver página
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Link público — compact */}
@@ -641,15 +647,6 @@ const PerfilPublico = () => {
           <Switch checked={galleryEnabled} onCheckedChange={setGalleryEnabled} />
         </div>
 
-        <Button
-          type="button"
-          onClick={handleSaveAppearance}
-          disabled={savingAppearance}
-          className="btn-primary-solid h-11 w-full"
-        >
-          {savingAppearance ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-          {savingAppearance ? 'Salvando...' : 'Salvar aparência'}
-        </Button>
       </Section>
 
       {/* === GALERIA === */}
@@ -661,6 +658,7 @@ const PerfilPublico = () => {
           multiple
           className="hidden"
           onChange={handleGalleryUpload}
+          disabled={gallery.length >= MAX_GALLERY_PHOTOS}
         />
 
         {gallery.length > 0 ? (
@@ -694,12 +692,15 @@ const PerfilPublico = () => {
           type="button"
           variant="outline"
           onClick={() => galleryInputRef.current?.click()}
-          disabled={uploadingGallery}
+          disabled={uploadingGallery || gallery.length >= MAX_GALLERY_PHOTOS}
           className="h-11 w-full border-dashed font-medium"
         >
           {uploadingGallery ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-          {uploadingGallery ? 'Enviando fotos...' : 'Adicionar fotos'}
+          {uploadingGallery ? 'Enviando fotos...' : gallery.length >= MAX_GALLERY_PHOTOS ? 'Limite de 12 fotos atingido' : `Adicionar fotos (${gallery.length}/${MAX_GALLERY_PHOTOS})`}
         </Button>
+        {gallery.length >= MAX_GALLERY_PHOTOS && (
+          <p className="text-center text-xs text-muted-foreground">Limite de 12 fotos atingido.</p>
+        )}
       </Section>
 
       {/* === AGENDAMENTO ONLINE === */}
@@ -784,6 +785,10 @@ const PerfilPublico = () => {
 
       {/* === SOBRE === */}
       <Section title="Sobre" icon={<span className="text-sm">📝</span>}>
+        <div className="space-y-1.5">
+          <Label className="text-xs">Nome da barbearia</Label>
+          <Input value={shopName} onChange={(e) => setShopName(e.target.value)} className="h-9 text-sm" />
+        </div>
         <Textarea
           placeholder="Descreva sua barbearia, serviços, diferenciais..."
           value={descricao}
@@ -879,19 +884,6 @@ const PerfilPublico = () => {
         )}
       </Section>
 
-      {/* Save */}
-      <Button
-        onClick={handleSave}
-        disabled={saving}
-        className="w-full btn-primary-solid h-11 text-sm font-semibold"
-        size="lg"
-      >
-        {saving ? (
-          <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Salvando...</>
-        ) : (
-          <><Save className="mr-2 h-4 w-4" /> Salvar Perfil Público</>
-        )}
-      </Button>
     </motion.div>
   );
 };
