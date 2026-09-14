@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { TimeInput } from '@/components/ui/TimeInput';
 import {
-  Upload, MapPin, Instagram, Send as MessageCircle, Link2, Save, Loader2,
+  Upload, MapPin, Instagram, Send as MessageCircle, Link2, Loader2,
   Camera, Copy, CircleCheck as CheckCircle, TriangleAlert as AlertTriangle, ExternalLink, Trash2, Globe,
   CalendarCheck, Clock, Palette, Images, Plus, Check
 } from 'lucide-react';
@@ -51,17 +51,18 @@ interface GalleryPhoto {
 }
 
 const ACCENT_COLORS = ['#22C55E', '#4DA6FF', '#8B1E2B', '#F2C94C', '#A855F7', '#F2EEE4'];
+const MAX_GALLERY_PHOTOS = 12;
 
 const PerfilPublico = () => {
   const { barbershop, isMaster } = useUserRole();
   const [profile, setProfile] = useState<PublicProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const [descricao, setDescricao] = useState('');
+  const [shopName, setShopName] = useState('');
   const [endereco, setEndereco] = useState('');
   const [numero, setNumero] = useState('');
   const [cidade, setCidade] = useState('');
@@ -81,7 +82,7 @@ const PerfilPublico = () => {
   const [fontStyle, setFontStyle] = useState<'playfair' | 'luckiest_guy'>('playfair');
   const [accentColor, setAccentColor] = useState('#22C55E');
   const [galleryEnabled, setGalleryEnabled] = useState(true);
-  const [savingAppearance, setSavingAppearance] = useState(false);
+  const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const [gallery, setGallery] = useState<GalleryPhoto[]>([]);
   const [uploadingGallery, setUploadingGallery] = useState(false);
   const [deletingPhotoId, setDeletingPhotoId] = useState<string | null>(null);
@@ -89,6 +90,8 @@ const PerfilPublico = () => {
   const coverInputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
+  const autoSaveReadyRef = useRef(false);
+  const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (barbershop?.id) fetchProfile();
@@ -113,6 +116,7 @@ const PerfilPublico = () => {
       if (error) throw error;
       if (galleryResult.error) throw galleryResult.error;
       setGallery((galleryResult.data || []) as GalleryPhoto[]);
+      setShopName(barbershop.name || '');
       if (data) {
         setProfile(data as PublicProfile);
         setDescricao(data.descricao || '');
@@ -180,8 +184,13 @@ const PerfilPublico = () => {
   };
 
   const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
+    const remainingSlots = Math.max(0, MAX_GALLERY_PHOTOS - gallery.length);
+    const selectedFiles = Array.from(e.target.files || []);
+    const files = selectedFiles.slice(0, remainingSlots);
     if (!files.length || !barbershop) return;
+    if (selectedFiles.length > remainingSlots) {
+      toast.info(`Foram adicionadas apenas ${remainingSlots} foto${remainingSlots === 1 ? '' : 's'} para respeitar o limite de 12.`);
+    }
     setUploadingGallery(true);
     try {
       let nextOrder = gallery.reduce((max, photo) => Math.max(max, photo.sort_order), -1) + 1;
@@ -267,10 +276,16 @@ const PerfilPublico = () => {
     return `${n.slice(0, 5)}-${n.slice(5, 8)}`;
   };
 
-  const handleSave = async () => {
-    if (!barbershop) return;
-    setSaving(true);
-    try {
+  useEffect(() => {
+    if (loading || !barbershop) return;
+    if (!autoSaveReadyRef.current) {
+      autoSaveReadyRef.current = true;
+      return;
+    }
+
+    if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+    setAutoSaveStatus('saving');
+    autoSaveTimerRef.current = setTimeout(async () => {
       const profileData = {
         barbershop_id: barbershop.id,
         foto_capa_url: fotoCapa,
@@ -284,67 +299,42 @@ const PerfilPublico = () => {
         instagram_url: instagramUrl || null,
         whatsapp_numero: whatsappNumero || null,
         slug_personalizado: slugPersonalizado || null,
+        theme_style: themeStyle,
+        font_style: fontStyle,
+        accent_color: accentColor,
+        gallery_enabled: galleryEnabled,
       };
-      if (profile) {
-        const { error } = await supabase.from('public_profiles').update(profileData).eq('id', profile.id);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.from('public_profiles').insert(profileData);
-        if (error) throw error;
-      }
-      if (cidade !== barbershop.city) {
-        await supabase.from('barbershops').update({ city: cidade }).eq('id', barbershop.id);
-      }
-      toast.success('Perfil público salvo com sucesso!');
-      fetchProfile();
-    } catch (err: any) {
-      console.error(err);
-      if (err.message?.includes('slug_personalizado')) {
-        toast.error('Este slug já está em uso. Escolha outro.');
-      } else {
-        toast.error('Erro ao salvar perfil público');
-      }
-    } finally { setSaving(false); }
-  };
 
-  const handleSaveAppearance = async () => {
-    if (!barbershop) return;
-    setSavingAppearance(true);
-    const appearanceData = {
-      barbershop_id: barbershop.id,
-      theme_style: themeStyle,
-      font_style: fontStyle,
-      accent_color: accentColor,
-      gallery_enabled: galleryEnabled,
+      try {
+        if (profile) {
+          const { error } = await supabase.from('public_profiles').update(profileData).eq('id', profile.id);
+          if (error) throw error;
+        } else {
+          const { data, error } = await supabase.from('public_profiles').insert(profileData).select().single();
+          if (error) throw error;
+          setProfile(data as PublicProfile);
+        }
+
+        if (shopName.trim() !== barbershop.name || cidade !== barbershop.city) {
+          const { error } = await supabase
+            .from('barbershops')
+            .update({ name: shopName.trim() || barbershop.name, city: cidade || null })
+            .eq('id', barbershop.id);
+          if (error) throw error;
+        }
+        setAutoSaveStatus('saved');
+        setTimeout(() => setAutoSaveStatus('idle'), 1800);
+      } catch (error: any) {
+        console.error(error);
+        setAutoSaveStatus('idle');
+        toast.error(error?.message?.includes('slug_personalizado') ? 'Este link já está em uso.' : 'Erro ao salvar alterações');
+      }
+    }, 800);
+
+    return () => {
+      if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
     };
-
-    try {
-      if (profile) {
-        const { data, error } = await supabase
-          .from('public_profiles')
-          .update(appearanceData)
-          .eq('id', profile.id)
-          .select()
-          .single();
-        if (error) throw error;
-        setProfile(data as PublicProfile);
-      } else {
-        const { data, error } = await supabase
-          .from('public_profiles')
-          .insert(appearanceData)
-          .select()
-          .single();
-        if (error) throw error;
-        setProfile(data as PublicProfile);
-      }
-      toast.success('Aparência salva');
-    } catch (error) {
-      console.error(error);
-      toast.error('Erro ao salvar aparência');
-    } finally {
-      setSavingAppearance(false);
-    }
-  };
+  }, [loading, barbershop, profile, shopName, fotoCapa, logoUrl, descricao, endereco, numero, cidade, estado, cep, instagramUrl, whatsappNumero, slugPersonalizado, themeStyle, fontStyle, accentColor, galleryEnabled]);
 
   // Auto-save booking gating fields without full form save
   const saveBookingSettings = async (patch: {
