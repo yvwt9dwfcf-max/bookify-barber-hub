@@ -293,7 +293,7 @@ const Servicos = () => {
           <p className="text-sm text-muted-foreground">
             {isMaster 
               ? 'Gerencie os serviços oferecidos pela barbearia'
-              : 'Adicione suas fotos de trabalho em cada serviço'}
+              : 'Consulte os serviços oferecidos pela barbearia'}
           </p>
         </div>
 
