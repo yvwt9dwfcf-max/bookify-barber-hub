@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { BookingAppearance, DEFAULT_BOOKING_APPEARANCE, isUrbanAppearance } from './bookingAppearance';
 
 const BarberSelection = lazy(() => import('./BarberSelection').then(m => ({ default: m.BarberSelection })));
 const ServiceSelection = lazy(() => import('./ServiceSelection').then(m => ({ default: m.ServiceSelection })));
@@ -26,9 +27,10 @@ export interface BookingFlowProps {
   preselectedBarber?: Barber | null;
   barbershopId?: string;
   availableBarbers?: Barber[];
+  appearance?: BookingAppearance;
 }
 
-export function BookingFlow({ preselectedBarber, barbershopId, availableBarbers }: BookingFlowProps) {
+export function BookingFlow({ preselectedBarber, barbershopId, availableBarbers, appearance = DEFAULT_BOOKING_APPEARANCE }: BookingFlowProps) {
   const initialStep = preselectedBarber ? 'service' : 'barber';
   
   const [step, setStep] = useState<BookingStep>(initialStep);
@@ -52,6 +54,7 @@ export function BookingFlow({ preselectedBarber, barbershopId, availableBarbers 
     ? ['service', 'datetime', 'info', 'confirmation']
     : ['barber', 'service', 'datetime', 'info', 'confirmation'];
   const currentStepIndex = steps.indexOf(step);
+  const isUrban = isUrbanAppearance(appearance);
 
   const handleBarberSelect = (barber: Barber) => {
     setBookingData(prev => ({ ...prev, barber, service: null }));
@@ -167,16 +170,20 @@ export function BookingFlow({ preselectedBarber, barbershopId, availableBarbers 
           onNewBooking={resetBooking}
           barbershopId={barbershopId}
           preselectedBarber={preselectedBarber}
+          appearance={appearance}
         />
       </Suspense>
     );
   }
 
   return (
-    <div className="w-full max-w-2xl mx-auto px-2">
-      <StepIndicator currentStep={step} />
+    <div className="w-full max-w-2xl mx-auto px-2 font-sans">
+      <StepIndicator currentStep={step} appearance={appearance} />
       
-      <Card className="mt-6 border-border/30 shadow-card-lg rounded-2xl overflow-hidden">
+      <Card
+        className={`mt-6 shadow-card-lg overflow-hidden ${isUrban ? 'rounded-2xl border-2' : 'rounded-2xl border-border/30'}`}
+        style={isUrban ? { borderColor: `${appearance.accentColor}66` } : undefined}
+      >
         <CardContent className="p-5 md:p-8">
           {currentStepIndex > 0 && step !== 'confirmation' && (
             <Button
@@ -203,6 +210,7 @@ export function BookingFlow({ preselectedBarber, barbershopId, availableBarbers 
                 onSelect={handleBarberSelect} 
                 barbershopId={barbershopId}
                 availableBarbers={availableBarbers}
+                appearance={appearance}
               />
             )}
 
@@ -211,6 +219,7 @@ export function BookingFlow({ preselectedBarber, barbershopId, availableBarbers 
                 barberId={bookingData.barber.id}
                 onSelect={handleServiceSelect}
                 onAutoSelect={handleServiceAutoSelect}
+                appearance={appearance}
               />
             )}
 
@@ -219,6 +228,7 @@ export function BookingFlow({ preselectedBarber, barbershopId, availableBarbers 
                 barberId={bookingData.barber.id}
                 serviceDuration={bookingData.service.duration_minutes}
                 onSelect={handleDateTimeSelect}
+                appearance={appearance}
               />
             )}
 
@@ -227,6 +237,7 @@ export function BookingFlow({ preselectedBarber, barbershopId, availableBarbers 
                 onSubmit={handleCustomerInfoSubmit}
                 isSubmitting={isSubmitting}
                 bookingData={bookingData}
+                appearance={appearance}
               />
             )}
           </div>

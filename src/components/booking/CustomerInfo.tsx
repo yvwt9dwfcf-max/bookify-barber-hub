@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Loader2, MessageCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { BookingAppearance, DEFAULT_BOOKING_APPEARANCE, isUrbanAppearance } from './bookingAppearance';
 
 interface CustomerInfoProps {
   onSubmit: (name: string, phone: string) => void;
@@ -11,15 +12,17 @@ interface CustomerInfoProps {
     service: { name: string; duration_minutes: number; price: number; photo_url?: string | null } | null;
     dateTime: Date | null;
   };
+  appearance?: BookingAppearance;
 }
 
 const LINE = 'rgba(242,238,228,0.14)';
 
-export function CustomerInfo({ onSubmit, isSubmitting, bookingData }: CustomerInfoProps) {
+export function CustomerInfo({ onSubmit, isSubmitting, bookingData, appearance = DEFAULT_BOOKING_APPEARANCE }: CustomerInfoProps) {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [focused, setFocused] = useState<string | null>(null);
   const [errors, setErrors] = useState<{ name?: string; phone?: string }>({});
+  const isUrban = isUrbanAppearance(appearance);
 
   const formatPhone = (value: string) => {
     const numbers = value.replace(/\D/g, '');
@@ -78,19 +81,21 @@ export function CustomerInfo({ onSubmit, isSubmitting, bookingData }: CustomerIn
   };
 
   const underlineStyle = (key: string, hasError?: boolean) => ({
-    borderBottom: `1px solid ${hasError ? 'hsl(var(--destructive))' : focused === key ? '#22C55E' : LINE}`,
+    borderBottom: `1px solid ${hasError ? 'hsl(var(--destructive))' : focused === key ? appearance.accentColor : LINE}`,
   });
 
   return (
     <div className="space-y-8">
       <div>
         <p
-          className="font-editorial-mono text-[10px] uppercase tracking-[0.18em] mb-2"
-          style={{ color: '#22C55E' }}
+           className={isUrban ? 'font-sans text-xs font-bold uppercase mb-2' : 'font-editorial-mono text-[10px] uppercase tracking-[0.18em] mb-2'}
+           style={{ color: appearance.accentColor }}
         >
           — Seus dados
         </p>
-        <h2 className="font-display text-2xl font-semibold">Confirme seus dados</h2>
+         <h2 className={isUrban ? 'font-urban-preview uppercase text-3xl' : 'font-display text-2xl font-semibold'}>
+           {isUrban ? <><span style={{ color: appearance.accentColor }}>Confirme seus</span> dados</> : 'Confirme seus dados'}
+         </h2>
         <p className="text-sm mt-1" style={{ color: '#8C887C' }}>
           Preencha suas informações para confirmar o agendamento
         </p>
@@ -116,7 +121,7 @@ export function CustomerInfo({ onSubmit, isSubmitting, bookingData }: CustomerIn
             </span>
             <span className="font-display text-base text-right">
               {bookingData.service.name}
-              <span className="font-editorial-mono text-xs ml-2" style={{ color: '#22C55E' }}>
+               <span className="font-editorial-mono text-xs ml-2" style={{ color: appearance.accentColor }}>
                 {formatPrice(Number(bookingData.service.price))}
               </span>
             </span>
@@ -185,7 +190,8 @@ export function CustomerInfo({ onSubmit, isSubmitting, bookingData }: CustomerIn
           <button
             type="submit"
             disabled={isSubmitting}
-            className="btn-primary-solid w-full h-14 flex items-center justify-center gap-2.5 disabled:opacity-70 active:scale-[0.99] transition-transform"
+             className={`w-full h-14 flex items-center justify-center gap-2.5 font-sans text-[15px] font-semibold disabled:opacity-70 active:scale-[0.99] transition-transform ${isUrban ? 'rounded-2xl uppercase' : 'rounded-[10px]'}`}
+             style={{ backgroundColor: appearance.accentColor, color: '#06210F' }}
           >
             {isSubmitting ? (
               <>

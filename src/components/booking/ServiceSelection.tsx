@@ -3,21 +3,24 @@ import { supabase, Service } from '@/lib/supabase';
 import { Sparkles as Scissors } from 'lucide-react';
 import { PremiumSkeleton, SkeletonCard } from '@/components/ui/premium-skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
+import { BookingAppearance, DEFAULT_BOOKING_APPEARANCE, isUrbanAppearance } from './bookingAppearance';
 
 interface ServiceSelectionProps {
   barberId: string;
   onSelect: (service: Service) => void;
   onAutoSelect?: (service: Service) => void;
+  appearance?: BookingAppearance;
 }
 
 interface ServiceWithPhoto extends Service {
   barberPhotoUrl?: string | null;
 }
 
-export function ServiceSelection({ barberId, onSelect, onAutoSelect }: ServiceSelectionProps) {
+export function ServiceSelection({ barberId, onSelect, onAutoSelect, appearance = DEFAULT_BOOKING_APPEARANCE }: ServiceSelectionProps) {
   const [services, setServices] = useState<ServiceWithPhoto[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<string | null>(null);
+  const isUrban = isUrbanAppearance(appearance);
 
   useEffect(() => {
     fetchServices();
@@ -148,12 +151,14 @@ export function ServiceSelection({ barberId, onSelect, onAutoSelect }: ServiceSe
     <div className="space-y-6">
       <div>
         <p
-          className="font-editorial-mono text-[10px] uppercase tracking-[0.18em] mb-2"
-          style={{ color: '#22C55E' }}
+           className={isUrban ? 'font-sans text-xs font-bold uppercase mb-2' : 'font-editorial-mono text-[10px] uppercase tracking-[0.18em] mb-2'}
+           style={{ color: appearance.accentColor }}
         >
           — Serviço
         </p>
-        <h2 className="font-display text-2xl font-semibold">Escolha o serviço</h2>
+         <h2 className={isUrban ? 'font-urban-preview uppercase text-3xl' : 'font-display text-2xl font-semibold'}>
+           {isUrban ? <><span style={{ color: appearance.accentColor }}>Escolha o</span> serviço</> : 'Escolha o serviço'}
+         </h2>
         <p className="text-sm mt-1" style={{ color: '#8C887C' }}>
           Selecione o serviço que deseja agendar
         </p>
@@ -169,11 +174,11 @@ export function ServiceSelection({ barberId, onSelect, onAutoSelect }: ServiceSe
               className="w-full flex items-baseline gap-4 py-4 text-left transition-colors duration-150"
               style={{
                 borderBottom: '1px solid rgba(242,238,228,0.14)',
-                background: isSelected ? 'rgba(34,197,94,0.06)' : 'transparent',
+                 background: isSelected ? `${appearance.accentColor}12` : 'transparent',
               }}
             >
               <div className="flex-1 min-w-0">
-                <h3 className="font-display text-lg font-semibold truncate">{service.name}</h3>
+                 <h3 className={`${isUrban ? 'font-urban-preview uppercase' : 'font-display font-semibold'} text-lg truncate`}>{service.name}</h3>
                 <p
                   className="font-editorial-mono text-[11px] mt-1 uppercase tracking-[0.12em]"
                   style={{ color: '#8C887C' }}
@@ -183,7 +188,7 @@ export function ServiceSelection({ barberId, onSelect, onAutoSelect }: ServiceSe
               </div>
               <span
                 className="font-editorial-mono text-sm font-medium shrink-0"
-                style={{ color: '#22C55E' }}
+                 style={{ color: appearance.accentColor }}
               >
                 {formatPrice(Number(service.price))}
               </span>

@@ -5,6 +5,7 @@ import { Logo } from '@/components/ui/Logo';
 import { Building2 } from 'lucide-react';
 import { PremiumSkeleton, SkeletonCard } from '@/components/ui/premium-skeleton';
 import { Card, CardContent } from '@/components/ui/card';
+import { BookingAppearance, DEFAULT_BOOKING_APPEARANCE } from '@/components/booking/bookingAppearance';
 
 const BookingFlow = lazy(() => import('@/components/booking/BookingFlow').then(m => ({ default: m.BookingFlow })));
 
@@ -18,6 +19,7 @@ const AgendarBarbearia = () => {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [bookingBlocked, setBookingBlocked] = useState<string | null>(null);
+  const [appearance, setAppearance] = useState<BookingAppearance>(DEFAULT_BOOKING_APPEARANCE);
 
   useEffect(() => {
     if (slugOrId) {
@@ -57,11 +59,18 @@ const AgendarBarbearia = () => {
       // Check booking availability gating from public_profiles
       const { data: profile } = await supabase
         .from('public_profiles')
-        .select('booking_enabled, booking_24h, booking_start_time, booking_end_time')
+        .select('booking_enabled, booking_24h, booking_start_time, booking_end_time, theme_style, font_style, accent_color, logo_url')
         .eq('barbershop_id', shopData.id)
         .maybeSingle();
 
       if (profile) {
+        setAppearance({
+          themeStyle: profile.theme_style === 'urbano' ? 'urbano' : 'editorial',
+          fontStyle: profile.font_style === 'luckiest_guy' ? 'luckiest_guy' : 'playfair',
+          accentColor: profile.accent_color || '#4da6ff',
+          shopName: shopData.name,
+          logoUrl: profile.logo_url,
+        });
         const enabled = (profile as any).booking_enabled ?? true;
         const h24 = (profile as any).booking_24h ?? true;
         const start = ((profile as any).booking_start_time || '08:00').slice(0, 5);
@@ -153,15 +162,23 @@ const AgendarBarbearia = () => {
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Background effects */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full bg-primary/3 blur-3xl" />
-      </div>
-
       {/* Header — fixo com blur */}
       <header className="sticky top-0 z-50 px-4 sm:px-6 py-4 border-b border-border/30 bg-background/80 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto">
-          <Logo linkTo={undefined} />
+        <div className="max-w-2xl mx-auto flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 min-w-0">
+            {appearance.logoUrl ? (
+              <img
+                src={appearance.logoUrl}
+                alt={`Logo da ${barbershop?.name ?? 'barbearia'}`}
+                className={`w-10 h-10 object-cover shrink-0 ${appearance.themeStyle === 'urbano' ? 'rounded-xl border-2' : 'rounded-lg'}`}
+                style={{ borderColor: appearance.themeStyle === 'urbano' ? appearance.accentColor : undefined }}
+              />
+            ) : null}
+            <span className={`${appearance.themeStyle === 'urbano' ? 'font-urban-preview uppercase text-xl' : 'font-display text-lg font-semibold'} truncate`}>
+              {barbershop?.name}
+            </span>
+          </div>
+          <span className="font-sans text-xs text-muted-foreground shrink-0">Agendamento online</span>
         </div>
       </header>
 
@@ -169,8 +186,10 @@ const AgendarBarbearia = () => {
       <main className="relative z-10 px-4 sm:px-6 py-8 md:py-12">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-8">
-            <h1 className="text-2xl md:text-3xl font-bold mb-2">
-              {barbershop?.name}
+            <h1 className={`${appearance.themeStyle === 'urbano' ? 'font-urban-preview uppercase text-3xl md:text-4xl' : 'font-display text-2xl md:text-3xl font-bold'} mb-2`}>
+              {appearance.themeStyle === 'urbano' ? (
+                <><span style={{ color: appearance.accentColor }}>Escolha seu</span> horário</>
+              ) : barbershop?.name}
             </h1>
           </div>
           {bookingBlocked ? (
@@ -189,6 +208,7 @@ const AgendarBarbearia = () => {
                 barbershopId={barbershop?.id}
                 availableBarbers={barbers}
                 preselectedBarber={preselectedBarber}
+                appearance={appearance}
               />
             </Suspense>
           )}

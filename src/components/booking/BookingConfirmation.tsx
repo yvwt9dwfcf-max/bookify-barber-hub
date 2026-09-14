@@ -4,20 +4,23 @@ import { Appointment, Barber, supabase } from '@/lib/supabase';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
+import { BookingAppearance, DEFAULT_BOOKING_APPEARANCE, isUrbanAppearance } from './bookingAppearance';
 
 interface BookingConfirmationProps {
   appointment: Appointment;
   onNewBooking: () => void;
   barbershopId?: string;
   preselectedBarber?: Barber | null;
+  appearance?: BookingAppearance;
 }
 
 const LINE = 'rgba(242,238,228,0.14)';
 
-export function BookingConfirmation({ appointment, onNewBooking, barbershopId, preselectedBarber }: BookingConfirmationProps) {
+export function BookingConfirmation({ appointment, onNewBooking, barbershopId, preselectedBarber, appearance = DEFAULT_BOOKING_APPEARANCE }: BookingConfirmationProps) {
   const navigate = useNavigate();
   const [whatsappLink, setWhatsappLink] = useState<string | null>(null);
   const autoOpened = useRef(false);
+  const isUrban = isUrbanAppearance(appearance);
 
   const start = new Date(appointment.start_time);
   const dateLabel = format(start, "EEEE, d 'de' MMMM", { locale: ptBR });
@@ -84,7 +87,7 @@ export function BookingConfirmation({ appointment, onNewBooking, barbershopId, p
       <span className="font-editorial-mono text-[10px] uppercase tracking-[0.16em]" style={{ color: '#8C887C' }}>
         {label}
       </span>
-      <span className="font-display text-base text-right capitalize">{value}</span>
+       <span className={`${isUrban ? 'font-sans font-semibold' : 'font-display'} text-base text-right capitalize`}>{value}</span>
     </div>
   );
 
@@ -93,14 +96,16 @@ export function BookingConfirmation({ appointment, onNewBooking, barbershopId, p
       <div className="text-center mb-8">
         <div
           className="w-14 h-14 mx-auto rounded-full flex items-center justify-center mb-5"
-          style={{ border: '1px solid #22C55E', background: 'rgba(34,197,94,0.06)' }}
+           style={{ border: `1px solid ${appearance.accentColor}`, background: `${appearance.accentColor}12` }}
         >
-          <CheckCircle className="h-6 w-6" style={{ color: '#22C55E' }} />
+           <CheckCircle className="h-6 w-6" style={{ color: appearance.accentColor }} />
         </div>
-        <p className="font-editorial-mono text-[10px] uppercase tracking-[0.18em]" style={{ color: '#22C55E' }}>
+         <p className={isUrban ? 'font-sans text-xs font-bold uppercase' : 'font-editorial-mono text-[10px] uppercase tracking-[0.18em]'} style={{ color: appearance.accentColor }}>
           — Confirmado
         </p>
-        <h1 className="font-display text-2xl font-semibold mt-2">Agendamento confirmado</h1>
+         <h1 className={`${isUrban ? 'font-urban-preview uppercase text-3xl' : 'font-display text-2xl font-semibold'} mt-2`}>
+           {isUrban ? <><span style={{ color: appearance.accentColor }}>Agendamento</span> confirmado</> : 'Agendamento confirmado'}
+         </h1>
       </div>
 
       <div
@@ -117,7 +122,7 @@ export function BookingConfirmation({ appointment, onNewBooking, barbershopId, p
             <span className="font-editorial-mono text-[10px] uppercase tracking-[0.16em]" style={{ color: '#8C887C' }}>
               Total
             </span>
-            <span className="font-editorial-mono text-xl font-medium" style={{ color: '#22C55E' }}>
+             <span className="font-editorial-mono text-xl font-medium" style={{ color: appearance.accentColor }}>
               {formatPrice(Number(appointment.service.price))}
             </span>
           </div>
@@ -133,7 +138,8 @@ export function BookingConfirmation({ appointment, onNewBooking, barbershopId, p
           <>
             <button
               onClick={() => window.open(whatsappLink, '_blank')}
-              className="btn-primary-solid w-full h-14 flex items-center justify-center gap-2.5 active:scale-[0.99] transition-transform"
+               className={`w-full h-14 flex items-center justify-center gap-2.5 font-sans text-[15px] font-semibold active:scale-[0.99] transition-transform ${isUrban ? 'rounded-2xl uppercase' : 'rounded-[10px]'}`}
+               style={{ backgroundColor: appearance.accentColor, color: '#06210F' }}
             >
               <MessageCircle className="h-[18px] w-[18px]" />
               <span>
