@@ -15,6 +15,7 @@ import {
 import { toast } from 'sonner';
 import { PerfilPublicoSkeleton } from '@/components/painel/skeletons';
 import { motion } from 'framer-motion';
+import { compressImageForUpload, getUploadExtension } from '@/lib/imageUpload';
 
 interface PublicProfile {
   id: string;
@@ -82,16 +83,21 @@ const PerfilPublico = () => {
   const [fontStyle, setFontStyle] = useState<'playfair' | 'luckiest_guy'>('playfair');
   const [accentColor, setAccentColor] = useState('#22C55E');
   const [galleryEnabled, setGalleryEnabled] = useState(true);
-  const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [gallery, setGallery] = useState<GalleryPhoto[]>([]);
   const [uploadingGallery, setUploadingGallery] = useState(false);
   const [deletingPhotoId, setDeletingPhotoId] = useState<string | null>(null);
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
 
   const coverInputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const autoSaveReadyRef = useRef(false);
   const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const autoSaveStatusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const autoSaveRequestRef = useRef(0);
+  const lastSavedSnapshotRef = useRef('');
 
   useEffect(() => {
     if (barbershop?.id) fetchProfile();
@@ -151,9 +157,10 @@ const PerfilPublico = () => {
   };
 
   const uploadImage = async (file: File, path: string): Promise<string | null> => {
-    const ext = file.name.split('.').pop();
+    const compressedFile = await compressImageForUpload(file);
+    const ext = getUploadExtension(compressedFile);
     const fileName = `${path}/${Date.now()}.${ext}`;
-    const { error } = await supabase.storage.from('public-profiles').upload(fileName, file, { upsert: true });
+    const { error } = await supabase.storage.from('public-profiles').upload(fileName, compressedFile, { upsert: true });
     if (error) throw error;
     const { data: urlData } = supabase.storage.from('public-profiles').getPublicUrl(fileName);
     return urlData.publicUrl;
@@ -162,25 +169,45 @@ const PerfilPublico = () => {
   const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !barbershop) return;
+    const previousUrl = fotoCapa;
+    const previewUrl = URL.createObjectURL(file);
+    setCoverPreview(previewUrl);
     setUploadingCover(true);
     try {
       const url = await uploadImage(file, `${barbershop.id}/cover`);
       setFotoCapa(url);
       toast.success('Foto de capa enviada!');
-    } catch { toast.error('Erro ao enviar foto de capa'); }
-    finally { setUploadingCover(false); }
+    } catch {
+      setFotoCapa(previousUrl);
+      toast.error('Erro ao enviar foto de capa. A imagem anterior foi mantida.');
+    } finally {
+      setCoverPreview(null);
+      URL.revokeObjectURL(previewUrl);
+      setUploadingCover(false);
+      e.target.value = '';
+    }
   };
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !barbershop) return;
+    const previousUrl = logoUrl;
+    const previewUrl = URL.createObjectURL(file);
+    setLogoPreview(previewUrl);
     setUploadingLogo(true);
     try {
       const url = await uploadImage(file, `${barbershop.id}/logo`);
       setLogoUrl(url);
       toast.success('Logo enviada!');
-    } catch { toast.error('Erro ao enviar logo'); }
-    finally { setUploadingLogo(false); }
+    } catch {
+      setLogoUrl(previousUrl);
+      toast.error('Erro ao enviar logo. A imagem anterior foi mantida.');
+    } finally {
+      setLogoPreview(null);
+      URL.revokeObjectURL(previewUrl);
+      setUploadingLogo(false);
+      e.target.value = '';
+    }
   };
 
   const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -191,17 +218,26 @@ const PerfilPublico = () => {
     if (selectedFiles.length > remainingSlots) {
       toast.info(`Foram adicionadas apenas ${remainingSlots} foto${remainingSlots === 1 ? '' : 's'} para respeitar o limite de 12.`);
     }
+    const nextOrderStart = gallery.reduce((max, photo) => Math.max(max, photo.sort_order), -1) + 1;
+    const optimisticPhotos = files.map((file, index) => ({
+      id: `local-${crypto.randomUUID()}`,
+      barbershop_id: barbershop.id,
+      image_url: URL.createObjectURL(file),
+      sort_order: nextOrderStart + index,
+      created_at: new Date().toISOString(),
+    }));
+    setGallery((current) => [...current, ...optimisticPhotos].sort((a, b) => a.sort_order - b.sort_order));
     setUploadingGallery(true);
     try {
-      let nextOrder = gallery.reduce((max, photo) => Math.max(max, photo.sort_order), -1) + 1;
-      const newPhotos: GalleryPhoto[] = [];
-
-      for (const file of files) {
-        const ext = file.name.split('.').pop() || 'jpg';
+      const uploads = files.map(async (file, index) => {
+        const optimisticPhoto = optimisticPhotos[index];
+        const compressedFile = await compressImageForUpload(file);
+        const ext = getUploadExtension(compressedFile);
+        const nextOrder = nextOrderStart + index;
         const storagePath = `${barbershop.id}/gallery/${Date.now()}-${nextOrder}.${ext}`;
         const { error: uploadError } = await supabase.storage
           .from('gallery-photos')
-          .upload(storagePath, file, { upsert: false });
+          .upload(storagePath, compressedFile, { upsert: false });
         if (uploadError) throw uploadError;
 
         const { data: urlData } = supabase.storage.from('gallery-photos').getPublicUrl(storagePath);
@@ -219,14 +255,16 @@ const PerfilPublico = () => {
           await supabase.storage.from('gallery-photos').remove([storagePath]);
           throw insertError;
         }
-        newPhotos.push(inserted as GalleryPhoto);
-        nextOrder += 1;
-      }
-
-      setGallery((current) => [...current, ...newPhotos].sort((a, b) => a.sort_order - b.sort_order));
+        URL.revokeObjectURL(optimisticPhoto.image_url);
+        setGallery((current) => current.map((photo) => photo.id === optimisticPhoto.id ? inserted as GalleryPhoto : photo));
+        return inserted;
+      });
+      await Promise.all(uploads);
       toast.success(files.length > 1 ? `${files.length} fotos adicionadas` : 'Foto adicionada');
     } catch (error) {
       console.error(error);
+      optimisticPhotos.forEach((photo) => URL.revokeObjectURL(photo.image_url));
+      setGallery((current) => current.filter((photo) => !optimisticPhotos.some((item) => item.id === photo.id)));
       toast.error('Erro ao adicionar fotos à galeria');
     } finally {
       setUploadingGallery(false);
@@ -283,28 +321,33 @@ const PerfilPublico = () => {
       return;
     }
 
-    if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
-    setAutoSaveStatus('saving');
-    autoSaveTimerRef.current = setTimeout(async () => {
-      const profileData = {
-        barbershop_id: barbershop.id,
-        foto_capa_url: fotoCapa,
-        logo_url: logoUrl,
-        descricao: descricao || null,
-        endereco: endereco || null,
-        numero: numero || null,
-        cidade: cidade || null,
-        estado: estado || null,
-        cep: cep || null,
-        instagram_url: instagramUrl || null,
-        whatsapp_numero: whatsappNumero || null,
-        slug_personalizado: slugPersonalizado || null,
-        theme_style: themeStyle,
-        font_style: fontStyle,
-        accent_color: accentColor,
-        gallery_enabled: galleryEnabled,
-      };
+    const profileData = {
+      barbershop_id: barbershop.id,
+      foto_capa_url: fotoCapa,
+      logo_url: logoUrl,
+      descricao: descricao || null,
+      endereco: endereco || null,
+      numero: numero || null,
+      cidade: cidade || null,
+      estado: estado || null,
+      cep: cep || null,
+      instagram_url: instagramUrl || null,
+      whatsapp_numero: whatsappNumero || null,
+      slug_personalizado: slugPersonalizado || null,
+      theme_style: themeStyle,
+      font_style: fontStyle,
+      accent_color: accentColor,
+      gallery_enabled: galleryEnabled,
+    };
+    const snapshot = JSON.stringify({ profileData, shopName: shopName.trim() });
+    if (!lastSavedSnapshotRef.current) lastSavedSnapshotRef.current = snapshot;
+    if (snapshot === lastSavedSnapshotRef.current) return;
 
+    if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+    autoSaveTimerRef.current = setTimeout(async () => {
+      const requestId = ++autoSaveRequestRef.current;
+      if (autoSaveStatusTimerRef.current) clearTimeout(autoSaveStatusTimerRef.current);
+      setAutoSaveStatus('saving');
       try {
         if (profile) {
           const { error } = await supabase.from('public_profiles').update(profileData).eq('id', profile.id);
@@ -322,14 +365,17 @@ const PerfilPublico = () => {
             .eq('id', barbershop.id);
           if (error) throw error;
         }
+        if (requestId !== autoSaveRequestRef.current) return;
+        lastSavedSnapshotRef.current = snapshot;
         setAutoSaveStatus('saved');
-        setTimeout(() => setAutoSaveStatus('idle'), 1800);
+        autoSaveStatusTimerRef.current = setTimeout(() => setAutoSaveStatus('idle'), 3000);
       } catch (error: any) {
+        if (requestId !== autoSaveRequestRef.current) return;
         console.error(error);
-        setAutoSaveStatus('idle');
+        setAutoSaveStatus('error');
         toast.error(error?.message?.includes('slug_personalizado') ? 'Este link já está em uso.' : 'Erro ao salvar alterações');
       }
-    }, 800);
+    }, 1000);
 
     return () => {
       if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
@@ -463,6 +509,7 @@ const PerfilPublico = () => {
           <span className="flex min-w-16 items-center justify-end gap-1 text-xs text-muted-foreground" aria-live="polite">
             {autoSaveStatus === 'saving' && <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Salvando</>}
             {autoSaveStatus === 'saved' && <><CheckCircle className="h-3.5 w-3.5 text-primary" /> Salvo</>}
+            {autoSaveStatus === 'error' && <><AlertTriangle className="h-3.5 w-3.5 text-destructive" /> Não salvo</>}
           </span>
           {publicLinkReal && (
             <Button
@@ -503,9 +550,9 @@ const PerfilPublico = () => {
         {/* Cover */}
         <div>
           <Label className="text-xs text-muted-foreground mb-2 block">Foto de capa</Label>
-          {fotoCapa ? (
+          {(coverPreview || fotoCapa) ? (
             <div className="relative rounded-xl overflow-hidden group">
-              <img src={fotoCapa} alt="Foto de capa do perfil da barbearia" className="w-full h-40 object-cover" />
+              <img src={coverPreview || fotoCapa || ''} alt="Foto de capa do perfil da barbearia" className="w-full h-40 object-cover" />
               <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-2">
                 <Button size="sm" variant="secondary" className="h-8 text-xs" onClick={() => coverInputRef.current?.click()}>
                   <Upload className="h-3.5 w-3.5 mr-1" /> Trocar
@@ -529,9 +576,9 @@ const PerfilPublico = () => {
 
         {/* Logo */}
         <div className="flex items-center gap-4 pt-1">
-          {logoUrl ? (
+          {(logoPreview || logoUrl) ? (
             <div className="relative group shrink-0">
-              <img src={logoUrl} alt="Logo da barbearia" className="w-16 h-16 rounded-2xl object-cover ring-2 ring-border" />
+              <img src={logoPreview || logoUrl || ''} alt="Logo da barbearia" className="w-16 h-16 rounded-2xl object-cover ring-2 ring-border" />
               <div className="absolute inset-0 bg-black/50 rounded-2xl opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-1">
                 <button className="h-7 w-7 rounded-lg bg-secondary flex items-center justify-center" onClick={() => logoInputRef.current?.click()}>
                   <Upload className="h-3 w-3" />
@@ -671,7 +718,7 @@ const PerfilPublico = () => {
                   variant="destructive"
                   size="icon"
                   aria-label="Excluir foto"
-                  disabled={deletingPhotoId === photo.id}
+                disabled={deletingPhotoId === photo.id || photo.id.startsWith('local-')}
                   onClick={() => handleDeleteGalleryPhoto(photo)}
                   className="absolute right-2 top-2 h-9 w-9 opacity-100 shadow-md sm:opacity-0 sm:group-hover:opacity-100"
                 >
