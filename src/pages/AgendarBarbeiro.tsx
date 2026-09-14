@@ -5,6 +5,7 @@ import { Logo } from '@/components/ui/Logo';
 import { UserX } from 'lucide-react';
 import { PremiumSkeleton, SkeletonCard } from '@/components/ui/premium-skeleton';
 import { Card, CardContent } from '@/components/ui/card';
+import { BookingAppearance, DEFAULT_BOOKING_APPEARANCE } from '@/components/booking/bookingAppearance';
 
 const BookingFlow = lazy(() => import('@/components/booking/BookingFlow').then(m => ({ default: m.BookingFlow })));
 
@@ -13,6 +14,7 @@ const AgendarBarbeiro = () => {
   const [barber, setBarber] = useState<Barber | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [appearance, setAppearance] = useState<BookingAppearance>(DEFAULT_BOOKING_APPEARANCE);
 
   useEffect(() => {
     if (barberId) {
@@ -35,6 +37,27 @@ const AgendarBarbeiro = () => {
         setNotFound(true);
       } else {
         setBarber(data as unknown as Barber);
+        if (data.barbershop_id) {
+          const [{ data: profile }, { data: shop }] = await Promise.all([
+            supabase
+              .from('public_profiles')
+              .select('theme_style, font_style, accent_color, logo_url')
+              .eq('barbershop_id', data.barbershop_id)
+              .maybeSingle(),
+            supabase
+              .from('barbershops')
+              .select('name')
+              .eq('id', data.barbershop_id)
+              .maybeSingle(),
+          ]);
+          setAppearance({
+            themeStyle: profile?.theme_style === 'urbano' ? 'urbano' : 'editorial',
+            fontStyle: profile?.font_style === 'luckiest_guy' ? 'luckiest_guy' : 'playfair',
+            accentColor: profile?.accent_color || '#4da6ff',
+            shopName: shop?.name,
+            logoUrl: profile?.logo_url,
+          });
+        }
       }
     } catch (error) {
       console.error('Erro ao buscar barbeiro:', error);
@@ -95,9 +118,19 @@ const AgendarBarbeiro = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header - Clean, no admin links */}
-      <header className="section-padding py-4 border-b border-border/50">
-        <div className="max-w-7xl mx-auto">
-          <Logo linkTo={undefined} />
+      <header className="section-padding py-4 border-b border-border/50 bg-background/80 backdrop-blur-xl">
+        <div className="max-w-2xl mx-auto flex items-center gap-3">
+          {appearance.logoUrl ? (
+            <img
+              src={appearance.logoUrl}
+              alt={`Logo da ${appearance.shopName ?? 'barbearia'}`}
+              className={`w-10 h-10 object-cover ${appearance.themeStyle === 'urbano' ? 'rounded-xl border-2' : 'rounded-lg'}`}
+              style={{ borderColor: appearance.themeStyle === 'urbano' ? appearance.accentColor : undefined }}
+            />
+          ) : null}
+          <span className={`${appearance.themeStyle === 'urbano' ? 'font-urban-preview uppercase text-xl' : 'font-display text-lg font-semibold'}`}>
+            {appearance.shopName || 'Bookify'}
+          </span>
         </div>
       </header>
 
@@ -105,15 +138,17 @@ const AgendarBarbeiro = () => {
       <main className="section-padding py-8 md:py-12">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-8">
-            <h1 className="text-2xl md:text-3xl font-bold mb-2">
-              Agende com {barber?.name}
+            <h1 className={`${appearance.themeStyle === 'urbano' ? 'font-urban-preview uppercase text-3xl md:text-4xl' : 'font-display text-2xl md:text-3xl font-bold'} mb-2`}>
+              {appearance.themeStyle === 'urbano' ? (
+                <><span style={{ color: appearance.accentColor }}>Agende com</span> {barber?.name}</>
+              ) : `Agende com ${barber?.name}`}
             </h1>
             <p className="text-muted-foreground">
               Escolha o serviço e horário para seu atendimento
             </p>
           </div>
           <Suspense fallback={<SkeletonCard />}>
-            <BookingFlow preselectedBarber={barber} />
+            <BookingFlow preselectedBarber={barber} barbershopId={barber?.barbershop_id || undefined} appearance={appearance} />
           </Suspense>
         </div>
       </main>
