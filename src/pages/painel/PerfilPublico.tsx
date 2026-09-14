@@ -334,7 +334,7 @@ const PerfilPublico = () => {
     return () => {
       if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
     };
-  }, [loading, barbershop, profile, shopName, fotoCapa, logoUrl, descricao, endereco, numero, cidade, estado, cep, instagramUrl, whatsappNumero, slugPersonalizado, themeStyle, fontStyle, accentColor, galleryEnabled]);
+  }, [loading, barbershop?.id, barbershop?.name, barbershop?.city, profile, shopName, fotoCapa, logoUrl, descricao, endereco, numero, cidade, estado, cep, instagramUrl, whatsappNumero, slugPersonalizado, themeStyle, fontStyle, accentColor, galleryEnabled]);
 
   // Auto-save booking gating fields without full form save
   const saveBookingSettings = async (patch: {
