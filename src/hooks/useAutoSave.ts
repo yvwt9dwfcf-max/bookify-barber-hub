@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { toast } from 'sonner';
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
 interface UseAutoSaveOptions {
-  /** Debounce delay in ms (default 3000) */
+  /** Debounce delay in ms (default 1000) */
   debounceMs?: number;
   /** Save on blur (default true) */
   saveOnBlur?: boolean;
@@ -14,7 +15,7 @@ interface UseAutoSaveOptions {
 }
 
 export function useAutoSave({
-  debounceMs = 3000,
+  debounceMs = 1000,
   saveOnBlur = true,
   onSave,
   serverValue,
@@ -24,6 +25,8 @@ export function useAutoSave({
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastSavedRef = useRef(serverValue);
   const isMountedRef = useRef(true);
+  const requestIdRef = useRef(0);
+  const statusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Sync when server value changes externally
   useEffect(() => {
@@ -35,6 +38,7 @@ export function useAutoSave({
     return () => {
       isMountedRef.current = false;
       if (timerRef.current) clearTimeout(timerRef.current);
+      if (statusTimerRef.current) clearTimeout(statusTimerRef.current);
     };
   }, []);
 
@@ -44,28 +48,29 @@ export function useAutoSave({
 
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = null;
-
+    const requestId = ++requestIdRef.current;
+    if (statusTimerRef.current) clearTimeout(statusTimerRef.current);
     setStatus('saving');
     try {
       await onSave(trimmed);
-      if (isMountedRef.current) {
+      if (isMountedRef.current && requestId === requestIdRef.current) {
         lastSavedRef.current = trimmed;
         setStatus('saved');
-        setTimeout(() => {
-          if (isMountedRef.current) setStatus('idle');
-        }, 2000);
-      }
-    } catch {
-      if (isMountedRef.current) {
-        setStatus('error');
-        setTimeout(() => {
+        statusTimerRef.current = setTimeout(() => {
           if (isMountedRef.current) setStatus('idle');
         }, 3000);
+      }
+    } catch (error) {
+      if (isMountedRef.current && requestId === requestIdRef.current) {
+        setStatus('error');
+        toast.error('Não foi possível salvar. Tente novamente.');
+        console.error('Erro no salvamento automático:', error);
       }
     }
   }, [onSave]);
 
   const handleChange = useCallback((newValue: string) => {
+    requestIdRef.current += 1;
     setValue(newValue);
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => save(newValue), debounceMs);

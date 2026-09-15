@@ -15,6 +15,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Separator } from '@/components/ui/separator';
 import { useAutoSave } from '@/hooks/useAutoSave';
 import { AutoSaveIndicator } from '@/components/ui/AutoSaveIndicator';
+import { compressImageForUpload, getUploadExtension } from '@/lib/imageUpload';
 
 interface ContextType {
   barber: Barber | null;
@@ -155,23 +156,17 @@ const Configuracoes = () => {
   const handleBarbershopPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !barbershop) return;
-
-    if (!file.type.startsWith('image/')) {
-      toast.error('Selecione uma imagem válida');
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Imagem deve ter no máximo 5MB');
-      return;
-    }
-
+    const previousUrl = photoUrl;
+    const previewUrl = URL.createObjectURL(file);
+    setPhotoUrl(previewUrl);
     setUploadingPhoto(true);
     try {
-      const ext = file.name.split('.').pop();
+      const compressedFile = await compressImageForUpload(file, { maxDimension: 800 });
+      const ext = getUploadExtension(compressedFile);
       const fileName = `${barbershop.id}/${Date.now()}.${ext}`;
       const { error: uploadErr } = await supabase.storage
         .from('barbershop-photos')
-        .upload(fileName, file, { upsert: true });
+        .upload(fileName, compressedFile, { upsert: true });
       if (uploadErr) throw uploadErr;
 
       const { data: urlData } = supabase.storage
@@ -190,10 +185,13 @@ const Configuracoes = () => {
       await refetchRole();
       toast.success('Foto atualizada!');
     } catch (err) {
-      toast.error('Erro ao enviar foto');
+      setPhotoUrl(previousUrl);
+      toast.error('Erro ao enviar foto. A imagem anterior foi mantida.');
       console.error(err);
     } finally {
+      URL.revokeObjectURL(previewUrl);
       setUploadingPhoto(false);
+      e.target.value = '';
     }
   };
 
@@ -210,12 +208,15 @@ const Configuracoes = () => {
             className="relative w-20 h-20 rounded-xl border-2 border-dashed border-border hover:border-primary/50 transition-colors cursor-pointer overflow-hidden flex items-center justify-center bg-muted/30"
             onClick={() => barbershopFileInputRef.current?.click()}
           >
-            {uploadingPhoto ? (
-              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-            ) : photoUrl ? (
+            {photoUrl ? (
               <img src={photoUrl} alt={`Logo da barbearia ${barbershop?.name ?? ''}`.trim()} className="w-full h-full object-cover" />
             ) : (
               <Camera className="h-5 w-5 text-muted-foreground/60" />
+            )}
+            {uploadingPhoto && (
+              <div className="absolute inset-0 flex items-center justify-center bg-background/50">
+                <Loader2 className="h-5 w-5 animate-spin text-foreground" />
+              </div>
             )}
             <input
               ref={barbershopFileInputRef}
