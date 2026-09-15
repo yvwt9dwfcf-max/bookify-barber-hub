@@ -10,4 +10,4 @@
 - [x] Adicionar preview otimista e compressão aos uploads de imagens
 - [x] Estabilizar indicadores e erros do auto-save
 - [x] Adicionar atualização manual à Agenda
-- [ ] Aplicar otimizações pontuais e validar telas
+- [x] Aplicar otimizações pontuais e validar telas

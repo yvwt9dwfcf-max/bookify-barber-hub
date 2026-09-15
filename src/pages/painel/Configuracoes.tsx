@@ -208,12 +208,15 @@ const Configuracoes = () => {
             className="relative w-20 h-20 rounded-xl border-2 border-dashed border-border hover:border-primary/50 transition-colors cursor-pointer overflow-hidden flex items-center justify-center bg-muted/30"
             onClick={() => barbershopFileInputRef.current?.click()}
           >
-            {uploadingPhoto ? (
-              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-            ) : photoUrl ? (
+            {photoUrl ? (
               <img src={photoUrl} alt={`Logo da barbearia ${barbershop?.name ?? ''}`.trim()} className="w-full h-full object-cover" />
             ) : (
               <Camera className="h-5 w-5 text-muted-foreground/60" />
+            )}
+            {uploadingPhoto && (
+              <div className="absolute inset-0 flex items-center justify-center bg-background/50">
+                <Loader2 className="h-5 w-5 animate-spin text-foreground" />
+              </div>
             )}
             <input
               ref={barbershopFileInputRef}

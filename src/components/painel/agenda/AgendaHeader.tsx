@@ -4,7 +4,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import {
-  CalendarRange as Calendar, CalendarDays, ChevronLeft, ChevronRight, UserRound as User, LayoutGrid, RefreshCw,
+  CalendarRange as Calendar, CalendarDays, ChevronLeft, ChevronRight, UserRound as User, LayoutGrid,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -23,14 +23,11 @@ interface AgendaHeaderProps {
   currentBarber: Barber | null;
   selectedBarberId: string | null;
   onBarberChange: (id: string) => void;
-  onRefresh: () => void;
-  refreshing: boolean;
 }
 
 const AgendaHeader = ({
   selectedDate, viewMode, onViewModeChange, onShiftDay,
   canViewOthers, barbers, currentBarber, selectedBarberId, onBarberChange,
-  onRefresh, refreshing,
 }: AgendaHeaderProps) => {
   return (
     <>
@@ -51,25 +48,13 @@ const AgendaHeader = ({
               {format(selectedDate, "d 'de' MMMM 'de' yyyy", { locale: ptBR })}
             </p>
           </div>
-          <div className="flex shrink-0 items-center">
-            <Button
-              variant="ghost" size="icon"
-              onClick={onRefresh}
-              disabled={refreshing}
-              aria-label="Atualizar agenda"
-              title="Atualizar agenda"
-              className="h-8 w-8 active:scale-95"
-            >
-              <RefreshCw className={cn('h-4 w-4', refreshing && 'animate-spin')} />
-            </Button>
-            <Button
-              variant="ghost" size="icon"
-              onClick={() => onShiftDay(1)}
-              className="h-8 w-8 transition-all hover:translate-x-0.5 active:scale-95"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
+          <Button
+            variant="ghost" size="icon"
+            onClick={() => onShiftDay(1)}
+            className="h-8 w-8 shrink-0 transition-all hover:translate-x-0.5 active:scale-95"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
         </div>
         <div className="flex items-center justify-center gap-1 -mt-0.5">
           <Button

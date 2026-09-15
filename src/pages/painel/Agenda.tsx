@@ -17,6 +17,8 @@ import AgendaDaysStrip from '@/components/painel/agenda/AgendaDaysStrip';
 import AgendaSlotGrid from '@/components/painel/agenda/AgendaSlotGrid';
 import { AgendaContextType, ViewMode, toLocalDate, getTodayLocalDate, shiftMonthToStart } from '@/components/painel/agenda/agendaUtils';
 import HolidayBanner from '@/components/painel/agenda/HolidayBanner';
+import { RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 /* Sticky wrapper — adds dynamic shadow on scroll */
 const StickyDaysStrip = (props: React.ComponentProps<typeof AgendaDaysStrip>) => {
@@ -297,7 +299,7 @@ const Agenda = () => {
         <GreetingHeader barber={barber} barbershop={barbershop} isMaster={isMaster} selectedDate={selectedDate} refreshKey={dashboardRefreshKey} />
 
         {/* Layout selector — Clássica / Equipe */}
-        <div className="flex justify-center pt-1 pb-0.5">
+        <div className="relative flex justify-center pt-1 pb-0.5">
           <div
             role="tablist"
             aria-label="Modo de visualização da agenda"
@@ -326,6 +328,18 @@ const Agenda = () => {
               );
             })}
           </div>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={handleManualRefresh}
+            disabled={refreshing}
+            aria-label="Atualizar agenda"
+            title="Atualizar agenda"
+            className="absolute right-0 h-8 w-8 active:scale-95"
+          >
+            <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+          </Button>
         </div>
 
         {(selectedBarber || barber) && (
@@ -371,8 +385,6 @@ const Agenda = () => {
               currentBarber={barber}
               selectedBarberId={selectedBarberId}
               onBarberChange={setSelectedBarberId}
-              onRefresh={handleManualRefresh}
-              refreshing={refreshing}
             />
 
             {viewMode === 'monthly' && selectedBarber && (

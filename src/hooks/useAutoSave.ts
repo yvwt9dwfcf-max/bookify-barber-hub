@@ -70,6 +70,7 @@ export function useAutoSave({
   }, [onSave]);
 
   const handleChange = useCallback((newValue: string) => {
+    requestIdRef.current += 1;
     setValue(newValue);
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => save(newValue), debounceMs);
