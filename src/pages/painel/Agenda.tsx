@@ -85,6 +85,7 @@ const Agenda = () => {
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(getTodayLocalDate);
   const [dashboardRefreshKey, setDashboardRefreshKey] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('daily');
   const [showManualDialog, setShowManualDialog] = useState(false);
   const [preselectedTime, setPreselectedTime] = useState<string | null>(null);
@@ -183,6 +184,19 @@ const Agenda = () => {
   const handleNewAppointment = useCallback(() => {
     scheduleAgendaRefresh(true);
   }, [scheduleAgendaRefresh]);
+
+  const handleManualRefresh = useCallback(async () => {
+    if (refreshing) return;
+    setRefreshing(true);
+    try {
+      await Promise.all([fetchAppointments(), refetchAvailability()]);
+      setDashboardRefreshKey((key) => key + 1);
+    } catch {
+      toast.error('Erro ao atualizar a agenda');
+    } finally {
+      setRefreshing(false);
+    }
+  }, [fetchAppointments, refetchAvailability, refreshing]);
 
   useRealtimeAppointments({ barberId: selectedBarberId || undefined, onNewAppointment: handleNewAppointment });
 
@@ -357,6 +371,8 @@ const Agenda = () => {
               currentBarber={barber}
               selectedBarberId={selectedBarberId}
               onBarberChange={setSelectedBarberId}
+              onRefresh={handleManualRefresh}
+              refreshing={refreshing}
             />
 
             {viewMode === 'monthly' && selectedBarber && (

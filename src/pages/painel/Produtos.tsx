@@ -16,6 +16,7 @@ import { PremiumSkeleton } from '@/components/ui/premium-skeleton';
 import { ArrowLeft, Plus, Loader2, Trash2, Package, AlertTriangle, ImagePlus, ShoppingCart } from 'lucide-react';
 import { toast } from 'sonner';
 import MultiSaleSheet, { CartItem } from '@/components/painel/MultiSaleSheet';
+import { compressImageForUpload, getUploadExtension } from '@/lib/imageUpload';
 
 interface ContextType {
   barber: Barber | null;
@@ -155,17 +156,23 @@ const Produtos = () => {
 
   const uploadPhoto = async (file: File) => {
     if (!barbershop?.id) return;
+    const previousUrl = photoUrl;
+    const previewUrl = URL.createObjectURL(file);
+    setPhotoUrl(previewUrl);
     setUploading(true);
     try {
-      const ext = file.name.split('.').pop();
+      const compressedFile = await compressImageForUpload(file, { maxDimension: 1200 });
+      const ext = getUploadExtension(compressedFile);
       const path = `${barbershop.id}/${crypto.randomUUID()}.${ext}`;
-      const { error } = await supabase.storage.from('product-photos').upload(path, file, { upsert: true });
+      const { error } = await supabase.storage.from('product-photos').upload(path, compressedFile, { upsert: true });
       if (error) throw error;
       const { data } = supabase.storage.from('product-photos').getPublicUrl(path);
       setPhotoUrl(data.publicUrl);
     } catch (e: any) {
-      toast.error('Erro ao enviar foto');
+      setPhotoUrl(previousUrl);
+      toast.error('Erro ao enviar foto. A imagem anterior foi mantida.');
     } finally {
+      URL.revokeObjectURL(previewUrl);
       setUploading(false);
     }
   };

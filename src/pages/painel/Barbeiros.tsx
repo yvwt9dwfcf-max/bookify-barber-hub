@@ -33,6 +33,7 @@ import {
 import { UsersRound as Users, Plus, Loader2, Trash2, SlidersHorizontal as Settings, Mail, Lock, UserRound as User, Crown, TriangleAlert as AlertTriangle, Copy, Link as LinkIcon, ExternalLink, Check, Camera } from 'lucide-react';
 import { toast } from 'sonner';
 import { SkeletonCard } from '@/components/ui/premium-skeleton';
+import { compressImageForUpload, getUploadExtension } from '@/lib/imageUpload';
 
 interface BarberWithPermissions extends Barber {
   permissions?: BarberPermissions;
@@ -50,6 +51,7 @@ const Barbeiros = () => {
   const [saving, setSaving] = useState(false);
   const [copiedLink, setCopiedLink] = useState<string | null>(null);
   const [uploadingPhoto, setUploadingPhoto] = useState<string | null>(null);
+  const [photoPreviews, setPhotoPreviews] = useState<Record<string, string>>({});
 
   // Add barber form
   const [newBarberName, setNewBarberName] = useState('');
@@ -370,8 +372,8 @@ const Barbeiros = () => {
                 {/* Barber Photo with Upload */}
                 <div className="relative group flex-shrink-0">
                   <label className="relative block cursor-pointer">
-                    {barber.photo_url ? (
-                      <img src={barber.photo_url} alt={barber.name} className="w-12 h-12 rounded-full object-cover ring-2 ring-border" />
+                    {photoPreviews[barber.id] || barber.photo_url ? (
+                      <img src={photoPreviews[barber.id] || barber.photo_url || ''} alt={barber.name} className="w-12 h-12 rounded-full object-cover ring-2 ring-border" />
                     ) : (
                       <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center ring-2 ring-border">
                         <User className="h-5 w-5 text-primary" />
@@ -392,13 +394,16 @@ const Barbeiros = () => {
                       onChange={async (e) => {
                         const file = e.target.files?.[0];
                         if (!file) return;
+                        const previewUrl = URL.createObjectURL(file);
+                        setPhotoPreviews((current) => ({ ...current, [barber.id]: previewUrl }));
                         setUploadingPhoto(barber.id);
                         try {
-                          const ext = file.name.split('.').pop();
+                          const compressedFile = await compressImageForUpload(file, { maxDimension: 800 });
+                          const ext = getUploadExtension(compressedFile);
                           const fileName = `${barber.id}/${Date.now()}.${ext}`;
                           const { error: uploadErr } = await supabase.storage
                             .from('barber-photos')
-                            .upload(fileName, file, { upsert: true });
+                            .upload(fileName, compressedFile, { upsert: true });
                           if (uploadErr) throw uploadErr;
                           const { data: urlData } = supabase.storage
                             .from('barber-photos')
@@ -414,6 +419,12 @@ const Barbeiros = () => {
                           console.error('Erro ao enviar foto:', err);
                           toast.error('Erro ao enviar foto');
                         } finally {
+                          URL.revokeObjectURL(previewUrl);
+                          setPhotoPreviews((current) => {
+                            const next = { ...current };
+                            delete next[barber.id];
+                            return next;
+                          });
                           setUploadingPhoto(null);
                           e.target.value = '';
                         }
