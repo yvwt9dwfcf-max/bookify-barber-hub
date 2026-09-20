@@ -86,11 +86,6 @@ const ReportContent = ({
   }, [allAppointments]);
 
   const revenueData = useMemo(() => {
-    if (period === '30days') {
-      const total = appointments?.reduce((sum: number, apt: any) => sum + Number(apt.services?.price || 0), 0) || 0;
-      const monthName = format(dateRange.startDate, 'MMMM', { locale: ptBR });
-      return [{ day: monthName.charAt(0).toUpperCase() + monthName.slice(1), revenue: total }];
-    }
     const allDays = eachDayOfInterval({ start: dateRange.startDate, end: dateRange.endDate });
     const revenueByDay: Record<string, number> = {};
     appointments?.forEach((apt: any) => {
