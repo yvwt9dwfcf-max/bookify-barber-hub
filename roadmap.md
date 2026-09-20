@@ -17,4 +17,4 @@
 - [x] Aplicar identidade editorial na aba Metas
 - [x] Aplicar identidade editorial em Produtos
 - [x] Corrigir série diária do gráfico mensal em Relatórios
-- [ ] Validar compilação e telas financeiras em mobile
+- [x] Validar compilação e telas financeiras em mobile
