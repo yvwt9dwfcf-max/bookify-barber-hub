@@ -312,13 +312,13 @@ const MetasTab = ({ barbershop, isMaster }: { barbershop: any; isMaster: boolean
   }
 
   return (
-    <div className="space-y-3 pt-4 text-paper">
-      <Card className="border-paper/15 bg-editorial shadow-none">
+    <div className="space-y-3 pt-4">
+      <Card>
         <CardContent className="p-4 space-y-2">
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-editorial-mono text-[10px] uppercase text-muted-foreground font-medium">Meta total mensal</p>
-              <p className="font-display text-2xl font-bold tabular-nums mt-0.5">
+              <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Meta total mensal</p>
+              <p className="text-lg font-bold tabular-nums mt-0.5">
                 {shopMeta > 0 ? formatCurrency(shopMeta) : '—'}
               </p>
             </div>
@@ -328,8 +328,8 @@ const MetasTab = ({ barbershop, isMaster }: { barbershop: any; isMaster: boolean
           </div>
           {shopMeta > 0 && (
             <>
-              <div className="h-1 rounded-full bg-paper/10 overflow-hidden">
-                <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${shopPct}%` }} />
+              <div className="h-2 rounded-full bg-muted overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-primary to-primary/70 rounded-full transition-all" style={{ width: `${shopPct}%` }} />
               </div>
               <p className="text-[11px] text-muted-foreground">
                 {formatCurrency(totalRev)} de {formatCurrency(shopMeta)} ({shopPct.toFixed(0)}%)
@@ -339,12 +339,12 @@ const MetasTab = ({ barbershop, isMaster }: { barbershop: any; isMaster: boolean
         </CardContent>
       </Card>
 
-      <Card className="border-paper/15 bg-editorial shadow-none">
+      <Card>
         <CardContent className="p-4 space-y-2">
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-editorial-mono text-[10px] uppercase text-muted-foreground font-medium">Meta de produtos</p>
-              <p className="font-display text-2xl font-bold tabular-nums mt-0.5">
+              <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Meta de produtos</p>
+              <p className="text-lg font-bold tabular-nums mt-0.5">
                 {prodMeta > 0 ? formatCurrency(prodMeta) : '—'}
               </p>
             </div>
@@ -354,8 +354,8 @@ const MetasTab = ({ barbershop, isMaster }: { barbershop: any; isMaster: boolean
           </div>
           {prodMeta > 0 && (
             <>
-              <div className="h-1 rounded-full bg-paper/10 overflow-hidden">
-                <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${prodPct}%` }} />
+              <div className="h-2 rounded-full bg-muted overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-amber-500 to-amber-400 rounded-full transition-all" style={{ width: `${prodPct}%` }} />
               </div>
               <p className="text-[11px] text-muted-foreground">
                 {formatCurrency(progress?.products || 0)} de {formatCurrency(prodMeta)} ({prodPct.toFixed(0)}%)
@@ -386,7 +386,7 @@ const MetasTab = ({ barbershop, isMaster }: { barbershop: any; isMaster: boolean
                 update.mutate({ field: 'monthly_goal', value: v > 0 ? v : null });
               }}
               disabled={update.isPending}
-              className="btn-primary-solid"
+              className="btn-primary-gradient"
             >
               Salvar
             </Button>
@@ -411,7 +411,7 @@ const MetasTab = ({ barbershop, isMaster }: { barbershop: any; isMaster: boolean
                 update.mutate({ field: 'products_monthly_goal', value: v > 0 ? v : null });
               }}
               disabled={update.isPending}
-              className="btn-primary-solid"
+              className="btn-primary-gradient"
             >
               Salvar
             </Button>

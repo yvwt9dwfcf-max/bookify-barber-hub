@@ -5,11 +5,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ComissoesSkeleton } from '@/components/painel/skeletons';
 import {
+  Coins as DollarSign,
   UsersRound as Users,
   ChevronDown,
   ChevronUp,
   Save,
+  TrendingUp,
   Percent as PercentIcon,
+  Wallet,
+  Receipt,
+  Sparkles,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -196,28 +201,34 @@ const Comissoes = () => {
   }
 
   return (
-    <div className="space-y-4 pt-4 animate-page-enter text-paper">
+    <div className="space-y-4 pt-4 animate-page-enter">
       {/* Header / summary */}
-      <Card className="overflow-hidden border-paper/15 bg-editorial shadow-none">
-        <CardContent className="p-5">
-          <p className="font-editorial-mono text-[10px] uppercase text-muted-foreground font-medium mb-1">
+      <Card className="overflow-hidden border-0">
+        <CardContent
+          className="p-5"
+          style={{
+            background:
+              'linear-gradient(135deg, hsl(var(--primary) / 0.10), hsl(var(--primary) / 0.02))',
+          }}
+        >
+          <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-semibold mb-1">
             Lucro líquido após comissões
           </p>
-          <p className="font-display text-4xl font-bold tabular-nums text-paper">
+          <p className="text-3xl font-bold tabular-nums text-primary">
             {formatCurrency(totals.profit)}
           </p>
           <div className="grid grid-cols-3 gap-2 mt-4">
-            <div className="rounded-lg p-2.5 border border-paper/15">
-              <p className="font-editorial-mono text-[9px] uppercase text-muted-foreground font-medium">Bruto</p>
-              <p className="font-display text-base font-bold tabular-nums">{formatCurrency(totals.revenue)}</p>
+            <div className="rounded-xl p-2.5 bg-card/50 border border-border/40">
+              <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-semibold">Bruto</p>
+              <p className="text-sm font-bold tabular-nums">{formatCurrency(totals.revenue)}</p>
             </div>
-            <div className="rounded-lg p-2.5 border border-paper/15">
-              <p className="font-editorial-mono text-[9px] uppercase text-muted-foreground font-medium">Comissões</p>
-              <p className="font-display text-base font-bold tabular-nums text-bordeaux">{formatCurrency(totals.commission)}</p>
+            <div className="rounded-xl p-2.5 bg-card/50 border border-border/40">
+              <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-semibold">Comissões</p>
+              <p className="text-sm font-bold tabular-nums text-amber-500">{formatCurrency(totals.commission)}</p>
             </div>
-            <div className="rounded-lg p-2.5 border border-paper/15">
-              <p className="font-editorial-mono text-[9px] uppercase text-muted-foreground font-medium">Atend.</p>
-              <p className="font-display text-base font-bold tabular-nums">{totals.count}</p>
+            <div className="rounded-xl p-2.5 bg-card/50 border border-border/40">
+              <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-semibold">Atend.</p>
+              <p className="text-sm font-bold tabular-nums">{totals.count}</p>
             </div>
           </div>
         </CardContent>
@@ -243,7 +254,7 @@ const Comissoes = () => {
             const profitPct = r.revenue > 0 ? (r.profit / r.revenue) * 100 : 0;
 
             return (
-              <Card key={barber.id} className="overflow-hidden border-paper/15 bg-editorial shadow-none">
+              <Card key={barber.id} className="overflow-hidden">
                 <CardContent className="p-0">
                   {/* Header */}
                   <div className="p-4">
@@ -251,8 +262,8 @@ const Comissoes = () => {
                       {barber.photo_url ? (
                         <img src={barber.photo_url} alt={barber.name} className="w-11 h-11 rounded-full object-cover ring-2 ring-border" />
                       ) : (
-                          <div className="w-11 h-11 rounded-full border border-paper/15 flex items-center justify-center">
-                            <Users className="h-5 w-5 text-paper/60" />
+                        <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center ring-2 ring-border">
+                          <Users className="h-5 w-5 text-primary" />
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
@@ -290,9 +301,9 @@ const Comissoes = () => {
 
                     {/* Metrics row */}
                     <div className="grid grid-cols-3 gap-2 mt-3">
-                        <Metric label="Bruto" value={formatCurrency(r.revenue)} />
-                        <Metric label="Comissão" value={formatCurrency(r.commission)} accent="negative" />
-                        <Metric label="Lucro" value={formatCurrency(r.profit)} accent="positive" />
+                      <Metric icon={<TrendingUp className="h-3 w-3 text-primary" />} label="Bruto" value={formatCurrency(r.revenue)} />
+                      <Metric icon={<Wallet className="h-3 w-3 text-amber-500" />} label="Comissão" value={formatCurrency(r.commission)} accent="amber" />
+                      <Metric icon={<Sparkles className="h-3 w-3 text-primary" />} label="Lucro" value={formatCurrency(r.profit)} accent="primary" />
                     </div>
 
                     {/* Profit bar */}
@@ -302,9 +313,9 @@ const Comissoes = () => {
                           <span>Margem da casa</span>
                           <span className="font-semibold tabular-nums text-foreground">{profitPct.toFixed(0)}%</span>
                         </div>
-                        <div className="h-1 rounded-full bg-paper/10 overflow-hidden flex">
+                        <div className="h-1.5 rounded-full bg-muted overflow-hidden flex">
                           <div className="h-full bg-primary" style={{ width: `${profitPct}%` }} />
-                          <div className="h-full bg-bordeaux" style={{ width: `${100 - profitPct}%` }} />
+                          <div className="h-full bg-amber-500/70" style={{ width: `${100 - profitPct}%` }} />
                         </div>
                       </div>
                     )}
@@ -318,7 +329,7 @@ const Comissoes = () => {
                   </div>
 
                   {isExpanded && services && services.length > 0 && (
-                    <div className="border-t border-paper/15 px-4 py-3 space-y-2">
+                    <div className="border-t border-border px-4 py-3 bg-muted/30 space-y-2">
                       <p className="text-[10px] font-medium text-muted-foreground mb-1">
                         Padrão {commission}% — defina exceções por serviço
                       </p>
@@ -373,12 +384,15 @@ const Comissoes = () => {
   );
 };
 
-const Metric = ({ label, value, accent }: { label: string; value: string; accent?: 'positive' | 'negative' }) => (
-  <div className="rounded-lg border border-paper/15 p-2">
-    <div className="font-editorial-mono text-[9px] uppercase text-muted-foreground font-medium">
+const Metric = ({
+  icon, label, value, accent,
+}: { icon: React.ReactNode; label: string; value: string; accent?: 'primary' | 'amber' }) => (
+  <div className="rounded-lg bg-muted/40 border border-border/30 p-2">
+    <div className="flex items-center gap-1 text-[9px] uppercase tracking-wider text-muted-foreground font-semibold">
+      {icon}
       {label}
     </div>
-    <p className={`font-display text-sm font-bold tabular-nums mt-0.5 ${accent === 'positive' ? 'text-primary' : accent === 'negative' ? 'text-bordeaux' : ''}`}>
+    <p className={`text-xs font-bold tabular-nums mt-0.5 ${accent === 'primary' ? 'text-primary' : accent === 'amber' ? 'text-amber-500' : ''}`}>
       {value}
     </p>
   </div>

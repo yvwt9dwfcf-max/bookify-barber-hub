@@ -5,9 +5,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { PremiumSkeleton } from '@/components/ui/premium-skeleton';
 import {
-  Wallet, ArrowUpRight, ArrowDownRight,
+  Wallet, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight,
   Banknote, Smartphone, CreditCard, Sparkles, Package, Receipt,
   ChevronLeft, ChevronRight, Target, Plus, ShoppingCart, ArrowUp, ArrowDown,
 } from 'lucide-react';
@@ -23,11 +24,11 @@ interface ContextType {
 const formatCurrency = (v: number) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
 
-const PAYMENT_LABELS: Record<string, { label: string; icon: any }> = {
-  dinheiro: { label: 'Dinheiro', icon: Banknote },
-  pix: { label: 'Pix', icon: Smartphone },
-  debito: { label: 'Débito', icon: CreditCard },
-  credito: { label: 'Crédito', icon: CreditCard },
+const PAYMENT_LABELS: Record<string, { label: string; icon: any; color: string }> = {
+  dinheiro: { label: 'Dinheiro', icon: Banknote, color: '#22C55E' },
+  pix: { label: 'Pix', icon: Smartphone, color: '#3B82F6' },
+  debito: { label: 'Débito', icon: CreditCard, color: '#A855F7' },
+  credito: { label: 'Crédito', icon: CreditCard, color: '#F59E0B' },
 };
 
 const Caixa = () => {
@@ -190,18 +191,18 @@ const Caixa = () => {
   const isLoading = l1 || l2 || l3;
 
   return (
-    <div className="space-y-5 animate-page-enter pb-20 text-paper">
+    <div className="space-y-5 animate-page-enter pb-20">
       {/* Header */}
       {!inFin && (
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="font-display text-2xl font-bold flex items-center gap-2">
-              <Wallet className="h-5 w-5 text-paper/70" />
+            <h1 className="text-xl font-bold flex items-center gap-2">
+              <Wallet className="h-5 w-5 text-primary" />
               Caixa
             </h1>
             <p className="text-xs text-muted-foreground">Movimentação financeira da barbearia</p>
           </div>
-          <Button size="sm" onClick={() => goTab('produtos')} className="btn-primary-solid">
+          <Button size="sm" onClick={() => goTab('produtos')} className="btn-primary-gradient">
             <ShoppingCart className="h-4 w-4 mr-1" />
             Vender
           </Button>
@@ -209,7 +210,7 @@ const Caixa = () => {
       )}
 
       {/* Date navigator */}
-      <Card className="border-paper/15 bg-editorial shadow-none">
+      <Card>
         <CardContent className="p-2 flex items-center justify-between">
           <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => setSelectedDate((d) => addDays(d, -1))}>
             <ChevronLeft className="h-4 w-4" />
@@ -218,7 +219,7 @@ const Caixa = () => {
             onClick={() => setSelectedDate(new Date())}
             className="flex flex-col items-center min-w-0 px-2"
           >
-            <p className="font-display text-base font-bold">
+            <p className="text-sm font-bold">
               {isToday(selectedDate) ? 'Hoje' : format(selectedDate, "dd 'de' MMMM", { locale: ptBR })}
             </p>
             <p className="text-[10px] text-muted-foreground capitalize">
@@ -249,14 +250,21 @@ const Caixa = () => {
             ? (dayDelta >= 20 ? 'Excelente desempenho hoje 🔥' : 'Bom desempenho hoje')
             : (dayDelta <= -20 ? 'Dia mais fraco, pode melhorar' : 'Movimento estável');
         return (
-          <Card className="overflow-hidden border-paper/15 bg-editorial shadow-none">
-            <CardContent className="p-5 relative">
+          <Card className="overflow-hidden border-0 shadow-card">
+            <CardContent
+              className="p-5 relative"
+              style={{
+                background: balance >= 0
+                  ? 'linear-gradient(135deg, hsl(var(--primary) / 0.10), transparent)'
+                  : 'linear-gradient(135deg, hsl(var(--destructive) / 0.10), transparent)',
+              }}
+            >
               <div className="flex items-center justify-between mb-1">
-                <p className="font-editorial-mono text-[10px] uppercase text-muted-foreground font-medium">
+                <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-semibold">
                   Saldo do dia
                 </p>
                 {isToday(selectedDate) && showDelta && Math.abs(dayDelta) >= 1 && (
-                  <div className={`flex items-center gap-0.5 text-[11px] font-semibold ${dayDelta >= 0 ? 'text-primary' : 'text-bordeaux'}`}>
+                  <div className={`flex items-center gap-0.5 text-[11px] font-semibold ${dayDelta >= 0 ? 'text-primary' : 'text-destructive'}`}>
                     {dayDelta >= 0 ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}
                     {Math.abs(dayDelta).toFixed(0)}% vs ontem
                   </div>
@@ -265,7 +273,7 @@ const Caixa = () => {
               {isLoading ? (
                 <PremiumSkeleton className="h-9 w-40" />
               ) : (
-                <p className={`font-display text-4xl font-bold tabular-nums ${balance >= 0 ? 'text-paper' : 'text-bordeaux'}`}>
+                <p className={`text-3xl font-bold tabular-nums ${balance >= 0 ? 'text-primary' : 'text-destructive'}`}>
                   {formatCurrency(balance)}
                 </p>
               )}
@@ -274,24 +282,24 @@ const Caixa = () => {
               )}
 
               <div className="grid grid-cols-2 gap-3 mt-4">
-                <div className="rounded-lg p-3 border border-paper/15">
-                  <div className="font-editorial-mono flex items-center gap-1.5 text-[9px] uppercase text-muted-foreground font-medium mb-1">
+                <div className="rounded-xl p-3 bg-primary/5 border border-primary/15">
+                  <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">
                     <ArrowUpRight className="h-3 w-3 text-primary" />
                     Entradas
                   </div>
-                  <p className="font-display text-xl font-bold text-primary tabular-nums">{formatCurrency(totalIncome)}</p>
+                  <p className="text-lg font-bold text-primary tabular-nums">{formatCurrency(totalIncome)}</p>
                   {isToday(selectedDate) && prevIncome > 0 && (
                     <p className="text-[10px] text-muted-foreground mt-0.5 tabular-nums">
                       Ontem: {formatCurrency(prevIncome)}
                     </p>
                   )}
                 </div>
-                <div className="rounded-lg p-3 border border-paper/15">
-                  <div className="font-editorial-mono flex items-center gap-1.5 text-[9px] uppercase text-muted-foreground font-medium mb-1">
-                    <ArrowDownRight className="h-3 w-3 text-bordeaux" />
+                <div className="rounded-xl p-3 bg-destructive/5 border border-destructive/15">
+                  <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">
+                    <ArrowDownRight className="h-3 w-3 text-destructive" />
                     Saídas
                   </div>
-                  <p className="font-display text-xl font-bold text-bordeaux tabular-nums">{formatCurrency(totalExpenses)}</p>
+                  <p className="text-lg font-bold text-destructive tabular-nums">{formatCurrency(totalExpenses)}</p>
                 </div>
               </div>
             </CardContent>
@@ -301,22 +309,22 @@ const Caixa = () => {
 
       {/* Income breakdown */}
       <div className="grid grid-cols-2 gap-2">
-        <Card className="cursor-pointer border-paper/15 bg-editorial shadow-none transition-transform active:scale-[0.98]">
+        <Card className="cursor-pointer transition-transform active:scale-[0.98]">
           <CardContent className="p-3">
-            <Sparkles className="h-4 w-4 text-paper/60 mb-1.5" />
-            <p className="font-editorial-mono text-[9px] uppercase text-muted-foreground">Serviços</p>
-            <p className="font-display text-lg font-bold tabular-nums">{formatCurrency(servicesIncome)}</p>
+            <Sparkles className="h-4 w-4 text-primary mb-1.5" />
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Serviços</p>
+            <p className="text-base font-bold tabular-nums">{formatCurrency(servicesIncome)}</p>
             <p className="text-[10px] text-muted-foreground">{appointments?.length || 0} atendimentos</p>
           </CardContent>
         </Card>
         <Card
-          className="cursor-pointer border-paper/15 bg-editorial shadow-none transition-transform active:scale-[0.98]"
+          className="cursor-pointer transition-transform active:scale-[0.98]"
           onClick={() => goTab('produtos')}
         >
           <CardContent className="p-3">
-            <Package className="h-4 w-4 text-paper/60 mb-1.5" />
-            <p className="font-editorial-mono text-[9px] uppercase text-muted-foreground">Produtos</p>
-            <p className="font-display text-lg font-bold tabular-nums">{formatCurrency(productsIncome)}</p>
+            <Package className="h-4 w-4 text-primary mb-1.5" />
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Produtos</p>
+            <p className="text-base font-bold tabular-nums">{formatCurrency(productsIncome)}</p>
             <p className="text-[10px] text-muted-foreground">{sales?.length || 0} vendas</p>
           </CardContent>
         </Card>
@@ -324,29 +332,29 @@ const Caixa = () => {
 
       {/* Payment methods */}
       {byPayment.length > 0 && (
-        <Card className="border-paper/15 bg-editorial shadow-none">
+        <Card>
           <CardContent className="p-4">
-            <p className="font-editorial-mono text-[10px] uppercase text-muted-foreground font-medium mb-3">
+            <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-3">
               Por forma de pagamento
             </p>
             <div className="space-y-2">
               {byPayment.map(([method, amount]) => {
-                const meta = PAYMENT_LABELS[method] || { label: method, icon: Wallet };
+                const meta = PAYMENT_LABELS[method] || { label: method, icon: Wallet, color: '#6B7280' };
                 const Icon = meta.icon;
                 const pct = totalIncome > 0 ? (amount / totalIncome) * 100 : 0;
                 return (
                   <div key={method}>
                     <div className="flex items-center justify-between text-sm mb-1">
                       <div className="flex items-center gap-2">
-                        <Icon className="h-3.5 w-3.5 text-paper/60" />
+                        <Icon className="h-3.5 w-3.5" style={{ color: meta.color }} />
                         <span className="font-medium">{meta.label}</span>
                       </div>
                       <span className="font-bold tabular-nums">{formatCurrency(amount)}</span>
                     </div>
-                    <div className="h-1 rounded-full bg-paper/10 overflow-hidden">
+                    <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                       <div
-                        className="h-full rounded-full bg-primary transition-all"
-                        style={{ width: `${pct}%` }}
+                        className="h-full rounded-full transition-all"
+                        style={{ width: `${pct}%`, backgroundColor: meta.color }}
                       />
                     </div>
                   </div>
@@ -359,11 +367,11 @@ const Caixa = () => {
 
       {/* Monthly goals & projection (Master only) */}
       {isMaster && (
-        <Card className="border-paper/15 bg-editorial shadow-none">
+        <Card>
           <CardContent className="p-4 space-y-4">
             <div className="flex items-center gap-2">
-              <Target className="h-4 w-4 text-paper/60" />
-              <p className="font-editorial-mono text-[10px] uppercase font-medium">
+              <Target className="h-4 w-4 text-primary" />
+              <p className="text-xs uppercase tracking-wider font-semibold">
                 Mês de {format(selectedDate, 'MMMM', { locale: ptBR })}
               </p>
             </div>
@@ -376,8 +384,8 @@ const Caixa = () => {
                     {formatCurrency(monthRevenue)} <span className="text-muted-foreground">/ {formatCurrency(monthlyGoal)}</span>
                   </span>
                 </div>
-                <div className="h-1 rounded-full bg-paper/10 overflow-hidden">
-                  <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${goalPct}%` }} />
+                <div className="h-2 rounded-full bg-muted overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-primary to-primary/70 rounded-full transition-all" style={{ width: `${goalPct}%` }} />
                 </div>
                 <p className="text-[10px] text-muted-foreground mt-1.5">
                   Projeção: <span className="font-semibold text-foreground">{formatCurrency(projection)}</span> até o fim do mês
@@ -403,8 +411,8 @@ const Caixa = () => {
                     {formatCurrency(monthData?.productsRevenue || 0)} <span className="text-muted-foreground">/ {formatCurrency(productsGoal)}</span>
                   </span>
                 </div>
-                <div className="h-1 rounded-full bg-paper/10 overflow-hidden">
-                  <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${productsPct}%` }} />
+                <div className="h-2 rounded-full bg-muted overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-amber-500 to-amber-400 rounded-full transition-all" style={{ width: `${productsPct}%` }} />
                 </div>
               </div>
             )}
@@ -414,7 +422,7 @@ const Caixa = () => {
 
       {/* Movements list */}
       <div>
-        <p className="font-editorial-mono text-[10px] uppercase text-muted-foreground font-medium mb-2 px-1">
+        <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-2 px-1">
           Movimentações do dia
         </p>
         {isLoading ? (
@@ -431,9 +439,11 @@ const Caixa = () => {
         ) : (
           <div className="space-y-1.5">
             {(sales || []).map((s: any) => (
-              <Card key={`s-${s.id}`} className="border-paper/15 bg-editorial shadow-none">
+              <Card key={`s-${s.id}`}>
                 <CardContent className="p-3 flex items-center gap-3">
-                  <Package className="h-4 w-4 text-paper/60 shrink-0" />
+                  <div className="size-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                    <Package className="h-4 w-4 text-primary" />
+                  </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">
                       {s.products?.name || 'Produto'} <span className="text-muted-foreground">×{s.quantity}</span>
@@ -448,9 +458,11 @@ const Caixa = () => {
               </Card>
             ))}
             {(appointments || []).map((a: any) => (
-              <Card key={`a-${a.id}`} className="border-paper/15 bg-editorial shadow-none">
+              <Card key={`a-${a.id}`}>
                 <CardContent className="p-3 flex items-center gap-3">
-                  <Sparkles className="h-4 w-4 text-paper/60 shrink-0" />
+                  <div className="size-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                    <Sparkles className="h-4 w-4 text-primary" />
+                  </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{a.services?.name || 'Atendimento'}</p>
                     <p className="text-[10px] text-muted-foreground truncate">
@@ -463,14 +475,16 @@ const Caixa = () => {
               </Card>
             ))}
             {(expenses || []).map((e: any) => (
-              <Card key={`e-${e.id}`} className="border-paper/15 bg-editorial shadow-none">
+              <Card key={`e-${e.id}`}>
                 <CardContent className="p-3 flex items-center gap-3">
-                  <Receipt className="h-4 w-4 text-bordeaux shrink-0" />
+                  <div className="size-9 rounded-xl bg-destructive/10 flex items-center justify-center shrink-0">
+                    <Receipt className="h-4 w-4 text-destructive" />
+                  </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{e.name}</p>
                     <p className="text-[10px] text-muted-foreground capitalize">{e.category}</p>
                   </div>
-                  <span className="text-sm font-bold text-bordeaux tabular-nums">-{formatCurrency(Number(e.amount))}</span>
+                  <span className="text-sm font-bold text-destructive tabular-nums">-{formatCurrency(Number(e.amount))}</span>
                 </CardContent>
               </Card>
             ))}
