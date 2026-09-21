@@ -11,10 +11,10 @@
 - [x] Estabilizar indicadores e erros do auto-save
 - [x] Adicionar atualização manual à Agenda
 - [x] Aplicar otimizações pontuais e validar telas
-- [x] Aplicar identidade editorial em Caixa
-- [x] Aplicar identidade editorial em Despesas
-- [x] Aplicar identidade editorial em Comissões
-- [x] Aplicar identidade editorial na aba Metas
-- [x] Aplicar identidade editorial em Produtos
-- [x] Corrigir série diária do gráfico mensal em Relatórios
-- [x] Validar compilação e telas financeiras em mobile
+- [ ] Aplicar identidade editorial em Caixa
+- [ ] Aplicar identidade editorial em Despesas
+- [ ] Aplicar identidade editorial em Comissões
+- [ ] Aplicar identidade editorial na aba Metas
+- [ ] Aplicar identidade editorial em Produtos
+- [ ] Corrigir série diária do gráfico mensal em Relatórios
+- [ ] Validar compilação e telas financeiras em mobile

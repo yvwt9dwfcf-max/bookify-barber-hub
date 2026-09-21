@@ -258,7 +258,7 @@ const Produtos = () => {
   const cartTotal = cart.reduce((s, i) => s + i.sale_price * i.quantity, 0);
 
   return (
-    <div className="space-y-5 animate-page-enter pb-32 text-paper">
+    <div className="space-y-5 animate-page-enter pb-32">
       {/* Header */}
       <div className="flex items-center gap-3">
         {!isInsideFinanceiro && (
@@ -267,8 +267,8 @@ const Produtos = () => {
           </Button>
         )}
         <div className="flex-1 min-w-0">
-          <h1 className="font-display text-2xl font-bold flex items-center gap-2">
-            <Package className="h-5 w-5 text-paper/70" />
+          <h1 className="text-xl font-bold flex items-center gap-2">
+            <Package className="h-5 w-5 text-primary" />
             Produtos
           </h1>
           <p className="text-xs text-muted-foreground">Catálogo e estoque para venda</p>
@@ -283,22 +283,22 @@ const Produtos = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-2">
-        <Card className="border-paper/15 bg-editorial shadow-none">
+        <Card>
           <CardContent className="p-3 text-center">
-            <p className="font-editorial-mono text-[9px] uppercase text-muted-foreground mb-1">Ativos</p>
-            <p className="font-display text-lg font-bold">{stats.total}</p>
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Ativos</p>
+            <p className="text-base font-bold">{stats.total}</p>
           </CardContent>
         </Card>
-        <Card className="border-paper/15 bg-editorial shadow-none">
+        <Card className={stats.lowStock > 0 ? 'border-destructive/30' : ''}>
           <CardContent className="p-3 text-center">
-            <p className="font-editorial-mono text-[9px] uppercase text-muted-foreground mb-1">Estoque baixo</p>
-            <p className={`font-display text-lg font-bold ${stats.lowStock > 0 ? 'text-bordeaux' : ''}`}>{stats.lowStock}</p>
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Estoque baixo</p>
+            <p className={`text-base font-bold ${stats.lowStock > 0 ? 'text-destructive' : ''}`}>{stats.lowStock}</p>
           </CardContent>
         </Card>
-        <Card className="border-paper/15 bg-editorial shadow-none">
+        <Card>
           <CardContent className="p-3 text-center">
-            <p className="font-editorial-mono text-[9px] uppercase text-muted-foreground mb-1">Valor estoque</p>
-            <p className="font-display text-lg font-bold">{formatCurrency(stats.value)}</p>
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Valor estoque</p>
+            <p className="text-base font-bold">{formatCurrency(stats.value)}</p>
           </CardContent>
         </Card>
       </div>
@@ -315,7 +315,7 @@ const Produtos = () => {
             <h3 className="font-semibold mb-1">Nenhum produto cadastrado</h3>
             <p className="text-sm text-muted-foreground mb-4">Cadastre pomadas, bebidas e qualquer produto que você venda.</p>
             {isMaster && (
-               <Button size="sm" onClick={openNew} className="btn-primary-solid">
+              <Button size="sm" onClick={openNew} className="btn-primary-gradient">
                 <Plus className="h-4 w-4 mr-1" />
                 Cadastrar primeiro produto
               </Button>
@@ -329,7 +329,7 @@ const Produtos = () => {
             return (
               <Card
                 key={p.id}
-                 className={`border-paper/15 bg-editorial shadow-none transition-all active:scale-[0.99] ${!p.is_active ? 'opacity-50' : ''}`}
+                className={`transition-all active:scale-[0.99] ${!p.is_active ? 'opacity-50' : ''}`}
               >
                 <CardContent className="p-3 flex items-center gap-3">
                   <div
@@ -346,7 +346,7 @@ const Produtos = () => {
                     <div className="flex items-center gap-1.5">
                       <p className="font-medium text-sm truncate">{p.name}</p>
                       {lowStock && p.is_active && (
-                        <Badge className="border-bordeaux/40 bg-bordeaux/15 text-bordeaux text-[9px] h-4 px-1 gap-0.5">
+                        <Badge variant="destructive" className="text-[9px] h-4 px-1 gap-0.5">
                           <AlertTriangle className="h-2.5 w-2.5" />
                           {p.stock}
                         </Badge>
@@ -360,7 +360,7 @@ const Produtos = () => {
                   <Button
                     size="icon"
                     variant="default"
-                    className="h-10 w-10 rounded-xl shrink-0 btn-primary-solid"
+                    className="h-10 w-10 rounded-xl shrink-0 btn-primary-gradient"
                     onClick={() => addToCart(p)}
                     disabled={!p.is_active || p.stock <= 0}
                     title="Adicionar à comanda"
@@ -379,9 +379,9 @@ const Produtos = () => {
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-2">
             {salesInsights.topSold && (
-              <Card className="border-paper/15 bg-editorial shadow-none">
+              <Card>
                 <CardContent className="p-3">
-                  <p className="font-editorial-mono text-[9px] uppercase text-muted-foreground font-medium mb-1">Mais vendido</p>
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">Mais vendido</p>
                   <p className="text-sm font-bold truncate">{salesInsights.topSold.name}</p>
                   <p className="text-[11px] text-muted-foreground tabular-nums">
                     {salesInsights.topSold.qty} un · {formatCurrency(salesInsights.topSold.revenue)}
@@ -390,9 +390,9 @@ const Produtos = () => {
               </Card>
             )}
             {salesInsights.topProfit && (
-              <Card className="border-paper/15 bg-editorial shadow-none">
+              <Card>
                 <CardContent className="p-3">
-                  <p className="font-editorial-mono text-[9px] uppercase text-muted-foreground font-medium mb-1">Maior lucro</p>
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">Maior lucro</p>
                   <p className="text-sm font-bold truncate">{salesInsights.topProfit.name}</p>
                   <p className="text-[11px] text-primary tabular-nums">+{formatCurrency(salesInsights.topProfit.profit)}</p>
                 </CardContent>
@@ -401,14 +401,16 @@ const Produtos = () => {
           </div>
 
           <div>
-            <p className="font-editorial-mono text-[9px] uppercase text-muted-foreground font-medium mb-2 px-1">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-2 px-1">
               Vendas recentes
             </p>
             <div className="space-y-1.5">
               {monthSales!.slice(0, 8).map((s: any) => (
-                <Card key={s.id} className="border-paper/15 bg-editorial shadow-none">
+                <Card key={s.id}>
                   <CardContent className="p-3 flex items-center gap-3">
-                    <Package className="h-4 w-4 text-paper/60 shrink-0" />
+                    <div className="size-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                      <Package className="h-4 w-4 text-primary" />
+                    </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">
                         {s.products?.name || 'Produto'} <span className="text-muted-foreground">×{s.quantity}</span>
@@ -494,7 +496,7 @@ const Produtos = () => {
               />
             </div>
 
-            <div className="flex items-center justify-between p-3 rounded-lg border border-paper/15">
+            <div className="flex items-center justify-between p-3 rounded-xl bg-muted/40">
               <div>
                 <Label className="text-xs">Produto ativo</Label>
                 <p className="text-[10px] text-muted-foreground">Disponível para venda</p>
@@ -505,7 +507,7 @@ const Produtos = () => {
             {editing && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="outline" className="w-full text-bordeaux hover:text-bordeaux">
+                  <Button variant="outline" className="w-full text-destructive hover:text-destructive">
                     <Trash2 className="h-4 w-4 mr-2" />
                     Excluir produto
                   </Button>
@@ -524,7 +526,7 @@ const Produtos = () => {
                         deleteMutation.mutate(editing.id);
                         setSheetOpen(false);
                       }}
-                      className="bg-bordeaux text-paper hover:bg-bordeaux/90"
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                     >
                       Excluir
                     </AlertDialogAction>
@@ -538,7 +540,7 @@ const Produtos = () => {
               Cancelar
             </Button>
             <Button
-              className="flex-1 btn-primary-solid"
+              className="flex-1 btn-primary-gradient"
               onClick={() => saveMutation.mutate()}
               disabled={saveMutation.isPending}
             >
@@ -553,11 +555,11 @@ const Produtos = () => {
         <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-40 animate-in fade-in slide-in-from-bottom-4 duration-300">
           <Button
             onClick={() => setCartOpen(true)}
-            className="btn-primary-solid rounded-xl h-14 px-6 gap-3"
+            className="btn-primary-gradient shadow-xl rounded-full h-14 px-6 gap-3"
           >
             <ShoppingCart className="h-5 w-5" />
             <span className="font-bold">{cartCount} {cartCount === 1 ? 'item' : 'itens'}</span>
-            <span className="text-sm opacity-90 tabular-nums border-l border-primary-foreground/30 pl-3">
+            <span className="text-sm opacity-90 tabular-nums border-l border-white/30 pl-3">
               {formatCurrency(cartTotal)}
             </span>
           </Button>

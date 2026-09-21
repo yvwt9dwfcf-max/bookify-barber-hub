@@ -264,7 +264,7 @@ const Despesas = () => {
     const catInfo = CATEGORIES.find((c) => c.value === expense.category);
     return (
       <div
-        className="flex items-center justify-between p-3 rounded-lg border border-paper/10 hover:border-paper/20 transition-colors cursor-pointer"
+        className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
         onClick={() => openEdit(expense)}
       >
         <div className="flex items-center gap-3 min-w-0">
@@ -280,10 +280,10 @@ const Despesas = () => {
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <span className="text-sm font-semibold text-bordeaux">-{formatCurrency(Number(expense.amount))}</span>
+          <span className="text-sm font-semibold text-destructive">-{formatCurrency(Number(expense.amount))}</span>
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-bordeaux" onClick={(e) => e.stopPropagation()}>
+              <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={(e) => e.stopPropagation()}>
                 <Trash2 className="h-3.5 w-3.5" />
               </Button>
             </AlertDialogTrigger>
@@ -294,7 +294,7 @@ const Despesas = () => {
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                <AlertDialogAction onClick={() => deleteMutation.mutate(expense.id)} className="bg-bordeaux text-paper hover:bg-bordeaux/90">Remover</AlertDialogAction>
+                <AlertDialogAction onClick={() => deleteMutation.mutate(expense.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Remover</AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
@@ -322,10 +322,10 @@ const Despesas = () => {
           <div className="flex items-center justify-between px-1">
             <div className="flex items-center gap-2">
               <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: info?.color }} />
-              <span className="font-editorial-mono text-[10px] font-medium uppercase text-muted-foreground">{info?.label || cat}</span>
+              <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{info?.label || cat}</span>
               <span className="text-[10px] text-muted-foreground">({items.length})</span>
             </div>
-            <span className="text-xs font-bold text-bordeaux">-{formatCurrency(total)}</span>
+            <span className="text-xs font-bold text-destructive">-{formatCurrency(total)}</span>
           </div>
           <div className="space-y-1.5">
             {items.map((e) => <ExpenseRow key={e.id} expense={e} />)}
@@ -338,7 +338,7 @@ const Despesas = () => {
   const flatList = usingMonthFilter ? filteredExpenses.slice(0, visibleCount) : null;
 
   return (
-    <div className="space-y-6 animate-page-enter text-paper">
+    <div className="space-y-6 animate-page-enter">
       {/* Header */}
       <div className="flex items-center gap-3">
         {!inFin && (
@@ -347,13 +347,13 @@ const Despesas = () => {
           </Button>
         )}
         <div className="flex-1">
-          <h1 className="font-display text-2xl font-bold flex items-center gap-2">
-            <Receipt className="h-5 w-5 text-paper/70" />
+          <h1 className="text-xl font-bold flex items-center gap-2">
+            <Receipt className="h-5 w-5 text-primary" />
             {inFin ? 'Despesas' : 'Controle de Despesas'}
           </h1>
           <p className="text-sm text-muted-foreground">{format(new Date(), "MMMM 'de' yyyy", { locale: ptBR })}</p>
         </div>
-        <Button size="sm" className="btn-primary-solid" onClick={openNew}>
+        <Button size="sm" className="btn-primary-gradient" onClick={openNew}>
           <Plus className="h-4 w-4 mr-1" />
           Nova
         </Button>
@@ -361,35 +361,35 @@ const Despesas = () => {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-3 gap-3">
-        <Card className="border-paper/15 bg-editorial shadow-none">
+        <Card>
           <CardContent className="p-3 text-center">
-            <TrendingUp className="h-4 w-4 text-paper/60 mx-auto mb-1" />
-            <p className="font-editorial-mono text-[9px] uppercase text-muted-foreground">Receita</p>
-            <p className="font-display text-base font-bold text-primary">{formatCurrency(monthlyRevenue)}</p>
+            <TrendingUp className="h-4 w-4 text-primary mx-auto mb-1" />
+            <p className="text-[11px] text-muted-foreground">Receita</p>
+            <p className="text-sm font-bold text-primary">{formatCurrency(monthlyRevenue)}</p>
           </CardContent>
         </Card>
-        <Card className="border-paper/15 bg-editorial shadow-none">
+        <Card>
           <CardContent className="p-3 text-center">
-            <TrendingDown className="h-4 w-4 text-bordeaux mx-auto mb-1" />
-            <p className="font-editorial-mono text-[9px] uppercase text-muted-foreground">Despesas</p>
-            <p className="font-display text-base font-bold text-bordeaux">{formatCurrency(monthlyExpenses)}</p>
+            <TrendingDown className="h-4 w-4 text-destructive mx-auto mb-1" />
+            <p className="text-[11px] text-muted-foreground">Despesas</p>
+            <p className="text-sm font-bold text-destructive">{formatCurrency(monthlyExpenses)}</p>
           </CardContent>
         </Card>
-        <Card className="border-paper/15 bg-editorial shadow-none">
+        <Card className={profit >= 0 ? 'border-primary/20' : 'border-destructive/20'}>
           <CardContent className="p-3 text-center">
-            <DollarSign className={`h-4 w-4 mx-auto mb-1 ${profit >= 0 ? 'text-paper/60' : 'text-bordeaux'}`} />
-            <p className="font-editorial-mono text-[9px] uppercase text-muted-foreground">Lucro</p>
-            <p className={`font-display text-base font-bold ${profit >= 0 ? 'text-paper' : 'text-bordeaux'}`}>{formatCurrency(profit)}</p>
+            <DollarSign className={`h-4 w-4 mx-auto mb-1 ${profit >= 0 ? 'text-primary' : 'text-destructive'}`} />
+            <p className="text-[11px] text-muted-foreground">Lucro</p>
+            <p className={`text-sm font-bold ${profit >= 0 ? 'text-primary' : 'text-destructive'}`}>{formatCurrency(profit)}</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Category Pie (current month) */}
       {categoryBreakdown.length > 0 && (
-        <Card className="border-paper/15 bg-editorial shadow-none">
+        <Card>
           <CardHeader className="pb-2 pt-4 px-4">
-            <CardTitle className="font-display flex items-center gap-2 text-lg">
-              <PieChart className="h-4 w-4 text-paper/60" />
+            <CardTitle className="flex items-center gap-2 text-base">
+              <PieChart className="h-4 w-4 text-primary" />
               Por categoria · este mês
             </CardTitle>
           </CardHeader>
@@ -406,7 +406,7 @@ const Despesas = () => {
             </div>
             <div className="space-y-1.5">
               {categoryBreakdown.map((cat) => (
-                <div key={cat.name} className="flex items-center justify-between p-2 border-b border-paper/10 last:border-0">
+                <div key={cat.name} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
                   <div className="flex items-center gap-2">
                     <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: cat.color }} />
                     <span className="text-sm font-medium">{cat.name}</span>
@@ -420,7 +420,7 @@ const Despesas = () => {
       )}
 
       {/* Filters */}
-      <Card className="border-paper/15 bg-editorial shadow-none">
+      <Card>
         <CardContent className="p-3 space-y-2">
           <div className="flex items-center gap-2">
             <Filter className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
@@ -460,7 +460,7 @@ const Despesas = () => {
           Nenhuma despesa neste filtro.
         </div>
       ) : usingMonthFilter ? (
-          <Card className="border-paper/15 bg-editorial shadow-none">
+        <Card>
           <CardHeader className="pb-2 pt-4 px-4">
             <CardTitle className="text-base">
               {format(new Date(filterMonth + '-01T12:00:00'), "MMMM 'de' yyyy", { locale: ptBR })} · {filteredExpenses.length}
@@ -484,7 +484,7 @@ const Despesas = () => {
       ) : (
         <>
           {thisMonth.length > 0 && (
-            <Card className="border-paper/15 bg-editorial shadow-none">
+            <Card>
               <CardHeader className="pb-2 pt-4 px-4">
                 <CardTitle className="text-base flex items-center justify-between">
                   <span>Este mês</span>
@@ -498,7 +498,7 @@ const Despesas = () => {
           )}
 
           {lastMonthList.length > 0 && (
-            <Card className="border-paper/15 bg-editorial shadow-none">
+            <Card>
               <CardHeader className="pb-2 pt-4 px-4">
                 <CardTitle className="text-base flex items-center justify-between">
                   <span>Mês passado</span>
@@ -512,7 +512,7 @@ const Despesas = () => {
           )}
 
           {older.length > 0 && (
-            <Card className="border-paper/15 bg-editorial shadow-none">
+            <Card>
               <Collapsible open={openOlder} onOpenChange={setOpenOlder}>
                 <CollapsibleTrigger asChild>
                   <CardHeader className="pb-2 pt-4 px-4 cursor-pointer hover:bg-muted/30 transition-colors">
@@ -595,7 +595,7 @@ const Despesas = () => {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancelar</Button>
-            <Button onClick={() => addMutation.mutate()} disabled={addMutation.isPending} className="btn-primary-solid">
+            <Button onClick={() => addMutation.mutate()} disabled={addMutation.isPending} className="btn-primary-gradient">
               {addMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : editingExpense ? 'Salvar' : 'Adicionar'}
             </Button>
           </DialogFooter>
