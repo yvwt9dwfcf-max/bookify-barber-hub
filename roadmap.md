@@ -11,3 +11,6 @@
 - [x] Estabilizar indicadores e erros do auto-save
 - [x] Adicionar atualização manual à Agenda
 - [x] Aplicar otimizações pontuais e validar telas
+- [ ] Restaurar evolução diária do gráfico mensal em Relatórios
+- [ ] Polir clareza de Caixa, Despesas, Produtos, Comissões e Metas
+- [ ] Validar compilação e telas financeiras em largura móvel
