@@ -438,7 +438,10 @@ const Caixa = () => {
           </Card>
         ) : (
           <div className="space-y-1.5">
-            {(sales || []).map((s: any) => (
+            {[
+              ...(sales || []).map((s: any) => ({ kind: 's' as const, t: new Date(s.sold_at).getTime(), s })),
+              ...(appointments || []).map((a: any) => ({ kind: 'a' as const, t: new Date(a.start_time).getTime(), a })),
+            ].sort((x, y) => y.t - x.t).map((item: any) => item.kind === 's' ? (() => { const s = item.s; return (
               <Card key={`s-${s.id}`}>
                 <CardContent className="p-3 flex items-center gap-3">
                   <div className="size-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
@@ -456,8 +459,7 @@ const Caixa = () => {
                   <span className="text-sm font-bold text-primary tabular-nums">+{formatCurrency(Number(s.total_amount))}</span>
                 </CardContent>
               </Card>
-            ))}
-            {(appointments || []).map((a: any) => (
+            ); })() : (() => { const a = item.a; return (
               <Card key={`a-${a.id}`}>
                 <CardContent className="p-3 flex items-center gap-3">
                   <div className="size-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
@@ -473,7 +475,7 @@ const Caixa = () => {
                   <span className="text-sm font-bold text-primary tabular-nums">+{formatCurrency(Number(a.services?.price || 0))}</span>
                 </CardContent>
               </Card>
-            ))}
+            ); })())}
             {(expenses || []).map((e: any) => (
               <Card key={`e-${e.id}`}>
                 <CardContent className="p-3 flex items-center gap-3">
