@@ -324,7 +324,7 @@ const Produtos = () => {
         </Card>
       ) : (
         <div className="space-y-2">
-          {products.map((p) => {
+          {[...products].sort((a, b) => Number(b.stock <= b.min_stock) - Number(a.stock <= a.min_stock) || a.name.localeCompare(b.name, 'pt-BR')).map((p) => {
             const lowStock = p.stock <= p.min_stock;
             return (
               <Card
