@@ -212,10 +212,10 @@ const Comissoes = () => {
           }}
         >
           <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-semibold mb-1">
-            Lucro líquido após comissões
+            Total de comissões do mês
           </p>
           <p className="text-3xl font-bold tabular-nums text-primary">
-            {formatCurrency(totals.profit)}
+            {formatCurrency(totals.commission)}
           </p>
           <div className="grid grid-cols-3 gap-2 mt-4">
             <div className="rounded-xl p-2.5 bg-card/50 border border-border/40">
@@ -223,8 +223,8 @@ const Comissoes = () => {
               <p className="text-sm font-bold tabular-nums">{formatCurrency(totals.revenue)}</p>
             </div>
             <div className="rounded-xl p-2.5 bg-card/50 border border-border/40">
-              <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-semibold">Comissões</p>
-              <p className="text-sm font-bold tabular-nums text-amber-500">{formatCurrency(totals.commission)}</p>
+              <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-semibold">Líquido casa</p>
+              <p className="text-sm font-bold tabular-nums">{formatCurrency(totals.profit)}</p>
             </div>
             <div className="rounded-xl p-2.5 bg-card/50 border border-border/40">
               <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-semibold">Atend.</p>
@@ -242,6 +242,13 @@ const Comissoes = () => {
             <Card>
               <CardContent className="p-6 text-center text-sm text-muted-foreground">
                 Nenhum barbeiro ativo.
+              </CardContent>
+            </Card>
+          )}
+          {(barbers || []).length > 0 && totals.count === 0 && (
+            <Card>
+              <CardContent className="p-4 text-center text-sm text-muted-foreground">
+                Ainda não há atendimentos concluídos neste mês. As comissões aparecem aqui assim que os atendimentos forem finalizados.
               </CardContent>
             </Card>
           )}
