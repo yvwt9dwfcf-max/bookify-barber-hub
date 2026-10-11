@@ -14,3 +14,7 @@
 - [x] Restaurar evolução diária do gráfico mensal em Relatórios
 - [x] Polir clareza de Caixa, Despesas, Produtos, Comissões e Metas
 - [x] Validar compilação e telas financeiras em largura móvel
+- [ ] Corrigir promessas comerciais e esclarecer teste e planos sem redesign
+- [ ] Investigar e corrigir apresentação de fotos públicas indisponíveis
+- [ ] Verificar jornadas públicas e identificar limites da validação autenticada e Stripe
+- [ ] Validar alterações e registrar bloqueios reais

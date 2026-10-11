@@ -1,8 +1,8 @@
 const stats = [
-  { value: 'Agenda', label: 'Online 24/7' },
+  { value: 'Agenda', label: 'Agendamento pelo seu link' },
   { value: 'Equipe', label: 'Gestão por profissional' },
   { value: 'Financeiro', label: 'Comissões e caixa' },
-  { value: '99.9%', label: 'Uptime da plataforma' },
+  { value: 'Clientes', label: 'Histórico e fidelidade' },
 ];
 
 export function StatsStrip() {
