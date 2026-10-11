@@ -3,11 +3,11 @@ import { motion } from 'framer-motion';
 const features = [
   {
     title: 'Agenda inteligente',
-    description: 'Bloqueios, pausas, recorrências e prevenção de conflitos em tempo real.',
+    description: 'Veja os horários da equipe, organize pausas e bloqueie períodos indisponíveis.',
   },
   {
     title: 'Link de agendamento',
-    description: 'Link público próprio. Seu cliente agenda em 30 segundos, sem login.',
+    description: 'Seu cliente escolhe profissional, serviço e horário pelo seu link, sem criar conta.',
   },
   {
     title: 'Equipe sob medida',
@@ -15,7 +15,7 @@ const features = [
   },
   {
     title: 'Financeiro completo',
-    description: 'Caixa, despesas, comissões automáticas e relatórios de lucro líquido.',
+    description: 'Acompanhe entradas, despesas e comissões para entender o resultado da barbearia.',
   },
   {
     title: 'Indicadores reais',
@@ -23,7 +23,7 @@ const features = [
   },
   {
     title: 'Fidelidade automática',
-    description: 'Programa de pontos integrado ao agendamento. Mais retenção, sem esforço.',
+    description: 'Configure pontos por serviço e acompanhe a fidelidade dos seus clientes.',
   },
 ];
 

@@ -18,7 +18,7 @@ export function CtaSection() {
             Sua barbearia, organizada de verdade.
           </h2>
           <p className="text-base sm:text-lg mb-9 leading-relaxed" style={{ color: 'hsl(var(--muted-foreground))' }}>
-            Grátis por 7 dias. Sem cartão de crédito. Cancele quando quiser.
+            Teste grátis por 3 dias, sem cartão de crédito. Depois, escolha um plano para continuar.
           </p>
           <Link
             to="/register"

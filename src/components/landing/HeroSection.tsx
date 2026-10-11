@@ -77,15 +77,15 @@ export function HeroSection() {
             className="font-display font-bold text-[2.5rem] sm:text-5xl lg:text-[3.6rem] leading-[1.08] mb-7"
             style={{ color: 'hsl(var(--paper))' }}
           >
-            A gestão da sua barbearia,{' '}
+            Bookify. Sua barbearia,{' '}
             <em className="relative inline-block not-italic">
               <span
                 className="absolute inset-x-[-0.08em] bottom-[0.06em] h-[0.42em] -z-10"
                 style={{ background: 'rgba(139, 30, 43, 0.55)' }}
               />
-              <span className="italic">editada</span>
+              <span className="italic">organizada</span>
             </em>{' '}
-            com precisão.
+            do horário ao caixa.
           </motion.h1>
 
           <motion.p
@@ -95,8 +95,8 @@ export function HeroSection() {
             className="text-base sm:text-lg max-w-xl mx-auto lg:mx-0 mb-9 leading-relaxed"
             style={{ color: '#D8D4C8' }}
           >
-            Agenda, equipe, financeiro e atendimento online em uma única plataforma.
-            Desenhada para profissionais que tratam barbearia como negócio.
+            Seu cliente agenda pelo link. Você acompanha os horários da equipe,
+            registra os atendimentos e confere o caixa e as comissões em um só lugar.
           </motion.p>
 
           <motion.div
