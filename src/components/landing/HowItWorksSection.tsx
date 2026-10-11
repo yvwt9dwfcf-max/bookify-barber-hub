@@ -3,18 +3,18 @@ import { motion } from 'framer-motion';
 const steps = [
   {
     step: '01',
-    title: 'Configure em minutos',
-    description: 'Cadastre serviços, equipe e horários. Sem importação complicada, sem onboarding pago.',
+    title: 'Prepare sua agenda',
+    description: 'Cadastre os profissionais, defina serviços e preços e informe os horários de atendimento.',
   },
   {
     step: '02',
     title: 'Compartilhe seu link',
-    description: 'Receba agendamentos do Instagram, WhatsApp e Google. Tudo centralizado na sua agenda.',
+    description: 'Coloque seu link no Instagram, WhatsApp ou perfil do Google para seus clientes agendarem.',
   },
   {
     step: '03',
-    title: 'Acompanhe e cresça',
-    description: 'Decisões baseadas em dados: faturamento, retenção, comissões e produtividade da equipe.',
+    title: 'Feche o dia com clareza',
+    description: 'Marque os atendimentos concluídos, registre as despesas e confira o faturamento e as comissões.',
   },
 ];
 
@@ -37,7 +37,7 @@ export function HowItWorksSection() {
         >
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary mb-4">Fluxo</p>
           <h2 className="text-3xl sm:text-4xl md:text-[2.75rem] font-bold tracking-tight leading-[1.1] text-foreground">
-            Do cadastro ao primeiro agendamento em menos de 10 minutos.
+            Da escolha do horário ao fechamento do caixa.
           </h2>
         </motion.div>
 

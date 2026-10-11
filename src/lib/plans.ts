@@ -51,9 +51,9 @@ export const PLANS: Plan[] = [
     id: 'rede',
     name: 'Rede',
     barbers: 20,
-    label: 'acima de 12 barbeiros',
+    label: 'até 20 barbeiros',
     maxBarbers: 20,
     price: 249.9,
-    features: ['Tudo do Studio', 'Múltiplas unidades', 'Dashboard consolidado'],
+    features: ['Tudo do Studio', 'Equipe de até 20 barbeiros'],
   },
 ];

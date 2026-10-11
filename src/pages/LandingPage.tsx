@@ -3,6 +3,7 @@ import { HeroSection } from '@/components/landing/HeroSection';
 import { StatsStrip } from '@/components/landing/StatsStrip';
 import { FeaturesSection } from '@/components/landing/FeaturesSection';
 import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
+import { PlansSection } from '@/components/landing/PlansSection';
 
 import { CtaSection } from '@/components/landing/CtaSection';
 import { LandingFooter } from '@/components/landing/LandingFooter';
@@ -15,6 +16,7 @@ const LandingPage = () => {
       <StatsStrip />
       <FeaturesSection />
       <HowItWorksSection />
+      <PlansSection />
       
       <CtaSection />
       <LandingFooter />
