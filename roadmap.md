@@ -14,7 +14,16 @@
 - [x] Restaurar evolução diária do gráfico mensal em Relatórios
 - [x] Polir clareza de Caixa, Despesas, Produtos, Comissões e Metas
 - [x] Validar compilação e telas financeiras em largura móvel
-- [ ] Corrigir promessas comerciais e esclarecer teste e planos sem redesign
-- [ ] Investigar e corrigir apresentação de fotos públicas indisponíveis
-- [ ] Verificar jornadas públicas e identificar limites da validação autenticada e Stripe
-- [ ] Validar alterações e registrar bloqueios reais
+- [x] Corrigir promessas comerciais e esclarecer teste e planos sem redesign
+- [x] Investigar e corrigir apresentação de fotos públicas indisponíveis
+- [x] Verificar jornadas públicas e identificar limites da validação autenticada e Stripe
+- [x] Validar alterações e registrar bloqueios reais
+- [ ] Validar cadastro, atendimento, financeiro e assinatura ponta a ponta — bloqueado: autenticação externa sem sessão de teste disponível; nenhuma reserva ou cobrança real criada.
+
+## Verificação deste bloco
+
+- Landing e link para cadastro verificados; preços mensais conferidos com os cinco preços ativos da Stripe.
+- Página pública e seleção de profissional, serviço e horário verificadas até o formulário do cliente, sem efetuar reserva.
+- Fotos reais carregaram nesta verificação; falha anterior não reproduzida. Falhas simuladas exibem ícone/iniciais e ocultam fotos indisponíveis, sem alterar dados armazenados.
+- Sem erros de página nas verificações; compilação aprovada.
+- Demonstração real do painel/vídeo e recebimento/cancelamento de assinatura não foram produzidos nem comprovados neste bloco.
