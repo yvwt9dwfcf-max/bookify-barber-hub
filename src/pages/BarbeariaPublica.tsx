@@ -87,6 +87,12 @@ const BarbeariaPublica = () => {
   const [selectedBarber, setSelectedBarber] = useState<BarberData | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [fadeIn, setFadeIn] = useState(false);
+  const [unavailableImages, setUnavailableImages] = useState<Set<string>>(new Set());
+
+  const markImageUnavailable = (url: string) => {
+    setUnavailableImages(previous => new Set(previous).add(url));
+  };
+  const imageAvailable = (url: string | null | undefined) => !!url && !unavailableImages.has(url);
 
   useEffect(() => {
     if (slug) fetchData();
@@ -310,7 +316,8 @@ const BarbeariaPublica = () => {
   const titleFontClass = isUrban || publicProfile?.font_style === 'luckiest_guy'
     ? 'font-urban-preview'
     : 'font-display';
-  const galleryVisible = gallery.length > 0 && publicProfile?.gallery_enabled !== false;
+  const visibleGallery = gallery.filter(image => imageAvailable(image.image_url));
+  const galleryVisible = visibleGallery.length > 0 && publicProfile?.gallery_enabled !== false;
   const initials = (name: string) =>
     name.trim().split(/\s+/).slice(0, 2).map((p) => p[0]?.toUpperCase() ?? '').join('');
   const renderBicolorText = (text: string) => {
@@ -392,10 +399,11 @@ const BarbeariaPublica = () => {
     <div className={`min-h-screen bg-background transition-opacity duration-700 ${fadeIn ? 'opacity-100' : 'opacity-0'}`}>
       {/* Hero / Header */}
       <header className="relative overflow-hidden">
-        {publicProfile?.foto_capa_url ? (
+        {publicProfile?.foto_capa_url && imageAvailable(publicProfile.foto_capa_url) ? (
           <div className="relative h-56 sm:h-72">
             <img
               src={publicProfile.foto_capa_url}
+              onError={() => markImageUnavailable(publicProfile.foto_capa_url || '')}
               alt={`Foto de capa da ${barbershop?.name ?? 'barbearia'}`}
               className="w-full h-full object-cover"
             />
@@ -409,14 +417,15 @@ const BarbeariaPublica = () => {
         )}
 
         <div className="relative -mt-16 sm:-mt-20 px-4 sm:px-6 pb-6 max-w-lg mx-auto text-center">
-          {publicProfile?.logo_url ? (
+          {publicProfile?.logo_url && imageAvailable(publicProfile.logo_url) ? (
             <img
               src={publicProfile.logo_url}
+              onError={() => markImageUnavailable(publicProfile.logo_url || '')}
               alt={`Logo da ${barbershop?.name ?? 'barbearia'}`}
               className={`w-20 h-20 mx-auto mb-4 object-cover ${isUrban ? 'rounded-2xl border-4 shadow-lg' : 'rounded-2xl'}`}
               style={isUrban ? { borderColor: accent } : undefined}
             />
-          ) : !publicProfile?.foto_capa_url ? (
+          ) : !imageAvailable(publicProfile?.foto_capa_url) || !!publicProfile?.logo_url ? (
             <div
                className={`w-20 h-20 mx-auto mb-4 flex items-center justify-center bg-card ${isUrban ? 'rounded-2xl border-4 shadow-lg' : 'rounded-2xl border border-border'}`}
               style={isUrban ? { borderColor: accent } : { borderColor: 'rgba(242,238,228,0.14)' }}
@@ -575,9 +584,10 @@ const BarbeariaPublica = () => {
                     onClick={() => handleSelectBarber(barber)}
                   >
                     <CardContent className="p-4 flex items-center gap-4">
-                      {barber.photo_url ? (
+                      {barber.photo_url && imageAvailable(barber.photo_url) ? (
                         <img
                           src={barber.photo_url}
+                          onError={() => markImageUnavailable(barber.photo_url || '')}
                           alt={barber.name}
                           className={`w-14 h-14 object-cover ${isUrban ? 'rounded-2xl' : 'rounded-md'}`}
                           style={{ border: `1px solid ${accent}` }}
@@ -612,7 +622,7 @@ const BarbeariaPublica = () => {
               {isUrban ? renderBicolorText('Nossa Galeria') : 'Galeria'}
             </h2>
             <div className={`grid gap-2 ${isUrban ? 'grid-cols-2' : 'grid-cols-3'}`}>
-              {gallery.map(img => (
+              {visibleGallery.map(img => (
                 <div
                   key={img.id}
                   className={`overflow-hidden ${isUrban ? 'aspect-[4/5] rounded-2xl' : 'aspect-square rounded-md'}`}
@@ -620,6 +630,7 @@ const BarbeariaPublica = () => {
                 >
                   <img
                     src={img.image_url}
+                    onError={() => markImageUnavailable(img.image_url)}
                     alt={`Foto da ${barbershop?.name ?? 'barbearia'}`}
                     className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                     loading="lazy"
@@ -644,9 +655,10 @@ const BarbeariaPublica = () => {
           <DrawerHeader className="text-center pb-2">
             {selectedBarber && (
               <div className="flex flex-col items-center gap-3">
-                {selectedBarber.photo_url ? (
+                {selectedBarber.photo_url && imageAvailable(selectedBarber.photo_url) ? (
                   <img
                     src={selectedBarber.photo_url}
+                    onError={() => markImageUnavailable(selectedBarber.photo_url || '')}
                     alt={selectedBarber.name}
                     className="w-14 h-14 rounded-full object-cover border-2"
                     style={{ borderColor: accent }}
