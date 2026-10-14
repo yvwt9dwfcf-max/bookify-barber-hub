@@ -1,3 +1,4 @@
+import StorageImg from '@/components/StorageImg';
 import { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
@@ -267,7 +268,7 @@ const Comissoes = () => {
                   <div className="p-4">
                     <div className="flex items-center gap-3">
                       {barber.photo_url ? (
-                        <img src={barber.photo_url} alt={barber.name} className="w-11 h-11 rounded-full object-cover ring-2 ring-border" />
+                        <StorageImg src={barber.photo_url} alt={barber.name} className="w-11 h-11 rounded-full object-cover ring-2 ring-border" />
                       ) : (
                         <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center ring-2 ring-border">
                           <Users className="h-5 w-5 text-primary" />

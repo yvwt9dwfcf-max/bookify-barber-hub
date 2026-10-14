@@ -1,3 +1,4 @@
+import StorageImg from '@/components/StorageImg';
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -130,7 +131,7 @@ const BarbersReport = ({ barbershopId }: Props) => {
               <div className="relative shrink-0">
                 <div className="h-16 w-16 rounded-full bg-amber-500/20 flex items-center justify-center overflow-hidden ring-2 ring-amber-500/40">
                   {champion.photo_url ? (
-                    <img src={champion.photo_url} alt={champion.name} className="h-full w-full object-cover" />
+                    <StorageImg src={champion.photo_url} alt={champion.name} className="h-full w-full object-cover" />
                   ) : (
                     <span className="text-xl font-bold text-amber-500">{champion.name.charAt(0)}</span>
                   )}
@@ -166,7 +167,7 @@ const BarbersReport = ({ barbershopId }: Props) => {
                 <div className="relative shrink-0">
                   <div className={`h-11 w-11 rounded-full flex items-center justify-center overflow-hidden ${idx === 0 ? 'bg-amber-500/20 ring-2 ring-amber-500/40' : 'bg-primary/10'}`}>
                     {s.photo_url ? (
-                      <img src={s.photo_url} alt={s.name} className="h-full w-full object-cover" />
+                      <StorageImg src={s.photo_url} alt={s.name} className="h-full w-full object-cover" />
                     ) : (
                       <span className={`text-sm font-bold ${idx === 0 ? 'text-amber-600' : 'text-primary'}`}>{s.name.charAt(0)}</span>
                     )}

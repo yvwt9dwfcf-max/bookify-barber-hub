@@ -1,3 +1,4 @@
+import StorageImg from '@/components/StorageImg';
 import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { supabase, Appointment, Barber, BlockedSlot, OpeningHours, Barbershop } from '@/lib/supabase';
 import { startOfDay, addDays, format, setHours, setMinutes, isBefore, isAfter, addMinutes } from 'date-fns';
@@ -301,7 +302,7 @@ const TeamAgendaView = ({
                   >
                     <div className="relative shrink-0">
                       {b.photo_url ? (
-                        <img
+                        <StorageImg
                           src={b.photo_url}
                           alt={b.name}
                           className="h-8 w-8 rounded-full object-cover"

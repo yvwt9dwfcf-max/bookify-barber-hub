@@ -1,3 +1,4 @@
+import StorageImg from '@/components/StorageImg';
 import { useEffect, useState, useCallback, Suspense } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useBarber } from '@/hooks/useBarber';
@@ -350,9 +351,9 @@ const Painel = () => {
           <div className="p-4 border-b border-sidebar-border">
             <div className="flex items-center gap-3">
               {barbershop?.photo_url ? (
-                <img src={barbershop.photo_url} alt={barbershop.name} className="w-10 h-10 rounded-xl object-cover" />
+                <StorageImg src={barbershop.photo_url} alt={barbershop.name} className="w-10 h-10 rounded-xl object-cover" />
               ) : barber?.photo_url ? (
-                <img src={barber.photo_url} alt={barber.name} className="w-10 h-10 rounded-xl object-cover" />
+                <StorageImg src={barber.photo_url} alt={barber.name} className="w-10 h-10 rounded-xl object-cover" />
               ) : (
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'var(--primary-gradient)' }}>
                   {isMaster ? <Crown className="h-5 w-5 text-primary-foreground" /> : <User className="h-5 w-5 text-primary-foreground" />}

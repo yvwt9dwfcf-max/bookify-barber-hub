@@ -1,3 +1,4 @@
+import StorageImg from '@/components/StorageImg';
 import { useState, useMemo } from 'react';
 import { useOutletContext, useNavigate, useLocation } from 'react-router-dom';
 import { Barber, Barbershop } from '@/lib/supabase';
@@ -337,7 +338,7 @@ const Produtos = () => {
                     onClick={() => isMaster && openEdit(p)}
                   >
                     {p.photo_url ? (
-                      <img src={p.photo_url} alt={p.name} className="w-full h-full object-cover" />
+                      <StorageImg src={p.photo_url} alt={p.name} className="w-full h-full object-cover" />
                     ) : (
                       <Package className="h-5 w-5 text-muted-foreground" />
                     )}
@@ -441,7 +442,7 @@ const Produtos = () => {
             <div className="flex items-center gap-3">
               <label className="size-20 rounded-2xl bg-muted flex items-center justify-center overflow-hidden cursor-pointer hover:bg-muted/70 transition-colors shrink-0 border-2 border-dashed border-border">
                 {photoUrl ? (
-                  <img src={photoUrl} alt="" className="w-full h-full object-cover" />
+                  <StorageImg src={photoUrl} alt="" className="w-full h-full object-cover" />
                 ) : uploading ? (
                   <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
                 ) : (

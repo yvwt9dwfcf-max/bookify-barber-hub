@@ -1,3 +1,4 @@
+import StorageImg from '@/components/StorageImg';
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase, Barber } from '@/lib/supabase';
@@ -122,7 +123,7 @@ const AgendarBarbeiro = () => {
       <header className="section-padding py-4 border-b border-border/50 bg-background/80 backdrop-blur-xl">
         <div className="max-w-2xl mx-auto flex items-center gap-3">
           {appearance.logoUrl ? (
-            <img
+            <StorageImg
               src={appearance.logoUrl}
               alt={`Logo da ${appearance.shopName ?? 'barbearia'}`}
               className={`w-10 h-10 object-cover ${appearance.themeStyle === 'urbano' ? 'rounded-xl border-2' : 'rounded-lg'}`}

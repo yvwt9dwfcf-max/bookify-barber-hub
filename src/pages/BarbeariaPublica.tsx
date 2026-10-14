@@ -1,3 +1,4 @@
+import StorageImg from '@/components/StorageImg';
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -401,7 +402,7 @@ const BarbeariaPublica = () => {
       <header className="relative overflow-hidden">
         {publicProfile?.foto_capa_url && imageAvailable(publicProfile.foto_capa_url) ? (
           <div className="relative h-56 sm:h-72">
-            <img
+            <StorageImg
               src={publicProfile.foto_capa_url}
               onError={() => markImageUnavailable(publicProfile.foto_capa_url || '')}
               alt={`Foto de capa da ${barbershop?.name ?? 'barbearia'}`}
@@ -418,7 +419,7 @@ const BarbeariaPublica = () => {
 
         <div className="relative -mt-16 sm:-mt-20 px-4 sm:px-6 pb-6 max-w-lg mx-auto text-center">
           {publicProfile?.logo_url && imageAvailable(publicProfile.logo_url) ? (
-            <img
+            <StorageImg
               src={publicProfile.logo_url}
               onError={() => markImageUnavailable(publicProfile.logo_url || '')}
               alt={`Logo da ${barbershop?.name ?? 'barbearia'}`}
@@ -585,7 +586,7 @@ const BarbeariaPublica = () => {
                   >
                     <CardContent className="p-4 flex items-center gap-4">
                       {barber.photo_url && imageAvailable(barber.photo_url) ? (
-                        <img
+                        <StorageImg
                           src={barber.photo_url}
                           onError={() => markImageUnavailable(barber.photo_url || '')}
                           alt={barber.name}
@@ -628,7 +629,7 @@ const BarbeariaPublica = () => {
                   className={`overflow-hidden ${isUrban ? 'aspect-[4/5] rounded-2xl' : 'aspect-square rounded-md'}`}
                   style={{ border: `1px solid ${isUrban ? accent : 'rgba(242,238,228,0.14)'}` }}
                 >
-                  <img
+                  <StorageImg
                     src={img.image_url}
                     onError={() => markImageUnavailable(img.image_url)}
                     alt={`Foto da ${barbershop?.name ?? 'barbearia'}`}
@@ -656,7 +657,7 @@ const BarbeariaPublica = () => {
             {selectedBarber && (
               <div className="flex flex-col items-center gap-3">
                 {selectedBarber.photo_url && imageAvailable(selectedBarber.photo_url) ? (
-                  <img
+                  <StorageImg
                     src={selectedBarber.photo_url}
                     onError={() => markImageUnavailable(selectedBarber.photo_url || '')}
                     alt={selectedBarber.name}
