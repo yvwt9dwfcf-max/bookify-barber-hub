@@ -1,6 +1,7 @@
 # Roadmap
 
 ## Nova agenda aprovada
+- [ ] Compactar cabeçalho e linha do tempo no celular e conferir visualização sem alterar agendamentos
 - [x] Reproduzir visual Individual e Equipe e acrescentar Semana, mantendo calendário mensal e ações existentes
 - [x] Adicionar personalização das fitinhas e densidade na própria agenda
 - [x] Testar permissões de visualização, intervalos, duração proporcional e filtros

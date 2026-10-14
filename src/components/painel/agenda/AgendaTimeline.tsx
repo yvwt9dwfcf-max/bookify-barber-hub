@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import type { Appointment } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { AgendaAvatar } from './AgendaToolbar';
 import {
   appointmentLanes, appointmentMatches, canPlaceSlot, currency, dayMinute, freeIntervals,
@@ -33,7 +34,7 @@ function TimelineAppointment({ appointment: a, column, range, ppm, lane, count, 
   const short = position.height < 65;
   const stripe = a.status === 'completed' ? 'completed' : a.status === 'cancelled' ? 'cancelled' : a.origin === 'online' ? 'online' : 'confirmed';
   if (position.height <= 0) return null;
-  return <div className={cn('agenda-appointment', `stripe-${stripe}`, a.status === 'cancelled' && 'is-cancelled', short && 'is-short')}
+  return <div className={cn('agenda-appointment', `stripe-${stripe}`, a.status === 'cancelled' && 'is-cancelled', short && 'is-short', position.height < 36 && 'is-tiny')}
     style={{ top: position.top + 2, height: Math.max(position.height - 4, 0), left: `calc(${lane / count * 100}% + 5px)`, width: `calc(${100 / count}% - 10px)` }}
     onTouchStart={e => { const t = e.touches[0]; startTouch.current = { x: t.clientX, y: t.clientY }; }}
     onTouchEnd={e => { const t = e.changedTouches[0], start = startTouch.current; if (p.mode === 'individual' && canEdit && start && start.x - t.clientX > 40 && Math.abs(start.y - t.clientY) < 30) { e.preventDefault(); setActions(true); } }}>
@@ -52,12 +53,13 @@ function TimelineAppointment({ appointment: a, column, range, ppm, lane, count, 
   </div>;
 }
 export default function AgendaTimeline(p: Props) {
+  const isMobile = useIsMobile();
   const [now, setNow] = useState(new Date());
   const scroll = useRef<HTMLDivElement>(null);
   const initialScroll = useRef('');
   useEffect(() => { const timer = setInterval(() => setNow(new Date()), 30_000); return () => clearInterval(timer); }, []);
   const range = useMemo(() => timelineRange(p.columns), [p.columns]);
-  const ppm = p.compact ? 1.6 : 2.2;
+  const ppm = isMobile ? (p.compact ? 1.3 : 1.8) : (p.compact ? 1.6 : 2.2);
   const totalWidth = p.mode === 'individual' ? '100%' : `${p.columns.length * (p.mode === 'team' ? 230 : 190) + 56}px`;
   const todayColumn = p.columns.findIndex(c => isSameDay(c.date, now));
   const nowMinute = todayColumn >= 0 ? dayMinute(now, p.columns[todayColumn].date) : -1;
