@@ -31,6 +31,7 @@ interface AppointmentDetailsSheetProps {
   onComplete: (id: string) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
   onOpenComanda?: (appointment: Appointment) => void;
+  canEdit?: boolean;
 }
 
 const AppointmentDetailsSheet = ({
@@ -41,6 +42,7 @@ const AppointmentDetailsSheet = ({
   onComplete,
   onDelete,
   onOpenComanda,
+  canEdit = true,
 }: AppointmentDetailsSheetProps) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showCompleteConfirm, setShowCompleteConfirm] = useState(false);
@@ -238,7 +240,7 @@ const AppointmentDetailsSheet = ({
           </div>
 
           {/* Ações fixas no rodapé */}
-          <div className="flex-shrink-0 border-t bg-background p-4 space-y-2">
+          {canEdit && <div className="flex-shrink-0 border-t bg-background p-4 space-y-2">
             <Button
               variant="outline"
               className="w-full justify-start gap-2 h-11"
@@ -273,7 +275,7 @@ const AppointmentDetailsSheet = ({
               <Trash2 className="h-4 w-4" />
               Excluir agendamento
             </Button>
-          </div>
+          </div>}
         </SheetContent>
       </Sheet>
 

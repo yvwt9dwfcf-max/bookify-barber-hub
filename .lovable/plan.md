@@ -1,37 +1,41 @@
-# Correção do gráfico e clareza financeira
+# Agenda Bookify — cockpit nativo
 
 ## Objetivo
-Restaurar a leitura diária do faturamento mensal e melhorar a compreensão das telas financeiras sem mudar o visual existente ou as regras de negócio.
+Substituir a agenda atual pela experiência aprovada nas imagens, preservando criação, edição, conclusão, exclusão, bloqueios, disponibilidade, permissões e atualização em tempo real.
 
-## Implementação
-1. **Relatórios**
-   - Remover o agrupamento especial que transforma o mês inteiro em uma única barra.
-   - Gerar todos os dias do intervalo com `eachDayOfInterval`, incluindo dias sem faturamento com valor zero.
+## O que será construído
+1. **Cabeçalho compacto**
+   - Nome “Agenda”, profissional atual, avatar, data e resumo real do dia.
+   - Controle principal com `Individual`, `Equipe` e `Semana`.
+   - `Equipe` aparece somente para quem pode ver outros profissionais.
+   - Calendário mensal continua acessível pelo seletor de data.
 
-2. **Caixa**
-   - Preservar o saldo como informação principal.
-   - Unificar a ordem visual das movimentações por horário mais recente, sem alterar os dados ou cálculos.
-   - Manter mensagem clara quando o dia não possuir movimentações.
+2. **Linha do tempo única**
+   - Régua vertical contínua, cartões com altura proporcional à duração e linha do horário atual.
+   - Horários livres tocáveis com “+ Encaixe”.
+   - Intervalos e bloqueios hachurados, exibindo o motivo quando existir.
+   - Cartões grafite com fitinha lateral, cliente, serviço, valor, horário e indicadores reais de origem/status.
+   - Toque abre detalhes; ações existentes de editar, concluir e excluir continuam disponíveis.
 
-3. **Despesas**
-   - Dar maior destaque ao total de despesas do mês dentro do resumo existente.
-   - Manter valores em real, listas em ordem decrescente de data e melhorar a mensagem vazia conforme os filtros aplicados.
+3. **Três visualizações**
+   - **Individual:** um profissional, leitura confortável para celular e tablet.
+   - **Equipe:** profissionais em colunas, com rolagem horizontal e horários sincronizados.
+   - **Semana:** sete dias do profissional selecionado, mantendo duração, bloqueios e disponibilidade.
 
-4. **Produtos**
-   - Priorizar itens com estoque baixo na lista, mantendo os demais em ordem alfabética.
-   - Preservar o resumo e o estado vazio existentes, reforçando a leitura dos números com formatação estável.
+4. **Personalização da agenda**
+   - Menu discreto na própria agenda para escolher a paleta das fitinhas e a densidade da grade.
+   - Preferência salva no aparelho, sem alterar dados comerciais ou regras da barbearia.
+   - Paletas acessíveis e legíveis nos temas claro e escuro.
 
-5. **Comissões**
-   - Destacar o total de comissões como número principal da tela.
-   - Manter faturamento bruto, líquido da casa e atendimentos como contexto secundário.
-   - Exibir uma mensagem clara quando há profissionais, mas ainda não há atendimentos concluídos no mês.
-
-6. **Metas**
-   - Tornar explícitos o progresso atual, o valor restante e o estado sem meta definida.
-   - Manter os mesmos cards, barras, diálogos e comportamento de edição.
+## Detalhes técnicos
+- Criar um núcleo compartilhado para converter horários em posição/altura, usado nas três visualizações.
+- Buscar somente o intervalo necessário em cada modo e manter isolamento por barbearia e permissões atuais.
+- Não inventar estados vistos nas imagens: “Na cadeira”, “Online” e totais só aparecem quando puderem ser derivados de dados reais.
+- Remover os seletores antigos redundantes apenas depois que seus recursos estiverem disponíveis no novo cabeçalho.
+- Manter o calendário mensal, aviso de feriado, atualização manual, diálogos e botão de nova ação.
 
 ## Validação
-- Confirmar compilação sem erros.
-- Verificar que o filtro “Mês” gera um ponto/barra para cada dia do intervalo.
-- Conferir telas financeiras em largura móvel, sem cortes ou mudança do padrão visual atual.
-- Confirmar que cálculos, permissões, cadastros e edições continuam inalterados.
+- Testes das regras de posicionamento, duração, encaixe e visibilidade de Equipe por permissão.
+- Conferência visual em celular, tablet e desktop, incluindo tema claro/escuro e nomes longos.
+- Testar Individual, Equipe e Semana com compromissos, intervalos, bloqueios e dias vazios.
+- Confirmar compilação e ausência de erros; o fluxo autenticado será validado até onde a conexão externa permitir.

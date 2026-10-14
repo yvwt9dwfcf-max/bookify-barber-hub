@@ -1,5 +1,11 @@
 # Roadmap
 
+## Nova agenda aprovada
+- [ ] Reproduzir visual Individual e Equipe e acrescentar Semana, mantendo calendário mensal e ações existentes
+- [ ] Adicionar personalização das fitinhas e densidade na própria agenda
+- [ ] Testar permissões de visualização, intervalos, duração proporcional e filtros
+- [ ] Verificar telas e fluxo autenticado quando disponível
+
 - [x] Corrigir confirmação e anéis dinâmicos
 - [x] Ajustar regra bicolor e remover miniaturas públicas
 - [x] Remover fotos da administração de Serviços
