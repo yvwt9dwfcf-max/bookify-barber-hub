@@ -133,7 +133,7 @@ const Painel = () => {
 
   // Check onboarding status using the flag without blocking signed-in users forever
   const isAuthResolved = !authLoading;
-  const shouldShowLoadingState = authLoading || barberLoading || roleLoading;
+  const shouldShowLoadingState = (authLoading && !user) || (!!user && ((barberLoading && !barber) || (roleLoading && !barbershop)));
 
   useEffect(() => {
     if (!authLoading && !user) {

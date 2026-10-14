@@ -4,7 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
@@ -48,13 +48,6 @@ const queryClient = new QueryClient({
     },
   },
 });
-
-const pageTransition = {
-  initial: { opacity: 0 },
-  animate: { opacity: 1 },
-  exit: { opacity: 0 },
-  transition: { duration: 0.15, ease: "easeInOut" as const },
-};
 
 function AnimatedRoutes() {
   const location = useLocation();

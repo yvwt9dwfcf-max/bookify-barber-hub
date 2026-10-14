@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
+import { clearSignedImageCache } from '@/lib/storageImages';
 
 interface SignUpMetadata {
   name?: string;
@@ -102,6 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signOut: async () => {
       try {
         const { error } = await supabase.auth.signOut();
+        clearSignedImageCache();
         return { error: error ? normalizeAuthError(error) : null };
       } catch (error) {
         return { error: normalizeAuthError(error) };
