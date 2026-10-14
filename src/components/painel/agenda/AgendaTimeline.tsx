@@ -36,7 +36,7 @@ function TimelineAppointment({ appointment: a, column, range, ppm, lane, count, 
   return <div className={cn('agenda-appointment', `stripe-${stripe}`, a.status === 'cancelled' && 'is-cancelled', short && 'is-short')}
     style={{ top: position.top + 2, height: Math.max(position.height - 4, 0), left: `calc(${lane / count * 100}% + 5px)`, width: `calc(${100 / count}% - 10px)` }}
     onTouchStart={e => { const t = e.touches[0]; startTouch.current = { x: t.clientX, y: t.clientY }; }}
-    onTouchEnd={e => { const t = e.changedTouches[0], start = startTouch.current; if (canEdit && start && start.x - t.clientX > 40 && Math.abs(start.y - t.clientY) < 30) { e.preventDefault(); setActions(true); } }}>
+    onTouchEnd={e => { const t = e.changedTouches[0], start = startTouch.current; if (p.mode === 'individual' && canEdit && start && start.x - t.clientX > 40 && Math.abs(start.y - t.clientY) < 30) { e.preventDefault(); setActions(true); } }}>
     <Button variant="ghost" className="agenda-appointment-main" aria-label={`${a.customer_name}, ${format(new Date(a.start_time), 'HH:mm')}, ${a.service?.name || 'Atendimento'}`} onClick={() => actions ? setActions(false) : p.onAppointment(a)}>
       <span className="agenda-client">{a.customer_name}</span>
       <span className="agenda-service">{a.service?.name || 'Atendimento'}{p.mode === 'individual' && a.service && <span> · {currency(Number(a.service.price || 0))}</span>}</span>
@@ -46,7 +46,7 @@ function TimelineAppointment({ appointment: a, column, range, ppm, lane, count, 
     {actions && <div className="agenda-card-actions">
       <Button variant="ghost" size="icon" aria-label={`Editar ${a.customer_name}`} onClick={() => { setActions(false); p.onEdit(a); }}><Pencil /></Button>
       {a.status === 'confirmed' && <Button variant="ghost" size="icon" aria-label={`Concluir ${a.customer_name}`} onClick={() => { setActions(false); p.onComplete(a.id); }}><Check /></Button>}
-      <Button variant="ghost" size="icon" aria-label={`Excluir ${a.customer_name}`} onClick={() => { setActions(false); p.onDelete(a.id); }}><Trash2 /></Button>
+      <Button variant="ghost" size="icon" aria-label={`Excluir ${a.customer_name}`} onClick={() => { setActions(false); p.onAppointment(a); }}><Trash2 /></Button>
       <Button variant="ghost" size="icon" aria-label="Fechar ações" onClick={() => setActions(false)}><X /></Button>
     </div>}
   </div>;

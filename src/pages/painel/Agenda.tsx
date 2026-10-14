@@ -12,7 +12,7 @@ import AgendaToolbar from '@/components/painel/agenda/AgendaToolbar';
 import AgendaTimeline from '@/components/painel/agenda/AgendaTimeline';
 import HolidayBanner from '@/components/painel/agenda/HolidayBanner';
 import { AgendaContextType, getTodayLocalDate, toLocalDate } from '@/components/painel/agenda/agendaUtils';
-import { columnBlocks, currency, DEFAULT_AGENDA_PREFERENCES, freeIntervals, type AgendaMode, type AgendaFilter, type AgendaPreferences, type TimelineColumn } from '@/components/painel/agenda/timelineUtils';
+import { canEditAgenda, columnBlocks, currency, DEFAULT_AGENDA_PREFERENCES, freeIntervals, type AgendaMode, type AgendaFilter, type AgendaPreferences, type TimelineColumn } from '@/components/painel/agenda/timelineUtils';
 import { Button } from '@/components/ui/button';
 
 const MonthlyCalendar = lazy(() => import('@/components/painel/MonthlyCalendar'));
@@ -28,7 +28,7 @@ const Agenda = () => {
   const { checkCanPerformAction } = useSubscription();
   const canViewOthers = isMaster || barber?.permissions?.can_view_others_schedule === true;
   const canCreateForOthers = isMaster || barber?.permissions?.can_edit_others_schedule === true;
-  const canEditBarber = (id: string) => isMaster || (id === barber?.id ? barber.permissions?.can_edit_own_schedule !== false : canCreateForOthers);
+  const canEditBarber = (id: string) => canEditAgenda(id, barber, isMaster);
   const [selectedDate, setSelectedDate] = useState(getTodayLocalDate);
   const [selectedBarberId, setSelectedBarberId] = useState<string | null>(null);
   const [mode, setMode] = useState<AgendaMode>('individual');
@@ -120,7 +120,7 @@ const Agenda = () => {
       <HolidayBanner date={selectedDate} />
       {monthly && selectedBarber ? <><Button variant="ghost" className="my-2" onClick={() => setMonthly(false)}>Voltar à agenda</Button><MonthlyCalendar barber={selectedBarber} selectedDate={selectedDate} onDateSelect={date => { setSelectedDate(toLocalDate(date)); setMonthly(false); }} /></> :
         timeline.isError ? <div className="agenda-empty"><p>Não foi possível carregar a agenda.</p><Button variant="ghost" onClick={handleManualRefresh}>Tentar novamente</Button></div> :
-        timeline.isPending ? <div className="agenda-loading animate-pulse" aria-label="Carregando agenda"><span /><span /><span /><span /></div> :
+        timeline.isPending && timeline.visible.length > 0 ? <div className="agenda-loading animate-pulse" aria-label="Carregando agenda"><span /><span /><span /><span /></div> :
         <AgendaTimeline columns={columns} mode={effectiveMode} filter={filter} compact={preferences.density === 'compact'} canEditBarber={canEditBarber}
           onSlot={handleOpenManualDialog} onBlock={handleOpenQuickBlock} onAppointment={handleCardClick} onEdit={handleEditAppointment} onComplete={id => { void handleStatusChange(id, 'completed'); }} onDelete={id => { void handleDeleteAppointment(id); }} />}
       {dialogBarber && <ManualAppointmentDialog open={showManualDialog} onOpenChange={open => { setShowManualDialog(open); if (!open) { setPreselectedTime(null); setPreselectedBarberId(null); } }}

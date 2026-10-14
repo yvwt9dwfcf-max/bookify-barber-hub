@@ -31,6 +31,11 @@ export function allowedBarbers(barbers: Barber[], current: Barber | null, canVie
   if (!canViewOthers) return current?.is_active ? [current] : [];
   return active.some(b => b.id === current?.id) || !current?.is_active ? active : [current, ...active];
 }
+export function canEditAgenda(barberId: string, current: Barber | null, isMaster: boolean) {
+  if (isMaster) return true;
+  if (!current) return false;
+  return barberId === current.id ? current.permissions?.can_edit_own_schedule !== false : current.permissions?.can_edit_others_schedule === true;
+}
 export function agendaDates(date: Date, mode: AgendaMode): Date[] {
   const first = mode === 'week' ? startOfWeek(date, { weekStartsOn: 1 }) : startOfDay(date);
   return Array.from({ length: mode === 'week' ? 7 : 1 }, (_, i) => addDays(first, i));

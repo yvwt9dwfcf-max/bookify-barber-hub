@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Appointment, Barber, OpeningHours } from '@/lib/supabase';
-import { agendaDates, allowedBarbers, appointmentLanes, appointmentMatches, canPlaceSlot, columnBlocks, dayMinute, freeIntervals, positionInterval, slotInterval, type TimelineColumn } from './timelineUtils';
+import { agendaDates, allowedBarbers, appointmentLanes, appointmentMatches, canEditAgenda, canPlaceSlot, columnBlocks, dayMinute, freeIntervals, positionInterval, slotInterval, type TimelineColumn } from './timelineUtils';
 
 const day = new Date(2026, 9, 14);
 const at = (h: number, m = 0) => new Date(2026, 9, 14, h, m).toISOString();
@@ -11,6 +11,12 @@ const apt = (id: string, start: number, end: number, status: Appointment['status
 const column: TimelineColumn = { id: 'own-day', barber, date: day, hours, blocks: columnBlocks(day, 'own', hours, []), appointments: [apt('one', 10, 11)] };
 
 describe('Agenda compartilhada', () => {
+  it('ver a equipe não dá permissão para alterar seus atendimentos', () => {
+    const readOnly = { ...barber, permissions: { can_view_others_schedule: true, can_edit_others_schedule: false, can_edit_own_schedule: false } } as Barber;
+    expect(canEditAgenda('other', readOnly, false)).toBe(false);
+    expect(canEditAgenda('own', readOnly, false)).toBe(false);
+    expect(canEditAgenda('other', readOnly, true)).toBe(true);
+  });
   it('restringe visualização à própria agenda quando não permitida', () => {
     expect(allowedBarbers([barber, other], barber, false).map(b => b.id)).toEqual(['own']);
     expect(allowedBarbers([barber, other], barber, true).map(b => b.id)).toEqual(['own', 'other']);
