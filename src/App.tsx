@@ -4,7 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
@@ -49,21 +49,14 @@ const queryClient = new QueryClient({
   },
 });
 
-const pageTransition = {
-  initial: { opacity: 0 },
-  animate: { opacity: 1 },
-  exit: { opacity: 0 },
-  transition: { duration: 0.15, ease: "easeInOut" as const },
-};
-
 function AnimatedRoutes() {
   const location = useLocation();
   // Use first path segment as key so panel sub-routes don't trigger full-page transitions
   const routeKey = '/' + (location.pathname.split('/')[1] || '');
 
   return (
-    <AnimatePresence mode="wait">
-      <motion.div key={routeKey} {...pageTransition} className="min-h-screen">
+    <>
+      <motion.div key={routeKey} initial={{ opacity: 0.001 }} animate={{ opacity: 1 }} transition={{ duration: 0.12 }} className="min-h-screen">
         <Routes location={location}>
           {/* Landing page */}
           <Route path="/" element={<LandingPage />} />
@@ -113,7 +106,7 @@ function AnimatedRoutes() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </motion.div>
-    </AnimatePresence>
+    </>
   );
 }
 
@@ -124,7 +117,7 @@ const App = () => (
         {/* Shadcn Toaster removed — only critical (error) sonner toasts remain */}
         <Sonner />
         <BrowserRouter>
-          <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div>}>
+          <Suspense fallback={<div className="min-h-screen bg-background" />}>
             <AnimatedRoutes />
           </Suspense>
         </BrowserRouter>
