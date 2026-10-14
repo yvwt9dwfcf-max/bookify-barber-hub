@@ -1,6 +1,7 @@
 # Roadmap
 
 ## Nova agenda aprovada
+- [x] Compactar cabeçalho e linha do tempo no celular e conferir visualização sem alterar agendamentos — telas 393×626 e 393×852 verificadas com dados fictícios; computador preservado
 - [x] Reproduzir visual Individual e Equipe e acrescentar Semana, mantendo calendário mensal e ações existentes
 - [x] Adicionar personalização das fitinhas e densidade na própria agenda
 - [x] Testar permissões de visualização, intervalos, duração proporcional e filtros

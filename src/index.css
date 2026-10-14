@@ -598,14 +598,28 @@
   .agenda-scroll { height: calc(100dvh - 270px); }
   .agenda-grid.is-individual { max-width: 850px; margin: 0 auto; }
 }
-@media (max-width: 600px) {
+@media (max-width: 767px) {
   .agenda-controls { gap: 0; }
-  .agenda-selects { width: 100%; margin-top: 4px; }
-  .agenda-cockpit .agenda-select { flex: 1; width: 0; }
+  .agenda-selects { width: 100%; margin-top: 0; gap: 6px; }
+  .agenda-cockpit .agenda-select { flex: 1; width: 0; height: 48px; }
   .agenda-cockpit .agenda-icon { width: 40px; }
   .agenda-toolbar { padding: 0; }
-  .agenda-card-badge { position: static; align-self: flex-end; margin-top: -17px; }
-  .agenda-scroll { height: calc(100dvh - 325px); }
+  .agenda-title { font-size: 21px; }
+  .agenda-subtitle { font-size: 12px; margin-top: 0; }
+  .agenda-avatar { width: 32px; height: 32px; }
+  .agenda-tabs { margin: 6px 0 2px; padding: 0 2px; }
+  .agenda-cockpit .agenda-tab { height: 48px; }
+  .agenda-summary { padding: 7px 0; gap: 4px 8px; font-size: 11px; }
+  .agenda-summary span + span::before { margin-right: 8px; }
+  .agenda-scroll { height: calc(100dvh - 290px); min-height: 240px; }
+  .agenda-column-head { height: 48px; padding: 4px 8px; gap: 6px; }
+  .agenda-column-head strong { font-size: 19px; }
+  .agenda-cockpit .agenda-appointment-main { padding: 4px 8px; gap: 2px; }
+  .agenda-card-badge { position: static; align-self: flex-end; margin-top: -15px; padding: 1px 4px; }
+  .agenda-appointment.is-tiny .agenda-appointment-main { padding: 0 6px; }
+  .agenda-appointment.is-tiny .agenda-client { line-height: 1.1; }
+  .agenda-appointment.is-tiny .agenda-service { display: none; }
+  .agenda-block { padding: 0 8px; gap: 6px; }
 }
 @media (prefers-reduced-motion: reduce) { .agenda-cockpit *, .agenda-cockpit *::before, .agenda-cockpit *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
 
