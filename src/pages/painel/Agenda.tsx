@@ -1,466 +1,140 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { supabase, Appointment } from '@/lib/supabase';
+import { addDays, startOfDay, format } from 'date-fns';
+import { supabase, type Appointment } from '@/lib/supabase';
 import { awardLoyaltyPoints } from '@/lib/loyaltyUtils';
-import { useRealtimeAppointments } from '@/hooks/useRealtimeAppointments';
 import { useBarbershopBarbers } from '@/hooks/useBarbershopBarbers';
 import { useSubscription } from '@/hooks/useSubscription';
-import { useAvailability } from '@/hooks/useAvailability';
-import { PremiumSkeleton, SkeletonSlot, SkeletonStats } from '@/components/ui/premium-skeleton';
-import { startOfDay, addDays, startOfMonth, isSameDay } from 'date-fns';
+import { useAgendaTimeline } from '@/hooks/useAgendaTimeline';
 import { toast } from 'sonner';
-import { lazy, Suspense } from 'react';
-import { Skeleton } from '@/components/ui/skeleton';
 import FloatingActionButton from '@/components/painel/FloatingActionButton';
-import AgendaHeader from '@/components/painel/agenda/AgendaHeader';
-import AgendaDaysStrip from '@/components/painel/agenda/AgendaDaysStrip';
-import AgendaSlotGrid from '@/components/painel/agenda/AgendaSlotGrid';
-import { AgendaContextType, ViewMode, toLocalDate, getTodayLocalDate, shiftMonthToStart } from '@/components/painel/agenda/agendaUtils';
+import AgendaToolbar from '@/components/painel/agenda/AgendaToolbar';
+import AgendaTimeline from '@/components/painel/agenda/AgendaTimeline';
 import HolidayBanner from '@/components/painel/agenda/HolidayBanner';
-import { RefreshCw } from 'lucide-react';
+import { AgendaContextType, getTodayLocalDate, toLocalDate } from '@/components/painel/agenda/agendaUtils';
+import { canEditAgenda, columnBlocks, currency, DEFAULT_AGENDA_PREFERENCES, freeIntervals, type AgendaMode, type AgendaFilter, type AgendaPreferences, type TimelineColumn } from '@/components/painel/agenda/timelineUtils';
 import { Button } from '@/components/ui/button';
-
-/* Sticky wrapper — adds dynamic shadow on scroll */
-const StickyDaysStrip = (props: React.ComponentProps<typeof AgendaDaysStrip>) => {
-  const ref = useRef<HTMLDivElement>(null);
-  const [isStuck, setIsStuck] = useState(false);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => setIsStuck(!entry.isIntersecting),
-      { threshold: [1], rootMargin: '-1px 0px 0px 0px' }
-    );
-
-    // Observe a sentinel element right above the sticky container
-    const sentinel = document.createElement('div');
-    sentinel.style.height = '1px';
-    sentinel.style.marginBottom = '-1px';
-    sentinel.style.pointerEvents = 'none';
-    el.parentElement?.insertBefore(sentinel, el);
-    observer.observe(sentinel);
-
-    return () => {
-      observer.disconnect();
-      sentinel.remove();
-    };
-  }, []);
-
-  return (
-    <div
-      ref={ref}
-      className="sticky top-14 lg:top-0 z-20 -mx-3 md:-mx-5 lg:-mx-8 px-3 md:px-5 lg:px-8 pt-1 pb-0.5 transition-shadow duration-300"
-      style={{
-        boxShadow: isStuck ? '0 4px 20px -4px hsl(var(--foreground) / 0.08)' : 'none',
-        backgroundColor: 'hsl(var(--background))',
-      }}
-    >
-      <AgendaDaysStrip {...props} />
-    </div>
-  );
-};
 
 const MonthlyCalendar = lazy(() => import('@/components/painel/MonthlyCalendar'));
 const ManualAppointmentDialog = lazy(() => import('@/components/painel/ManualAppointmentDialog'));
 const AppointmentDetailsSheet = lazy(() => import('@/components/painel/AppointmentDetailsSheet'));
 const EditAppointmentDialog = lazy(() => import('@/components/painel/EditAppointmentDialog'));
 const QuickBlockDialog = lazy(() => import('@/components/painel/QuickBlockDialog'));
-const GreetingHeader = lazy(() => import('@/components/painel/GreetingHeader'));
 const ComandaSheet = lazy(() => import('@/components/painel/ComandaSheet'));
-const AllBarbersGrid = lazy(() => import('@/components/painel/agenda/AllBarbersGrid'));
-const TeamAgendaView = lazy(() => import('@/components/painel/agenda/TeamAgendaView'));
-
-type AgendaLayout = 'classic' | 'team';
-const LAYOUT_KEY = 'bookify-agenda-layout';
 
 const Agenda = () => {
   const { barber, barbershop, isMaster } = useOutletContext<AgendaContextType>();
   const { barbers } = useBarbershopBarbers();
   const { checkCanPerformAction } = useSubscription();
-
   const canViewOthers = isMaster || barber?.permissions?.can_view_others_schedule === true;
   const canCreateForOthers = isMaster || barber?.permissions?.can_edit_others_schedule === true;
-
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [loading, setLoading] = useState(true);
+  const canEditBarber = (id: string) => canEditAgenda(id, barber, isMaster);
   const [selectedDate, setSelectedDate] = useState(getTodayLocalDate);
-  const [dashboardRefreshKey, setDashboardRefreshKey] = useState(0);
+  const [selectedBarberId, setSelectedBarberId] = useState<string | null>(null);
+  const [mode, setMode] = useState<AgendaMode>('individual');
+  const [monthly, setMonthly] = useState(false);
+  const [filter, setFilter] = useState<AgendaFilter>('active');
+  const [preferences, setPreferences] = useState<AgendaPreferences>(DEFAULT_AGENDA_PREFERENCES);
+  const preferenceKey = `bookify-agenda-appearance:${barbershop?.id || ''}:${barber?.auth_id || ''}`;
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(preferenceKey) || 'null');
+      setPreferences({ palette: ['original', 'ocean', 'warm'].includes(saved?.palette) ? saved.palette : 'original', density: saved?.density === 'compact' ? 'compact' : 'comfortable' });
+    } catch { setPreferences(DEFAULT_AGENDA_PREFERENCES); }
+  }, [preferenceKey]);
+  const changePreferences = (value: AgendaPreferences) => {
+    setPreferences(value);
+    try { localStorage.setItem(preferenceKey, JSON.stringify(value)); } catch { /* private browsing */ }
+  };
+  const effectiveMode = mode === 'team' && !canViewOthers ? 'individual' : mode;
+  const timeline = useAgendaTimeline({ shopId: barbershop?.id, barbers, currentBarber: barber, selectedBarberId, canViewOthers, mode: effectiveMode, selectedDate });
+  const selectedBarber = timeline.selected;
+  const appointments = timeline.data?.appointments || [];
+  const columns = useMemo<TimelineColumn[]>(() => timeline.dates.flatMap(date => timeline.visible.map(b => {
+    const hours = timeline.data?.openingHours.find(h => h.barber_id === b.id && h.day_of_week === date.getDay());
+    const start = startOfDay(date), end = addDays(start, 1);
+    return { id: `${b.id}-${format(date, 'yyyy-MM-dd')}`, date, barber: b, hours,
+      appointments: (timeline.data?.appointments || []).filter(a => a.barber_id === b.id && new Date(a.start_time) < end && new Date(a.end_time) > start),
+      blocks: columnBlocks(date, b.id, hours, timeline.data?.blockedSlots || []) };
+  })), [timeline.data, timeline.dates, timeline.visible]);
   const [refreshing, setRefreshing] = useState(false);
-  const [viewMode, setViewMode] = useState<ViewMode>('daily');
+  const [dashboardRefreshKey, setDashboardRefreshKey] = useState(0);
   const [showManualDialog, setShowManualDialog] = useState(false);
   const [preselectedTime, setPreselectedTime] = useState<string | null>(null);
   const [preselectedBarberId, setPreselectedBarberId] = useState<string | null>(null);
+  const [bookingDate, setBookingDate] = useState(getTodayLocalDate);
   const [showQuickBlock, setShowQuickBlock] = useState(false);
   const [blockTime, setBlockTime] = useState<string | null>(null);
-  const [hideEmptyState, setHideEmptyState] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [showDetailsSheet, setShowDetailsSheet] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showComanda, setShowComanda] = useState(false);
   const [comandaAppointment, setComandaAppointment] = useState<Appointment | null>(null);
-  const [selectedBarberId, setSelectedBarberId] = useState<string | null>(null);
-  const [displayMonth, setDisplayMonth] = useState(() => startOfMonth(getTodayLocalDate()));
-  const appointmentsRequestIdRef = useRef(0);
-
-  const selectedBarber = barbers.find(b => b.id === selectedBarberId) || barber;
-
-  const [agendaLayout, setAgendaLayout] = useState<AgendaLayout>(() => {
-    if (typeof window === 'undefined') return 'classic';
-    const saved = window.localStorage.getItem(LAYOUT_KEY);
-    return saved === 'team' ? 'team' : 'classic';
-  });
-  useEffect(() => {
-    try { window.localStorage.setItem(LAYOUT_KEY, agendaLayout); } catch { /* noop */ }
-  }, [agendaLayout]);
-
-  const {
-    checkSlotAvailability, getOpeningHoursForDay, blockedSlots,
-    refetch: refetchAvailability, loading: availabilityLoading,
-  } = useAvailability({ barberId: selectedBarberId || barber?.id || '' });
-
-  useEffect(() => {
-    if (barber && !selectedBarberId) setSelectedBarberId(barber.id);
-  }, [barber, selectedBarberId]);
-
-  useEffect(() => {
-    const today = getTodayLocalDate();
-    setSelectedDate(today);
-    setDisplayMonth(startOfMonth(today));
-  }, []);
-
-  // Sync display month with selected date
-  useEffect(() => {
-    const monthOfSelected = startOfMonth(selectedDate);
-    if (monthOfSelected.getTime() !== displayMonth.getTime()) {
-      setDisplayMonth(monthOfSelected);
-    }
-  }, [selectedDate, displayMonth]);
-
-  const fetchAppointments = useCallback(async () => {
-    if (!selectedBarberId) return;
-    const requestId = ++appointmentsRequestIdRef.current;
-    try {
-      const startOfSelectedDay = startOfDay(selectedDate);
-      const endOfSelectedDay = addDays(startOfSelectedDay, 1);
-      const { data, error } = await supabase
-        .from('appointments')
-        .select(`*, service:services(*), barber:barbers(*)`)
-        .eq('barber_id', selectedBarberId)
-        .gte('start_time', startOfSelectedDay.toISOString())
-        .lt('start_time', endOfSelectedDay.toISOString())
-        .order('start_time');
-      if (error) throw error;
-      if (requestId !== appointmentsRequestIdRef.current) return;
-      setAppointments((data as Appointment[]) || []);
-    } catch (error) {
-      if (requestId !== appointmentsRequestIdRef.current) return;
-      console.error('Erro ao buscar agendamentos:', error);
-      toast.error('Erro ao carregar agendamentos');
-    } finally {
-      if (requestId === appointmentsRequestIdRef.current) {
-        setLoading(false);
-      }
-    }
-  }, [selectedBarberId, selectedDate]);
-
-  const fetchRef = useRef(fetchAppointments);
-  const refetchAvailabilityRef = useRef(refetchAvailability);
-  const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(() => { fetchRef.current = fetchAppointments; }, [fetchAppointments]);
-  useEffect(() => { refetchAvailabilityRef.current = refetchAvailability; }, [refetchAvailability]);
-
-  const scheduleAgendaRefresh = useCallback((includeAvailability = false) => {
-    if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
-    refreshTimerRef.current = setTimeout(() => {
-      fetchRef.current();
-      if (includeAvailability) refetchAvailabilityRef.current();
-    }, 120);
-  }, []);
-
-  useEffect(() => () => {
-    if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
-  }, []);
-
-  const handleNewAppointment = useCallback(() => {
-    scheduleAgendaRefresh(true);
-  }, [scheduleAgendaRefresh]);
-
-  const handleManualRefresh = useCallback(async () => {
-    if (refreshing) return;
+  const dialogBarber = timeline.allowed.find(b => b.id === preselectedBarberId) || selectedBarber;
+  const scheduleAgendaRefresh = useCallback((_includeAvailability = false) => { void timeline.refresh(); }, [timeline.refresh]);
+  const handleManualRefresh = async () => {
     setRefreshing(true);
-    try {
-      await Promise.all([fetchAppointments(), refetchAvailability()]);
-      setDashboardRefreshKey((key) => key + 1);
-    } catch {
-      toast.error('Erro ao atualizar a agenda');
-    } finally {
-      setRefreshing(false);
-    }
-  }, [fetchAppointments, refetchAvailability, refreshing]);
-
-  useRealtimeAppointments({ barberId: selectedBarberId || undefined, onNewAppointment: handleNewAppointment });
-
-  useEffect(() => {
-    if (selectedBarberId) fetchAppointments();
-  }, [fetchAppointments, selectedBarberId]);
-
-  // --- Handlers ---
-  const handleOpenManualDialog = useCallback((time?: string, barberIdOverride?: string) => {
-    if (!checkCanPerformAction('create_appointment')) return;
-    setPreselectedTime(time || null);
-    setPreselectedBarberId(barberIdOverride || null);
-    setShowManualDialog(true);
-  }, [checkCanPerformAction]);
-
-  const handleOpenQuickBlock = useCallback((time?: string) => {
-    setBlockTime(time || null);
-    setShowQuickBlock(true);
-  }, []);
-
+    try { await timeline.refresh(); } finally { setRefreshing(false); }
+  };
+  const handleOpenManualDialog = (time?: string, id = selectedBarber?.id, date = selectedDate) => {
+    if (!id || !canEditBarber(id) || !checkCanPerformAction('create_appointment')) return;
+    setBookingDate(toLocalDate(date)); setPreselectedTime(time || null); setPreselectedBarberId(id); setShowManualDialog(true);
+  };
+  const handleOpenQuickBlock = (time?: string, id = selectedBarber?.id, date = selectedDate) => {
+    if (!id || !canEditBarber(id) || !checkCanPerformAction('create_appointment')) return;
+    setBookingDate(toLocalDate(date)); setPreselectedBarberId(id); setBlockTime(time || null); setShowQuickBlock(true);
+  };
+  const editableAppointment = (id: string) => {
+    const apt = appointments.find(a => a.id === id);
+    return apt && canEditBarber(apt.barber_id) ? apt : null;
+  };
   const handleDeleteAppointment = async (id: string) => {
+    if (!editableAppointment(id)) { toast.error('Sem permissão para alterar este agendamento'); return; }
     const { error } = await supabase.from('appointments').delete().eq('id', id);
     if (error) { toast.error('Erro ao excluir agendamento'); throw error; }
-    toast.success('Agendamento excluído');
-    scheduleAgendaRefresh(true);
+    toast.success('Agendamento excluído'); scheduleAgendaRefresh();
   };
-
   const handleStatusChange = async (id: string, status: 'confirmed' | 'completed' | 'cancelled') => {
+    const apt = editableAppointment(id);
+    if (!apt) { toast.error('Sem permissão para alterar este agendamento'); return; }
     if (status === 'completed' && !checkCanPerformAction('complete_appointment')) return;
     const { error } = await supabase.from('appointments').update({ status }).eq('id', id);
     if (error) { toast.error('Erro ao atualizar status'); throw error; }
-    if (status === 'completed') {
-      const apt = appointments.find(a => a.id === id);
-      if (apt && barbershop) {
-        awardLoyaltyPoints({
-          id: apt.id, customer_name: apt.customer_name,
-          customer_phone: apt.customer_phone, barbershop_id: barbershop.id,
-        }).catch(err => console.error('Erro ao pontuar fidelidade:', err));
-      }
+    if (status === 'completed' && barbershop) {
+      awardLoyaltyPoints({ id: apt.id, customer_name: apt.customer_name, customer_phone: apt.customer_phone, barbershop_id: barbershop.id }).catch(() => toast.error('Não foi possível atualizar os pontos'));
     }
-    toast.success('Status atualizado');
-    scheduleAgendaRefresh(false);
-    setDashboardRefreshKey(k => k + 1);
+    toast.success('Status atualizado'); scheduleAgendaRefresh(); setDashboardRefreshKey(k => k + 1);
   };
-
-  const handleCardClick = useCallback((appointment: Appointment) => {
-    setSelectedAppointment(appointment);
-    setShowDetailsSheet(true);
-  }, []);
-
-  const handleEditAppointment = useCallback((appointment: Appointment) => {
-    setSelectedAppointment(appointment);
-    setShowEditDialog(true);
-  }, []);
-
-  const handleShiftDay = (offset: number) => setSelectedDate(toLocalDate(addDays(selectedDate, offset)));
-  const handleShiftMonth = (offset: number) => setSelectedDate((currentDate) => shiftMonthToStart(currentDate, offset));
-  const handleDateSelectFromCalendar = (date: Date) => { setSelectedDate(toLocalDate(date)); setViewMode('daily'); };
-
-  // --- Computed ---
-  const dayOfWeek = selectedDate.getDay();
-  const isDayClosed = !getOpeningHoursForDay(dayOfWeek);
-  const isToday = isSameDay(selectedDate, new Date());
-  const hasAppointments = useMemo(() => appointments.some(a => a.status !== 'cancelled'), [appointments]);
-
-  const daySlots = useMemo(() => {
-    const dayHours = getOpeningHoursForDay(selectedDate.getDay());
-    if (!dayHours) return [];
-    const [startH, startM] = dayHours.start_time.split(':').map(Number);
-    const [endH, endM] = dayHours.end_time.split(':').map(Number);
-    const slots: { time: string; hour: number; minute: number }[] = [];
-    let h = startH, m = startM;
-    while (h < endH || (h === endH && m < endM)) {
-      slots.push({ time: `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`, hour: h, minute: m });
-      m += 15;
-      if (m >= 60) { m = 0; h++; }
-    }
-    return slots;
-  }, [selectedDate, getOpeningHoursForDay]);
-
-  // --- Loading skeleton ---
-  if (loading && appointments.length === 0 && !selectedBarberId) {
-    return (
-      <div className="space-y-4 pb-24">
-        <PremiumSkeleton className="h-12 w-3/4" />
-        <PremiumSkeleton className="h-24 rounded-xl" />
-        <SkeletonStats />
-        {Array.from({ length: 6 }).map((_, i) => <SkeletonSlot key={i} />)}
-      </div>
-    );
-  }
-
-  const fallback = <Skeleton className="h-24 w-full rounded-xl" />;
-
-  return (
-    <Suspense fallback={fallback}>
-      <div className="space-y-1.5 pb-20">
-        <GreetingHeader barber={barber} barbershop={barbershop} isMaster={isMaster} selectedDate={selectedDate} refreshKey={dashboardRefreshKey} />
-
-        {/* Layout selector — Clássica / Equipe */}
-        <div className="relative flex justify-center pt-1 pb-0.5">
-          <div
-            role="tablist"
-            aria-label="Modo de visualização da agenda"
-            className="inline-flex items-center gap-0.5 rounded-full border border-border/60 bg-card/60 backdrop-blur-sm p-0.5"
-          >
-            {([
-              { id: 'classic' as const, label: 'Clássica' },
-              { id: 'team' as const, label: 'Equipe' },
-            ]).map((opt) => {
-              const active = agendaLayout === opt.id;
-              return (
-                <button
-                  key={opt.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={active}
-                  onClick={() => setAgendaLayout(opt.id)}
-                  className={`px-3.5 h-7 text-[11px] font-medium tracking-wide uppercase rounded-full transition-all ${
-                    active
-                      ? 'bg-foreground text-background shadow-sm'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              );
-            })}
-          </div>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={handleManualRefresh}
-            disabled={refreshing}
-            aria-label="Atualizar agenda"
-            title="Atualizar agenda"
-            className="absolute right-0 h-8 w-8 active:scale-95"
-          >
-            <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-          </Button>
-        </div>
-
-        {(selectedBarber || barber) && (
-          <ManualAppointmentDialog
-            open={showManualDialog}
-            onOpenChange={(open) => {
-              setShowManualDialog(open);
-              if (!open) { setPreselectedTime(null); setPreselectedBarberId(null); }
-            }}
-            barber={canCreateForOthers ? (barbers.find(b => b.id === preselectedBarberId) || selectedBarber!) : barber!}
-            selectedDate={selectedDate}
-            onSuccess={() => { scheduleAgendaRefresh(true); setDashboardRefreshKey(k => k + 1); }}
-            canCreateForOthers={canCreateForOthers}
-            barbers={barbers}
-            preselectedTime={preselectedTime}
-            preselectedBarberId={preselectedBarberId}
-          />
-        )}
-
-        {agendaLayout === 'team' ? (
-          <div key="team">
-            <TeamAgendaView
-              barbers={barbers}
-              barbershop={barbershop}
-              currentBarber={barber}
-              canViewOthers={canViewOthers}
-              selectedDate={selectedDate}
-              onShiftDay={handleShiftDay}
-              onSlotClick={(time, barberId) => handleOpenManualDialog(time, barberId)}
-              onAppointmentClick={handleCardClick}
-              refreshKey={dashboardRefreshKey}
-            />
-          </div>
-        ) : (
-          <div key="classic" className="space-y-1.5">
-            <AgendaHeader
-              selectedDate={selectedDate}
-              viewMode={viewMode}
-              onViewModeChange={setViewMode}
-              onShiftDay={handleShiftDay}
-              canViewOthers={canViewOthers}
-              barbers={barbers}
-              currentBarber={barber}
-              selectedBarberId={selectedBarberId}
-              onBarberChange={setSelectedBarberId}
-            />
-
-            {viewMode === 'monthly' && selectedBarber && (
-              <MonthlyCalendar barber={selectedBarber} onDateSelect={handleDateSelectFromCalendar} selectedDate={selectedDate} />
-            )}
-
-            {viewMode === 'all' && canViewOthers && (
-              <>
-                <StickyDaysStrip
-                  selectedDate={selectedDate}
-                  displayMonth={displayMonth}
-                  onSelectDate={setSelectedDate}
-                  onShiftMonth={handleShiftMonth}
-                  selectedBarberId={selectedBarberId}
-                />
-                <HolidayBanner date={selectedDate} />
-                <AllBarbersGrid
-                  barbers={barbers}
-                  barbershop={barbershop}
-                  selectedDate={selectedDate}
-                  onSlotClick={(time, barberId) => handleOpenManualDialog(time, barberId)}
-                  onAppointmentClick={handleCardClick}
-                  refreshKey={dashboardRefreshKey}
-                />
-              </>
-            )}
-
-            {viewMode === 'daily' && (
-              <>
-                <StickyDaysStrip
-                  selectedDate={selectedDate}
-                  displayMonth={displayMonth}
-                  onSelectDate={setSelectedDate}
-                  onShiftMonth={handleShiftMonth}
-                  selectedBarberId={selectedBarberId}
-                />
-
-                <HolidayBanner date={selectedDate} />
-
-                <div>
-                  <AgendaSlotGrid
-                    loading={(loading && appointments.length === 0) || (availabilityLoading && daySlots.length === 0)}
-                    isDayClosed={isDayClosed}
-                    isToday={isToday}
-                    selectedDate={selectedDate}
-                    daySlots={daySlots}
-                    appointments={appointments}
-                    blockedSlots={blockedSlots}
-                    hasAppointments={hasAppointments}
-                    hideEmptyState={hideEmptyState}
-                    onDismissEmptyState={() => setHideEmptyState(true)}
-                    barbershop={barbershop}
-                    checkSlotAvailability={checkSlotAvailability}
-                    onSlotClick={handleOpenManualDialog}
-                    onAppointmentClick={handleCardClick}
-                    onAppointmentComplete={(id) => handleStatusChange(id, 'completed')}
-                    onAppointmentDelete={handleDeleteAppointment}
-                    onAppointmentEdit={handleEditAppointment}
-                    getOpeningHoursForDay={getOpeningHoursForDay}
-                  />
-                </div>
-              </>
-            )}
-          </div>
-        )}
-
-
+  const handleCardClick = (appointment: Appointment) => { setSelectedAppointment(appointment); setShowDetailsSheet(true); };
+  const handleEditAppointment = (appointment: Appointment) => { if (!canEditBarber(appointment.barber_id)) return; setSelectedAppointment(appointment); setShowEditDialog(true); };
+  const active = appointments.filter(a => a.status !== 'cancelled');
+  const expected = active.reduce((sum, a) => sum + Number(a.service?.price || 0), 0);
+  const vacancies = columns.reduce((sum, c) => sum + freeIntervals(c, new Date()).length, 0);
+  return <Suspense fallback={<div className="agenda-loading animate-pulse"><span /><span /><span /></div>}>
+    <div className={`agenda-cockpit palette-${preferences.palette} pb-20`}>
+      <AgendaToolbar mode={effectiveMode} onModeChange={value => { setMode(value); setMonthly(false); }} selectedDate={selectedDate} onDateChange={date => setSelectedDate(toLocalDate(date))}
+        canViewOthers={canViewOthers} barbers={timeline.allowed} selectedBarber={selectedBarber} onBarberChange={setSelectedBarberId}
+        filter={filter} onFilterChange={setFilter} preferences={preferences} onPreferencesChange={changePreferences}
+        refreshing={refreshing || timeline.isFetching} onRefresh={handleManualRefresh} onNew={() => handleOpenManualDialog()} canCreate={Boolean(selectedBarber && canEditBarber(selectedBarber.id))} onMonthView={() => setMonthly(true)} />
+      <div className="agenda-summary"><span><strong>{active.length}</strong> clientes</span><span><strong>{currency(expected)}</strong> previsto</span><span><strong>{vacancies}</strong> espaços livres</span></div>
+      <HolidayBanner date={selectedDate} />
+      {monthly && selectedBarber ? <><Button variant="ghost" className="my-2" onClick={() => setMonthly(false)}>Voltar à agenda</Button><MonthlyCalendar barber={selectedBarber} selectedDate={selectedDate} onDateSelect={date => { setSelectedDate(toLocalDate(date)); setMonthly(false); }} /></> :
+        timeline.isError ? <div className="agenda-empty"><p>Não foi possível carregar a agenda.</p><Button variant="ghost" onClick={handleManualRefresh}>Tentar novamente</Button></div> :
+        timeline.isPending && timeline.visible.length > 0 ? <div className="agenda-loading animate-pulse" aria-label="Carregando agenda"><span /><span /><span /><span /></div> :
+        <AgendaTimeline columns={columns} mode={effectiveMode} filter={filter} compact={preferences.density === 'compact'} canEditBarber={canEditBarber}
+          onSlot={handleOpenManualDialog} onBlock={handleOpenQuickBlock} onAppointment={handleCardClick} onEdit={handleEditAppointment} onComplete={id => { void handleStatusChange(id, 'completed'); }} onDelete={id => { void handleDeleteAppointment(id); }} />}
+      {dialogBarber && <ManualAppointmentDialog open={showManualDialog} onOpenChange={open => { setShowManualDialog(open); if (!open) { setPreselectedTime(null); setPreselectedBarberId(null); } }}
+        barber={dialogBarber} selectedDate={bookingDate} onSuccess={() => scheduleAgendaRefresh()} canCreateForOthers={canCreateForOthers} barbers={timeline.allowed} preselectedTime={preselectedTime} preselectedBarberId={preselectedBarberId} />}
         <AppointmentDetailsSheet
           appointment={selectedAppointment}
+          canEdit={Boolean(selectedAppointment && canEditBarber(selectedAppointment.barber_id))}
           open={showDetailsSheet}
           onOpenChange={setShowDetailsSheet}
           onEdit={handleEditAppointment}
           onComplete={(id) => handleStatusChange(id, 'completed')}
           onDelete={handleDeleteAppointment}
           onOpenComanda={(apt) => {
-            if (!checkCanPerformAction('complete_appointment')) return;
+            if (!canEditBarber(apt.barber_id) || !checkCanPerformAction('complete_appointment')) return;
             setComandaAppointment(apt);
             setShowComanda(true);
           }}
@@ -491,25 +165,13 @@ const Agenda = () => {
           appointment={selectedAppointment}
           open={showEditDialog}
           onOpenChange={setShowEditDialog}
-          onSuccess={() => scheduleAgendaRefresh(true)}
+          onSuccess={() => scheduleAgendaRefresh()}
           isMaster={isMaster}
         />
 
-        {(selectedBarber || barber) && (
-          <QuickBlockDialog
-            open={showQuickBlock}
-            onOpenChange={(open) => { setShowQuickBlock(open); if (!open) setBlockTime(null); }}
-            barber={selectedBarber || barber!}
-            selectedDate={selectedDate}
-            preselectedTime={blockTime}
-            onSuccess={() => scheduleAgendaRefresh(true)}
-          />
-        )}
-
-        <FloatingActionButton onNewAppointment={() => handleOpenManualDialog()} onNewBlock={() => handleOpenQuickBlock()} />
-      </div>
-    </Suspense>
-  );
+      {dialogBarber && <QuickBlockDialog open={showQuickBlock} onOpenChange={open => { setShowQuickBlock(open); if (!open) { setBlockTime(null); setPreselectedBarberId(null); } }} barber={dialogBarber} selectedDate={bookingDate} preselectedTime={blockTime} onSuccess={() => scheduleAgendaRefresh()} />}
+      {selectedBarber && canEditBarber(selectedBarber.id) && <FloatingActionButton onNewAppointment={() => handleOpenManualDialog()} onNewBlock={() => handleOpenQuickBlock()} />}
+    </div>
+  </Suspense>;
 };
-
 export default Agenda;

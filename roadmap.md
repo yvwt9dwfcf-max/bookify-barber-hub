@@ -1,5 +1,12 @@
 # Roadmap
 
+## Nova agenda aprovada
+- [x] Reproduzir visual Individual e Equipe e acrescentar Semana, mantendo calendário mensal e ações existentes
+- [x] Adicionar personalização das fitinhas e densidade na própria agenda
+- [x] Testar permissões de visualização, intervalos, duração proporcional e filtros
+- [x] Verificar telas e controles com dados fictícios no celular e computador
+- [ ] Verificar agenda autenticada e gravação real — bloqueado: Supabase externo sem sessão de teste disponível
+
 - [x] Corrigir confirmação e anéis dinâmicos
 - [x] Ajustar regra bicolor e remover miniaturas públicas
 - [x] Remover fotos da administração de Serviços
