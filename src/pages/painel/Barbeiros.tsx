@@ -1,3 +1,4 @@
+import StorageImg from '@/components/StorageImg';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUserRole } from '@/hooks/useUserRole';
@@ -373,7 +374,7 @@ const Barbeiros = () => {
                 <div className="relative group flex-shrink-0">
                   <label className="relative block cursor-pointer">
                     {photoPreviews[barber.id] || barber.photo_url ? (
-                      <img src={photoPreviews[barber.id] || barber.photo_url || ''} alt={barber.name} className="w-12 h-12 rounded-full object-cover ring-2 ring-border" />
+                      <StorageImg src={photoPreviews[barber.id] || barber.photo_url || ''} alt={barber.name} className="w-12 h-12 rounded-full object-cover ring-2 ring-border" />
                     ) : (
                       <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center ring-2 ring-border">
                         <User className="h-5 w-5 text-primary" />

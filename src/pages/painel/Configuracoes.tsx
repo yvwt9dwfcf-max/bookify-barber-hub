@@ -1,3 +1,4 @@
+import StorageImg from '@/components/StorageImg';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useOutletContext, useNavigate } from 'react-router-dom';
 import { Barber, Barbershop } from '@/lib/supabase';
@@ -209,7 +210,7 @@ const Configuracoes = () => {
             onClick={() => barbershopFileInputRef.current?.click()}
           >
             {photoUrl ? (
-              <img src={photoUrl} alt={`Logo da barbearia ${barbershop?.name ?? ''}`.trim()} className="w-full h-full object-cover" />
+              <StorageImg src={photoUrl} alt={`Logo da barbearia ${barbershop?.name ?? ''}`.trim()} className="w-full h-full object-cover" />
             ) : (
               <Camera className="h-5 w-5 text-muted-foreground/60" />
             )}

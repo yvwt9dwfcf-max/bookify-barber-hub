@@ -39,7 +39,7 @@ const Agenda = () => {
   useEffect(() => {
     try {
       const saved = JSON.parse(localStorage.getItem(preferenceKey) || 'null');
-      setPreferences({ palette: ['original', 'ocean', 'warm'].includes(saved?.palette) ? saved.palette : 'original', density: saved?.density === 'compact' ? 'compact' : 'comfortable' });
+      setPreferences({ palette: ['original', 'ocean', 'warm'].includes(saved?.palette) ? saved.palette : 'original', density: saved?.density === 'comfortable' ? 'comfortable' : 'compact' });
     } catch { setPreferences(DEFAULT_AGENDA_PREFERENCES); }
   }, [preferenceKey]);
   const changePreferences = (value: AgendaPreferences) => {

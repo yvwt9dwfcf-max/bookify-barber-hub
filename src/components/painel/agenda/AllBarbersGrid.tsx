@@ -1,3 +1,4 @@
+import StorageImg from '@/components/StorageImg';
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { supabase, Appointment, Barber, BlockedSlot, OpeningHours, Barbershop } from '@/lib/supabase';
 import { startOfDay, addDays, format, setHours, setMinutes, isBefore, isAfter, addMinutes } from 'date-fns';
@@ -261,7 +262,7 @@ const AllBarbersGrid = ({
                 style={{ width: COLUMN_WIDTH }}
               >
                 {b.photo_url ? (
-                  <img
+                  <StorageImg
                     src={b.photo_url}
                     alt={b.name}
                     className="h-7 w-7 rounded-full object-cover shrink-0"

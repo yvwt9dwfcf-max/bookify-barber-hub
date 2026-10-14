@@ -1,3 +1,4 @@
+import StorageImg from '@/components/StorageImg';
 import { useState } from 'react';
 import { addDays, format, isToday, startOfWeek } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -15,7 +16,7 @@ import type { AgendaMode, AgendaFilter, AgendaPreferences } from './timelineUtil
 export function AgendaAvatar({ barber, size = 'normal' }: { barber?: Barber; size?: 'normal' | 'small' }) {
   const [failed, setFailed] = useState(false);
   return <span className={cn('agenda-avatar', size === 'small' && 'agenda-avatar-small')}>
-    {barber?.photo_url && !failed ? <img src={barber.photo_url} alt={barber.name} onError={() => setFailed(true)} /> : <span>{getInitials(barber?.name || 'Bookify')}</span>}
+    {barber?.photo_url && !failed ? <StorageImg src={barber.photo_url} alt={barber.name} onError={() => setFailed(true)} /> : <span>{getInitials(barber?.name || 'Bookify')}</span>}
   </span>;
 }
 interface Props {
