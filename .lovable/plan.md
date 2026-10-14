@@ -1,46 +1,37 @@
-# Nova Agenda Bookify — idêntica às imagens aprovadas
+# Correção do gráfico e clareza financeira
 
-Reconstruir a agenda do painel para ficar igual às duas imagens aprovadas (Individual e Equipe), mantendo toda a lógica atual: agendamentos, bloqueios, intervalos, status, realtime, permissões e dialogs.
+## Objetivo
+Restaurar a leitura diária do faturamento mensal e melhorar a compreensão das telas financeiras sem mudar o visual existente ou as regras de negócio.
 
-## Visão Individual (imagem 1 — tablet da bancada)
+## Implementação
+1. **Relatórios**
+   - Remover o agrupamento especial que transforma o mês inteiro em uma única barra.
+   - Gerar todos os dias do intervalo com `eachDayOfInterval`, incluindo dias sem faturamento com valor zero.
 
-Nova grade contínua vertical que substitui a lista de slots atual:
+2. **Caixa**
+   - Preservar o saldo como informação principal.
+   - Unificar a ordem visual das movimentações por horário mais recente, sem alterar os dados ou cálculos.
+   - Manter mensagem clara quando o dia não possuir movimentações.
 
-- Régua de horários fixa à esquerda, marcas de hora cheia mais fortes, meia hora mais suave.
-- Cards de agendamento com **altura proporcional à duração real** (não mais linhas fixas de 15 min).
-- Card: horário pequeno + nome do cliente em destaque + serviço; canto com status (Confirmado / Em atendimento / Concluído).
-- **Linha do "agora"** verde atravessando a grade quando o dia é hoje, com ponto na régua; grade abre já rolada para o horário atual.
-- Espaços vagos: toque abre direto "Novo agendamento" naquele horário; gesto longo ou botão discreto oferece "Bloquear horário".
-- Intervalo de almoço aparece como faixa hachurada discreta com rótulo "Intervalo".
-- Resumo do dia no topo: clientes do dia, faturamento previsto, vagas restantes.
+3. **Despesas**
+   - Dar maior destaque ao total de despesas do mês dentro do resumo existente.
+   - Manter valores em real, listas em ordem decrescente de data e melhorar a mensagem vazia conforme os filtros aplicados.
 
-## Visão Equipe (imagem 2 — colunas lado a lado)
+4. **Produtos**
+   - Priorizar itens com estoque baixo na lista, mantendo os demais em ordem alfabética.
+   - Preservar o resumo e o estado vazio existentes, reforçando a leitura dos números com formatação estável.
 
-Evoluir o `TeamAgendaView` atual para ficar idêntico à imagem:
+5. **Comissões**
+   - Destacar o total de comissões como número principal da tela.
+   - Manter faturamento bruto, líquido da casa e atendimentos como contexto secundário.
+   - Exibir uma mensagem clara quando há profissionais, mas ainda não há atendimentos concluídos no mês.
 
-- Cabeçalho fixo com foto, nome e "Próx. HH:mm" de cada barbeiro.
-- Colunas com rolagem horizontal suave; grade compartilhada de 30 min.
-- Cards proporcionais à duração, borda sutil, nome do cliente em destaque.
-- Linha do "agora" atravessando todas as colunas.
-- Intervalo e bloqueios como faixas discretas; slots fora do expediente esmaecidos.
+6. **Metas**
+   - Tornar explícitos o progresso atual, o valor restante e o estado sem meta definida.
+   - Manter os mesmos cards, barras, diálogos e comportamento de edição.
 
-## Visão Semana
-
-- Grade dos próximos 7 dias: colunas por dia, cards compactos por agendamento, toque abre o dia na visão Individual.
-
-## Navegação
-
-- Seletor no topo: **Dia · Equipe · Semana** (segmentado, estilo app nativo), substituindo o seletor atual "Clássica/Equipe".
-- Seletor de barbeiro mantido na visão Dia; strip de dias mantido.
-
-## O que NÃO muda
-
-- Busca de dados, realtime, permissões (MASTER/BARBER), dialogs de criar/editar/detalhes/bloqueio, comanda, fidelidade, feriados.
-- Tema claro/escuro via tokens existentes; nada de cores fixas fora do padrão do app.
-
-## Arquivos
-
-- Novo: `src/components/painel/agenda/DayTimelineView.tsx` (grade contínua individual).
-- Novo: `src/components/painel/agenda/WeekView.tsx`.
-- Editado: `src/pages/painel/Agenda.tsx` (navegação Dia/Equipe/Semana), `TeamAgendaView.tsx` (visual da imagem 2).
-- `AgendaSlotGrid.tsx` permanece como fallback até a nova grade estar validada; remoção só no final.
+## Validação
+- Confirmar compilação sem erros.
+- Verificar que o filtro “Mês” gera um ponto/barra para cada dia do intervalo.
+- Conferir telas financeiras em largura móvel, sem cortes ou mudança do padrão visual atual.
+- Confirmar que cálculos, permissões, cadastros e edições continuam inalterados.
