@@ -107,132 +107,84 @@ const AppointmentDetailsSheet = ({
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetContent side="bottom" className="rounded-t-2xl max-h-[90vh] flex flex-col p-0">
-          <SheetHeader className="text-left p-4 pr-12 pb-2 flex-shrink-0">
-            <SheetTitle className="text-lg">Detalhes do Agendamento</SheetTitle>
-            <span
-              className={cn(
-                'px-2.5 py-1 rounded-full text-xs font-medium w-fit',
-                getStatusColor(appointment.status)
+          <SheetHeader className="text-left px-5 pt-5 pr-12 pb-3 flex-shrink-0 space-y-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className={cn('px-2.5 py-0.5 rounded-full text-[11px] font-semibold uppercase tracking-wide', getStatusColor(appointment.status))}>
+                {getStatusLabel(appointment.status)}
+              </span>
+              {appointment.origin && (
+                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold uppercase tracking-wide border border-border text-muted-foreground">
+                  {appointment.origin === 'online' ? 'Online' : 'Manual'}
+                </span>
               )}
-            >
-              {getStatusLabel(appointment.status)}
-            </span>
-            <SheetDescription className="sr-only">
-              Informações completas do agendamento
+            </div>
+            <SheetTitle className="text-2xl font-semibold leading-tight truncate">
+              {appointment.customer_name}
+            </SheetTitle>
+            <SheetDescription className="text-sm text-muted-foreground capitalize">
+              {format(new Date(appointment.start_time), "EEEE, d 'de' MMMM", { locale: ptBR })}
+              {' · '}
+              {format(new Date(appointment.start_time), 'HH:mm')}–{format(new Date(appointment.end_time), 'HH:mm')}
             </SheetDescription>
           </SheetHeader>
 
-          {/* Conteúdo com scroll */}
-          <div className="flex-1 overflow-y-auto px-4 pb-2">
+          <div className="flex-1 overflow-y-auto px-5 pb-3">
             <div className="space-y-3">
-              {appointment.origin && (
-                <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <MousePointerClick className="h-5 w-5 text-primary" />
-                  </div>
+              <div className="rounded-2xl bg-muted/50 p-4">
+                <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="font-medium truncate">
-                      {appointment.origin === 'online' ? 'Agendamento Online' : 'Agendamento Manual'}
+                    <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Serviço</p>
+                    <p className="font-semibold text-base truncate">
+                      {appointment.service?.name || 'Serviço não especificado'}
                     </p>
-                    <p className="text-sm text-muted-foreground">Origem do agendamento</p>
+                    {appointment.service && (
+                      <p className="text-sm text-muted-foreground">{appointment.service.duration_minutes} min</p>
+                    )}
                   </div>
-                </div>
-              )}
-
-              {/* Informações do cliente */}
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <User className="h-5 w-5 text-primary" />
-                </div>
-                <div className="min-w-0">
-                  <p className="font-medium truncate">{appointment.customer_name}</p>
-                  <p className="text-sm text-muted-foreground">Cliente</p>
-                </div>
-              </div>
-
-              {appointment.customer_phone && (
-                <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <Phone className="h-5 w-5 text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate">{appointment.customer_phone}</p>
-                    <p className="text-sm text-muted-foreground">Telefone</p>
-                  </div>
-                  <div className="flex items-center gap-1.5 flex-shrink-0">
-                    <a
-                      href={`https://wa.me/55${appointment.customer_phone.replace(/\D/g, '')}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="h-9 w-9 rounded-full bg-[#25D366]/10 hover:bg-[#25D366]/20 flex items-center justify-center transition-colors"
-                    >
-                      <MessageCircle className="h-4 w-4 text-[#25D366]" />
-                    </a>
-                    <a
-                      href={`tel:+55${appointment.customer_phone.replace(/\D/g, '')}`}
-                      className="h-9 w-9 rounded-full bg-primary/10 hover:bg-primary/20 flex items-center justify-center transition-colors"
-                    >
-                      <Phone className="h-4 w-4 text-primary" />
-                    </a>
-                  </div>
-                </div>
-              )}
-
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <Scissors className="h-5 w-5 text-primary" />
-                </div>
-                <div className="min-w-0">
-                  <p className="font-medium truncate">
-                    {appointment.service?.name || 'Serviço não especificado'}
-                  </p>
                   {appointment.service && (
-                    <p className="text-sm text-muted-foreground">
-                      R$ {Number(appointment.service.price).toFixed(2)} • {appointment.service.duration_minutes}min
+                    <p className="text-lg font-semibold whitespace-nowrap">
+                      {Number(appointment.service.price).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                     </p>
                   )}
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <Clock className="h-5 w-5 text-primary" />
-                </div>
-                <div className="min-w-0">
-                  <p className="font-medium">
-                    {format(new Date(appointment.start_time), 'HH:mm')} - {format(new Date(appointment.end_time), 'HH:mm')}
-                  </p>
-                  <p className="text-sm text-muted-foreground">Horário</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <Calendar className="h-5 w-5 text-primary" />
-                </div>
-                <div className="min-w-0">
-                  <p className="font-medium">
-                    {format(new Date(appointment.start_time), "EEEE, d 'de' MMMM", { locale: ptBR })}
-                  </p>
-                  <p className="text-sm text-muted-foreground">Data</p>
-                </div>
-              </div>
-
-              {appointment.barber && (
-                <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <User className="h-5 w-5 text-primary" />
+              <div className="rounded-2xl bg-muted/50 divide-y divide-border/60">
+                {appointment.barber && (
+                  <div className="flex items-center justify-between gap-3 px-4 py-3">
+                    <span className="text-sm text-muted-foreground">Profissional</span>
+                    <span className="font-medium truncate">{appointment.barber.name}</span>
                   </div>
-                  <div className="min-w-0">
-                    <p className="font-medium truncate">{appointment.barber.name}</p>
-                    <p className="text-sm text-muted-foreground">Profissional</p>
+                )}
+                {appointment.customer_phone && (
+                  <div className="flex items-center justify-between gap-3 px-4 py-2.5">
+                    <div className="min-w-0">
+                      <span className="block text-sm text-muted-foreground">Telefone</span>
+                      <span className="font-medium truncate">{appointment.customer_phone}</span>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <a
+                        href={`tel:+55${appointment.customer_phone.replace(/\D/g, '')}`}
+                        className="h-10 px-3 rounded-full border border-border text-sm font-medium flex items-center"
+                      >
+                        Ligar
+                      </a>
+                      <a
+                        href={`https://wa.me/55${appointment.customer_phone.replace(/\D/g, '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="h-10 px-3 rounded-full bg-success/15 text-success text-sm font-semibold flex items-center"
+                      >
+                        WhatsApp
+                      </a>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
 
               {appointment.notes && (
-                <div className="p-3 rounded-lg bg-muted/50">
-                  <p className="text-sm text-muted-foreground mb-1">Observações</p>
+                <div className="rounded-2xl bg-muted/50 p-4">
+                  <p className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1">Observações</p>
                   <p className="text-sm">{appointment.notes}</p>
                 </div>
               )}
