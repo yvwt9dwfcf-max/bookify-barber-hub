@@ -10,8 +10,8 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { AgendaAvatar } from './AgendaToolbar';
 import {
   appointmentLanes, appointmentMatches, canPlaceSlot, currency, dayMinute, freeIntervals,
-  minuteLabel, positionInterval, slotInterval, timelineRange,
-  type AgendaFilter, type AgendaMode, type TimelineColumn,
+  minuteLabel, positionInterval, slotInterval, timeMinute, timelineRange,
+  type AgendaFilter, type Interval, type AgendaMode, type TimelineColumn,
 } from './timelineUtils';
 
 interface Props {

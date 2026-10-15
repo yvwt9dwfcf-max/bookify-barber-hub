@@ -110,6 +110,12 @@ const Agenda = () => {
   const active = appointments.filter(a => a.status !== 'cancelled');
   const expected = active.reduce((sum, a) => sum + Number(a.service?.price || 0), 0);
   const vacancies = columns.reduce((sum, c) => sum + freeIntervals(c, new Date()).length, 0);
+  useEffect(() => {
+    // App-like screen: only the timeline scrolls; the page itself never moves or rubber-bands.
+    const root = document.documentElement;
+    root.classList.add('agenda-lock');
+    return () => root.classList.remove('agenda-lock');
+  }, []);
   return <Suspense fallback={<div className="agenda-loading animate-pulse"><span /><span /><span /></div>}>
     <div className={`agenda-cockpit palette-${preferences.palette} pb-20`}>
       <AgendaToolbar mode={effectiveMode} onModeChange={value => { setMode(value); setMonthly(false); }} selectedDate={selectedDate} onDateChange={date => setSelectedDate(toLocalDate(date))}
