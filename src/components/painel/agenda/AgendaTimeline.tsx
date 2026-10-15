@@ -53,10 +53,10 @@ function TimelineAppointment({ appointment: a, column, range, ppm, lane, count, 
   </div>;
 }
 /** Marks the slot that is already running (today) as an encaixe: bookable only by staff, never online. */
-function withEncaixe(column: TimelineColumn, free: Interval[], now: Date): (Interval & { encaixe?: boolean })[] {
+function withEncaixe(column: TimelineColumn, free: Interval[], now: Date, step = 15): (Interval & { encaixe?: boolean })[] {
   if (!isSameDay(column.date, now) || !column.hours?.is_open) return free;
   const minute = dayMinute(now, column.date);
-  const slotStart = Math.floor(minute / 15) * 15;
+  const slotStart = Math.floor(minute / step) * step;
   if (slotStart === minute || slotStart < timeMinute(column.hours.start_time) || minute >= timeMinute(column.hours.end_time)) return free;
   const busy = [...column.blocks, ...column.appointments.filter(a => a.status !== 'cancelled').map(a => ({ start: dayMinute(a.start_time, column.date), end: dayMinute(a.end_time, column.date) }))]
     .some(i => i.start < minute && i.end > slotStart);
@@ -110,10 +110,12 @@ export default function AgendaTimeline(p: Props) {
         {p.columns.map(c => {
           const displayed = c.appointments.filter(a => appointmentMatches(a, p.filter));
           const lanes = appointmentLanes(displayed);
-          const free = withEncaixe(c, freeIntervals(c, now), now);
           const interval = slotInterval(c);
+          const free = withEncaixe(c, freeIntervals(c, now), now, interval);
+          // Slots always sit on fixed marks (:00/:30 or every 15 min), never on the current minute.
+          const anchor = (g: Interval & { encaixe?: boolean }) => g.encaixe ? g.start : Math.ceil(g.start / interval) * interval;
           const targets = free.flatMap(gap => {
-            const start = Math.ceil(gap.start / 15) * 15;
+            const start = anchor(gap);
             const list: number[] = [];
             for (let m = start; m + 15 <= gap.end; m += interval) list.push(m);
             return list;
@@ -130,9 +132,9 @@ export default function AgendaTimeline(p: Props) {
                 <PopoverTrigger asChild><Button variant="ghost" className="agenda-free" style={{ top: position.top + 5, height: Math.min(48, position.height - 6) }} disabled={!p.canEditBarber(c.barber.id)} aria-label={`${gap.encaixe ? 'Encaixe' : 'Agendar'} ${c.barber.name} às ${minuteLabel(gap.start)}`}>
                   {p.mode === 'individual' ? <><span>{gap.encaixe ? 'Em andamento' : 'Disponível'}</span><span className="agenda-encaixe"><Plus />{gap.encaixe ? 'Encaixe' : 'Agendar'}</span></> : <Plus />}
                 </Button></PopoverTrigger>
-                <PopoverContent className="w-60 space-y-2"><p className="text-sm font-semibold">{minuteLabel(gap.start)} · {c.barber.name.split(' ')[0]}</p>
-                  <Button variant="ghost" className="w-full justify-start" onClick={() => p.onSlot(minuteLabel(gap.start), c.barber.id, c.date)}><Plus />{gap.encaixe ? 'Encaixe agora' : 'Novo agendamento'}</Button>
-                  <Button variant="ghost" className="w-full justify-start" onClick={() => p.onBlock(minuteLabel(gap.start), c.barber.id, c.date)}><Lock />Bloquear horário</Button>
+                <PopoverContent className="w-60 space-y-2"><p className="text-sm font-semibold">{minuteLabel(anchor(gap))} · {c.barber.name.split(' ')[0]}</p>
+                  <Button variant="ghost" className="w-full justify-start" onClick={() => p.onSlot(minuteLabel(anchor(gap)), c.barber.id, c.date)}><Plus />{gap.encaixe ? 'Encaixe agora' : 'Novo agendamento'}</Button>
+                  <Button variant="ghost" className="w-full justify-start" onClick={() => p.onBlock(minuteLabel(anchor(gap)), c.barber.id, c.date)}><Lock />Bloquear horário</Button>
                 </PopoverContent>
               </Popover>;
             })}
