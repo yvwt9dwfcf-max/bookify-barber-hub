@@ -42,7 +42,7 @@ const defaultHours: DayHours[] = [
 type DayStatus = 'idle' | 'saving' | 'saved' | 'error';
 
 const Horarios = () => {
-  const { barber, barbershop } = useOutletContext<ContextType>();
+  const { barber, barbershop, isMaster } = useOutletContext<ContextType>();
   const [hours, setHours] = useState<DayHours[]>(defaultHours);
   const [loading, setLoading] = useState(true);
   const [serverClosingTime, setServerClosingTime] = useState<string>('');
