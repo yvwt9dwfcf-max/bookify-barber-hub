@@ -11,6 +11,7 @@ import { useAutoSave } from '@/hooks/useAutoSave';
 import { AutoSaveIndicator } from '@/components/ui/AutoSaveIndicator';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { SlotStepCard } from '@/components/painel/SlotStepCard';
 
 interface ContextType {
   barber: Barber | null;
@@ -288,6 +289,8 @@ const Horarios = () => {
           })}
         </CardContent>
       </Card>
+
+      <SlotStepCard barbershopId={barbershop?.id} canEdit={isMaster} />
 
       {/* Closing Time */}
       <Card className="border-border/40 bg-card/60 backdrop-blur-sm">
