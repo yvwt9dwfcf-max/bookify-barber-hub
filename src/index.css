@@ -630,3 +630,10 @@
 .agenda-scroll:not(:has(.agenda-grid.is-individual)) { touch-action: pan-x pan-y; overscroll-behavior-x: contain; }
 .agenda-cockpit .agenda-slot-target:focus, .agenda-cockpit .agenda-slot-target:active { background: transparent; outline: none; }
 .agenda-cockpit .agenda-slot-target:focus-visible { box-shadow: inset 0 0 0 1px hsl(var(--agenda-green) / .5); }
+
+/* Agenda screen lock: header, tabs and filters stay put; only .agenda-scroll moves */
+html.agenda-lock, html.agenda-lock body { overflow: hidden; height: 100%; overscroll-behavior: none; }
+html.agenda-lock body { position: fixed; inset: 0; width: 100%; }
+html.agenda-lock main { height: 100dvh; overflow: hidden; touch-action: none; }
+html.agenda-lock .agenda-scroll { touch-action: pan-x pan-y; overscroll-behavior: contain; }
+html.agenda-lock .agenda-cockpit .pb-20, html.agenda-lock .agenda-cockpit.pb-20 { padding-bottom: 0; }

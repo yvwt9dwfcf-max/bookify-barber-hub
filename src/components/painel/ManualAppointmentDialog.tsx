@@ -179,7 +179,7 @@ const ManualAppointmentDialog = ({
     checkSlotAvailability,
     getOpeningHoursForDay,
     refetch: refetchAvailability,
-  } = useAvailability({ barberId: targetBarber.id, selectedDate: internalDate });
+  } = useAvailability({ barberId: targetBarber.id, selectedDate: internalDate, allowOngoing: true });
 
   const form = useForm<AppointmentFormData>({
     resolver: zodResolver(appointmentSchema),
