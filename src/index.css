@@ -637,3 +637,5 @@ html.agenda-lock body { position: fixed; inset: 0; width: 100%; }
 html.agenda-lock main { height: 100dvh; overflow: hidden; touch-action: none; }
 html.agenda-lock .agenda-scroll { touch-action: pan-x pan-y; overscroll-behavior: contain; }
 html.agenda-lock .agenda-cockpit .pb-20, html.agenda-lock .agenda-cockpit.pb-20 { padding-bottom: 0; }
+.agenda-rule.is-quarter { background: hsl(var(--agenda-line) / .12); }
+.agenda-time.is-hidden { opacity: 0; }

@@ -127,7 +127,7 @@ const Agenda = () => {
       {monthly && selectedBarber ? <><Button variant="ghost" className="my-2" onClick={() => setMonthly(false)}>Voltar à agenda</Button><MonthlyCalendar barber={selectedBarber} selectedDate={selectedDate} onDateSelect={date => { setSelectedDate(toLocalDate(date)); setMonthly(false); }} /></> :
         timeline.isError ? <div className="agenda-empty"><p>Não foi possível carregar a agenda.</p><Button variant="ghost" onClick={handleManualRefresh}>Tentar novamente</Button></div> :
         timeline.isPending && timeline.visible.length > 0 ? <div className="agenda-loading animate-pulse" aria-label="Carregando agenda"><span /><span /><span /><span /></div> :
-        <AgendaTimeline columns={columns} mode={effectiveMode} filter={filter} canEditBarber={canEditBarber}
+        <AgendaTimeline slotStep={slotStep} columns={columns} mode={effectiveMode} filter={filter} canEditBarber={canEditBarber}
           onSlot={handleOpenManualDialog} onBlock={handleOpenQuickBlock} onAppointment={handleCardClick} onEdit={handleEditAppointment} onComplete={id => { void handleStatusChange(id, 'completed'); }} onDelete={id => { void handleDeleteAppointment(id); }} />}
       {dialogBarber && <ManualAppointmentDialog open={showManualDialog} onOpenChange={open => { setShowManualDialog(open); if (!open) { setPreselectedTime(null); setPreselectedBarberId(null); } }}
         barber={dialogBarber} selectedDate={bookingDate} onSuccess={() => scheduleAgendaRefresh()} canCreateForOthers={canCreateForOthers} barbers={timeline.allowed} preselectedTime={preselectedTime} preselectedBarberId={preselectedBarberId} />}
