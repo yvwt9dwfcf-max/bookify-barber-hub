@@ -212,7 +212,7 @@ export function useAvailability({
     }
 
     return slots;
-  }, [getOpeningHoursForDay, checkSlotAvailability, appointments]);
+  }, [getOpeningHoursForDay, checkSlotAvailability, slotStep]);
 
   return {
     openingHours,
