@@ -3,10 +3,9 @@ import type { Appointment, Barber, BlockedSlot, OpeningHours } from '@/lib/supab
 
 export type AgendaMode = 'individual' | 'team' | 'week';
 export type AgendaPalette = 'original' | 'ocean' | 'warm';
-export type AgendaDensity = 'comfortable' | 'compact';
 export type AgendaFilter = 'active' | 'all' | 'confirmed' | 'completed' | 'cancelled' | 'online' | 'manual';
-export interface AgendaPreferences { palette: AgendaPalette; density: AgendaDensity; }
-export const DEFAULT_AGENDA_PREFERENCES: AgendaPreferences = { palette: 'original', density: 'compact' };
+export interface AgendaPreferences { palette: AgendaPalette; }
+export const DEFAULT_AGENDA_PREFERENCES: AgendaPreferences = { palette: 'original' };
 export const currency = (amount: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(amount);
 export const minuteLabel = (minute: number) => `${String(Math.floor(minute / 60)).padStart(2, '0')}:${String(minute % 60).padStart(2, '0')}`;
 export const timeMinute = (value: string) => { const [h, m] = value.split(':').map(Number); return h * 60 + m; };
