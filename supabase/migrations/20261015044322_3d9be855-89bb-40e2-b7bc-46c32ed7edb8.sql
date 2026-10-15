@@ -1,0 +1,2 @@
+ALTER TABLE public.barbershops ADD COLUMN IF NOT EXISTS slot_interval_minutes integer NOT NULL DEFAULT 30;
+ALTER TABLE public.barbershops ADD CONSTRAINT barbershops_slot_interval_check CHECK (slot_interval_minutes IN (15, 30, 45, 60));
