@@ -8,6 +8,7 @@ import {
   setMinutes,
   startOfDay
 } from 'date-fns';
+import { DEFAULT_SLOT_STEP, fetchSlotStep, gridMinutes } from '@/lib/slotStep';
 
 /** How far back a running slot may still be booked as encaixe (manual only). */
 export const ENCAIXE_WINDOW_MINUTES = 30;
@@ -44,6 +45,7 @@ export function useAvailability({
   const [blockedSlots, setBlockedSlots] = useState<BlockedSlot[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [slotStep, setSlotStep] = useState(DEFAULT_SLOT_STEP);
 
   const fetchData = useCallback(async () => {
     if (!barberId) return;
@@ -80,6 +82,8 @@ export function useAvailability({
       setOpeningHours((hoursRes.data || []) as unknown as OpeningHours[]);
       setBlockedSlots((blockedRes.data || []) as unknown as BlockedSlot[]);
       setAppointments((appointmentsRes.data as unknown as Appointment[]) || []);
+      const shopId = (hoursRes.data || [])[0]?.barbershop_id;
+      setSlotStep(await fetchSlotStep(shopId));
     } catch (error) {
       console.error('Erro ao buscar dados de disponibilidade:', error);
     } finally {
@@ -187,37 +191,9 @@ export function useAvailability({
     const startTotal = startHour * 60 + startMin;
     const endTotal = endHour * 60 + endMin;
 
-    // Determine if we need 15min precision:
-    // 1) The service itself is 15min
-    // 2) Any existing appointment ends on a :15 or :45 boundary
-    const needs15Min = durationMinutes === 15 || appointments.some((apt) => {
-      const aptEnd = new Date(apt.end_time);
-      const aptEndMin = aptEnd.getMinutes();
-      return aptEndMin === 15 || aptEndMin === 45;
-    });
-
-    const interval = needs15Min ? 15 : 30;
-
-    // Generate candidate slots at the chosen interval
-    const candidateMinutes: number[] = [];
-    for (let m = startTotal; m + durationMinutes <= endTotal; m += interval) {
-      candidateMinutes.push(m);
-    }
-
-    // Also add slots right after each existing appointment ends (to fill gaps)
-    appointments.forEach((apt) => {
-      if (apt.status === 'cancelled') return;
-      const aptEnd = new Date(apt.end_time);
-      // Only consider appointments on the same date
-      if (aptEnd.getFullYear() === date.getFullYear() &&
-          aptEnd.getMonth() === date.getMonth() &&
-          aptEnd.getDate() === date.getDate()) {
-        const endMinutes = aptEnd.getHours() * 60 + aptEnd.getMinutes();
-        if (endMinutes + durationMinutes <= endTotal && endMinutes >= startTotal) {
-          candidateMinutes.push(endMinutes);
-        }
-      }
-    });
+    // Fixed grid chosen by the shop (default 30 min). Never derived from existing bookings,
+    // so a stray :15 appointment can't shift the whole day off the ruler.
+    const candidateMinutes = gridMinutes(startTotal, endTotal, slotStep, durationMinutes);
 
     // Deduplicate and sort
     const uniqueMinutes = [...new Set(candidateMinutes)].sort((a, b) => a - b);
@@ -236,7 +212,7 @@ export function useAvailability({
     }
 
     return slots;
-  }, [getOpeningHoursForDay, checkSlotAvailability, appointments]);
+  }, [getOpeningHoursForDay, checkSlotAvailability, slotStep]);
 
   return {
     openingHours,

@@ -23,6 +23,8 @@ interface Props {
   onEdit: (appointment: Appointment) => void;
   onComplete: (id: string) => void;
   onDelete: (id: string) => void;
+  /** Shop grid step in minutes (15/30/45/60). */
+  slotStep?: number;
 }
 function TimelineAppointment({ appointment: a, column, range, ppm, lane, count, canEdit, p }: {
   appointment: Appointment; column: TimelineColumn; range: { start: number; end: number }; ppm: number;
@@ -97,6 +99,8 @@ export default function AgendaTimeline(p: Props) {
   if (!p.columns.length) return <div className="agenda-empty"><p>Nenhum profissional ativo</p></div>;
   if (!range) return <div className="agenda-empty"><CalendarEmpty /><h2>Sem expediente neste período</h2><p>Escolha outro dia para consultar a agenda.</p></div>;
   const slots = Array.from({ length: Math.ceil((range.end - range.start) / 30) + 1 }, (_, i) => range.start + i * 30);
+  const ruleStep = (p.slotStep || 30) % 30 === 0 ? 30 : 15;
+  const rules = Array.from({ length: Math.ceil((range.end - range.start) / ruleStep) }, (_, i) => range.start + i * ruleStep);
   return <div ref={scroll} className="agenda-scroll" aria-label="Linha do tempo da agenda">
     <div className={cn('agenda-grid', p.mode === 'individual' && 'is-individual')} style={{ width: totalWidth, minWidth: '100%', '--agenda-column-count': p.columns.length } as React.CSSProperties}>
       {p.mode !== 'individual' && <div className="agenda-column-heads">
@@ -106,14 +110,15 @@ export default function AgendaTimeline(p: Props) {
         </div>)}
       </div>}
       <div className="agenda-grid-body" style={{ height: (range.end - range.start) * ppm + 20 }}>
-        <div className="agenda-time-gutter">{slots.map(m => <span key={m} className={cn('agenda-time', m % 60 === 0 && 'is-hour')} style={{ top: (m - range.start) * ppm }}>{minuteLabel(m)}</span>)}</div>
+        <div className="agenda-time-gutter">{slots.map(m => <span key={m} className={cn('agenda-time', m % 60 === 0 && 'is-hour', nowTop != null && p.mode !== 'week' && Math.abs(m - nowMinute) < 9 && 'is-hidden')} style={{ top: (m - range.start) * ppm }}>{minuteLabel(m)}</span>)}</div>
         {p.columns.map(c => {
           const displayed = c.appointments.filter(a => appointmentMatches(a, p.filter));
           const lanes = appointmentLanes(displayed);
-          const interval = slotInterval(c);
+          const interval = p.slotStep || slotInterval(c);
           const free = withEncaixe(c, freeIntervals(c, now), now, interval);
           // Slots always sit on fixed marks (:00/:30 or every 15 min), never on the current minute.
-          const anchor = (g: Interval & { encaixe?: boolean }) => g.encaixe ? g.start : Math.ceil(g.start / interval) * interval;
+          const open = c.hours ? timeMinute(c.hours.start_time) : 0;
+          const anchor = (g: Interval & { encaixe?: boolean }) => g.encaixe ? g.start : open + Math.ceil((g.start - open) / interval) * interval;
           const targets = free.flatMap(gap => {
             const start = anchor(gap);
             const list: number[] = [];
@@ -121,7 +126,7 @@ export default function AgendaTimeline(p: Props) {
             return list;
           });
           return <div key={c.id} className={cn('agenda-column', !c.hours?.is_open && 'is-closed')}>
-            {slots.slice(0, -1).map(m => <div key={m} className={cn('agenda-rule', m % 60 === 0 && 'is-hour')} style={{ top: (m - range.start) * ppm }} />)}
+            {rules.map(m => <div key={m} className={cn('agenda-rule', m % 60 === 0 && 'is-hour', m % 30 !== 0 && 'is-quarter')} style={{ top: (m - range.start) * ppm }} />)}
             {targets.map(m => <Button key={m} variant="ghost" className="agenda-slot-target" style={{ top: (m - range.start) * ppm, height: Math.min(interval, free.find(g => m >= g.start && m < g.end)?.end ? (free.find(g => m >= g.start && m < g.end)?.end || m) - m : interval) * ppm }}
               disabled={!p.canEditBarber(c.barber.id)} aria-label={`Agendar ${c.barber.name} em ${format(c.date, 'dd/MM')} às ${minuteLabel(m)}`}
               onClick={() => { if (canPlaceSlot(c, m, now)) p.onSlot(minuteLabel(m), c.barber.id, c.date); }} />)}

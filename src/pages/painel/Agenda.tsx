@@ -14,6 +14,8 @@ import HolidayBanner from '@/components/painel/agenda/HolidayBanner';
 import { AgendaContextType, getTodayLocalDate, toLocalDate } from '@/components/painel/agenda/agendaUtils';
 import { canEditAgenda, columnBlocks, currency, DEFAULT_AGENDA_PREFERENCES, freeIntervals, type AgendaMode, type AgendaFilter, type AgendaPreferences, type TimelineColumn } from '@/components/painel/agenda/timelineUtils';
 import { Button } from '@/components/ui/button';
+import { useQuery } from '@tanstack/react-query';
+import { fetchSlotStep } from '@/lib/slotStep';
 
 const MonthlyCalendar = lazy(() => import('@/components/painel/MonthlyCalendar'));
 const ManualAppointmentDialog = lazy(() => import('@/components/painel/ManualAppointmentDialog'));
@@ -47,6 +49,7 @@ const Agenda = () => {
     try { localStorage.setItem(preferenceKey, JSON.stringify(value)); } catch { /* private browsing */ }
   };
   const effectiveMode = mode === 'team' && !canViewOthers ? 'individual' : mode;
+  const { data: slotStep = 30 } = useQuery({ queryKey: ['slot-step', barbershop?.id], queryFn: () => fetchSlotStep(barbershop?.id), enabled: Boolean(barbershop?.id), staleTime: 60_000 });
   const timeline = useAgendaTimeline({ shopId: barbershop?.id, barbers, currentBarber: barber, selectedBarberId, canViewOthers, mode: effectiveMode, selectedDate });
   const selectedBarber = timeline.selected;
   const appointments = timeline.data?.appointments || [];
@@ -127,7 +130,7 @@ const Agenda = () => {
       {monthly && selectedBarber ? <><Button variant="ghost" className="my-2" onClick={() => setMonthly(false)}>Voltar à agenda</Button><MonthlyCalendar barber={selectedBarber} selectedDate={selectedDate} onDateSelect={date => { setSelectedDate(toLocalDate(date)); setMonthly(false); }} /></> :
         timeline.isError ? <div className="agenda-empty"><p>Não foi possível carregar a agenda.</p><Button variant="ghost" onClick={handleManualRefresh}>Tentar novamente</Button></div> :
         timeline.isPending && timeline.visible.length > 0 ? <div className="agenda-loading animate-pulse" aria-label="Carregando agenda"><span /><span /><span /><span /></div> :
-        <AgendaTimeline columns={columns} mode={effectiveMode} filter={filter} canEditBarber={canEditBarber}
+        <AgendaTimeline slotStep={slotStep} columns={columns} mode={effectiveMode} filter={filter} canEditBarber={canEditBarber}
           onSlot={handleOpenManualDialog} onBlock={handleOpenQuickBlock} onAppointment={handleCardClick} onEdit={handleEditAppointment} onComplete={id => { void handleStatusChange(id, 'completed'); }} onDelete={id => { void handleDeleteAppointment(id); }} />}
       {dialogBarber && <ManualAppointmentDialog open={showManualDialog} onOpenChange={open => { setShowManualDialog(open); if (!open) { setPreselectedTime(null); setPreselectedBarberId(null); } }}
         barber={dialogBarber} selectedDate={bookingDate} onSuccess={() => scheduleAgendaRefresh()} canCreateForOthers={canCreateForOthers} barbers={timeline.allowed} preselectedTime={preselectedTime} preselectedBarberId={preselectedBarberId} />}

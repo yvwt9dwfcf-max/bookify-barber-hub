@@ -11,6 +11,7 @@ import { useAutoSave } from '@/hooks/useAutoSave';
 import { AutoSaveIndicator } from '@/components/ui/AutoSaveIndicator';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { SlotStepCard } from '@/components/painel/SlotStepCard';
 
 interface ContextType {
   barber: Barber | null;
@@ -41,7 +42,7 @@ const defaultHours: DayHours[] = [
 type DayStatus = 'idle' | 'saving' | 'saved' | 'error';
 
 const Horarios = () => {
-  const { barber, barbershop } = useOutletContext<ContextType>();
+  const { barber, barbershop, isMaster } = useOutletContext<ContextType>();
   const [hours, setHours] = useState<DayHours[]>(defaultHours);
   const [loading, setLoading] = useState(true);
   const [serverClosingTime, setServerClosingTime] = useState<string>('');
@@ -288,6 +289,8 @@ const Horarios = () => {
           })}
         </CardContent>
       </Card>
+
+      <SlotStepCard barbershopId={barbershop?.id} canEdit={isMaster} />
 
       {/* Closing Time */}
       <Card className="border-border/40 bg-card/60 backdrop-blur-sm">

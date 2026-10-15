@@ -419,6 +419,7 @@ export type Database = {
           photo_url: string | null
           plan: Database["public"]["Enums"]["plan_type"]
           products_monthly_goal: number | null
+          slot_interval_minutes: number
           slug: string | null
           subscription_active: boolean
           subscription_status: string
@@ -441,6 +442,7 @@ export type Database = {
           photo_url?: string | null
           plan?: Database["public"]["Enums"]["plan_type"]
           products_monthly_goal?: number | null
+          slot_interval_minutes?: number
           slug?: string | null
           subscription_active?: boolean
           subscription_status?: string
@@ -463,6 +465,7 @@ export type Database = {
           photo_url?: string | null
           plan?: Database["public"]["Enums"]["plan_type"]
           products_monthly_goal?: number | null
+          slot_interval_minutes?: number
           slug?: string | null
           subscription_active?: boolean
           subscription_status?: string
