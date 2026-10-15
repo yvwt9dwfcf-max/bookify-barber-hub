@@ -14,6 +14,8 @@ import HolidayBanner from '@/components/painel/agenda/HolidayBanner';
 import { AgendaContextType, getTodayLocalDate, toLocalDate } from '@/components/painel/agenda/agendaUtils';
 import { canEditAgenda, columnBlocks, currency, DEFAULT_AGENDA_PREFERENCES, freeIntervals, type AgendaMode, type AgendaFilter, type AgendaPreferences, type TimelineColumn } from '@/components/painel/agenda/timelineUtils';
 import { Button } from '@/components/ui/button';
+import { useQuery } from '@tanstack/react-query';
+import { fetchSlotStep } from '@/lib/slotStep';
 
 const MonthlyCalendar = lazy(() => import('@/components/painel/MonthlyCalendar'));
 const ManualAppointmentDialog = lazy(() => import('@/components/painel/ManualAppointmentDialog'));
@@ -47,6 +49,7 @@ const Agenda = () => {
     try { localStorage.setItem(preferenceKey, JSON.stringify(value)); } catch { /* private browsing */ }
   };
   const effectiveMode = mode === 'team' && !canViewOthers ? 'individual' : mode;
+  const { data: slotStep = 30 } = useQuery({ queryKey: ['slot-step', barbershop?.id], queryFn: () => fetchSlotStep(barbershop?.id), enabled: Boolean(barbershop?.id), staleTime: 60_000 });
   const timeline = useAgendaTimeline({ shopId: barbershop?.id, barbers, currentBarber: barber, selectedBarberId, canViewOthers, mode: effectiveMode, selectedDate });
   const selectedBarber = timeline.selected;
   const appointments = timeline.data?.appointments || [];
