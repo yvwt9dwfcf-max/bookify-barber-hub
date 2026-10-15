@@ -37,7 +37,8 @@ interface UseAvailabilityReturn {
 }
 
 export function useAvailability({ 
-  barberId 
+  barberId,
+  allowOngoing = false,
 }: UseAvailabilityParams): UseAvailabilityReturn {
   const [openingHours, setOpeningHours] = useState<OpeningHours[]>([]);
   const [blockedSlots, setBlockedSlots] = useState<BlockedSlot[]>([]);
@@ -163,7 +164,7 @@ export function useAvailability({
     }
 
     return { available: true };
-  }, [openingHours, blockedSlots, appointments, getOpeningHoursForDay]);
+  }, [openingHours, blockedSlots, appointments, getOpeningHoursForDay, allowOngoing]);
 
   /**
    * Get all available time slots for a given date.
