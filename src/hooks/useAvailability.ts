@@ -9,6 +9,9 @@ import {
   startOfDay
 } from 'date-fns';
 
+/** How far back a running slot may still be booked as encaixe (manual only). */
+export const ENCAIXE_WINDOW_MINUTES = 30;
+
 export interface SlotAvailability {
   available: boolean;
   reason?: 'bloqueado' | 'intervalo' | 'ocupado' | 'fechado' | 'passado';
@@ -18,6 +21,8 @@ interface UseAvailabilityParams {
   barberId: string;
   selectedDate?: Date;
   serviceDuration?: number;
+  /** Manual (balcão) only: allow an encaixe in the slot that is already running. Public booking must never set this. */
+  allowOngoing?: boolean;
 }
 
 interface UseAvailabilityReturn {
@@ -105,7 +110,8 @@ export function useAvailability({
 
     // 1. Check if slot is in the past
     if (isBefore(slotStart, now)) {
-      return { available: false, reason: 'passado' };
+      const ongoingEncaixe = allowOngoing && !isBefore(slotStart, addMinutes(now, -ENCAIXE_WINDOW_MINUTES)) && isAfter(slotEnd, now);
+      if (!ongoingEncaixe) return { available: false, reason: 'passado' };
     }
 
     // 2. Check if day is open
