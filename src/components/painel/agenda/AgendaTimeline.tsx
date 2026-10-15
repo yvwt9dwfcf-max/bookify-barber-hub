@@ -15,7 +15,7 @@ import {
 } from './timelineUtils';
 
 interface Props {
-  columns: TimelineColumn[]; mode: AgendaMode; filter: AgendaFilter; compact: boolean;
+  columns: TimelineColumn[]; mode: AgendaMode; filter: AgendaFilter;
   canEditBarber: (id: string) => boolean;
   onSlot: (time: string, barberId: string, date: Date) => void;
   onBlock: (time: string, barberId: string, date: Date) => void;
@@ -82,7 +82,8 @@ export default function AgendaTimeline(p: Props) {
     return () => { clearTimeout(timeout); document.removeEventListener('visibilitychange', onVisible); };
   }, []);
   const range = useMemo(() => timelineRange(p.columns), [p.columns]);
-  const ppm = isMobile ? (p.compact ? 1.3 : 1.8) : (p.compact ? 1.6 : 2.2);
+  // Single standard scale: a 30-min cut reads comfortably; 15-min services stay compact.
+  const ppm = isMobile ? 1.8 : 2.2;
   const totalWidth = p.mode === 'individual' ? '100%' : `${p.columns.length * (p.mode === 'team' ? 230 : 190) + 56}px`;
   const todayColumn = p.columns.findIndex(c => isSameDay(c.date, now));
   const nowMinute = todayColumn >= 0 ? dayMinute(now, p.columns[todayColumn].date) : -1;
