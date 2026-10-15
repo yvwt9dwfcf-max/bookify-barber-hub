@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { UserRound as User, Phone, Timer as Clock, Sparkles as Scissors, CalendarDays as Calendar, PenLine as Pencil, Check, Trash2, Loader2, MessageCircle, MousePointerClick } from 'lucide-react';
+import { PenLine as Pencil, Check, Trash2, Loader2 } from 'lucide-react';
 import { Appointment } from '@/lib/supabase';
 import {
   Sheet,
@@ -204,7 +204,7 @@ const AppointmentDetailsSheet = ({
 
             {appointment.status === 'confirmed' && (
               <Button
-                className="w-full justify-start gap-2 h-11 btn-primary-gradient"
+                className="w-full justify-start gap-2 h-11 btn-primary-solid"
                 onClick={() => {
                   if (onOpenComanda) {
                     onOpenComanda(appointment);
