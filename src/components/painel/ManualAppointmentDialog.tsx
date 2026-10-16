@@ -29,6 +29,7 @@ import {
 } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
+import { buildDaySlots } from '@/lib/slotStep';
 
 // --- Schema ---
 const appointmentSchema = z.object({
@@ -178,6 +179,7 @@ const ManualAppointmentDialog = ({
   const {
     checkSlotAvailability,
     getOpeningHoursForDay,
+    slotStep,
     refetch: refetchAvailability,
   } = useAvailability({ barberId: targetBarber.id, selectedDate: internalDate, allowOngoing: true });
 
@@ -288,19 +290,9 @@ const ManualAppointmentDialog = ({
   };
 
   const generateTimeSlots = () => {
-    const dayOfWeek = internalDate.getDay();
-    const dayHours = getOpeningHoursForDay(dayOfWeek);
+    const dayHours = getOpeningHoursForDay(internalDate.getDay());
     if (!dayHours) return [];
-    const [startHour, startMin] = dayHours.start_time.split(':').map(Number);
-    const [endHour, endMin] = dayHours.end_time.split(':').map(Number);
-    const slots: string[] = [];
-    let h = startHour, m = startMin;
-    while (h < endHour || (h === endHour && m < endMin)) {
-      slots.push(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`);
-      m += 30;
-      if (m >= 60) { h++; m -= 60; }
-    }
-    return slots;
+    return buildDaySlots(dayHours.start_time, dayHours.end_time, slotStep, preselectedTime || undefined);
   };
 
   const getSlotStatus = (timeSlot: string, durationMinutes: number) => {
