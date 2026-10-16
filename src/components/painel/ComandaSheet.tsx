@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { PAYMENT_METHODS, type PaymentMethod } from '@/lib/operationMode';
 
 interface Product {
   id: string;
@@ -54,12 +55,14 @@ const ComandaSheet = ({ open, onOpenChange, appointment, onCompleted }: ComandaS
   const [cart, setCart] = useState<Record<string, CartItem>>({});
   const [search, setSearch] = useState('');
   const [showProducts, setShowProducts] = useState(false);
+  const [payment, setPayment] = useState<PaymentMethod | null>(null);
 
   useEffect(() => {
     if (open) {
       setCart({});
       setSearch('');
       setShowProducts(false);
+      setPayment(null);
     }
   }, [open]);
 
@@ -128,11 +131,12 @@ const ComandaSheet = ({ open, onOpenChange, appointment, onCompleted }: ComandaS
   const finishMutation = useMutation({
     mutationFn: async () => {
       if (!appointment) throw new Error('Atendimento inválido');
+      if (!payment) throw new Error('Escolha a forma de pagamento');
 
       // Mark the appointment as completed
       const { error: aptErr } = await supabase
         .from('appointments')
-        .update({ status: 'completed' })
+        .update({ status: 'completed', payment_method: payment, paid_at: new Date().toISOString() })
         .eq('id', appointment.id);
       if (aptErr) throw aptErr;
 
@@ -150,6 +154,7 @@ const ComandaSheet = ({ open, onOpenChange, appointment, onCompleted }: ComandaS
           total_amount: Number(i.product.sale_price) * i.quantity,
           customer_name: appointment.customer_name,
           customer_phone: appointment.customer_phone,
+          payment_method: payment,
         }));
         const { error: salesErr } = await supabase.from('product_sales').insert(rows);
         if (salesErr) throw salesErr;
@@ -352,14 +357,23 @@ const ComandaSheet = ({ open, onOpenChange, appointment, onCompleted }: ComandaS
             </div>
             <p className="text-2xl font-bold tabular-nums text-primary">{formatCurrency(total)}</p>
           </div>
+          <div className="grid grid-cols-4 gap-2">
+            {PAYMENT_METHODS.map((m) => (
+              <button key={m.value} type="button" onClick={() => setPayment(m.value)}
+                className={cn('h-11 rounded-xl border text-xs font-semibold transition active:scale-[0.97]',
+                  payment === m.value ? 'border-primary bg-primary/10 text-foreground' : 'border-border/50 text-muted-foreground')}>
+                {m.label}
+              </button>
+            ))}
+          </div>
           <div className="flex gap-2">
             <Button variant="outline" className="flex-1" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
             <Button
-              className="flex-1 btn-primary-gradient active:scale-[0.98]"
+              className="flex-1 btn-primary-solid active:scale-[0.98]"
               onClick={() => finishMutation.mutate()}
-              disabled={finishMutation.isPending}
+              disabled={finishMutation.isPending || !payment}
             >
               {finishMutation.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
