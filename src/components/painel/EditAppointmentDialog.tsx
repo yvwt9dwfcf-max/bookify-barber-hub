@@ -37,6 +37,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
+import { buildDaySlots } from '@/lib/slotStep';
 import { CalendarIcon } from 'lucide-react';
 
 const appointmentSchema = z.object({
@@ -73,7 +74,7 @@ const EditAppointmentDialog = ({
   const [selectedBarberId, setSelectedBarberId] = useState<string>('');
 
   // Use the unified availability hook
-  const { checkSlotAvailability, refetch: refetchAvailability } = useAvailability({
+  const { checkSlotAvailability, getOpeningHoursForDay, slotStep, refetch: refetchAvailability } = useAvailability({
     barberId: selectedBarberId,
     selectedDate,
   });
@@ -187,14 +188,10 @@ const EditAppointmentDialog = ({
   };
 
   const generateTimeSlots = () => {
-    const slots: string[] = [];
-    for (let hour = 6; hour < 22; hour++) {
-      for (let minute = 0; minute < 60; minute += 30) {
-        const time = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-        slots.push(time);
-      }
-    }
-    return slots;
+    const dayHours = getOpeningHoursForDay(selectedDate.getDay());
+    const original = appointment && new Date(appointment.start_time).toDateString() === selectedDate.toDateString()
+      && appointment.barber_id === selectedBarberId ? format(new Date(appointment.start_time), 'HH:mm') : undefined;
+    return buildDaySlots(dayHours?.start_time, dayHours?.end_time, slotStep, original);
   };
 
   const getSlotStatus = (timeSlot: string, durationMinutes: number) => {

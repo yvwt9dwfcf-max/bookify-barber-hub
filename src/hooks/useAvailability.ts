@@ -8,7 +8,7 @@ import {
   setMinutes,
   startOfDay
 } from 'date-fns';
-import { DEFAULT_SLOT_STEP, fetchSlotStep, gridMinutes } from '@/lib/slotStep';
+import { DEFAULT_SLOT_STEP, closingMinutes, fetchSlotStep, gridMinutes } from '@/lib/slotStep';
 
 /** How far back a running slot may still be booked as encaixe (manual only). */
 export const ENCAIXE_WINDOW_MINUTES = 30;
@@ -35,6 +35,7 @@ interface UseAvailabilityReturn {
   getAvailableSlotsForDate: (date: Date, durationMinutes: number) => string[];
   getOpeningHoursForDay: (dayOfWeek: number) => OpeningHours | undefined;
   refetch: () => Promise<void>;
+  slotStep: number;
 }
 
 export function useAvailability({ 
@@ -189,7 +190,7 @@ export function useAvailability({
     const [endHour, endMin] = dayHours.end_time.split(':').map(Number);
 
     const startTotal = startHour * 60 + startMin;
-    const endTotal = endHour * 60 + endMin;
+    const endTotal = closingMinutes(startTotal, endHour * 60 + endMin);
 
     // Fixed grid chosen by the shop (default 30 min). Never derived from existing bookings,
     // so a stray :15 appointment can't shift the whole day off the ruler.
@@ -223,5 +224,6 @@ export function useAvailability({
     getAvailableSlotsForDate,
     getOpeningHoursForDay,
     refetch: fetchData,
+    slotStep,
   };
 }
