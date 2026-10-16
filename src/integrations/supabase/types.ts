@@ -415,6 +415,7 @@ export type Database = {
           monthly_goal: number | null
           name: string
           onboarding_completed: boolean
+          operation_mode: string
           phone: string | null
           photo_url: string | null
           plan: Database["public"]["Enums"]["plan_type"]
@@ -438,6 +439,7 @@ export type Database = {
           monthly_goal?: number | null
           name: string
           onboarding_completed?: boolean
+          operation_mode?: string
           phone?: string | null
           photo_url?: string | null
           plan?: Database["public"]["Enums"]["plan_type"]
@@ -461,6 +463,7 @@ export type Database = {
           monthly_goal?: number | null
           name?: string
           onboarding_completed?: boolean
+          operation_mode?: string
           phone?: string | null
           photo_url?: string | null
           plan?: Database["public"]["Enums"]["plan_type"]
