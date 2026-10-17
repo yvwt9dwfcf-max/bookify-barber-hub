@@ -9,7 +9,7 @@ import { Logo } from '@/components/ui/Logo';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
-  CalendarDays, 
+  CalendarDays, Receipt, 
   Sparkles, 
   Timer, 
   User, 
@@ -117,6 +117,7 @@ const Painel = () => {
   // Build menu items based on role
   const menuItems = [
     { icon: CalendarDays, label: 'Agenda', path: '/painel' },
+    ...(isMaster && (barbershop as any)?.operation_mode === 'reception' ? [{ icon: Receipt, label: 'Recepção', path: '/painel/recepcao' }] : []),
     { icon: Sparkles, label: 'Serviços', path: '/painel/servicos' },
     { icon: Timer, label: 'Horários', path: '/painel/horarios' },
     { icon: CalendarX2, label: 'Bloqueios', path: '/painel/bloqueios' },
