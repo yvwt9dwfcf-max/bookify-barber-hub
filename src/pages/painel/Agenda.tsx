@@ -22,6 +22,7 @@ const ManualAppointmentDialog = lazy(() => import('@/components/painel/ManualApp
 const AppointmentDetailsSheet = lazy(() => import('@/components/painel/AppointmentDetailsSheet'));
 const EditAppointmentDialog = lazy(() => import('@/components/painel/EditAppointmentDialog'));
 const QuickBlockDialog = lazy(() => import('@/components/painel/QuickBlockDialog'));
+import { canCloseComanda, getOperationMode } from '@/lib/operationMode';
 const ComandaSheet = lazy(() => import('@/components/painel/ComandaSheet'));
 
 const Agenda = () => {
@@ -143,6 +144,7 @@ const Agenda = () => {
           onComplete={(id) => handleStatusChange(id, 'completed')}
           onDelete={handleDeleteAppointment}
           onOpenComanda={(apt) => {
+            if (!canCloseComanda(getOperationMode(barbershop as any), isMaster)) { toast.info('A recepção fecha as comandas nesta barbearia'); return; }
             if (!canEditBarber(apt.barber_id) || !checkCanPerformAction('complete_appointment')) return;
             setComandaAppointment(apt);
             setShowComanda(true);

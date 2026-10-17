@@ -1,3 +1,4 @@
+import { OperationModeCard } from '@/components/painel/OperationModeCard';
 import StorageImg from '@/components/StorageImg';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useOutletContext, useNavigate } from 'react-router-dom';
@@ -304,6 +305,8 @@ const Configuracoes = () => {
           <Sun className="h-3.5 w-3.5 text-muted-foreground/60" />
         </div>
       </div>
+
+      {isMaster && barbershop && <OperationModeCard barbershop={barbershop as any} onSaved={() => refetchUserRole()} />}
 
       {/* Seção Barbearia (Master) */}
       {isMaster && (

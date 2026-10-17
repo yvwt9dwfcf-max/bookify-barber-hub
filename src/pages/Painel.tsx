@@ -117,6 +117,7 @@ const Painel = () => {
   // Build menu items based on role
   const menuItems = [
     { icon: CalendarDays, label: 'Agenda', path: '/painel' },
+    ...(isMaster && (barbershop as any)?.operation_mode === 'reception' ? [{ icon: Receipt, label: 'Recepção', path: '/painel/recepcao' }] : []),
     { icon: Sparkles, label: 'Serviços', path: '/painel/servicos' },
     { icon: Timer, label: 'Horários', path: '/painel/horarios' },
     { icon: CalendarX2, label: 'Bloqueios', path: '/painel/bloqueios' },
