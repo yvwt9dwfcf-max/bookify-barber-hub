@@ -12,12 +12,12 @@ const FloatingActionButton = ({ onNewAppointment, onNewBlock }: FloatingActionBu
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col-reverse items-end gap-3">
+    <div className="pointer-events-none fixed bottom-5 right-4 z-50 flex flex-col-reverse items-end gap-3">
       {/* Menu items */}
       <div
         className={cn(
           'flex flex-col-reverse gap-3 transition-all duration-400',
-          isOpen ? '' : 'pointer-events-none'
+          isOpen ? '[&_button]:pointer-events-auto' : ''
         )}
       >
         {/* New Appointment */}
@@ -79,7 +79,7 @@ const FloatingActionButton = ({ onNewAppointment, onNewBlock }: FloatingActionBu
       {/* Main FAB */}
       <Button
         size="icon"
-        className="h-12 w-12 rounded-full shadow-md transition-all duration-300 bg-primary/90 hover:bg-primary hover:scale-105"
+        className="pointer-events-auto h-11 w-11 rounded-full shadow-md transition-all duration-300 bg-primary/90 hover:bg-primary hover:scale-105"
         onClick={() => setIsOpen(!isOpen)}
       >
         <Plus 
@@ -93,7 +93,7 @@ const FloatingActionButton = ({ onNewAppointment, onNewBlock }: FloatingActionBu
       {/* Backdrop */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/20 -z-10"
+          className="pointer-events-auto fixed inset-0 bg-black/20 -z-10"
           onClick={() => setIsOpen(false)}
         />
       )}
