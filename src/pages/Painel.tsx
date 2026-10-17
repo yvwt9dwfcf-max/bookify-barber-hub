@@ -9,7 +9,7 @@ import { Logo } from '@/components/ui/Logo';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
-  CalendarDays, Receipt, 
+  CalendarDays, 
   Sparkles, 
   Timer, 
   User, 
