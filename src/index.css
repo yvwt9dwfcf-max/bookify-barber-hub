@@ -7,71 +7,93 @@
 
 @layer base {
   :root {
-    /* Paleta Editorial Premium – Preto Papel + Verde */
-    --background: 60 11% 4%; /* #0A0A08 */
-    --foreground: 43 35% 92%; /* #F2EEE4 — branco "papel" */
+    /* Bookify Design System — Grafite profundo + Verde Esmeralda (60/30/10) */
+    --background: 0 0% 3%; /* #080808 */
+    --foreground: 40 20% 95%; /* branco papel */
 
-    --card: 0 0% 9%; /* #161616 — camada elevada */
-    --card-foreground: 0 0% 100%;
+    --card: 0 0% 7%; /* #121212 */
+    --card-foreground: 40 20% 95%;
 
-    --popover: 0 0% 9%;
-    --popover-foreground: 0 0% 100%;
+    --popover: 0 0% 8%;
+    --popover-foreground: 40 20% 95%;
 
-    /* Verde primário */
+    /* Verde primário — sólido, sem brilho */
     --primary: 142 71% 45%; /* #22C55E */
-    --primary-foreground: 0 0% 100%;
+    --primary-foreground: 144 69% 8%; /* #06210F */
 
     --primary-gradient-start: 142 71% 45%;
-    --primary-gradient-end: 142 76% 36%;
+    --primary-gradient-end: 142 71% 45%;
 
-    --secondary: 0 0% 11%; /* #1C1C1C */
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 0 0% 10%;
+    --secondary-foreground: 40 20% 95%;
 
-    --muted: 0 0% 11%;
-    --muted-foreground: 44 6% 52%; /* #8C887C */
+    --muted: 0 0% 10%;
+    --muted-foreground: 40 4% 56%;
 
-    --accent: 142 71% 12%;
-    --accent-foreground: 142 71% 70%;
+    --accent: 142 50% 11%;
+    --accent-foreground: 142 65% 68%;
 
-    --destructive: 0 84% 60%;
+    /* Cores funcionais — usadas só para status */
+    --destructive: 0 72% 58%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 142 69% 58%;
-    --success-foreground: 0 0% 100%;
+    --success: 142 71% 45%;
+    --success-foreground: 144 69% 8%;
 
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
+    --warning: 38 90% 56%;
+    --warning-foreground: 30 80% 8%;
 
-    --border: 0 0% 13%; /* borda sutil, 5% acima do card */
-    --input: 0 0% 13%;
+    --info: 199 85% 62%; /* azul gelo — agendamento online */
+    --info-foreground: 205 80% 8%;
+
+    /* Superfícies em camadas */
+    --surface: 0 0% 6%;
+    --surface-raised: 0 0% 9%;
+
+    --border: 0 0% 14%;
+    --input: 0 0% 14%;
     --ring: 142 71% 45%;
 
-    --radius: 1rem; /* 16px */
+    /* Geometria concêntrica */
+    --radius: 1rem; /* 16px — cards (mantido p/ compatibilidade) */
+    --radius-sheet: 1.25rem; /* 20px — modais, sheets, contêineres */
+    --radius-surface: 1rem; /* 16px — cards e seções */
+    --radius-control: 0.75rem; /* 12px — botões, inputs, selects */
+
+    /* Material de vidro */
+    --glass-bg: 0 0% 7% / 0.72;
+    --glass-bg-strong: 0 0% 8% / 0.86;
+    --glass-border: 0 0% 100% / 0.08;
+    --glass-highlight: inset 0 1px 0 hsl(0 0% 100% / 0.06);
+    --glass-shadow: 0 10px 40px -12px hsl(0 0% 0% / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.06);
+
+    /* Movimento */
+    --ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
+    --ease-standard: cubic-bezier(0.25, 0.1, 0.25, 1);
 
     /* Sidebar */
-    --sidebar-background: 0 0% 3%;
-    --sidebar-foreground: 0 0% 100%;
+    --sidebar-background: 0 0% 4%;
+    --sidebar-foreground: 40 20% 95%;
     --sidebar-primary: 142 71% 45%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 11%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 0 0% 10%;
+    --sidebar-primary-foreground: 144 69% 8%;
+    --sidebar-accent: 0 0% 10%;
+    --sidebar-accent-foreground: 40 20% 95%;
+    --sidebar-border: 0 0% 11%;
     --sidebar-ring: 142 71% 45%;
 
-    /* Gradients */
+    /* Gradientes neutralizados: o verde é sólido em todo o app */
     --hero-gradient: linear-gradient(135deg, #22C55E 0%, #16A34A 100%);
-    --primary-gradient: linear-gradient(135deg, #22C55E 0%, #16A34A 100%);
-    --success-gradient: linear-gradient(135deg, #4ADE80 0%, #22C55E 100%);
+    --primary-gradient: linear-gradient(0deg, hsl(142 71% 45%), hsl(142 71% 45%));
+    --success-gradient: linear-gradient(0deg, hsl(142 71% 45%), hsl(142 71% 45%));
 
-    /* Sombras — profundidade com camadas */
-    --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.35), 0 0 1px rgba(255, 255, 255, 0.04) inset;
-    --card-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 1px rgba(255, 255, 255, 0.06) inset;
+    /* Sombras — profundidade com luz superior sutil */
+    --card-shadow: 0 1px 2px hsl(0 0% 0% / 0.4), inset 0 1px 0 hsl(0 0% 100% / 0.04);
+    --card-shadow-lg: 0 12px 32px -8px hsl(0 0% 0% / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.06);
 
-    /* Glow verde para seleção */
-    --selection-glow: 0 0 0 2px rgba(34, 197, 94, 0.25);
+    --selection-glow: 0 0 0 2px hsl(142 71% 45% / 0.25);
     --selection-border: #22C55E;
 
-    --green-glow: rgba(34, 197, 94, 0.25);
+    --green-glow: hsl(142 71% 45% / 0.12);
 
     /* Editorial landing palette */
     --paper: 43 35% 92%; /* #F2EEE4 */
@@ -108,55 +130,66 @@
 
   /* Light mode — Pure white minimalist (Linear / Notion style) */
   .light {
-    --background: 0 0% 100%; /* #FFFFFF puro */
-    --foreground: 0 0% 6%; /* #0F0F0F — quase preto */
+    --background: 60 6% 97%; /* off-white estúdio #F8F8F7 */
+    --foreground: 0 0% 7%;
 
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 6%;
+    --card-foreground: 0 0% 7%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 6%;
+    --popover-foreground: 0 0% 7%;
 
-    --primary: 142 72% 38%; /* #16A34A — verde vivo equilibrado */
+    --primary: 142 72% 36%;
     --primary-foreground: 0 0% 100%;
-    --primary-gradient-start: 142 72% 38%;
-    --primary-gradient-end: 142 76% 32%;
+    --primary-gradient-start: 142 72% 36%;
+    --primary-gradient-end: 142 72% 36%;
 
-    /* Secundário: grafite neutro (não verde) — equilibra o verde principal */
-    --secondary: 240 5% 96%; /* #F4F4F5 */
+    --secondary: 60 5% 94%;
     --secondary-foreground: 0 0% 9%;
 
-    --muted: 240 5% 96%;
-    --muted-foreground: 240 4% 46%; /* #71717A */
+    --muted: 60 5% 94%;
+    --muted-foreground: 240 4% 44%;
 
-    --accent: 240 5% 96%;
-    --accent-foreground: 0 0% 9%;
+    --accent: 142 45% 93%;
+    --accent-foreground: 142 72% 24%;
 
-    --destructive: 0 72% 51%;
+    --destructive: 0 72% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 142 72% 38%;
+    --success: 142 72% 36%;
     --success-foreground: 0 0% 100%;
 
-    --warning: 38 92% 50%;
+    --warning: 35 92% 42%;
     --warning-foreground: 0 0% 100%;
 
-    --border: 240 6% 90%; /* #E4E4E7 */
-    --input: 240 6% 90%;
-    --ring: 142 72% 38%;
+    --info: 201 85% 40%;
+    --info-foreground: 0 0% 100%;
+
+    --surface: 60 5% 95%;
+    --surface-raised: 0 0% 100%;
+
+    --border: 60 4% 88%;
+    --input: 60 4% 88%;
+    --ring: 142 72% 36%;
+
+    --glass-bg: 0 0% 100% / 0.72;
+    --glass-bg-strong: 0 0% 100% / 0.88;
+    --glass-border: 0 0% 0% / 0.07;
+    --glass-highlight: inset 0 1px 0 hsl(0 0% 100% / 0.8);
+    --glass-shadow: 0 10px 36px -14px hsl(0 0% 0% / 0.18), inset 0 1px 0 hsl(0 0% 100% / 0.8);
 
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 0 0% 6%;
-    --sidebar-primary: 142 72% 38%;
+    --sidebar-foreground: 0 0% 7%;
+    --sidebar-primary: 142 72% 36%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 5% 96%;
+    --sidebar-accent: 60 5% 94%;
     --sidebar-accent-foreground: 0 0% 9%;
-    --sidebar-border: 240 6% 90%;
-    --sidebar-ring: 142 72% 38%;
+    --sidebar-border: 60 4% 88%;
+    --sidebar-ring: 142 72% 36%;
 
     --hero-gradient: linear-gradient(135deg, #16A34A 0%, #15803D 100%);
-    --primary-gradient: linear-gradient(135deg, #16A34A 0%, #15803D 100%);
-    --success-gradient: linear-gradient(135deg, #22C55E 0%, #16A34A 100%);
+    --primary-gradient: linear-gradient(0deg, hsl(142 72% 36%), hsl(142 72% 36%));
+    --success-gradient: linear-gradient(0deg, hsl(142 72% 36%), hsl(142 72% 36%));
 
     --card-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.03);
     --card-shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.06), 0 12px 32px rgba(0, 0, 0, 0.04);
@@ -308,16 +341,53 @@
     @apply -translate-y-1;
   }
 
-  /* Efeito glassmorphism - escuro */
-  .glass-effect {
-    @apply bg-card/80 border border-border/30;
+  /* Materiais de vidro Bookify — usar só em navegação e sobreposições */
+  .glass-effect,
+  .glass-surface {
+    background: hsl(var(--glass-bg));
+    border: 1px solid hsl(var(--glass-border));
+    box-shadow: var(--glass-highlight);
   }
-  
+  .glass-header {
+    background: hsl(var(--glass-bg));
+    border-bottom: 1px solid hsl(var(--glass-border));
+  }
+  .glass-modal {
+    background: hsl(var(--glass-bg-strong));
+    border: 1px solid hsl(var(--glass-border));
+    border-radius: var(--radius-sheet);
+    box-shadow: var(--glass-shadow);
+  }
+
   @supports (backdrop-filter: blur(12px)) {
-    .glass-effect {
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+    .glass-effect,
+    .glass-surface {
+      backdrop-filter: blur(16px) saturate(160%);
+      -webkit-backdrop-filter: blur(16px) saturate(160%);
     }
+    .glass-header {
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+    }
+    .glass-modal {
+      backdrop-filter: blur(28px) saturate(180%);
+      -webkit-backdrop-filter: blur(28px) saturate(180%);
+    }
+  }
+
+  /* Superfícies e controles padronizados */
+  .surface-card {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border) / 0.7);
+    border-radius: var(--radius-surface);
+    box-shadow: var(--card-shadow);
+  }
+  .status-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 9999px;
+    background: currentColor;
   }
 
   /* Sidebar glass effect */
@@ -480,19 +550,20 @@
 
 /* Botão primário padrão do app — verde sólido, sem gradiente/glow */
 .btn-primary-solid {
-  background: #22C55E;
-  color: #06210F;
-  border-radius: 10px;
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  border-radius: var(--radius-control);
   font-family: 'Inter', system-ui, sans-serif;
   font-size: 15px;
   font-weight: 600;
   letter-spacing: 0;
   box-shadow: none;
-  transition: background-color 150ms ease, transform 150ms ease;
+  transition: background-color 150ms var(--ease-standard), transform 180ms var(--ease-spring);
 }
 
 .btn-primary-solid:active {
-  background: #1EA850;
+  background: hsl(var(--primary) / 0.88);
+  transform: scale(0.97);
 }
 
 /* Native agenda surface — isolated from public/editorial styling. */

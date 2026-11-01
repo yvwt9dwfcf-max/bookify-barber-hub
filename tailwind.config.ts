@@ -51,6 +51,14 @@ export default {
           DEFAULT: "hsl(var(--warning))",
           foreground: "hsl(var(--warning-foreground))",
         },
+        info: {
+          DEFAULT: "hsl(var(--info))",
+          foreground: "hsl(var(--info-foreground))",
+        },
+        surface: {
+          DEFAULT: "hsl(var(--surface))",
+          raised: "hsl(var(--surface-raised))",
+        },
         muted: {
           DEFAULT: "hsl(var(--muted))",
           foreground: "hsl(var(--muted-foreground))",
@@ -82,10 +90,14 @@ export default {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        sheet: "var(--radius-sheet)",
+        surface: "var(--radius-surface)",
+        control: "var(--radius-control)",
       },
       boxShadow: {
         card: "var(--card-shadow)",
         "card-lg": "var(--card-shadow-lg)",
+        glass: "var(--glass-shadow)",
         "selection-glow": "var(--selection-glow)",
       },
       transitionDuration: {
