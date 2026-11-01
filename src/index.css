@@ -131,55 +131,66 @@
 
   /* Light mode — Pure white minimalist (Linear / Notion style) */
   .light {
-    --background: 0 0% 100%; /* #FFFFFF puro */
-    --foreground: 0 0% 6%; /* #0F0F0F — quase preto */
+    --background: 60 6% 97%; /* off-white estúdio #F8F8F7 */
+    --foreground: 0 0% 7%;
 
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 6%;
+    --card-foreground: 0 0% 7%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 6%;
+    --popover-foreground: 0 0% 7%;
 
-    --primary: 142 72% 38%; /* #16A34A — verde vivo equilibrado */
+    --primary: 142 72% 36%;
     --primary-foreground: 0 0% 100%;
-    --primary-gradient-start: 142 72% 38%;
-    --primary-gradient-end: 142 76% 32%;
+    --primary-gradient-start: 142 72% 36%;
+    --primary-gradient-end: 142 72% 36%;
 
-    /* Secundário: grafite neutro (não verde) — equilibra o verde principal */
-    --secondary: 240 5% 96%; /* #F4F4F5 */
+    --secondary: 60 5% 94%;
     --secondary-foreground: 0 0% 9%;
 
-    --muted: 240 5% 96%;
-    --muted-foreground: 240 4% 46%; /* #71717A */
+    --muted: 60 5% 94%;
+    --muted-foreground: 240 4% 44%;
 
-    --accent: 240 5% 96%;
-    --accent-foreground: 0 0% 9%;
+    --accent: 142 45% 93%;
+    --accent-foreground: 142 72% 24%;
 
-    --destructive: 0 72% 51%;
+    --destructive: 0 72% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 142 72% 38%;
+    --success: 142 72% 36%;
     --success-foreground: 0 0% 100%;
 
-    --warning: 38 92% 50%;
+    --warning: 35 92% 42%;
     --warning-foreground: 0 0% 100%;
 
-    --border: 240 6% 90%; /* #E4E4E7 */
-    --input: 240 6% 90%;
-    --ring: 142 72% 38%;
+    --info: 201 85% 40%;
+    --info-foreground: 0 0% 100%;
+
+    --surface: 60 5% 95%;
+    --surface-raised: 0 0% 100%;
+
+    --border: 60 4% 88%;
+    --input: 60 4% 88%;
+    --ring: 142 72% 36%;
+
+    --glass-bg: 0 0% 100% / 0.72;
+    --glass-bg-strong: 0 0% 100% / 0.88;
+    --glass-border: 0 0% 0% / 0.07;
+    --glass-highlight: inset 0 1px 0 hsl(0 0% 100% / 0.8);
+    --glass-shadow: 0 10px 36px -14px hsl(0 0% 0% / 0.18), inset 0 1px 0 hsl(0 0% 100% / 0.8);
 
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 0 0% 6%;
-    --sidebar-primary: 142 72% 38%;
+    --sidebar-foreground: 0 0% 7%;
+    --sidebar-primary: 142 72% 36%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 5% 96%;
+    --sidebar-accent: 60 5% 94%;
     --sidebar-accent-foreground: 0 0% 9%;
-    --sidebar-border: 240 6% 90%;
-    --sidebar-ring: 142 72% 38%;
+    --sidebar-border: 60 4% 88%;
+    --sidebar-ring: 142 72% 36%;
 
     --hero-gradient: linear-gradient(135deg, #16A34A 0%, #15803D 100%);
-    --primary-gradient: linear-gradient(135deg, #16A34A 0%, #15803D 100%);
-    --success-gradient: linear-gradient(135deg, #22C55E 0%, #16A34A 100%);
+    --primary-gradient: linear-gradient(0deg, hsl(142 72% 36%), hsl(142 72% 36%));
+    --success-gradient: linear-gradient(0deg, hsl(142 72% 36%), hsl(142 72% 36%));
 
     --card-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.03);
     --card-shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.06), 0 12px 32px rgba(0, 0, 0, 0.04);
