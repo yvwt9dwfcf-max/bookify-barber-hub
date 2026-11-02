@@ -305,13 +305,14 @@ const Painel = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Mobile Header */}
-      <header className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-card/80 backdrop-blur-xl border-b border-border/50 px-3 pt-[calc(0.5rem+env(safe-area-inset-top))] pb-2 flex items-center justify-between">
+      <header className="lg:hidden fixed top-0 left-0 right-0 z-50 glass-header px-3 pt-[calc(0.5rem+env(safe-area-inset-top))] pb-2 flex items-center justify-between">
         <Logo size="sm" linkTo="/painel" />
         <Button
           variant="ghost"
           size="icon"
+          aria-label={sidebarOpen ? 'Fechar menu' : 'Abrir menu'}
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="h-9 w-9 rounded-xl"
+          className="h-10 w-10 rounded-full bg-secondary/60 active:scale-95 transition-transform"
         >
           {sidebarOpen ? (
             <X className="h-5 w-5 transition-transform duration-200 active:rotate-90" />
@@ -334,7 +335,7 @@ const Painel = () => {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed top-0 left-0 z-50 h-full w-[270px] bg-sidebar text-sidebar-foreground shadow-2xl pl-[env(safe-area-inset-left)]',
+          'fixed top-0 left-0 z-50 h-full w-[270px] sidebar-glass border-r border-sidebar-border text-sidebar-foreground shadow-2xl pl-[env(safe-area-inset-left)]',
           'lg:translate-x-0 lg:shadow-xl',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         )}
@@ -387,21 +388,19 @@ const Painel = () => {
                     to={item.path}
                     onClick={() => setSidebarOpen(false)}
                     className={cn(
-                      'flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative',
+                      'flex min-h-12 items-center gap-3 px-4 py-3 rounded-xl transition-colors duration-200 group relative active:scale-[0.98]',
                       isActive
-                        ? 'bg-primary/10 text-primary font-semibold sidebar-active-indicator'
-                        : 'hover:bg-secondary active:scale-[0.98] text-sidebar-foreground/70 hover:text-sidebar-foreground'
+                        ? 'bg-primary/12 text-primary font-semibold sidebar-active-indicator'
+                        : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
                     )}
                     style={{
-                      animationDelay: sidebarOpen ? `${index * 0.05}s` : '0s',
-                      animation: sidebarOpen ? 'fade-in 0.3s ease-out backwards' : 'none'
+                      animationDelay: sidebarOpen ? `${index * 0.03}s` : '0s',
+                      animation: sidebarOpen ? 'fade-in 0.25s ease-out backwards' : 'none'
                     }}
                   >
-                    <item.icon className={cn(
-                      "h-5 w-5 transition-all duration-200 ease-out",
-                      isActive
-                        ? "text-primary scale-110"
-                        : "group-hover:scale-125 group-hover:-rotate-6 group-active:scale-95"
+                    <item.icon strokeWidth={isActive ? 2.25 : 1.75} className={cn(
+                      "h-5 w-5 transition-colors duration-200",
+                      isActive ? "text-primary" : "text-sidebar-foreground/60 group-hover:text-sidebar-foreground"
                     )} />
                     <span className="text-sm">{item.label}</span>
                   </Link>
