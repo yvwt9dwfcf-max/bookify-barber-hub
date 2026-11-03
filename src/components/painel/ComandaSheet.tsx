@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { PAYMENT_METHODS, type PaymentMethod } from '@/lib/operationMode';
+import { PAYMENT_METHODS, paymentFee, type PaymentFees, type PaymentMethod } from '@/lib/operationMode';
 
 interface Product {
   id: string;
