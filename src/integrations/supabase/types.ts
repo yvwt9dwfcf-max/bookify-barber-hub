@@ -406,6 +406,7 @@ export type Database = {
       }
       barbershops: {
         Row: {
+          business_segment: string
           city: string | null
           closing_time: string | null
           created_at: string
@@ -416,6 +417,7 @@ export type Database = {
           name: string
           onboarding_completed: boolean
           operation_mode: string
+          owner_attends: boolean
           phone: string | null
           photo_url: string | null
           plan: Database["public"]["Enums"]["plan_type"]
@@ -430,6 +432,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          business_segment?: string
           city?: string | null
           closing_time?: string | null
           created_at?: string
@@ -440,6 +443,7 @@ export type Database = {
           name: string
           onboarding_completed?: boolean
           operation_mode?: string
+          owner_attends?: boolean
           phone?: string | null
           photo_url?: string | null
           plan?: Database["public"]["Enums"]["plan_type"]
@@ -454,6 +458,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          business_segment?: string
           city?: string | null
           closing_time?: string | null
           created_at?: string
@@ -464,6 +469,7 @@ export type Database = {
           name?: string
           onboarding_completed?: boolean
           operation_mode?: string
+          owner_attends?: boolean
           phone?: string | null
           photo_url?: string | null
           plan?: Database["public"]["Enums"]["plan_type"]
@@ -527,6 +533,101 @@ export type Database = {
             columns: ["barbershop_id"]
             isOneToOne: false
             referencedRelation: "barbershops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_plans: {
+        Row: {
+          barbershop_id: string
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          price: number
+          updated_at: string
+          uses_limit: number | null
+        }
+        Insert: {
+          barbershop_id: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          price?: number
+          updated_at?: string
+          uses_limit?: number | null
+        }
+        Update: {
+          barbershop_id?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          price?: number
+          updated_at?: string
+          uses_limit?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_plans_barbershop_id_fkey"
+            columns: ["barbershop_id"]
+            isOneToOne: false
+            referencedRelation: "barbershops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_subscriptions: {
+        Row: {
+          barbershop_id: string
+          created_at: string
+          customer_name: string
+          customer_phone: string
+          expires_at: string
+          id: string
+          plan_id: string
+          starts_at: string
+          updated_at: string
+          uses_count: number
+        }
+        Insert: {
+          barbershop_id: string
+          created_at?: string
+          customer_name: string
+          customer_phone: string
+          expires_at?: string
+          id?: string
+          plan_id: string
+          starts_at?: string
+          updated_at?: string
+          uses_count?: number
+        }
+        Update: {
+          barbershop_id?: string
+          created_at?: string
+          customer_name?: string
+          customer_phone?: string
+          expires_at?: string
+          id?: string
+          plan_id?: string
+          starts_at?: string
+          updated_at?: string
+          uses_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_subscriptions_barbershop_id_fkey"
+            columns: ["barbershop_id"]
+            isOneToOne: false
+            referencedRelation: "barbershops"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "client_plans"
             referencedColumns: ["id"]
           },
         ]
@@ -876,6 +977,44 @@ export type Database = {
             foreignKeyName: "opening_hours_barbershop_id_fkey"
             columns: ["barbershop_id"]
             isOneToOne: false
+            referencedRelation: "barbershops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_fees: {
+        Row: {
+          barbershop_id: string
+          created_at: string
+          credit_pct: number
+          debit_pct: number
+          id: string
+          pix_pct: number
+          updated_at: string
+        }
+        Insert: {
+          barbershop_id: string
+          created_at?: string
+          credit_pct?: number
+          debit_pct?: number
+          id?: string
+          pix_pct?: number
+          updated_at?: string
+        }
+        Update: {
+          barbershop_id?: string
+          created_at?: string
+          credit_pct?: number
+          debit_pct?: number
+          id?: string
+          pix_pct?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_fees_barbershop_id_fkey"
+            columns: ["barbershop_id"]
+            isOneToOne: true
             referencedRelation: "barbershops"
             referencedColumns: ["id"]
           },
@@ -1355,7 +1494,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "master" | "barber"
+      app_role: "master" | "barber" | "receptionist"
       plan_type: "basic" | "pro" | "advanced" | "plus" | "studio" | "rede"
     }
     CompositeTypes: {
@@ -1484,7 +1623,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["master", "barber"],
+      app_role: ["master", "barber", "receptionist"],
       plan_type: ["basic", "pro", "advanced", "plus", "studio", "rede"],
     },
   },
