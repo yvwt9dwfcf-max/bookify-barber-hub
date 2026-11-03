@@ -4,13 +4,13 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { format, startOfDay, endOfDay } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { Input } from '@/components/ui/input';
-import { Search, BellRing } from 'lucide-react';
+import { Search, BellRing, MessageCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { checkoutState } from '@/lib/operationMode';
+import { checkoutState, reminderLabel, whatsappReminderUrl } from '@/lib/operationMode';
 
 const ComandaSheet = lazy(() => import('@/components/painel/ComandaSheet'));
 
-interface Ctx { barbershop: { id: string } | null; isMaster: boolean }
+interface Ctx { barbershop: { id: string; name?: string } | null; isMaster: boolean }
 interface Apt {
   id: string; customer_name: string; customer_phone: string; start_time: string; end_time: string;
   status: string; barber_id: string; barbershop_id: string | null;
@@ -26,6 +26,7 @@ const Recepcao = () => {
   const [search, setSearch] = useState('');
   const [barberFilter, setBarberFilter] = useState<string | 'all'>('all');
   const [onlyPending, setOnlyPending] = useState(false);
+  const [tab, setTab] = useState<'fila' | 'lembretes'>('fila');
   const [selected, setSelected] = useState<Apt | null>(null);
 
   useEffect(() => { const t = setInterval(() => setNow(new Date()), 30000); return () => clearInterval(t); }, []);
@@ -53,6 +54,9 @@ const Recepcao = () => {
   }, [apts]);
 
   const pending = apts.filter(a => checkoutState(a, now) === 'overdue');
+  const revenue = apts.filter(a => a.status === 'completed').reduce((s, a) => s + Number(a.services?.price || 0), 0);
+  const upcoming = apts.filter(a => checkoutState(a, now) === 'upcoming');
+  const brl = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   const list = apts.filter(a => {
     if (barberFilter !== 'all' && a.barber_id !== barberFilter) return false;
     if (onlyPending && checkoutState(a, now) !== 'overdue') return false;
@@ -69,6 +73,47 @@ const Recepcao = () => {
         <p className="text-xs text-muted-foreground">Feche as comandas do dia em um só lugar.</p>
       </div>
 
+      <div className="grid grid-cols-3 gap-2">
+        {[['Faturado hoje', brl(revenue)], ['Atendimentos', String(apts.length)], ['Pendentes', String(pending.length)]].map(([l, v]) => (
+          <div key={l} className="rounded-xl border border-border/50 bg-card/60 p-3">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{l}</p>
+            <p className="text-base font-bold tabular-nums truncate">{v}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-2 gap-1 rounded-full bg-muted/60 p-1">
+        {([['fila', 'Fila do dia'], ['lembretes', `Lembretes (${upcoming.length})`]] as const).map(([k, l]) => (
+          <button key={k} type="button" onClick={() => setTab(k)}
+            className={cn('h-9 rounded-full text-xs font-semibold transition', tab === k ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground')}>{l}</button>
+        ))}
+      </div>
+
+      {tab === 'lembretes' ? (
+        <div className="space-y-2">
+          {upcoming.length === 0 && <p className="text-sm text-muted-foreground text-center py-10">Nenhum cliente a seguir hoje.</p>}
+          {upcoming.map(a => {
+            const time = format(new Date(a.start_time), 'HH:mm');
+            const mins = (new Date(a.start_time).getTime() - now.getTime()) / 60000;
+            return (
+              <div key={a.id} className="rounded-xl border border-border/50 bg-card/60 p-3.5 flex items-center gap-3">
+                <span className="w-12 text-sm font-semibold tabular-nums">{time}</span>
+                <span className="flex-1 min-w-0">
+                  <span className="block text-sm font-semibold truncate">{a.customer_name}</span>
+                  <span className={cn('block text-xs', mins <= 30 ? 'text-primary font-semibold' : 'text-muted-foreground')}>{reminderLabel(a.start_time, now)} · {a.barbers?.name}</span>
+                </span>
+                {a.customer_phone?.replace(/\D/g, '').length >= 10 && (
+                  <a href={whatsappReminderUrl(a.customer_phone, a.customer_name, time, barbershop?.name || 'barbearia')} target="_blank" rel="noreferrer"
+                    aria-label={`Lembrar ${a.customer_name} no WhatsApp`}
+                    className="h-11 w-11 rounded-full bg-primary/15 text-primary flex items-center justify-center active:scale-95 transition">
+                    <MessageCircle className="h-5 w-5" />
+                  </a>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      ) : (<>
       <button type="button" onClick={() => setOnlyPending(v => !v)}
         className={cn('w-full rounded-xl border p-3.5 flex items-center gap-3 text-left transition active:scale-[0.98]',
           pending.length ? 'border-primary bg-primary/10' : 'border-border/50 bg-card/60')}>
@@ -120,6 +165,8 @@ const Recepcao = () => {
           );
         })}
       </div>
+
+      </>)}
 
       <Suspense fallback={null}>
         {selected && (

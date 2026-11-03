@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { PAYMENT_METHODS, type PaymentMethod } from '@/lib/operationMode';
+import { PAYMENT_METHODS, paymentFee, type PaymentFees, type PaymentMethod } from '@/lib/operationMode';
 
 interface Product {
   id: string;
@@ -126,6 +126,28 @@ const ComandaSheet = ({ open, onOpenChange, appointment, onCompleted }: ComandaS
     [cart],
   );
   const total = servicePrice + productsTotal;
+  const { data: fees } = useQuery({
+    queryKey: ['payment-fees', appointment?.barbershop_id],
+    enabled: open && !!appointment?.barbershop_id,
+    queryFn: async () => {
+      const { data } = await supabase.from('payment_fees').select('debit_pct, credit_pct, pix_pct')
+        .eq('barbershop_id', appointment!.barbershop_id!).maybeSingle();
+      return data as PaymentFees | null;
+    },
+  });
+  const { data: subscription } = useQuery({
+    queryKey: ['client-subscription', appointment?.barbershop_id, appointment?.customer_phone],
+    enabled: open && !!appointment?.barbershop_id && !!appointment?.customer_phone,
+    queryFn: async () => {
+      const today = new Date().toISOString().slice(0, 10);
+      const { data } = await supabase.from('client_subscriptions')
+        .select('expires_at, uses_count, client_plans(name, uses_limit)')
+        .eq('barbershop_id', appointment!.barbershop_id!).eq('customer_phone', appointment!.customer_phone)
+        .gte('expires_at', today).order('expires_at', { ascending: false }).limit(1).maybeSingle();
+      return data as unknown as { expires_at: string; uses_count: number; client_plans: { name: string; uses_limit: number | null } | null } | null;
+    },
+  });
+  const fee = paymentFee(payment, total, fees);
   const cartCount = useMemo(() => Object.values(cart).reduce((s, i) => s + i.quantity, 0), [cart]);
 
   const finishMutation = useMutation({
@@ -357,6 +379,19 @@ const ComandaSheet = ({ open, onOpenChange, appointment, onCompleted }: ComandaS
             </div>
             <p className="text-2xl font-bold tabular-nums text-primary">{formatCurrency(total)}</p>
           </div>
+          {subscription && (
+            <p className="text-xs rounded-xl bg-primary/10 text-foreground px-3 py-2">
+              Assinante · {subscription.client_plans?.name || 'Plano'} · {subscription.client_plans?.uses_limit
+                ? `${Math.max(0, subscription.client_plans.uses_limit - subscription.uses_count)} usos restantes`
+                : 'ilimitado'} · vence {subscription.expires_at.split('-').reverse().join('/')}
+            </p>
+          )}
+          {fee > 0 && (
+            <p className="text-[11px] text-muted-foreground flex justify-between">
+              <span>Taxa da maquininha {formatCurrency(fee)}</span>
+              <span>Líquido {formatCurrency(total - fee)}</span>
+            </p>
+          )}
           <div className="grid grid-cols-4 gap-2">
             {PAYMENT_METHODS.map((m) => (
               <button key={m.value} type="button" onClick={() => setPayment(m.value)}
