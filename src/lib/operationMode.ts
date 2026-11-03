@@ -23,3 +23,28 @@ export const checkoutState = (apt: CheckoutCandidate, now: Date): 'overdue' | 'i
   if (new Date(apt.start_time) <= now) return 'in_progress';
   return 'upcoming';
 };
+
+export interface PaymentFees { debit_pct: number; credit_pct: number; pix_pct: number }
+
+/** Card-machine / Pix fee charged on a payment; cash has no fee. */
+export const paymentFee = (method: PaymentMethod | null, amount: number, fees?: PaymentFees | null) => {
+  if (!method || !fees) return 0;
+  const pct = method === 'debito' ? fees.debit_pct : method === 'credito' ? fees.credit_pct : method === 'pix' ? fees.pix_pct : 0;
+  return Math.round(amount * Number(pct || 0)) / 100;
+};
+
+/** Human countdown for the reception reminders list. */
+export const reminderLabel = (start: string, now: Date) => {
+  const mins = Math.round((new Date(start).getTime() - now.getTime()) / 60000);
+  if (mins <= 0) return 'Na hora';
+  if (mins < 60) return `Faltam ${mins} min`;
+  const h = Math.floor(mins / 60), m = mins % 60;
+  return m ? `Faltam ${h}h${String(m).padStart(2, '0')}` : `Faltam ${h}h`;
+};
+
+export const whatsappReminderUrl = (phone: string, name: string, time: string, shop: string) => {
+  const digits = phone.replace(/\D/g, '');
+  const full = digits.startsWith('55') ? digits : `55${digits}`;
+  const msg = `Olá ${name.split(' ')[0]}! Passando para lembrar do seu horário hoje às ${time} na ${shop}. Tudo certo por aí? Te esperamos!`;
+  return `https://wa.me/${full}?text=${encodeURIComponent(msg)}`;
+};
