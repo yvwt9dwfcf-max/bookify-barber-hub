@@ -120,11 +120,13 @@ const ComandaSheet = ({ open, onOpenChange, appointment, onCompleted }: ComandaS
     });
   };
 
-  const servicePrice = Number(appointment?.service?.price || 0);
+  const [useSub, setUseSub] = useState(false);
+  const baseServicePrice = Number(appointment?.service?.price || 0);
   const productsTotal = useMemo(
     () => Object.values(cart).reduce((s, i) => s + Number(i.product.sale_price) * i.quantity, 0),
     [cart],
   );
+  const servicePrice = useSub ? 0 : baseServicePrice;
   const total = servicePrice + productsTotal;
   const { data: fees } = useQuery({
     queryKey: ['payment-fees', appointment?.barbershop_id],
@@ -141,10 +143,10 @@ const ComandaSheet = ({ open, onOpenChange, appointment, onCompleted }: ComandaS
     queryFn: async () => {
       const today = new Date().toISOString().slice(0, 10);
       const { data } = await supabase.from('client_subscriptions')
-        .select('expires_at, uses_count, client_plans(name, uses_limit)')
+        .select('id, expires_at, uses_count, client_plans(name, uses_limit)')
         .eq('barbershop_id', appointment!.barbershop_id!).eq('customer_phone', appointment!.customer_phone)
         .gte('expires_at', today).order('expires_at', { ascending: false }).limit(1).maybeSingle();
-      return data as unknown as { expires_at: string; uses_count: number; client_plans: { name: string; uses_limit: number | null } | null } | null;
+      return data as unknown as { id: string; expires_at: string; uses_count: number; client_plans: { name: string; uses_limit: number | null } | null } | null;
     },
   });
   const fee = paymentFee(payment, total, fees);
@@ -155,6 +157,10 @@ const ComandaSheet = ({ open, onOpenChange, appointment, onCompleted }: ComandaS
       if (!appointment) throw new Error('Atendimento inválido');
       if (!payment) throw new Error('Escolha a forma de pagamento');
 
+      if (useSub && subscription) {
+        const { error: subErr } = await supabase.rpc('consume_client_subscription' as any, { _sub_id: subscription.id } as any);
+        if (subErr) throw subErr;
+      }
       // Mark the appointment as completed
       const { error: aptErr } = await supabase
         .from('appointments')
@@ -194,6 +200,9 @@ const ComandaSheet = ({ open, onOpenChange, appointment, onCompleted }: ComandaS
       toast.success(`Comanda fechada · ${formatCurrency(total)}`);
       qc.invalidateQueries({ queryKey: ['appointments'] });
       qc.invalidateQueries({ queryKey: ['products'] });
+      qc.invalidateQueries({ queryKey: ['client-subscription'] });
+      qc.invalidateQueries({ queryKey: ['clube'] });
+      setUseSub(false);
       qc.invalidateQueries({ queryKey: ['product_sales'] });
       qc.invalidateQueries({ queryKey: ['cash-flow'] });
       qc.invalidateQueries({ queryKey: ['financeiro-resumo'] });
@@ -379,13 +388,23 @@ const ComandaSheet = ({ open, onOpenChange, appointment, onCompleted }: ComandaS
             </div>
             <p className="text-2xl font-bold tabular-nums text-primary">{formatCurrency(total)}</p>
           </div>
-          {subscription && (
-            <p className="text-xs rounded-xl bg-primary/10 text-foreground px-3 py-2">
+          {subscription && (() => {
+            const lim = subscription.client_plans?.uses_limit ?? null;
+            const usable = lim == null || subscription.uses_count < lim;
+            return (
+              <button type="button" disabled={!usable} onClick={() => setUseSub((v) => !v)}
+                className={cn('w-full text-left text-xs rounded-xl px-3 py-2 border transition-transform active:scale-[0.97]',
+                  useSub ? 'bg-primary text-primary-foreground border-primary' : 'bg-primary/10 text-foreground border-transparent',
+                  !usable && 'opacity-60')}>
+                <span className="block font-semibold">{useSub ? '✓ Usando assinatura neste atendimento' : usable ? 'Usar assinatura neste atendimento' : 'Assinatura sem usos disponíveis'}</span>
+            <span className="block opacity-80">
               Assinante · {subscription.client_plans?.name || 'Plano'} · {subscription.client_plans?.uses_limit
                 ? `${Math.max(0, subscription.client_plans.uses_limit - subscription.uses_count)} usos restantes`
                 : 'ilimitado'} · vence {subscription.expires_at.split('-').reverse().join('/')}
-            </p>
-          )}
+            </span>
+              </button>
+            );
+          })()}
           {fee > 0 && (
             <p className="text-[11px] text-muted-foreground flex justify-between">
               <span>Taxa da maquininha {formatCurrency(fee)}</span>

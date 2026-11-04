@@ -1452,6 +1452,10 @@ export type Database = {
         Args: { _target_barber_id: string; _user_id: string }
         Returns: boolean
       }
+      consume_client_subscription: {
+        Args: { _sub_id: string }
+        Returns: boolean
+      }
       count_barbers_in_barbershop: {
         Args: { _barbershop_id: string }
         Returns: number

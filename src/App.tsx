@@ -26,6 +26,7 @@ const Assinatura = lazy(() => import("./pages/painel/Assinatura"));
 const PerfilPublico = lazy(() => import("./pages/painel/PerfilPublico"));
 const Comissoes = lazy(() => import("./pages/painel/Comissoes"));
 const Fidelidade = lazy(() => import("./pages/painel/Fidelidade"));
+const Clube = lazy(() => import("./pages/painel/Clube"));
 const Clientes = lazy(() => import("./pages/painel/Clientes"));
 const Despesas = lazy(() => import("./pages/painel/Despesas"));
 const Produtos = lazy(() => import("./pages/painel/Produtos"));
@@ -85,6 +86,7 @@ function AnimatedRoutes() {
             <Route path="perfil-publico" element={<PerfilPublico />} />
             <Route path="comissoes" element={<Comissoes />} />
             <Route path="fidelidade" element={<Fidelidade />} />
+            <Route path="clube" element={<Clube />} />
             <Route path="clientes" element={<Clientes />} />
             <Route path="despesas" element={<Despesas />} />
             <Route path="produtos" element={<Produtos />} />
