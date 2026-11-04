@@ -54,7 +54,18 @@ const Recepcao = () => {
   }, [apts]);
 
   const pending = apts.filter(a => checkoutState(a, now) === 'overdue');
-  const revenue = apts.filter(a => a.status === 'completed').reduce((s, a) => s + Number(a.services?.price || 0), 0);
+  const { data: productTotal = 0 } = useQuery({
+    queryKey: ['product-sales', 'reception', barbershop?.id, format(now, 'yyyy-MM-dd')],
+    enabled: !!barbershop?.id && isMaster,
+    refetchInterval: 30000,
+    queryFn: async () => {
+      const { data } = await supabase.from('product_sales').select('total_amount')
+        .eq('barbershop_id', barbershop!.id)
+        .gte('sold_at', startOfDay(now).toISOString()).lte('sold_at', endOfDay(now).toISOString());
+      return (data || []).reduce((s, r) => s + Number(r.total_amount || 0), 0);
+    },
+  });
+  const revenue = apts.filter(a => a.status === 'completed').reduce((s, a) => s + Number(a.services?.price || 0), 0) + productTotal;
   const upcoming = apts.filter(a => checkoutState(a, now) === 'upcoming');
   const brl = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   const list = apts.filter(a => {
