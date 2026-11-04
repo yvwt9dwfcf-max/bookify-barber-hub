@@ -675,7 +675,7 @@ const Financeiro = () => {
             )}
           </TabsContent>
         )}
-        {ctx.isMaster && <TabsContent value="metas"><MetasTab barbershop={ctx.barbershop} isMaster={ctx.isMaster} /></TabsContent>}
+        {ctx.isMaster && <TabsContent value="metas"><div className="space-y-3"><MetasTab barbershop={ctx.barbershop} isMaster={ctx.isMaster} />{ctx.barbershop?.id && <TaxasCard barbershopId={ctx.barbershop.id} />}</div></TabsContent>}
       </Tabs>
     </div>
   );
