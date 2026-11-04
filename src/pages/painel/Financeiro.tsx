@@ -551,6 +551,52 @@ const BarberResumoTab = ({ barber, barbershop }: { barber: any; barbershop: any 
   );
 };
 
+const TaxasCard = ({ barbershopId }: { barbershopId: string }) => {
+  const qc = useQueryClient();
+  const [vals, setVals] = useState({ debit_pct: '', credit_pct: '', pix_pct: '' });
+  const { data } = useQuery({
+    queryKey: ['payment-fees', barbershopId],
+    queryFn: async () => {
+      const { data } = await supabase.from('payment_fees').select('debit_pct, credit_pct, pix_pct').eq('barbershop_id', barbershopId).maybeSingle();
+      return data;
+    },
+  });
+  useEffect(() => {
+    if (data) setVals({ debit_pct: String(data.debit_pct), credit_pct: String(data.credit_pct), pix_pct: String(data.pix_pct) });
+  }, [data]);
+  const save = useMutation({
+    mutationFn: async () => {
+      const n = (v: string) => Math.min(100, Math.max(0, Number(v.replace(',', '.')) || 0));
+      const { error } = await supabase.from('payment_fees').upsert({
+        barbershop_id: barbershopId, debit_pct: n(vals.debit_pct), credit_pct: n(vals.credit_pct), pix_pct: n(vals.pix_pct),
+      }, { onConflict: 'barbershop_id' });
+      if (error) throw error;
+    },
+    onSuccess: () => { toast.success('Taxas salvas'); qc.invalidateQueries({ queryKey: ['payment-fees'] }); },
+    onError: () => toast.error('Erro ao salvar taxas'),
+  });
+  const fields: [keyof typeof vals, string][] = [['debit_pct', 'Débito'], ['credit_pct', 'Crédito'], ['pix_pct', 'Pix']];
+  return (
+    <Card>
+      <CardContent className="p-4 space-y-3">
+        <div>
+          <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Taxas da maquininha</p>
+          <p className="text-xs text-muted-foreground">Usadas na comanda para mostrar o valor líquido.</p>
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          {fields.map(([k, l]) => (
+            <div key={k} className="space-y-1">
+              <Label className="text-xs">{l} (%)</Label>
+              <Input inputMode="decimal" value={vals[k]} placeholder="0" onChange={e => setVals(v => ({ ...v, [k]: e.target.value }))} />
+            </div>
+          ))}
+        </div>
+        <Button className="w-full" onClick={() => save.mutate()} disabled={save.isPending}>Salvar taxas</Button>
+      </CardContent>
+    </Card>
+  );
+};
+
 const Financeiro = () => {
   const ctx = useOutletContext<ContextType>();
   const qc = useQueryClient();
