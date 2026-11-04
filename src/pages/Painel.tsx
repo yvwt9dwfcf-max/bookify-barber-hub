@@ -48,7 +48,7 @@ const panelModules = [
   () => import('./painel/Relatorios'),
   () => import('./painel/Clientes'),
   () => import('./painel/Comissoes'),
-  () => import('./painel/Fidelidade'),
+  () => import('./painel/Clube'),
   () => import('./painel/WhatsAppAtendimento'),
   () => import('./painel/PerfilPublico'),
   () => import('./painel/Configuracoes'),
@@ -125,7 +125,7 @@ const Painel = () => {
     { icon: Wallet, label: 'Financeiro', path: '/painel/financeiro' },
     ...(isMaster ? [{ icon: Contact, label: 'Clientes', path: '/painel/clientes' }] : []),
     
-    { icon: Stamp, label: 'Fidelidade', path: '/painel/fidelidade' },
+    ...(isMaster ? [{ icon: Crown, label: 'Clube de Assinaturas', path: '/painel/clube' }] : []),
     
     { icon: MessageCircle, label: 'WhatsApp', path: '/painel/whatsapp' },
     ...(isMaster ? [{ icon: Share2, label: 'Perfil Público', path: '/painel/perfil-publico' }] : []),
