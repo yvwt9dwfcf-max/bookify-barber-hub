@@ -49,3 +49,22 @@ export function isSubscriptionUsable(sub: { expires_at: string; uses_count: numb
   if (sub.expires_at < todayStr) return false;
   return usesLimit == null || sub.uses_count < usesLimit;
 }
+
+export interface Vocab {
+  segment: SegmentVocabulary;
+  business: string; businessLower: string;
+  pro: string; proLower: string; pros: string; prosLower: string;
+}
+
+/** Vocabulário por segmento; sem segmento definido, usa termos neutros. */
+export function getVocab(value?: string | null): Vocab {
+  const s = value && SEGMENTS[value as BusinessSegment] ? SEGMENTS[value as BusinessSegment] : NEUTRAL;
+  return {
+    segment: s,
+    business: s.business, businessLower: s.business.toLowerCase(),
+    pro: s.professional, proLower: s.professional.toLowerCase(),
+    pros: s.professionals, prosLower: s.professionals.toLowerCase(),
+  };
+}
+
+const NEUTRAL: SegmentVocabulary = { label: "Negócio", business: "Negócio", professional: "Profissional", professionals: "Profissionais", service: "Serviço", suggestedServices: [] };

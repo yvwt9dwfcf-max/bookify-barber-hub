@@ -14,3 +14,9 @@ describe("segments", () => {
   it("unlimited usable", () =>
     expect(isSubscriptionUsable({ expires_at: "2026-12-31", uses_count: 99 }, null, new Date("2026-02-01"))).toBe(true));
 });
+
+import { getVocab } from "./segments";
+describe("getVocab", () => {
+  it("barbershop shows Barbeiro", () => expect(getVocab("barbershop").pro).toBe("Barbeiro"));
+  it("no segment is neutral", () => expect(getVocab(null).pro).toBe("Profissional"));
+});
