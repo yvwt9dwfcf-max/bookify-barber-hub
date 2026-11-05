@@ -17,8 +17,8 @@ const faqItems = [
     answer: 'Verifique se você possui horários de atendimento configurados, se os serviços estão ativos e se não há bloqueios cadastrados no período. Confirme também que o link de agendamento está correto.',
   },
   {
-    question: 'Como adicionar barbeiros',
-    answer: 'Acesse o menu "Equipe" no painel. Clique em "Adicionar barbeiro", preencha os dados e envie o convite. O barbeiro receberá um e-mail para criar sua conta e acessar o sistema.',
+    question: 'Como adicionar profissionais',
+    answer: 'Acesse o menu "Equipe" no painel. Clique em "Adicionar profissional", preencha os dados e envie o convite. O profissional receberá um e-mail para criar sua conta e acessar o sistema.',
   },
   {
     question: 'Como mudar meu plano',

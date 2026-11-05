@@ -56,7 +56,7 @@ export function SignupForm() {
 
       const signUpSession = (data as { session?: unknown } | null)?.session ?? null;
       if (signUpSession) {
-        toast.success('Conta criada! Vamos configurar sua barbearia.');
+        toast.success('Conta criada! Vamos configurar seu negócio.');
         navigate('/onboarding', { replace: true });
         return;
       }
@@ -66,7 +66,7 @@ export function SignupForm() {
       const signedIn = (signInData as { session?: unknown } | null)?.session ?? null;
 
       if (!signInError && signedIn) {
-        toast.success('Conta criada! Vamos configurar sua barbearia.');
+        toast.success('Conta criada! Vamos configurar seu negócio.');
         navigate('/onboarding', { replace: true });
         return;
       }
@@ -115,7 +115,7 @@ export function SignupForm() {
       <header className="space-y-2 text-center">
         <p className="font-editorial-mono text-[11px] uppercase text-primary">— Comece agora</p>
         <h2 className="font-display text-3xl font-semibold text-foreground">Crie sua conta</h2>
-        <p className="text-sm text-muted-foreground">Sua barbearia organizada desde o primeiro dia.</p>
+        <p className="text-sm text-muted-foreground">Sua negócio organizada desde o primeiro dia.</p>
       </header>
 
       <OAuthButtons mode="signup" />

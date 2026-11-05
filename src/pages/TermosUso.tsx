@@ -27,7 +27,7 @@ const TermosUso = () => {
           </p>
 
           <ol className="text-muted-foreground space-y-4 list-decimal pl-6">
-            <li>O Bookify é uma plataforma de agendamento e gestão para barbearias.</li>
+            <li>O Bookify é uma plataforma de agendamento e gestão para negócios com agendamento.</li>
             <li>O usuário é responsável pelas informações inseridas.</li>
             <li>O plano contratado será cobrado conforme regras do período gratuito (quando aplicável).</li>
             <li>Após o período de teste, o acesso pode ser bloqueado por falta de pagamento.</li>

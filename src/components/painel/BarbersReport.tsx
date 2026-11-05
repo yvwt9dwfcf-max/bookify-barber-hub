@@ -117,7 +117,7 @@ const BarbersReport = ({ barbershopId }: Props) => {
         <Select value={filterBarber} onValueChange={setFilterBarber}>
           <SelectTrigger className="h-8 text-xs flex-1"><SelectValue /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Todos os barbeiros</SelectItem>
+            <SelectItem value="all">Todos os profissionais</SelectItem>
             {stats.map((s) => (<SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>))}
           </SelectContent>
         </Select>

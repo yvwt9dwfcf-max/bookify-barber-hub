@@ -386,7 +386,7 @@ const BarbeariaPublica = () => {
         <Card className="max-w-sm w-full">
           <CardContent className="p-8 text-center">
             <Scissors className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h1 className="text-xl font-bold mb-2">Barbearia não encontrada</h1>
+            <h1 className="text-xl font-bold mb-2">Negócio não encontrado</h1>
             <p className="text-muted-foreground text-sm">
               O link que você acessou não é válido ou a barbearia não está mais disponível.
             </p>
@@ -568,7 +568,7 @@ const BarbeariaPublica = () => {
             <EmptyState
               icon={User}
               title="Nenhum profissional disponível"
-              description="Esta barbearia ainda não possui profissionais cadastrados."
+              description="Este negócio ainda não possui profissionais cadastrados."
             />
           ) : (
             <motion.div

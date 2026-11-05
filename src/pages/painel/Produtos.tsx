@@ -181,7 +181,7 @@ const Produtos = () => {
 
   const saveMutation = useMutation({
     mutationFn: async () => {
-      if (!barbershop?.id) throw new Error('Barbearia não encontrada');
+      if (!barbershop?.id) throw new Error('Negócio não encontrado');
       if (!name.trim()) throw new Error('Nome é obrigatório');
       const sale = parseFloat(salePrice.replace(',', '.'));
       const cost = parseFloat(costPrice.replace(',', '.')) || 0;

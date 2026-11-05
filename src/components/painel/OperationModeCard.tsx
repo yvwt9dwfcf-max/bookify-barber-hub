@@ -6,8 +6,8 @@ import { cn } from '@/lib/utils';
 import { getOperationMode, type OperationMode } from '@/lib/operationMode';
 
 const OPTIONS: { value: OperationMode; title: string; text: string; icon: typeof Monitor; recommended?: boolean }[] = [
-  { value: 'reception', title: 'Recepção centralizada', text: 'Um computador no balcão fecha todas as comandas. Os barbeiros não precisam pegar o celular.', icon: Monitor, recommended: true },
-  { value: 'individual', title: 'Caixa individual', text: 'Cada barbeiro fecha as próprias comandas pelo celular.', icon: Smartphone },
+  { value: 'reception', title: 'Recepção centralizada', text: 'Um computador no balcão fecha todas as comandas. Os profissionais não precisam pegar o celular.', icon: Monitor, recommended: true },
+  { value: 'individual', title: 'Caixa individual', text: 'Cada profissional fecha as próprias comandas pelo celular.', icon: Smartphone },
 ];
 
 export function OperationModeCard({ barbershop, onSaved }: { barbershop: { id: string; operation_mode?: string | null }; onSaved: () => void }) {
@@ -27,7 +27,7 @@ export function OperationModeCard({ barbershop, onSaved }: { barbershop: { id: s
 
   return (
     <div className="space-y-2">
-      <p className="text-sm font-semibold">Como sua barbearia fecha as comandas?</p>
+      <p className="text-sm font-semibold">Como seu negócio fecha as comandas?</p>
       {OPTIONS.map(o => (
         <button key={o.value} type="button" disabled={saving} onClick={() => choose(o.value)}
           className={cn('w-full text-left rounded-xl border p-3.5 flex gap-3 transition active:scale-[0.98]',

@@ -81,7 +81,7 @@ const Barbeiros = () => {
     }
 
     if (!canAddMore) {
-      toast.error(`Limite de ${maxBarbers} barbeiros atingido`);
+      toast.error(`Limite de ${maxBarbers} profissionais atingido`);
       return;
     }
 
@@ -114,16 +114,16 @@ const Barbeiros = () => {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || 'Erro ao adicionar barbeiro');
+        throw new Error(result.error || 'Erro ao adicionar profissional');
       }
 
-      toast.success(result.message || 'Barbeiro adicionado com sucesso!');
+      toast.success(result.message || 'Profissional adicionado com sucesso!');
       resetAddForm();
       setShowAddDialog(false);
       refetch();
     } catch (error: any) {
       console.error('Erro ao adicionar barbeiro:', error);
-      toast.error(error.message || 'Erro ao adicionar barbeiro');
+      toast.error(error.message || 'Erro ao adicionar profissional');
     } finally {
       setSaving(false);
     }
@@ -196,11 +196,11 @@ const Barbeiros = () => {
 
       if (error) throw error;
 
-      toast.success('Barbeiro removido');
+      toast.success('Profissional removido');
       refetch();
     } catch (error) {
       console.error('Erro ao remover barbeiro:', error);
-      toast.error('Erro ao remover barbeiro');
+      toast.error('Erro ao remover profissional');
     }
   };
 
@@ -281,7 +281,7 @@ const Barbeiros = () => {
         </DialogTrigger>
         <DialogContent>
         <DialogHeader>
-          <DialogTitle>Adicionar Barbeiro</DialogTitle>
+          <DialogTitle>Adicionar Profissional</DialogTitle>
           <DialogDescription>
             Adicione um novo membro à equipe. Se o email já existir, o usuário será vinculado automaticamente.
           </DialogDescription>
@@ -293,7 +293,7 @@ const Barbeiros = () => {
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="barber-name"
-                  placeholder="Nome do barbeiro"
+                  placeholder="Nome do profissional"
                   value={newBarberName}
                   onChange={(e) => setNewBarberName(e.target.value)}
                   className="pl-10"
@@ -355,7 +355,7 @@ const Barbeiros = () => {
           <CardContent className="p-4 flex items-center gap-3">
             <AlertTriangle className="h-5 w-5 text-warning" />
             <div>
-              <p className="font-medium">Limite de barbeiros atingido</p>
+              <p className="font-medium">Limite de profissionais atingido</p>
               <p className="text-sm text-muted-foreground">
                 Seu plano permite até {maxBarbers} barbeiros. Faça upgrade para adicionar mais.
               </p>
@@ -513,14 +513,14 @@ const Barbeiros = () => {
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8"
-                        title="Remover barbeiro"
+                        title="Remover profissional"
                       >
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle>Remover barbeiro?</AlertDialogTitle>
+                        <AlertDialogTitle>Remover profissional?</AlertDialogTitle>
                         <AlertDialogDescription>
                           O barbeiro {barber.name} será desativado. Os agendamentos existentes serão mantidos.
                         </AlertDialogDescription>
@@ -547,7 +547,7 @@ const Barbeiros = () => {
         <Card>
           <CardContent className="p-8 text-center">
             <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="font-medium mb-2">Nenhum barbeiro cadastrado</h3>
+            <h3 className="font-medium mb-2">Nenhum profissional cadastrado</h3>
             <p className="text-muted-foreground mb-4">
               Adicione os membros da sua equipe para começar
             </p>

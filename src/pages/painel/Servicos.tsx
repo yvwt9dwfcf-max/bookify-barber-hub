@@ -292,8 +292,8 @@ const Servicos = () => {
           <h1 className="text-xl font-bold">Serviços</h1>
           <p className="text-sm text-muted-foreground">
             {isMaster 
-              ? 'Gerencie os serviços oferecidos pela barbearia'
-              : 'Consulte os serviços oferecidos pela barbearia'}
+              ? 'Gerencie os serviços oferecidos pelo negócio'
+              : 'Consulte os serviços oferecidos pelo negócio'}
           </p>
         </div>
 
@@ -316,7 +316,7 @@ const Servicos = () => {
                 <DialogDescription>
                   {editingService 
                     ? 'Atualize as informações do serviço'
-                    : 'Adicione um novo serviço à barbearia'}
+                    : 'Adicione um novo serviço ao negócio'}
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">

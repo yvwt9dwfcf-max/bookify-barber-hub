@@ -182,7 +182,7 @@ const Despesas = () => {
 
   const addMutation = useMutation({
     mutationFn: async () => {
-      if (!barbershop?.id) throw new Error('Barbearia não encontrada');
+      if (!barbershop?.id) throw new Error('Negócio não encontrado');
       const amountNum = parseFloat(amount.replace(',', '.'));
       if (isNaN(amountNum) || amountNum <= 0) throw new Error('Valor inválido');
       if (!name.trim()) throw new Error('Nome é obrigatório');

@@ -261,7 +261,7 @@ export default function MultiSaleSheet({
 
               {/* Barber */}
               <div className="space-y-1.5">
-                <Label className="text-xs">Barbeiro responsável</Label>
+                <Label className="text-xs">Profissional responsável</Label>
                 <Select value={barberId} onValueChange={setBarberId}>
                   <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
                   <SelectContent>

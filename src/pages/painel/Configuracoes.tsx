@@ -212,7 +212,7 @@ const Configuracoes = () => {
             onClick={() => barbershopFileInputRef.current?.click()}
           >
             {photoUrl ? (
-              <StorageImg src={photoUrl} alt={`Logo da barbearia ${barbershop?.name ?? ''}`.trim()} className="w-full h-full object-cover" />
+              <StorageImg src={photoUrl} alt={`Logo do negócio ${barbershop?.name ?? ''}`.trim()} className="w-full h-full object-cover" />
             ) : (
               <Camera className="h-5 w-5 text-muted-foreground/60" />
             )}
@@ -319,17 +319,17 @@ const Configuracoes = () => {
                 <Building2 className="h-4 w-4" />
                 Barbearia
               </h2>
-              <p className="text-xs text-muted-foreground">Configurações da sua barbearia</p>
+              <p className="text-xs text-muted-foreground">Configurações da seu negócio</p>
             </div>
             <AutoSaveIndicator status={combinedStatus} />
           </div>
 
           <div className="rounded-lg border p-4 space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="barbershop-name" className="text-xs">Nome da barbearia</Label>
+              <Label htmlFor="barbershop-name" className="text-xs">Nome do negócio</Label>
               <Input
                 id="barbershop-name"
-                placeholder="Nome da barbearia"
+                placeholder="Nome do negócio"
                 value={barbershopNameAutoSave.value}
                 onChange={(e) => barbershopNameAutoSave.setValue(e.target.value)}
                 onBlur={barbershopNameAutoSave.onBlur}
@@ -348,7 +348,7 @@ const Configuracoes = () => {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="shop-phone" className="text-xs">Telefone da barbearia</Label>
+              <Label htmlFor="shop-phone" className="text-xs">Telefone do negócio</Label>
               <Input
                 id="shop-phone"
                 placeholder="(00) 00000-0000"
@@ -356,7 +356,7 @@ const Configuracoes = () => {
                 onChange={(e) => barbershopPhoneAutoSave.setValue(formatPhone(e.target.value))}
                 onBlur={barbershopPhoneAutoSave.onBlur}
               />
-              <p className="text-[11px] text-muted-foreground">Contato usado para falar com a barbearia</p>
+              <p className="text-[11px] text-muted-foreground">Contato usado para falar com a negócio</p>
             </div>
 
             <div className="space-y-1.5">

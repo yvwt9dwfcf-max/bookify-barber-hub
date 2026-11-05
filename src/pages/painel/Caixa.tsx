@@ -200,7 +200,7 @@ const Caixa = () => {
               <Wallet className="h-5 w-5 text-primary" />
               Caixa
             </h1>
-            <p className="text-xs text-muted-foreground">Movimentação financeira da barbearia</p>
+            <p className="text-xs text-muted-foreground">Movimentação financeira do negócio</p>
           </div>
           <Button size="sm" onClick={() => goTab('produtos')} className="btn-primary-gradient">
             <ShoppingCart className="h-4 w-4 mr-1" />

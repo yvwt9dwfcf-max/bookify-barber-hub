@@ -527,7 +527,7 @@ const WhatsAppAtendimento = () => {
           </CardHeader>
           <CardContent>
             <Badge variant="outline" className="text-sm">
-              {mode === 'global' ? 'WhatsApp da barbearia (global)' : 'WhatsApp por barbeiro'}
+              {mode === 'global' ? 'WhatsApp do negócio (global)' : 'WhatsApp por profissional'}
             </Badge>
             {mode === 'global' && (
               <p className="text-sm text-muted-foreground mt-2">

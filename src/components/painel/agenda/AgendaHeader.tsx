@@ -88,7 +88,7 @@ const AgendaHeader = ({
                 "h-8 w-8 rounded-xl transition-all active:scale-95",
                 viewMode === 'all' && 'btn-primary-gradient shadow-md'
               )}
-              title="Ver todos os barbeiros"
+              title="Ver todos os profissionais"
             >
               <LayoutGrid className="h-4 w-4" />
             </Button>
@@ -105,7 +105,7 @@ const AgendaHeader = ({
                 <label className="text-[10px] font-medium text-muted-foreground">Visualizando agenda de:</label>
                 <Select value={selectedBarberId || ''} onValueChange={onBarberChange}>
                   <SelectTrigger className="mt-0.5 h-7 text-sm border-border/50">
-                    <SelectValue placeholder="Selecione um barbeiro" />
+                    <SelectValue placeholder="Selecione um profissional" />
                   </SelectTrigger>
                   <SelectContent>
                     {barbers.map((b) => (

@@ -52,7 +52,14 @@ interface GalleryPhoto {
   created_at: string;
 }
 
-const ACCENT_COLORS = ['#22C55E', '#4DA6FF', '#8B1E2B', '#F2C94C', '#A855F7', '#F2EEE4'];
+// Row 1: classic tones. Row 2: beauty/aesthetic tones (gold, rosé, nude...). Last slot opens a free picker.
+const ACCENT_ROW_1 = ['#22C55E', '#4DA6FF', '#8B1E2B', '#F2C94C', '#A855F7', '#F2EEE4'];
+const ACCENT_ROW_2 = ['#C9A227', '#E8B4B8', '#B76E79', '#D4A373', '#111111'];
+const ACCENT_COLORS = [...ACCENT_ROW_1, ...ACCENT_ROW_2];
+const isLight = (hex: string) => {
+  const n = parseInt(hex.slice(1), 16);
+  return ((n >> 16) * 299 + ((n >> 8) & 255) * 587 + (n & 255) * 114) / 1000 > 150;
+};
 const MAX_GALLERY_PHOTOS = 12;
 
 const PerfilPublico = () => {
@@ -553,7 +560,7 @@ const PerfilPublico = () => {
           <Label className="text-xs text-muted-foreground mb-2 block">Foto de capa</Label>
           {(coverPreview || fotoCapa) ? (
             <div className="relative rounded-xl overflow-hidden group">
-              <StorageImg src={coverPreview || fotoCapa || ''} alt="Foto de capa do perfil da barbearia" className="w-full h-40 object-cover" />
+              <StorageImg src={coverPreview || fotoCapa || ''} alt="Foto de capa do perfil do negócio" className="w-full h-40 object-cover" />
               <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-2">
                 <Button size="sm" variant="secondary" className="h-8 text-xs" onClick={() => coverInputRef.current?.click()}>
                   <Upload className="h-3.5 w-3.5 mr-1" /> Trocar
@@ -579,7 +586,7 @@ const PerfilPublico = () => {
         <div className="flex items-center gap-4 pt-1">
           {(logoPreview || logoUrl) ? (
             <div className="relative group shrink-0">
-              <StorageImg src={logoPreview || logoUrl || ''} alt="Logo da barbearia" className="w-16 h-16 rounded-2xl object-cover ring-2 ring-border" />
+              <StorageImg src={logoPreview || logoUrl || ''} alt="Logo do negócio" className="w-16 h-16 rounded-2xl object-cover ring-2 ring-border" />
               <div className="absolute inset-0 bg-black/50 rounded-2xl opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-1">
                 <button className="h-7 w-7 rounded-lg bg-secondary flex items-center justify-center" onClick={() => logoInputRef.current?.click()}>
                   <Upload className="h-3 w-3" />
@@ -617,7 +624,7 @@ const PerfilPublico = () => {
               className={`overflow-hidden rounded-xl border text-left transition-colors ${themeStyle === 'editorial' ? 'border-primary' : 'border-border hover:border-muted-foreground/40'}`}
             >
               <div className="flex h-24 items-center justify-center bg-background p-3">
-                <span className="font-display text-xl text-[hsl(var(--paper))]">Barbearia</span>
+                <span className="font-display text-xl text-[hsl(var(--paper))]">Negócio</span>
               </div>
               <div className="border-t border-border bg-card px-3 py-2.5 text-sm font-medium">Editorial</div>
             </button>
@@ -628,7 +635,7 @@ const PerfilPublico = () => {
               className={`overflow-hidden rounded-xl border text-left transition-colors ${themeStyle === 'urbano' ? 'border-primary' : 'border-border hover:border-muted-foreground/40'}`}
             >
               <div className="flex h-24 items-center justify-center bg-background p-3">
-                <span className="font-urban-preview text-xl text-[#4DA6FF]">BARBEARIA</span>
+                <span className="font-urban-preview text-xl text-[#4DA6FF]">STUDIO</span>
               </div>
               <div className="border-t border-border bg-card px-3 py-2.5 text-sm font-medium">Urbano</div>
             </button>
@@ -645,7 +652,7 @@ const PerfilPublico = () => {
               className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left transition-colors ${fontStyle === 'playfair' ? 'border-primary bg-primary/5' : 'border-border'}`}
             >
               <div className="min-w-0 flex-1">
-                <p className="font-display text-lg text-foreground">Barbearia do João</p>
+                <p className="font-display text-lg text-foreground">Studio do João</p>
                 <p className="font-editorial-mono text-[10px] text-muted-foreground">Formal · Editorial</p>
               </div>
               <SelectionRadio selected={fontStyle === 'playfair'} />
@@ -667,24 +674,31 @@ const PerfilPublico = () => {
 
         <div className="space-y-3 border-t border-border pt-4">
           <p className="font-editorial-mono text-[10px] uppercase text-muted-foreground">Cor de destaque</p>
-          <div className="flex flex-wrap gap-3">
-            {ACCENT_COLORS.map((color) => {
-              const selected = accentColor.toUpperCase() === color;
-              return (
-                <button
-                  key={color}
-                  type="button"
-                  onClick={() => setAccentColor(color)}
-                  aria-label={`Selecionar cor ${color}`}
-                  aria-pressed={selected}
-                  className={`flex h-10 w-10 items-center justify-center rounded-full border-2 transition-transform ${selected ? 'scale-110 border-foreground' : 'border-transparent'}`}
-                  style={{ backgroundColor: color }}
-                >
-                  {selected && <Check className={`h-4 w-4 ${color === '#F2EEE4' || color === '#F2C94C' ? 'text-background' : 'text-white'}`} />}
-                </button>
-              );
-            })}
-          </div>
+          {[ACCENT_ROW_1, ACCENT_ROW_2].map((row, ri) => (
+            <div key={ri} className="grid grid-cols-6 gap-3">
+              {row.map((color) => {
+                const selected = accentColor.toUpperCase() === color;
+                return (
+                  <button key={color} type="button" onClick={() => setAccentColor(color)} aria-label={`Selecionar cor ${color}`} aria-pressed={selected}
+                    className={`flex h-10 w-10 items-center justify-center rounded-full border-2 transition-transform active:scale-95 ${selected ? 'scale-110 border-foreground' : 'border-border/40'}`}
+                    style={{ backgroundColor: color }}>
+                    {selected && <Check className="h-4 w-4" style={{ color: isLight(color) ? '#111' : '#fff' }} />}
+                  </button>
+                );
+              })}
+              {ri === 1 && (() => {
+                const custom = !ACCENT_COLORS.includes(accentColor.toUpperCase());
+                return (
+                  <label aria-label="Mais cores" title="Mais cores"
+                    className={`relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border-2 transition-transform active:scale-95 ${custom ? 'scale-110 border-foreground' : 'border-border/40'}`}
+                    style={{ background: custom ? accentColor : 'conic-gradient(#ef4444,#f59e0b,#eab308,#22c55e,#06b6d4,#3b82f6,#a855f7,#ec4899,#ef4444)' }}>
+                    {custom ? <Check className="h-4 w-4" style={{ color: isLight(accentColor) ? '#111' : '#fff' }} /> : <Plus className="h-4 w-4 text-white drop-shadow" />}
+                    <input type="color" value={accentColor} onChange={(e) => setAccentColor(e.target.value.toUpperCase())} className="absolute inset-0 h-full w-full cursor-pointer opacity-0" />
+                  </label>
+                );
+              })()}
+            </div>
+          ))}
         </div>
 
         <div className="flex items-center justify-between gap-4 border-t border-border pt-4">
@@ -713,7 +727,7 @@ const PerfilPublico = () => {
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             {gallery.map((photo) => (
               <div key={photo.id} className="group relative aspect-square overflow-hidden rounded-lg border border-border bg-muted">
-                <StorageImg src={photo.image_url} alt="Foto da galeria da barbearia" className="h-full w-full object-cover" />
+                <StorageImg src={photo.image_url} alt="Foto da galeria do negócio" className="h-full w-full object-cover" />
                 <Button
                   type="button"
                   variant="destructive"
@@ -834,11 +848,11 @@ const PerfilPublico = () => {
       {/* === SOBRE === */}
       <Section title="Sobre" icon={<span className="text-sm">📝</span>}>
         <div className="space-y-1.5">
-          <Label className="text-xs">Nome da barbearia</Label>
+          <Label className="text-xs">Nome do negócio</Label>
           <Input value={shopName} onChange={(e) => setShopName(e.target.value)} className="h-9 text-sm" />
         </div>
         <Textarea
-          placeholder="Descreva sua barbearia, serviços, diferenciais..."
+          placeholder="Descreva seu negócio, serviços, diferenciais..."
           value={descricao}
           onChange={(e) => setDescricao(e.target.value)}
           rows={3}
