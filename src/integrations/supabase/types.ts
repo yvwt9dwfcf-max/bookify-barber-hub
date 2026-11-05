@@ -14,6 +14,71 @@ export type Database = {
   }
   public: {
     Tables: {
+      appointment_extras: {
+        Row: {
+          appointment_id: string
+          barber_id: string | null
+          barbershop_id: string
+          created_at: string
+          id: string
+          name: string
+          payment_method: string | null
+          price: number
+          service_id: string | null
+        }
+        Insert: {
+          appointment_id: string
+          barber_id?: string | null
+          barbershop_id: string
+          created_at?: string
+          id?: string
+          name: string
+          payment_method?: string | null
+          price?: number
+          service_id?: string | null
+        }
+        Update: {
+          appointment_id?: string
+          barber_id?: string | null
+          barbershop_id?: string
+          created_at?: string
+          id?: string
+          name?: string
+          payment_method?: string | null
+          price?: number
+          service_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointment_extras_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_extras_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_extras_barbershop_id_fkey"
+            columns: ["barbershop_id"]
+            isOneToOne: false
+            referencedRelation: "barbershops"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_extras_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       appointments: {
         Row: {
           barber_id: string
