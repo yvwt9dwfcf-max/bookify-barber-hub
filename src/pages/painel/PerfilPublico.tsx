@@ -52,7 +52,14 @@ interface GalleryPhoto {
   created_at: string;
 }
 
-const ACCENT_COLORS = ['#22C55E', '#4DA6FF', '#8B1E2B', '#F2C94C', '#A855F7', '#F2EEE4'];
+// Row 1: classic tones. Row 2: beauty/aesthetic tones (gold, rosé, nude...). Last slot opens a free picker.
+const ACCENT_ROW_1 = ['#22C55E', '#4DA6FF', '#8B1E2B', '#F2C94C', '#A855F7', '#F2EEE4'];
+const ACCENT_ROW_2 = ['#C9A227', '#E8B4B8', '#B76E79', '#D4A373', '#111111'];
+const ACCENT_COLORS = [...ACCENT_ROW_1, ...ACCENT_ROW_2];
+const isLight = (hex: string) => {
+  const n = parseInt(hex.slice(1), 16);
+  return ((n >> 16) * 299 + ((n >> 8) & 255) * 587 + (n & 255) * 114) / 1000 > 150;
+};
 const MAX_GALLERY_PHOTOS = 12;
 
 const PerfilPublico = () => {
@@ -628,7 +635,7 @@ const PerfilPublico = () => {
               className={`overflow-hidden rounded-xl border text-left transition-colors ${themeStyle === 'urbano' ? 'border-primary' : 'border-border hover:border-muted-foreground/40'}`}
             >
               <div className="flex h-24 items-center justify-center bg-background p-3">
-                <span className="font-urban-preview text-xl text-[#4DA6FF]">BARBEARIA</span>
+                <span className="font-urban-preview text-xl text-[#4DA6FF]">STUDIO</span>
               </div>
               <div className="border-t border-border bg-card px-3 py-2.5 text-sm font-medium">Urbano</div>
             </button>
@@ -667,24 +674,31 @@ const PerfilPublico = () => {
 
         <div className="space-y-3 border-t border-border pt-4">
           <p className="font-editorial-mono text-[10px] uppercase text-muted-foreground">Cor de destaque</p>
-          <div className="flex flex-wrap gap-3">
-            {ACCENT_COLORS.map((color) => {
-              const selected = accentColor.toUpperCase() === color;
-              return (
-                <button
-                  key={color}
-                  type="button"
-                  onClick={() => setAccentColor(color)}
-                  aria-label={`Selecionar cor ${color}`}
-                  aria-pressed={selected}
-                  className={`flex h-10 w-10 items-center justify-center rounded-full border-2 transition-transform ${selected ? 'scale-110 border-foreground' : 'border-transparent'}`}
-                  style={{ backgroundColor: color }}
-                >
-                  {selected && <Check className={`h-4 w-4 ${color === '#F2EEE4' || color === '#F2C94C' ? 'text-background' : 'text-white'}`} />}
-                </button>
-              );
-            })}
-          </div>
+          {[ACCENT_ROW_1, ACCENT_ROW_2].map((row, ri) => (
+            <div key={ri} className="grid grid-cols-6 gap-3">
+              {row.map((color) => {
+                const selected = accentColor.toUpperCase() === color;
+                return (
+                  <button key={color} type="button" onClick={() => setAccentColor(color)} aria-label={`Selecionar cor ${color}`} aria-pressed={selected}
+                    className={`flex h-10 w-10 items-center justify-center rounded-full border-2 transition-transform active:scale-95 ${selected ? 'scale-110 border-foreground' : 'border-border/40'}`}
+                    style={{ backgroundColor: color }}>
+                    {selected && <Check className="h-4 w-4" style={{ color: isLight(color) ? '#111' : '#fff' }} />}
+                  </button>
+                );
+              })}
+              {ri === 1 && (() => {
+                const custom = !ACCENT_COLORS.includes(accentColor.toUpperCase());
+                return (
+                  <label aria-label="Mais cores" title="Mais cores"
+                    className={`relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border-2 transition-transform active:scale-95 ${custom ? 'scale-110 border-foreground' : 'border-border/40'}`}
+                    style={{ background: custom ? accentColor : 'conic-gradient(#ef4444,#f59e0b,#eab308,#22c55e,#06b6d4,#3b82f6,#a855f7,#ec4899,#ef4444)' }}>
+                    {custom ? <Check className="h-4 w-4" style={{ color: isLight(accentColor) ? '#111' : '#fff' }} /> : <Plus className="h-4 w-4 text-white drop-shadow" />}
+                    <input type="color" value={accentColor} onChange={(e) => setAccentColor(e.target.value.toUpperCase())} className="absolute inset-0 h-full w-full cursor-pointer opacity-0" />
+                  </label>
+                );
+              })()}
+            </div>
+          ))}
         </div>
 
         <div className="flex items-center justify-between gap-4 border-t border-border pt-4">
