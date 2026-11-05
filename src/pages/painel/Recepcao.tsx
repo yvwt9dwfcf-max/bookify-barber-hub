@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Input } from '@/components/ui/input';
 import { Search, BellRing, MessageCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { subscriptionStatus } from '@/lib/clube';
 import { checkoutState, reminderLabel, whatsappReminderUrl } from '@/lib/operationMode';
 
 const ComandaSheet = lazy(() => import('@/components/painel/ComandaSheet'));
@@ -26,7 +27,7 @@ const Recepcao = () => {
   const [search, setSearch] = useState('');
   const [barberFilter, setBarberFilter] = useState<string | 'all'>('all');
   const [onlyPending, setOnlyPending] = useState(false);
-  const [tab, setTab] = useState<'fila' | 'lembretes'>('fila');
+  const [tab, setTab] = useState<'fila' | 'lembretes' | 'assinaturas'>('fila');
   const [selected, setSelected] = useState<Apt | null>(null);
 
   useEffect(() => { const t = setInterval(() => setNow(new Date()), 30000); return () => clearInterval(t); }, []);
@@ -71,7 +72,32 @@ const Recepcao = () => {
       return (data || []).reduce((s, r) => s + Number(r.total_amount || 0), 0);
     },
   });
-  const revenue = apts.filter(a => a.status === 'completed').reduce((s, a) => s + Number(a.services?.price || 0), 0) + productTotal;
+  const { data: subTotal = 0 } = useQuery({
+    queryKey: ['sub-payments', 'reception', barbershop?.id, format(now, 'yyyy-MM-dd')],
+    enabled: !!barbershop?.id && isMaster,
+    refetchInterval: 30000,
+    queryFn: async () => {
+      const { data } = await supabase.from('subscription_payments').select('amount')
+        .eq('barbershop_id', barbershop!.id)
+        .gte('paid_at', startOfDay(now).toISOString()).lte('paid_at', endOfDay(now).toISOString());
+      return (data || []).reduce((s, r) => s + Number(r.amount || 0), 0);
+    },
+  });
+  const { data: renewals = [] } = useQuery({
+    queryKey: ['clube', 'renewals', barbershop?.id, format(now, 'yyyy-MM-dd')],
+    enabled: !!barbershop?.id && isMaster,
+    queryFn: async () => {
+      const [{ data: subs }, { data: plans }] = await Promise.all([
+        supabase.from('client_subscriptions').select('id, plan_id, customer_name, customer_phone, starts_at, expires_at, uses_count').eq('barbershop_id', barbershop!.id).order('expires_at'),
+        supabase.from('client_plans').select('id, name, uses_limit').eq('barbershop_id', barbershop!.id),
+      ]);
+      const byId = Object.fromEntries((plans || []).map(p => [p.id, p]));
+      const soon = format(new Date(now.getTime() + 3 * 86400000), 'yyyy-MM-dd');
+      return (subs || []).map(s => ({ ...s, plan: byId[s.plan_id], status: subscriptionStatus(s, byId[s.plan_id]?.uses_limit ?? null) }))
+        .filter(s => s.status !== 'active' || s.expires_at <= soon);
+    },
+  });
+  const revenue = subTotal + apts.filter(a => a.status === 'completed').reduce((s, a) => s + Number(a.services?.price || 0), 0) + productTotal;
   const upcoming = apts.filter(a => checkoutState(a, now) === 'upcoming');
   const brl = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   const list = apts.filter(a => {
@@ -99,14 +125,37 @@ const Recepcao = () => {
         ))}
       </div>
 
-      <div className="grid grid-cols-2 gap-1 rounded-full bg-muted/60 p-1">
-        {([['fila', 'Fila do dia'], ['lembretes', `Lembretes (${upcoming.length})`]] as const).map(([k, l]) => (
+      <div className="grid grid-cols-3 gap-1 rounded-full bg-muted/60 p-1">
+        {([['fila', 'Fila'], ['lembretes', `Lembretes (${upcoming.length})`], ['assinaturas', `Renovar (${renewals.length})`]] as const).map(([k, l]) => (
           <button key={k} type="button" onClick={() => setTab(k)}
             className={cn('h-9 rounded-full text-xs font-semibold transition', tab === k ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground')}>{l}</button>
         ))}
       </div>
 
-      {tab === 'lembretes' ? (
+      {tab === 'assinaturas' ? (
+        <div className="space-y-2">
+          {renewals.length === 0 && <p className="text-sm text-muted-foreground text-center py-10">Nenhuma assinatura vencendo.</p>}
+          {renewals.map(s => {
+            const label = s.status === 'exhausted' ? 'Usos esgotados' : s.status === 'expired' ? `Venceu ${s.expires_at.split('-').reverse().join('/')}` : `Vence ${s.expires_at.split('-').reverse().join('/')}`;
+            const digits = s.customer_phone.replace(/\D/g, '');
+            const msg = encodeURIComponent(`Olá ${s.customer_name.split(' ')[0]}! Sua assinatura ${s.plan?.name || ''} da ${barbershop?.name || 'nossa casa'} ${s.status === 'active' ? 'vence em breve' : 'venceu'}. Quer renovar na sua próxima visita?`);
+            return (
+              <div key={s.id} className="rounded-xl border border-border/50 bg-card/60 p-3.5 flex items-center gap-3">
+                <span className="flex-1 min-w-0">
+                  <span className="block text-sm font-semibold truncate">{s.customer_name}</span>
+                  <span className={cn('block text-xs', s.status === 'active' ? 'text-muted-foreground' : 'text-destructive font-semibold')}>{s.plan?.name || 'Plano'} · {label}</span>
+                </span>
+                {digits.length >= 10 && (
+                  <a href={`https://wa.me/55${digits}?text=${msg}`} target="_blank" rel="noreferrer" aria-label={`Cobrar renovação de ${s.customer_name} no WhatsApp`}
+                    className="h-11 w-11 rounded-full bg-primary/15 text-primary flex items-center justify-center active:scale-95 transition">
+                    <MessageCircle className="h-5 w-5" />
+                  </a>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      ) : tab === 'lembretes' ? (
         <div className="space-y-2">
           {upcoming.length === 0 && <p className="text-sm text-muted-foreground text-center py-10">Nenhum cliente a seguir hoje.</p>}
           {upcoming.map(a => {

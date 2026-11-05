@@ -496,7 +496,7 @@ const Painel = () => {
 
       {/* Day Closing Modal */}
       <DayClosingModal
-        open={showDayClosing}
+        open={showDayClosing && (barbershop as any)?.operation_mode !== 'reception'}
         onClose={closeDayClosing}
         pendingAppointments={pendingAppointments}
         isPastDays={isPastDays}

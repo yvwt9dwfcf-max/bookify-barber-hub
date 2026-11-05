@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { subscriptionStatus } from '@/lib/clube';
+import { PAYMENT_METHODS, type PaymentMethod } from '@/lib/operationMode';
 
 interface Ctx { barbershop: { id: string } | null; isMaster: boolean }
 interface Plan { id: string; name: string; price: number; uses_limit: number | null; is_active: boolean }
@@ -40,6 +41,8 @@ export default function Clube() {
   const [subOpen, setSubOpen] = useState(false);
   const [pForm, setPForm] = useState({ name: '', price: '', limit: '' });
   const [sForm, setSForm] = useState({ name: '', phone: '', planId: '' });
+  const [payMethod, setPayMethod] = useState<PaymentMethod | null>(null);
+  const [renewing, setRenewing] = useState<Sub | null>(null);
 
   const { data: plans = [] } = useQuery({
     queryKey: ['clube', 'plans', shopId], enabled: !!shopId,
@@ -67,6 +70,11 @@ export default function Clube() {
   const refresh = () => qc.invalidateQueries({ queryKey: ['clube'] });
   const onErr = (e: any) => toast.error(e?.message || 'Não foi possível salvar');
 
+  const recordPayment = async (subId: string, name: string, amount: number, method: PaymentMethod) => {
+    const { error } = await supabase.from('subscription_payments').insert({ barbershop_id: shopId!, subscription_id: subId, customer_name: name, amount, payment_method: method });
+    if (error) throw error;
+  };
+
   const savePlan = useMutation({
     mutationFn: async () => {
       if (!pForm.name.trim()) throw new Error('Informe o nome do plano');
@@ -91,25 +99,29 @@ export default function Clube() {
       const phone = sForm.phone.replace(/\D/g, '');
       if (!sForm.name.trim() || phone.length < 10) throw new Error('Informe nome e WhatsApp válidos');
       if (!sForm.planId) throw new Error('Escolha um plano');
+      if (!payMethod) throw new Error('Escolha a forma de pagamento');
       const today = new Date();
-      const { error } = await supabase.from('client_subscriptions').insert({
+      const { data, error } = await supabase.from('client_subscriptions').insert({
         barbershop_id: shopId!, plan_id: sForm.planId, customer_name: sForm.name.trim(), customer_phone: sForm.phone,
         starts_at: format(today, 'yyyy-MM-dd'), expires_at: format(addDays(today, 30), 'yyyy-MM-dd'),
-      });
+      }).select('id').single();
       if (error) throw error;
+      await recordPayment(data.id, sForm.name.trim(), Number(planById[sForm.planId]?.price || 0), payMethod);
     },
-    onSuccess: () => { toast.success('Assinante cadastrado'); setSubOpen(false); setSForm({ name: '', phone: '', planId: '' }); refresh(); },
+    onSuccess: () => { toast.success('Assinante cadastrado'); setSubOpen(false); setSForm({ name: '', phone: '', planId: '' }); setPayMethod(null); refresh(); },
     onError: onErr,
   });
   const renew = useMutation({
     mutationFn: async (s: Sub) => {
+      if (!payMethod) throw new Error('Escolha a forma de pagamento');
       const today = new Date();
       const { error } = await supabase.from('client_subscriptions').update({
         starts_at: format(today, 'yyyy-MM-dd'), expires_at: format(addDays(today, 30), 'yyyy-MM-dd'), uses_count: 0,
       }).eq('id', s.id);
       if (error) throw error;
+      await recordPayment(s.id, s.customer_name, Number(planById[s.plan_id]?.price || 0), payMethod);
     },
-    onSuccess: () => { toast.success('Assinatura renovada por 30 dias'); refresh(); }, onError: onErr,
+    onSuccess: () => { toast.success('Assinatura renovada por 30 dias'); setRenewing(null); setPayMethod(null); refresh(); }, onError: onErr,
   });
   const removeSub = useMutation({
     mutationFn: async (s: Sub) => {
@@ -164,7 +176,7 @@ export default function Clube() {
                 <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
                   <span>{plan?.uses_limit ? `${s.uses_count}/${plan.uses_limit} usos` : `${s.uses_count} usos · ilimitado`} · vence {br(s.expires_at)}</span>
                   <div className="flex gap-1">
-                    <Button size="sm" variant="outline" className="h-9 rounded-full" onClick={() => renew.mutate(s)}><RefreshCw className="h-3.5 w-3.5" /> Renovar</Button>
+                    <Button size="sm" variant="outline" className="h-9 rounded-full" onClick={() => { setPayMethod(null); setRenewing(s); }}><RefreshCw className="h-3.5 w-3.5" /> Renovar</Button>
                     <Button size="icon" variant="ghost" className="h-9 w-9 rounded-full" aria-label="Remover" onClick={() => confirm(`Remover ${s.customer_name}?`) && removeSub.mutate(s)}><Trash2 className="h-4 w-4" /></Button>
                   </div>
                 </div>
@@ -211,11 +223,37 @@ export default function Clube() {
                 </button>
               ))}
             </div>
+            <PayPicker value={payMethod} onChange={setPayMethod} />
             <p className="text-xs text-muted-foreground">Validade de 30 dias a partir de hoje. O telefone precisa ser o mesmo usado no agendamento.</p>
             <Button className="btn-primary-solid h-12 w-full" disabled={saveSub.isPending} onClick={() => saveSub.mutate()}>Cadastrar assinante</Button>
           </div>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={!!renewing} onOpenChange={(o) => !o && setRenewing(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Renovar {renewing?.customer_name}</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">{renewing && planById[renewing.plan_id]?.name} · {renewing && brl(Number(planById[renewing.plan_id]?.price || 0))} · mais 30 dias</p>
+            <PayPicker value={payMethod} onChange={setPayMethod} />
+            <Button className="btn-primary-solid h-12 w-full" disabled={renew.isPending} onClick={() => renewing && renew.mutate(renewing)}>Confirmar pagamento</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+function PayPicker({ value, onChange }: { value: PaymentMethod | null; onChange: (m: PaymentMethod) => void }) {
+  return (
+    <div>
+      <p className="mb-2 text-xs font-medium text-muted-foreground">Forma de pagamento</p>
+      <div className="grid grid-cols-4 gap-2">
+        {PAYMENT_METHODS.map((m) => (
+          <button key={m.value} type="button" onClick={() => onChange(m.value)}
+            className={cn('h-11 rounded-xl border text-xs font-semibold transition-transform active:scale-[0.97]', value === m.value ? 'border-primary bg-primary/10 text-foreground' : 'text-muted-foreground')}>{m.label}</button>
+        ))}
+      </div>
     </div>
   );
 }
