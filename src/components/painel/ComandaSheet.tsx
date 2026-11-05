@@ -56,6 +56,7 @@ const ComandaSheet = ({ open, onOpenChange, appointment, onCompleted }: ComandaS
   const [search, setSearch] = useState('');
   const [showProducts, setShowProducts] = useState(false);
   const [payment, setPayment] = useState<PaymentMethod | null>(null);
+  const [extras, setExtras] = useState<Record<string, { id: string; name: string; price: number }>>({});
 
   useEffect(() => {
     if (open) {
@@ -63,6 +64,7 @@ const ComandaSheet = ({ open, onOpenChange, appointment, onCompleted }: ComandaS
       setSearch('');
       setShowProducts(false);
       setPayment(null);
+      setExtras({});
     }
   }, [open]);
 
@@ -120,6 +122,19 @@ const ComandaSheet = ({ open, onOpenChange, appointment, onCompleted }: ComandaS
     });
   };
 
+  const { data: extraOptions = [] } = useQuery({
+    queryKey: ['comanda-extras', appointment?.barbershop_id],
+    enabled: open && !!appointment?.barbershop_id,
+    queryFn: async () => {
+      const { data } = await supabase.from('services').select('id, name, price')
+        .eq('barbershop_id', appointment!.barbershop_id!).eq('active', true).order('name');
+      const seen = new Set<string>();
+      return (data || []).filter(s => s.name !== appointment?.service?.name && !seen.has(s.name) && seen.add(s.name)) as { id: string; name: string; price: number }[];
+    },
+  });
+  const toggleExtra = (o: { id: string; name: string; price: number }) =>
+    setExtras(c => { const n = { ...c }; if (n[o.id]) delete n[o.id]; else n[o.id] = o; return n; });
+  const extrasTotal = Object.values(extras).reduce((s, e) => s + Number(e.price || 0), 0);
   const [useSub, setUseSub] = useState(false);
   const baseServicePrice = Number(appointment?.service?.price || 0);
   const productsTotal = useMemo(
@@ -127,7 +142,7 @@ const ComandaSheet = ({ open, onOpenChange, appointment, onCompleted }: ComandaS
     [cart],
   );
   const servicePrice = useSub ? 0 : baseServicePrice;
-  const total = servicePrice + productsTotal;
+  const total = servicePrice + extrasTotal + productsTotal;
   const { data: fees } = useQuery({
     queryKey: ['payment-fees', appointment?.barbershop_id],
     enabled: open && !!appointment?.barbershop_id,
@@ -167,6 +182,15 @@ const ComandaSheet = ({ open, onOpenChange, appointment, onCompleted }: ComandaS
         .update({ status: 'completed', payment_method: payment, paid_at: new Date().toISOString() })
         .eq('id', appointment.id);
       if (aptErr) throw aptErr;
+
+      const extraRows = Object.values(extras);
+      if (extraRows.length > 0 && appointment.barbershop_id) {
+        const { error: exErr } = await supabase.from('appointment_extras').insert(extraRows.map(e => ({
+          barbershop_id: appointment.barbershop_id!, appointment_id: appointment.id, service_id: e.id,
+          barber_id: appointment.barber_id || null, name: e.name, price: Number(e.price || 0), payment_method: payment,
+        })));
+        if (exErr) throw exErr;
+      }
 
       // Insert product sales for each cart item
       const items = Object.values(cart);
@@ -250,6 +274,27 @@ const ComandaSheet = ({ open, onOpenChange, appointment, onCompleted }: ComandaS
               <span className="text-sm font-bold tabular-nums">{formatCurrency(servicePrice)}</span>
             </div>
           </div>
+
+          {/* Quick add-ons: extra services charged here, without taking a slot in the agenda */}
+          {extraOptions.length > 0 && (
+            <div>
+              <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold mb-2">
+                Adicionais {extrasTotal > 0 && `· ${formatCurrency(extrasTotal)}`}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {extraOptions.map(o => {
+                  const on = !!extras[o.id];
+                  return (
+                    <button key={o.id} type="button" onClick={() => toggleExtra(o)} aria-pressed={on}
+                      className={cn('h-10 rounded-full border px-3.5 text-xs font-medium transition-transform active:scale-95',
+                        on ? 'border-primary bg-primary/10 text-foreground' : 'border-border/60 text-muted-foreground')}>
+                      {on ? '✓ ' : '+ '}{o.name} · {formatCurrency(Number(o.price))}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Products in cart */}
           <div>
@@ -382,7 +427,7 @@ const ComandaSheet = ({ open, onOpenChange, appointment, onCompleted }: ComandaS
               <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Total da comanda</p>
               {productsTotal > 0 && (
                 <p className="text-[11px] text-muted-foreground">
-                  Serviço {formatCurrency(servicePrice)} + Produtos {formatCurrency(productsTotal)}
+                  Serviço {formatCurrency(servicePrice)}{extrasTotal > 0 && ` + Adicionais ${formatCurrency(extrasTotal)}`} + Produtos {formatCurrency(productsTotal)}
                 </p>
               )}
             </div>

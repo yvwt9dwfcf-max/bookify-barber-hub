@@ -77,10 +77,12 @@ const Recepcao = () => {
     enabled: !!barbershop?.id && isMaster,
     refetchInterval: 30000,
     queryFn: async () => {
-      const { data } = await supabase.from('subscription_payments').select('amount')
-        .eq('barbershop_id', barbershop!.id)
-        .gte('paid_at', startOfDay(now).toISOString()).lte('paid_at', endOfDay(now).toISOString());
-      return (data || []).reduce((s, r) => s + Number(r.amount || 0), 0);
+      const range = [startOfDay(now).toISOString(), endOfDay(now).toISOString()];
+      const [{ data }, { data: ex }] = await Promise.all([
+        supabase.from('subscription_payments').select('amount').eq('barbershop_id', barbershop!.id).gte('paid_at', range[0]).lte('paid_at', range[1]),
+        supabase.from('appointment_extras').select('price').eq('barbershop_id', barbershop!.id).gte('created_at', range[0]).lte('created_at', range[1]),
+      ]);
+      return (data || []).reduce((s, r) => s + Number(r.amount || 0), 0) + (ex || []).reduce((s, r) => s + Number(r.price || 0), 0);
     },
   });
   const { data: renewals = [] } = useQuery({
