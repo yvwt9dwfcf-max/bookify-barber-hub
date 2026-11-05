@@ -732,3 +732,18 @@ html.agenda-lock .agenda-cockpit .pb-20, html.agenda-lock .agenda-cockpit.pb-20 
   .agenda-cockpit .agenda-tab { height: 40px; }
   .agenda-cockpit .agenda-select { height: 44px; }
 }
+
+/* Bloco 3 — topo da agenda compacto no celular para mostrar mais horários */
+@media (max-width: 767px) {
+  .agenda-title { font-size: 19px; line-height: 1.2; }
+  .agenda-avatar { width: 30px; height: 30px; }
+  .agenda-cockpit .agenda-icon { width: 38px; height: 38px; }
+  .agenda-tabs { margin: 4px 0 2px; padding: 2px; }
+  .agenda-cockpit .agenda-tab { height: 34px; font-size: 12.5px; }
+  .agenda-cockpit .agenda-date { height: 38px; font-size: 12.5px; }
+  .agenda-selects { gap: 6px; }
+  .agenda-cockpit .agenda-select { height: 36px; font-size: 12px; }
+  .agenda-summary { padding: 4px 0; }
+  .agenda-scroll { height: calc(100dvh - 236px); }
+}
+.agenda-holiday { display: flex; align-items: center; justify-content: center; gap: 6px; height: 22px; font-size: 11px; font-weight: 600; color: hsl(var(--warning, 38 92% 50%)); }

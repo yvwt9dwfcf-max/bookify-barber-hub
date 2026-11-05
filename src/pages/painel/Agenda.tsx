@@ -11,6 +11,7 @@ import FloatingActionButton from '@/components/painel/FloatingActionButton';
 import AgendaToolbar from '@/components/painel/agenda/AgendaToolbar';
 import AgendaTimeline from '@/components/painel/agenda/AgendaTimeline';
 import HolidayBanner from '@/components/painel/agenda/HolidayBanner';
+import HolidayReminder from '@/components/painel/agenda/HolidayReminder';
 import { AgendaContextType, getTodayLocalDate, toLocalDate } from '@/components/painel/agenda/agendaUtils';
 import { canEditAgenda, columnBlocks, currency, DEFAULT_AGENDA_PREFERENCES, freeIntervals, type AgendaMode, type AgendaFilter, type AgendaPreferences, type TimelineColumn } from '@/components/painel/agenda/timelineUtils';
 import { Button } from '@/components/ui/button';
@@ -127,6 +128,7 @@ const Agenda = () => {
         filter={filter} onFilterChange={setFilter} preferences={preferences} onPreferencesChange={changePreferences}
         refreshing={refreshing || timeline.isFetching} onRefresh={handleManualRefresh} onNew={() => handleOpenManualDialog()} canCreate={Boolean(selectedBarber && canEditBarber(selectedBarber.id))} onMonthView={() => setMonthly(true)} />
       <div className="agenda-summary"><span><strong>{active.length}</strong> clientes</span><span><strong>{currency(expected)}</strong> previsto</span><span><strong>{vacancies}</strong> espaços livres</span></div>
+      {isMaster && barbershop?.id && <HolidayReminder shopId={barbershop.id} />}
       <HolidayBanner date={selectedDate} />
       {monthly && selectedBarber ? <><Button variant="ghost" className="my-2" onClick={() => setMonthly(false)}>Voltar à agenda</Button><MonthlyCalendar barber={selectedBarber} selectedDate={selectedDate} onDateSelect={date => { setSelectedDate(toLocalDate(date)); setMonthly(false); }} /></> :
         timeline.isError ? <div className="agenda-empty"><p>Não foi possível carregar a agenda.</p><Button variant="ghost" onClick={handleManualRefresh}>Tentar novamente</Button></div> :

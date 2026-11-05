@@ -1,5 +1,5 @@
 import StorageImg from '@/components/StorageImg';
-import { useEffect, useState, useCallback, Suspense } from 'react';
+import { useEffect, useState, useCallback, Suspense, Fragment } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useBarber } from '@/hooks/useBarber';
 import { useUserRole } from '@/hooks/useUserRole';
@@ -118,7 +118,8 @@ const Painel = () => {
   });
 
   // Build menu items based on role
-  const receptionMenu = [
+  type MenuItem = { icon: typeof CalendarDays; label: string; path: string; section?: string };
+  const receptionMenu: MenuItem[] = [
     { icon: Receipt, label: 'Recepção', path: '/painel/recepcao' },
     { icon: CalendarDays, label: 'Agenda', path: '/painel' },
     { icon: Contact, label: 'Clientes', path: '/painel/clientes' },
@@ -128,21 +129,20 @@ const Painel = () => {
     ...(receptionFinance === 'day' ? [{ icon: Wallet, label: 'Caixa do dia', path: '/painel/caixa' }] : []),
     ...(receptionFinance === 'full' ? [{ icon: Wallet, label: 'Financeiro', path: '/painel/financeiro' }] : []),
   ];
-  const ownerMenu = [
-    { icon: CalendarDays, label: 'Agenda', path: '/painel' },
-    ...(isMaster && (barbershop as any)?.operation_mode === 'reception' ? [{ icon: Receipt, label: 'Recepção', path: '/painel/recepcao' }] : []),
-    { icon: Sparkles, label: 'Serviços', path: '/painel/servicos' },
-    { icon: Timer, label: 'Horários', path: '/painel/horarios' },
-    { icon: CalendarX2, label: 'Bloqueios', path: '/painel/bloqueios' },
-    ...(isMaster ? [{ icon: UsersRound, label: 'Equipe', path: '/painel/barbeiros' }] : []),
-    { icon: Wallet, label: 'Financeiro', path: '/painel/financeiro' },
-    ...(isMaster ? [{ icon: Contact, label: 'Clientes', path: '/painel/clientes' }] : []),
-    
-    ...(isMaster ? [{ icon: Crown, label: 'Clube de Assinaturas', path: '/painel/clube' }] : []),
-    
-    { icon: MessageCircle, label: 'WhatsApp', path: '/painel/whatsapp' },
-    ...(isMaster ? [{ icon: Share2, label: 'Perfil Público', path: '/painel/perfil-publico' }] : []),
-    { icon: SlidersHorizontal, label: 'Configurações', path: '/painel/configuracoes' },
+  const isOn = (c: boolean, item: MenuItem) => (c ? [item] : []);
+  const ownerMenu: MenuItem[] = [
+    { icon: CalendarDays, label: 'Agenda', path: '/painel', section: 'Operacional' },
+    ...isOn(isMaster && (barbershop as any)?.operation_mode === 'reception', { icon: Receipt, label: 'Recepção', path: '/painel/recepcao', section: 'Operacional' }),
+    { icon: Sparkles, label: 'Serviços', path: '/painel/servicos', section: 'Operacional' },
+    { icon: Timer, label: 'Horários', path: '/painel/horarios', section: 'Operacional' },
+    { icon: CalendarX2, label: 'Bloqueios', path: '/painel/bloqueios', section: 'Operacional' },
+    ...isOn(isMaster, { icon: Contact, label: 'Clientes', path: '/painel/clientes', section: 'Clientes & Retenção' }),
+    ...isOn(isMaster, { icon: Crown, label: 'Clube de Assinaturas', path: '/painel/clube', section: 'Clientes & Retenção' }),
+    { icon: MessageCircle, label: 'WhatsApp', path: '/painel/whatsapp', section: 'Clientes & Retenção' },
+    { icon: Wallet, label: 'Financeiro', path: '/painel/financeiro', section: 'Gestão' },
+    ...isOn(isMaster, { icon: UsersRound, label: 'Equipe', path: '/painel/barbeiros', section: 'Gestão' }),
+    ...isOn(isMaster, { icon: Share2, label: 'Perfil Público', path: '/painel/perfil-publico', section: 'Gestão' }),
+    { icon: SlidersHorizontal, label: 'Configurações', path: '/painel/configuracoes', section: 'Gestão' },
   ];
   const menuItems = isReceptionist ? receptionMenu : ownerMenu;
 
@@ -403,7 +403,12 @@ const Painel = () => {
             <nav className="h-full p-3 space-y-1 overflow-y-auto overscroll-contain" style={{ touchAction: 'pan-y' }}>
               {menuItems.map((item, index) => {
                 const isActive = location.pathname === item.path;
+                const showSection = item.section && item.section !== menuItems[index - 1]?.section;
                 return (
+                  <Fragment key={item.path}>
+                  {showSection && (
+                    <p className={cn('px-4 pb-1 text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/40', index > 0 && 'mt-3 border-t border-sidebar-border pt-3')}>{item.section}</p>
+                  )}
                   <Link
                     key={item.path}
                     to={item.path}
@@ -425,6 +430,7 @@ const Painel = () => {
                     )} />
                     <span className="text-sm">{item.label}</span>
                   </Link>
+                  </Fragment>
                 );
               })}
             </nav>
