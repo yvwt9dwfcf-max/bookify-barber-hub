@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { useOutletContext, Navigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { format, startOfDay, endOfDay } from 'date-fns';
+import { format, startOfDay, endOfDay, subDays, isToday } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { Input } from '@/components/ui/input';
 import { Search, BellRing, MessageCircle } from 'lucide-react';
@@ -43,13 +43,19 @@ const Recepcao = () => {
         .gte('start_time', startOfDay(now).toISOString()).lte('start_time', endOfDay(now).toISOString())
         .order('start_time');
       if (error) throw error;
-      return (data || []) as unknown as Apt[];
+      // Pending from previous days (confirmed, never closed) so no professional's service is left open.
+      const { data: old } = await supabase.from('appointments')
+        .select('id, customer_name, customer_phone, start_time, end_time, status, barber_id, barbershop_id, services(name, price), barbers(name)')
+        .eq('barbershop_id', barbershop!.id).eq('status', 'confirmed')
+        .gte('start_time', startOfDay(subDays(now, 14)).toISOString()).lt('start_time', startOfDay(now).toISOString())
+        .order('start_time');
+      return [...(old || []), ...(data || [])] as unknown as Apt[];
     },
   });
 
   const barbers = useMemo(() => {
     const m = new Map<string, string>();
-    apts.forEach(a => m.set(a.barber_id, a.barbers?.name || 'Barbeiro'));
+    apts.forEach(a => m.set(a.barber_id, a.barbers?.name || 'Profissional'));
     return [...m.entries()];
   }, [apts]);
 
@@ -85,7 +91,7 @@ const Recepcao = () => {
       </div>
 
       <div className="grid grid-cols-3 gap-2">
-        {[['Faturado hoje', brl(revenue)], ['Atendimentos', String(apts.length)], ['Pendentes', String(pending.length)]].map(([l, v]) => (
+        {[['Faturado hoje', brl(revenue)], ['Atendimentos', String(apts.filter(a => isToday(new Date(a.start_time))).length)], ['Pendentes', String(pending.length)]].map(([l, v]) => (
           <div key={l} className="rounded-xl border border-border/50 bg-card/60 p-3">
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{l}</p>
             <p className="text-base font-bold tabular-nums truncate">{v}</p>
@@ -141,7 +147,7 @@ const Recepcao = () => {
 
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar cliente ou barbeiro" className="pl-9 h-11 rounded-xl" />
+        <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar cliente ou profissional" className="pl-9 h-11 rounded-xl" />
       </div>
 
       <div className="flex gap-2 overflow-x-auto pb-1">
@@ -163,7 +169,7 @@ const Recepcao = () => {
             <button key={a.id} type="button" disabled={!closable} onClick={() => setSelected(a)}
               className={cn('w-full rounded-xl border p-3.5 flex items-center gap-3 text-left transition active:scale-[0.98]',
                 st === 'overdue' ? 'border-primary/60 bg-primary/5' : 'border-border/50 bg-card/60', !closable && 'opacity-60')}>
-              <span className="w-12 text-sm font-semibold tabular-nums">{format(new Date(a.start_time), 'HH:mm')}</span>
+              <span className="w-12 text-sm font-semibold tabular-nums leading-tight">{format(new Date(a.start_time), 'HH:mm')}{!isToday(new Date(a.start_time)) && <span className="block text-[10px] font-medium text-muted-foreground">{format(new Date(a.start_time), 'dd/MM')}</span>}</span>
               <span className="flex-1 min-w-0">
                 <span className="block text-sm font-semibold truncate">{a.customer_name}</span>
                 <span className="block text-xs text-muted-foreground truncate">{a.services?.name || 'Serviço'} · {a.barbers?.name}</span>
