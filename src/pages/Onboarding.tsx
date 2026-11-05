@@ -14,6 +14,8 @@ import {
   Loader2, CircleCheck as CheckCircle, ArrowRight, ArrowLeft
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { SEGMENTS, type BusinessSegment } from '@/lib/segments';
+import { cn } from '@/lib/utils';
 
 interface DayConfig {
   day_of_week: number;
@@ -36,7 +38,7 @@ const defaultDays: DayConfig[] = [
 
 const TOTAL_STEPS = 4;
 
-const stepTitles = ['Seus dados e barbearia', 'Dias de Atendimento', 'Horários de Funcionamento', 'Intervalos / Almoço'];
+const stepTitles = ['Seus dados e negócio', 'Dias de Atendimento', 'Horários de Funcionamento', 'Intervalos / Almoço'];
 const stepDescriptions = [
   'Informações básicas para começar',
   'Selecione os dias em que você atende',
@@ -58,6 +60,9 @@ const Onboarding = () => {
   const [barberName, setBarberName] = useState('');
   const [barbershopName, setBarbershopName] = useState('');
   const [barbershopPhone, setBarbershopPhone] = useState('');
+  const [segment, setSegment] = useState<BusinessSegment>('barbershop');
+  const [ownerAttends, setOwnerAttends] = useState(true);
+  const [hasReception, setHasReception] = useState(false);
 
   // Step 2 & 3: Days and hours
   const [days, setDays] = useState<DayConfig[]>(defaultDays);
@@ -77,6 +82,10 @@ const Onboarding = () => {
     if (barbershop) {
       setBarbershopName(barbershop.name === 'Minha Barbearia' ? '' : barbershop.name);
       setBarbershopPhone(barbershop.phone || '');
+      const b = barbershop as any;
+      if (b.business_segment) setSegment(b.business_segment);
+      if (typeof b.owner_attends === 'boolean') setOwnerAttends(b.owner_attends);
+      setHasReception(b.operation_mode === 'reception');
     }
   }, [barbershop]);
 
@@ -121,7 +130,7 @@ const Onboarding = () => {
         return;
       }
       if (!barbershopName.trim()) {
-        toast.error('Digite o nome da barbearia');
+        toast.error('Digite o nome do negócio');
         return;
       }
 
@@ -139,7 +148,10 @@ const Onboarding = () => {
           .update({ 
             name: barbershopName.trim(),
             phone: barbershopPhone.trim() || null,
-          })
+            business_segment: segment,
+            owner_attends: ownerAttends,
+            operation_mode: hasReception ? 'reception' : 'individual',
+          } as never)
           .eq('id', barbershop.id);
         if (shopError) throw shopError;
       }
@@ -288,11 +300,11 @@ const Onboarding = () => {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="barbershop-name">Nome da barbearia *</Label>
+                    <Label htmlFor="barbershop-name">Nome do negócio *</Label>
                     <div>
                       <Input
                         id="barbershop-name"
-                        placeholder="Ex: Barbearia do João"
+                        placeholder="Ex: Studio da Ana"
                         value={barbershopName}
                         onChange={(e) => setBarbershopName(e.target.value)}
                         className="h-11 rounded-none border-x-0 border-t-0 border-b border-border bg-transparent px-0 shadow-none focus-visible:border-primary focus-visible:ring-0"
@@ -300,7 +312,7 @@ const Onboarding = () => {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="barbershop-phone">Telefone da barbearia</Label>
+                    <Label htmlFor="barbershop-phone">Telefone do negócio</Label>
                     <div>
                       <Input
                         id="barbershop-phone"
@@ -317,6 +329,34 @@ const Onboarding = () => {
                         className="h-11 rounded-none border-x-0 border-t-0 border-b border-border bg-transparent px-0 shadow-none focus-visible:border-primary focus-visible:ring-0"
                         maxLength={15}
                       />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Qual é o seu tipo de negócio?</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {(Object.keys(SEGMENTS) as BusinessSegment[]).map(k => (
+                        <button key={k} type="button" onClick={() => setSegment(k)}
+                          className={cn('min-h-12 rounded-xl border px-3 py-2 text-left text-xs font-medium transition active:scale-[0.97]',
+                            segment === k ? 'border-primary bg-primary/10 text-foreground' : 'border-border/50 text-muted-foreground')}>
+                          {SEGMENTS[k].label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="space-y-3 rounded-2xl border border-border/50 p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-medium">Você também atende clientes?</p>
+                        <p className="text-xs text-muted-foreground">Desligue se você só cuida da gestão.</p>
+                      </div>
+                      <Switch checked={ownerAttends} onCheckedChange={setOwnerAttends} />
+                    </div>
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-medium flex items-center gap-2">Vai ter recepção? <span className="text-[10px] font-medium text-primary">Recomendado</span></p>
+                        <p className="text-xs text-muted-foreground">A recepção fecha as comandas. Sem recepção, cada profissional fecha a sua pelo celular.</p>
+                      </div>
+                      <Switch checked={hasReception} onCheckedChange={setHasReception} />
                     </div>
                   </div>
                 </>
