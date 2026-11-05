@@ -5,3 +5,4 @@
 - Agenda views share a permission-scoped timeline data hook and pure interval helpers; keep layout separate from existing booking mutations so visual changes cannot bypass scheduling validation.
 - Store agenda presentation preferences per shop and user on the current device, with guarded storage access; presentation settings must not mutate business data.- Operation mode (individual vs reception) lives on barbershops.operation_mode; comanda-closing permission goes through src/lib/operationMode.ts so UI paths share one rule.
 - Business segment vocabulary and seat rules live in src/lib/segments.ts so every screen shares one niche catalog.
+- Receptionist access: route allow-list lives in src/lib/receptionAccess.ts and Painel passes receptionists as managers only on those routes; accounts are managed by the manage-receptionist edge function so no seat is consumed and RLS stays the real guard.
