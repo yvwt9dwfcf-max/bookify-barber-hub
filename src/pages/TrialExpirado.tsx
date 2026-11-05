@@ -123,7 +123,7 @@ const TrialExpirado = () => {
               Seu teste grátis terminou
             </h1>
             <p className="text-muted-foreground text-lg leading-relaxed">
-              Escolha um plano para continuar usando o Bookify e gerenciando sua barbearia.
+              Escolha um plano para continuar usando o Bookify e gerenciando seu negócio.
             </p>
           </div>
         )}

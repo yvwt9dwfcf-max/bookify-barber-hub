@@ -1,3 +1,4 @@
+import { useVocab } from '@/hooks/useVocab';
 import { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { supabase, Service, Barber } from '@/lib/supabase';
@@ -51,6 +52,7 @@ interface ServiceWithBarbers extends Service {
 }
 
 const Servicos = () => {
+  const v = useVocab();
   const { barber, barbershop, isMaster } = useOutletContext<ContextType>();
   const [services, setServices] = useState<ServiceWithBarbers[]>([]);
   const [barbers, setBarbers] = useState<Barber[]>([]);
@@ -387,12 +389,12 @@ const Servicos = () => {
                   <div className="space-y-3">
                     <Label className="flex items-center gap-2">
                       <Users className="h-4 w-4" />
-                      Barbeiros que atendem este serviço
+                      {v.pros} que atendem este serviço
                     </Label>
                     <div className="border rounded-lg p-3 space-y-2 max-h-40 overflow-y-auto">
                       {barbers.length === 0 ? (
                         <p className="text-sm text-muted-foreground">
-                          Nenhum barbeiro cadastrado
+                          Nenhum {v.proLower} cadastrado
                         </p>
                       ) : (
                         barbers.map(b => (
@@ -481,15 +483,15 @@ const Servicos = () => {
                         <div className="flex flex-wrap gap-1 mt-1.5">
                           {service.is_global ? (
                             <Badge variant="secondary" className="text-xs">
-                              🌐 Todos os barbeiros
+                              🌐 Todos os {v.prosLower}
                             </Badge>
                           ) : service.assignedBarberIds.length === 0 ? (
                             <Badge variant="outline" className="text-xs text-muted-foreground">
-                              Nenhum barbeiro
+                              Nenhum {v.proLower}
                             </Badge>
                           ) : (
                             <Badge variant="outline" className="text-xs">
-                              {service.assignedBarberIds.length} barbeiro(s)
+                              {service.assignedBarberIds.length} {v.proLower}(s)
                             </Badge>
                           )}
                         </div>

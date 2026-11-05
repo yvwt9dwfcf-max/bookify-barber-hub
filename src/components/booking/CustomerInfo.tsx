@@ -210,7 +210,7 @@ export function CustomerInfo({ onSubmit, isSubmitting, bookingData, appearance =
             )}
           </button>
           <p className="text-center text-xs" style={{ color: '#8C887C' }}>
-            Seu horário fica reservado imediatamente ao confirmar — sem precisar de aprovação da barbearia.
+            Seu horário fica reservado imediatamente ao confirmar — sem precisar de aprovação do estabelecimento.
           </p>
         </div>
       </form>

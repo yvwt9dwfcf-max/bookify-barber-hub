@@ -1,3 +1,4 @@
+import { useVocab } from '@/hooks/useVocab';
 import { useState, useMemo, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -58,6 +59,7 @@ const ReportContent = ({
   prevMonthRevenue = 0,
   onOpenGoalDialog,
 }: ReportContentProps) => {
+  const v = useVocab();
   const totalRevenue = useMemo(() => {
     if (!appointments?.length) return 0;
     return appointments.reduce((sum: number, apt: any) => sum + Number(apt.services?.price || 0), 0);
@@ -443,7 +445,7 @@ const ReportContent = ({
             <CardHeader className="pb-2 pt-4 px-4">
               <CardTitle className="flex items-center gap-2 text-base">
                 <Users className="h-4 w-4 text-primary" />
-                Ranking dos barbeiros
+                Ranking de {v.prosLower}
               </CardTitle>
             </CardHeader>
             <CardContent className="px-4 pb-4 pt-1">

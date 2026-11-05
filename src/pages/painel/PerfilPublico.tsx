@@ -492,7 +492,7 @@ const PerfilPublico = () => {
         )}
 
         <p className="text-xs text-center text-muted-foreground">
-          Para editar o perfil público, peça ao administrador da barbearia.
+          Para editar o perfil público, peça ao administrador do negócio.
         </p>
       </motion.div>
     );

@@ -388,7 +388,7 @@ const BarbeariaPublica = () => {
             <Scissors className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <h1 className="text-xl font-bold mb-2">Negócio não encontrado</h1>
             <p className="text-muted-foreground text-sm">
-              O link que você acessou não é válido ou a barbearia não está mais disponível.
+              O link que você acessou não é válido ou o estabelecimento não está mais disponível.
             </p>
           </CardContent>
         </Card>

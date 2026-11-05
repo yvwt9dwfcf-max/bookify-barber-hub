@@ -1,3 +1,4 @@
+import { useVocab } from '@/hooks/useVocab';
 import { OperationModeCard } from '@/components/painel/OperationModeCard';
 import { ReceptionTeamCard } from '@/components/painel/ReceptionTeamCard';
 import StorageImg from '@/components/StorageImg';
@@ -28,6 +29,7 @@ interface ContextType {
 }
 
 const Configuracoes = () => {
+  const v = useVocab();
   const { barber, refetchRole } = useOutletContext<ContextType>();
   const { updateBarber } = useBarber();
   const { barbershop, isMaster, refetch: refetchUserRole } = useUserRole();
@@ -317,7 +319,7 @@ const Configuracoes = () => {
             <div>
               <h2 className="text-lg font-semibold flex items-center gap-2">
                 <Building2 className="h-4 w-4" />
-                Barbearia
+                {v.business}
               </h2>
               <p className="text-xs text-muted-foreground">Configurações da seu negócio</p>
             </div>

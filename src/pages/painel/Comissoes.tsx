@@ -1,3 +1,4 @@
+import { useVocab } from '@/hooks/useVocab';
 import StorageImg from '@/components/StorageImg';
 import { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
@@ -31,6 +32,7 @@ const formatCurrency = (v: number) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
 
 const Comissoes = () => {
+  const v = useVocab();
   const { barbershop, isMaster } = useOutletContext<OutletContext>();
   const queryClient = useQueryClient();
   const [expandedBarber, setExpandedBarber] = useState<string | null>(null);
@@ -242,7 +244,7 @@ const Comissoes = () => {
           {(barbers || []).length === 0 && (
             <Card>
               <CardContent className="p-6 text-center text-sm text-muted-foreground">
-                Nenhum barbeiro ativo.
+                Nenhum {v.proLower} ativo.
               </CardContent>
             </Card>
           )}

@@ -1,3 +1,4 @@
+import { useVocab } from '@/hooks/useVocab';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { Barber, Barbershop } from '@/lib/supabase';
@@ -57,6 +58,7 @@ Para agendar seu horário, clique no link abaixo:
 {{LINK_AGENDAMENTO}}`;
 
 const WhatsAppAtendimento = () => {
+  const v = useVocab();
   const { barber } = useOutletContext<ContextType>();
   const { barbershop, isMaster } = useUserRole();
   
@@ -466,7 +468,7 @@ const WhatsAppAtendimento = () => {
               Modo de funcionamento
             </CardTitle>
             <CardDescription>
-              Escolha como o WhatsApp será configurado na barbearia
+              Escolha como o WhatsApp será configurado no {v.businessLower}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -479,10 +481,10 @@ const WhatsAppAtendimento = () => {
                 <RadioGroupItem value="global" id="global" className="mt-1" />
                 <div className="flex-1">
                   <Label htmlFor="global" className="font-medium cursor-pointer">
-                    WhatsApp da barbearia (global)
+                    WhatsApp do {v.businessLower} (global)
                   </Label>
                   <p className="text-sm text-muted-foreground">
-                    Um único número e mensagem para toda a barbearia. Apenas você pode editar.
+                    Um único número e mensagem para todo o {v.businessLower}. Apenas você pode editar.
                   </p>
                 </div>
               </div>
@@ -490,10 +492,10 @@ const WhatsAppAtendimento = () => {
                 <RadioGroupItem value="individual" id="individual" className="mt-1" />
                 <div className="flex-1">
                   <Label htmlFor="individual" className="font-medium cursor-pointer">
-                    WhatsApp por barbeiro
+                    WhatsApp por {v.proLower}
                   </Label>
                   <p className="text-sm text-muted-foreground">
-                    Cada barbeiro cadastra e gerencia o próprio número e mensagem.
+                    Cada {v.proLower} cadastra e gerencia o próprio número e mensagem.
                   </p>
                 </div>
               </div>
@@ -531,7 +533,7 @@ const WhatsAppAtendimento = () => {
             </Badge>
             {mode === 'global' && (
               <p className="text-sm text-muted-foreground mt-2">
-                O administrador gerencia o número e mensagem da barbearia. Você pode copiar a mensagem acima.
+                O administrador gerencia o número e mensagem do {v.businessLower}. Você pode copiar a mensagem acima.
               </p>
             )}
           </CardContent>
@@ -545,7 +547,7 @@ const WhatsAppAtendimento = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Phone className="h-5 w-5" />
-              Número da Barbearia
+              Número do {v.business}
             </CardTitle>
             <CardDescription>
               Este número será usado para gerar links de WhatsApp

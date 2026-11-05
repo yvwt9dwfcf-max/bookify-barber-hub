@@ -152,7 +152,7 @@ const AgendarBarbearia = () => {
                 </div>
                 <h1 className="text-xl font-bold mb-2">Negócio não encontrado</h1>
                 <p className="text-muted-foreground">
-                  O link que você acessou não é válido ou a barbearia não está mais disponível.
+                  O link que você acessou não é válido ou o estabelecimento não está mais disponível.
                 </p>
               </CardContent>
             </Card>

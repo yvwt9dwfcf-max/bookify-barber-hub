@@ -44,7 +44,7 @@ export function BookingConfirmation({ appointment, onNewBooking, barbershopId, p
       const number = profile?.whatsapp_numero || shop?.phone;
       if (!number) return;
 
-      const shopName = shop?.name || 'barbearia';
+      const shopName = shop?.name || 'estabelecimento';
       const message =
         `Olá! Acabei de agendar ${appointment.service?.name || 'um serviço'} com ` +
         `${appointment.barber?.name || 'o profissional'} para ${dateLabel} às ${timeLabel} na ${shopName}. ` +
@@ -133,7 +133,7 @@ export function BookingConfirmation({ appointment, onNewBooking, barbershopId, p
       </div>
 
       <p className="text-xs mt-4 text-center" style={{ color: '#8C887C' }}>
-        Seu horário fica reservado imediatamente ao confirmar — sem precisar de aprovação da barbearia.
+        Seu horário fica reservado imediatamente ao confirmar — sem precisar de aprovação do estabelecimento.
       </p>
 
       <div className="mt-7 space-y-3">
@@ -146,11 +146,11 @@ export function BookingConfirmation({ appointment, onNewBooking, barbershopId, p
             >
               <MessageCircle className="h-[18px] w-[18px]" />
               <span>
-                Avisar a barbearia
+                Avisar o estabelecimento
               </span>
             </button>
             <p className="text-center text-xs" style={{ color: '#8C887C' }}>
-              Você será direcionado ao WhatsApp da barbearia com os dados já preenchidos
+              Você será direcionado ao WhatsApp do estabelecimento com os dados já preenchidos
             </p>
           </>
         )}

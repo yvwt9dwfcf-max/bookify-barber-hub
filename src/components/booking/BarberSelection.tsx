@@ -103,7 +103,7 @@ export function BarberSelection({ onSelect, barbershopId, availableBarbers, appe
            {isUrban ? <><span style={{ color: appearance.accentColor }}>Escolha o</span> profissional</> : 'Escolha o profissional'}
          </h2>
         <p className="text-sm mt-1" style={{ color: '#8C887C' }}>
-          Selecione o barbeiro de sua preferência
+          Selecione o profissional de sua preferência
         </p>
       </div>
 

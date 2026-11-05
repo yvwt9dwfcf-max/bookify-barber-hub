@@ -1,3 +1,4 @@
+import { useVocab } from '@/hooks/useVocab';
 import StorageImg from '@/components/StorageImg';
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -18,6 +19,7 @@ const formatCurrency = (v: number) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
 
 const BarbersReport = ({ barbershopId }: Props) => {
+  const v = useVocab();
   const [filterBarber, setFilterBarber] = useState<string>('all');
 
   const range = useMemo(() => {
@@ -101,7 +103,7 @@ const BarbersReport = ({ barbershopId }: Props) => {
   if (!stats.length) {
     return (
       <div className="pt-12 text-center text-sm text-muted-foreground">
-        Cadastre barbeiros para ver os relatórios individuais.
+        Cadastre {v.prosLower} para ver os relatórios individuais.
       </div>
     );
   }
