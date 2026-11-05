@@ -91,7 +91,7 @@ const Recepcao = () => {
       </div>
 
       <div className="grid grid-cols-3 gap-2">
-        {[['Faturado hoje', brl(revenue)], ['Atendimentos', String(apts.length)], ['Pendentes', String(pending.length)]].map(([l, v]) => (
+        {[['Faturado hoje', brl(revenue)], ['Atendimentos', String(apts.filter(a => isToday(new Date(a.start_time))).length)], ['Pendentes', String(pending.length)]].map(([l, v]) => (
           <div key={l} className="rounded-xl border border-border/50 bg-card/60 p-3">
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{l}</p>
             <p className="text-base font-bold tabular-nums truncate">{v}</p>
