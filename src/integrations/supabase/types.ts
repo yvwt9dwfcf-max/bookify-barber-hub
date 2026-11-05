@@ -422,6 +422,7 @@ export type Database = {
           photo_url: string | null
           plan: Database["public"]["Enums"]["plan_type"]
           products_monthly_goal: number | null
+          reception_finance: string
           slot_interval_minutes: number
           slug: string | null
           subscription_active: boolean
@@ -448,6 +449,7 @@ export type Database = {
           photo_url?: string | null
           plan?: Database["public"]["Enums"]["plan_type"]
           products_monthly_goal?: number | null
+          reception_finance?: string
           slot_interval_minutes?: number
           slug?: string | null
           subscription_active?: boolean
@@ -474,6 +476,7 @@ export type Database = {
           photo_url?: string | null
           plan?: Database["public"]["Enums"]["plan_type"]
           products_monthly_goal?: number | null
+          reception_finance?: string
           slot_interval_minutes?: number
           slug?: string | null
           subscription_active?: boolean
@@ -1485,6 +1488,10 @@ export type Database = {
       }
       is_barber_owner: { Args: { p_barber_id: string }; Returns: boolean }
       is_master_of_barbershop: {
+        Args: { _barbershop_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_receptionist_of_barbershop: {
         Args: { _barbershop_id: string; _user_id: string }
         Returns: boolean
       }
