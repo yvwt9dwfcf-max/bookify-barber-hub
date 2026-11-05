@@ -82,7 +82,7 @@ const ExcluirConta = () => {
               </li>
               <li className="flex items-center gap-2">
                 <span className="w-1 h-1 rounded-full bg-destructive/60 shrink-0" />
-                Informações da barbearia
+                Informações do negócio
               </li>
               <li className="flex items-center gap-2">
                 <span className="w-1 h-1 rounded-full bg-destructive/60 shrink-0" />

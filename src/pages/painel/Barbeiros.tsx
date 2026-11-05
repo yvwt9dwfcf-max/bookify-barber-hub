@@ -1,3 +1,4 @@
+import { useVocab } from '@/hooks/useVocab';
 import StorageImg from '@/components/StorageImg';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -41,6 +42,7 @@ interface BarberWithPermissions extends Barber {
 }
 
 const Barbeiros = () => {
+  const v = useVocab();
   const { barbershop, isMaster } = useUserRole();
   const { barbers, loading, canAddMore, currentCount, maxBarbers, refetch } = useBarbershopBarbers();
   const { checkCanPerformAction, checkBarberLimit } = useSubscription();
@@ -223,7 +225,7 @@ const Barbeiros = () => {
           <AlertTriangle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
           <h2 className="text-xl font-bold mb-2">Acesso restrito</h2>
           <p className="text-muted-foreground">
-            Apenas o administrador pode gerenciar barbeiros.
+            Apenas o administrador pode gerenciar {v.prosLower}.
           </p>
         </div>
       </div>
@@ -255,12 +257,12 @@ const Barbeiros = () => {
         <div>
           <h1 className="text-xl font-bold">Equipe</h1>
           <p className="text-sm text-muted-foreground">
-            Gerencie os barbeiros da sua barbearia
+            Gerencie a equipe do seu {v.businessLower}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Badge variant="outline">
-            {currentCount}/{maxBarbers} barbeiros
+            {currentCount}/{maxBarbers} {v.prosLower}
           </Badge>
           <Badge variant="secondary">
             Plano {PLAN_NAMES[barbershop?.plan || 'basic']}
@@ -276,7 +278,7 @@ const Barbeiros = () => {
             disabled={!canAddMore}
           >
             <Plus className="mr-2 h-4 w-4" />
-            Adicionar Barbeiro
+            Adicionar {v.pro}
           </Button>
         </DialogTrigger>
         <DialogContent>
@@ -357,7 +359,7 @@ const Barbeiros = () => {
             <div>
               <p className="font-medium">Limite de profissionais atingido</p>
               <p className="text-sm text-muted-foreground">
-                Seu plano permite até {maxBarbers} barbeiros. Faça upgrade para adicionar mais.
+                Seu plano permite até {maxBarbers} {v.prosLower}. Faça upgrade para adicionar mais.
               </p>
             </div>
           </CardContent>
@@ -522,7 +524,7 @@ const Barbeiros = () => {
                       <AlertDialogHeader>
                         <AlertDialogTitle>Remover profissional?</AlertDialogTitle>
                         <AlertDialogDescription>
-                          O barbeiro {barber.name} será desativado. Os agendamentos existentes serão mantidos.
+                          {v.pro} {barber.name} será desativado. Os agendamentos existentes serão mantidos.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
@@ -561,7 +563,7 @@ const Barbeiros = () => {
           <DialogHeader>
             <DialogTitle>Permissões de {selectedBarber?.name}</DialogTitle>
             <DialogDescription>
-              Configure o que este barbeiro pode fazer no sistema
+              Configure o que este {v.proLower} pode fazer no sistema
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-5 py-4">

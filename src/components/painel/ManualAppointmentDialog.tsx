@@ -1,3 +1,4 @@
+import { useVocab } from '@/hooks/useVocab';
 import { useState, useEffect, useCallback } from 'react';
 import { format, addMinutes, setHours, setMinutes, addDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -163,6 +164,7 @@ const ManualAppointmentDialog = ({
   preselectedTime = null,
   preselectedBarberId = null,
 }: ManualAppointmentDialogProps) => {
+  const v = useVocab();
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingServices, setLoadingServices] = useState(true);
@@ -436,7 +438,7 @@ const ManualAppointmentDialog = ({
 
               {!dayHours && (
                 <p className="text-xs text-destructive text-center py-2">
-                  O barbeiro não atende neste dia da semana.
+                  O {v.proLower} não atende neste dia da semana.
                 </p>
               )}
 

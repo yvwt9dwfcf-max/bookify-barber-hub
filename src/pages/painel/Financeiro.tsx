@@ -1,3 +1,4 @@
+import { useVocab } from '@/hooks/useVocab';
 import { useState, useMemo, useEffect } from 'react';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -226,6 +227,7 @@ const ResumoTab = ({ barbershop, isMaster }: { barbershop: any; isMaster: boolea
 };
 
 const MetasTab = ({ barbershop, isMaster }: { barbershop: any; isMaster: boolean }) => {
+  const v = useVocab();
   const qc = useQueryClient();
   const [shopGoalOpen, setShopGoalOpen] = useState(false);
   const [productsGoalOpen, setProductsGoalOpen] = useState(false);
@@ -363,7 +365,7 @@ const MetasTab = ({ barbershop, isMaster }: { barbershop: any; isMaster: boolean
       </Card>
 
       <p className="text-[11px] text-muted-foreground px-1">
-        Para metas individuais por barbeiro, acesse a aba <strong>Relatórios</strong>.
+        Para metas individuais por {v.proLower}, acesse a aba <strong>Relatórios</strong>.
       </p>
 
       {/* Shop goal dialog */}
@@ -595,6 +597,7 @@ const TaxasCard = ({ barbershopId }: { barbershopId: string }) => {
 };
 
 const Financeiro = () => {
+  const v = useVocab();
   const ctx = useOutletContext<ContextType>();
   const qc = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -666,7 +669,7 @@ const Financeiro = () => {
               <BarbersReport barbershopId={ctx.barbershop.id} />
             ) : (
               <div className="pt-12 text-center text-sm text-muted-foreground">
-                Apenas administradores podem ver os relatórios por barbeiro.
+                Apenas administradores podem ver os relatórios por {v.proLower}.
               </div>
             )}
           </TabsContent>

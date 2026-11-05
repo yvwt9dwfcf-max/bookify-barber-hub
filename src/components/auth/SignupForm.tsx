@@ -92,7 +92,7 @@ export function SignupForm() {
           <h2 className="font-display text-3xl font-semibold">Confirme seu e-mail</h2>
           <p className="text-sm text-muted-foreground">
             Enviamos um link de confirmação para <span className="font-medium text-foreground">{email}</span>.
-            Toque no link e você entrará direto na configuração da sua barbearia.
+            Toque no link e você entrará direto na configuração do seu negócio.
           </p>
         </div>
         <p className="text-xs text-muted-foreground/80">
