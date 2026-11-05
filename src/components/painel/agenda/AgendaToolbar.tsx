@@ -33,7 +33,7 @@ export default function AgendaToolbar(p: Props) {
     <div className="flex min-w-0 items-center justify-between gap-3">
       <div className="flex min-w-0 items-center gap-2">
         {p.onOpenMenu && <Button variant="ghost" size="icon" className="agenda-icon lg:hidden" onClick={p.onOpenMenu} aria-label="Abrir menu"><Menu /></Button>}
-        <div className="min-w-0"><h1 className="agenda-title">Agenda</h1><p className="agenda-subtitle truncate">{p.mode === 'team' ? 'Toda a equipe' : p.selectedBarber?.name || 'Bookify'}</p></div>
+        <h1 className="agenda-title">Agenda</h1>
       </div>
       <div className="flex shrink-0 items-center gap-1">
         <Button variant="ghost" size="icon" className="agenda-icon" onClick={p.onRefresh} disabled={p.refreshing} aria-label="Atualizar agenda" title="Atualizar agenda"><RefreshCw className={cn(p.refreshing && 'animate-spin')} /></Button>
