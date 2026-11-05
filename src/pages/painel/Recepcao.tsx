@@ -169,7 +169,7 @@ const Recepcao = () => {
                   <span className={cn('block text-xs', mins <= 30 ? 'text-primary font-semibold' : 'text-muted-foreground')}>{reminderLabel(a.start_time, now)} · {a.barbers?.name}</span>
                 </span>
                 {a.customer_phone?.replace(/\D/g, '').length >= 10 && (
-                  <a href={whatsappReminderUrl(a.customer_phone, a.customer_name, time, barbershop?.name || 'barbearia')} target="_blank" rel="noreferrer"
+                  <a href={whatsappReminderUrl(a.customer_phone, a.customer_name, time, barbershop?.name || 'nosso espaço')} target="_blank" rel="noreferrer"
                     aria-label={`Lembrar ${a.customer_name} no WhatsApp`}
                     className="h-11 w-11 rounded-full bg-primary/15 text-primary flex items-center justify-center active:scale-95 transition">
                     <MessageCircle className="h-5 w-5" />
