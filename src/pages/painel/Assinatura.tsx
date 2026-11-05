@@ -213,7 +213,7 @@ const Assinatura = () => {
                   <Users className="h-4 w-4 text-primary" />
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Limite de barbeiros</p>
+                  <p className="text-xs text-muted-foreground">Limite de profissionais</p>
                   <p className="text-sm font-semibold">Ilimitado (até 20)</p>
                 </div>
               </div>
@@ -319,8 +319,8 @@ const Assinatura = () => {
                   <Users className="h-4 w-4 text-primary" />
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Limite de barbeiros</p>
-                  <p className="text-sm font-semibold">{currentPlanData?.label || '1 barbeiro'}</p>
+                  <p className="text-xs text-muted-foreground">Limite de profissionais</p>
+                  <p className="text-sm font-semibold">{currentPlanData?.label || '1 profissional'}</p>
                 </div>
               </div>
             </div>

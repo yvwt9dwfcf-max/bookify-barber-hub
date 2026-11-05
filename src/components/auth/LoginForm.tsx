@@ -53,7 +53,7 @@ export function LoginForm() {
       <header className="space-y-2 text-center">
         <p className="font-editorial-mono text-[11px] uppercase text-primary">— Bem-vindo de volta</p>
         <h2 className="font-display text-3xl font-semibold text-foreground">Acesse sua conta</h2>
-        <p className="text-sm text-muted-foreground">Entre para continuar cuidando da sua barbearia.</p>
+        <p className="text-sm text-muted-foreground">Entre para continuar cuidando da seu negócio.</p>
       </header>
 
       <OAuthButtons mode="login" />

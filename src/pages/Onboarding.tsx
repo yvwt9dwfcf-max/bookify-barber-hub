@@ -80,7 +80,7 @@ const Onboarding = () => {
   // Initialize with existing data
   useEffect(() => {
     if (barbershop) {
-      setBarbershopName(barbershop.name === 'Minha Barbearia' ? '' : barbershop.name);
+      setBarbershopName(barbershop.name === 'Meu Negócio' ? '' : barbershop.name);
       setBarbershopPhone(barbershop.phone || '');
       const b = barbershop as any;
       if (b.business_segment) setSegment(b.business_segment);
@@ -91,7 +91,7 @@ const Onboarding = () => {
 
   useEffect(() => {
     if (barber) {
-      setBarberName(barber.name === 'Barbeiro' ? '' : barber.name);
+      setBarberName(barber.name === 'Profissional' ? '' : barber.name);
     }
   }, [barber]);
 
@@ -207,7 +207,7 @@ const Onboarding = () => {
 
       await Promise.all([refetchBarber(), refetchRole()]);
       sessionStorage.removeItem('bookify-auth-destination');
-      toast.success('Barbearia configurada com sucesso! 🎉');
+      toast.success('Negócio configurado com sucesso! 🎉');
       navigate('/painel', { replace: true });
     } catch (error) {
       console.error('Erro ao salvar configurações:', error);
@@ -236,7 +236,7 @@ const Onboarding = () => {
               <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
               <div>
                 <h1 className="font-semibold text-foreground">Preparando sua conta</h1>
-                <p className="mt-1 text-sm text-muted-foreground">Estamos configurando sua barbearia. Isso leva só alguns segundos.</p>
+                <p className="mt-1 text-sm text-muted-foreground">Estamos configurando seu negócio. Isso leva só alguns segundos.</p>
               </div>
             </>
           ) : (
@@ -260,7 +260,7 @@ const Onboarding = () => {
             <div className="flex justify-center mb-4">
               <Logo size="md" linkTo={undefined} />
             </div>
-            <h1 className="font-display text-3xl font-semibold">Configure sua barbearia</h1>
+            <h1 className="font-display text-3xl font-semibold">Configure seu negócio</h1>
             <p className="mt-2 font-editorial-mono text-[10px] uppercase text-muted-foreground">Uma configuração simples, passo a passo</p>
           </div>
 

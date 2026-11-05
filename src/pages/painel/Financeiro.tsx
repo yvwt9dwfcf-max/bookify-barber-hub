@@ -36,7 +36,7 @@ const MASTER_TABS = [
   { value: 'despesas', label: 'Despesas', icon: Receipt },
   { value: 'comissoes', label: 'Comissões', icon: Percent },
   { value: 'relatorios', label: 'Relatórios', icon: ChartPie },
-  { value: 'barbeiros', label: 'Barbeiros', icon: Users },
+  { value: 'barbeiros', label: 'Profissionais', icon: Users },
   { value: 'metas', label: 'Metas', icon: Target },
 ];
 
@@ -308,7 +308,7 @@ const MetasTab = ({ barbershop, isMaster }: { barbershop: any; isMaster: boolean
   const prodPct = prodMeta > 0 ? Math.min(100, ((progress?.products || 0) / prodMeta) * 100) : 0;
 
   if (!isMaster) {
-    return <div className="pt-8 text-center text-sm text-muted-foreground">Apenas administradores podem definir metas da barbearia.</div>;
+    return <div className="pt-8 text-center text-sm text-muted-foreground">Apenas administradores podem definir metas do negócio.</div>;
   }
 
   return (

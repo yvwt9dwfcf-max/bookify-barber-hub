@@ -27,7 +27,7 @@ const steps = [
   {
     icon: Share2,
     title: 'Perfil Público',
-    description: 'Configure seu perfil público para compartilhar o link da sua barbearia. Adicione logo, foto de capa, endereço e redes sociais.',
+    description: 'Configure seu perfil público para compartilhar o link da seu negócio. Adicione logo, foto de capa, endereço e redes sociais.',
     tip: 'Compartilhe o link nas suas redes sociais para receber agendamentos.',
     color: 'hsl(var(--primary))',
     highlight: true,

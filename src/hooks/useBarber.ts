@@ -34,7 +34,7 @@ export function useBarber() {
   });
 
   const updateBarber = async (updates: Partial<Barber>) => {
-    if (!barber) return { data: null, error: new Error('Barbeiro não encontrado') };
+    if (!barber) return { data: null, error: new Error('Profissional não encontrado') };
     try {
       const { permissions: _permissions, ...safeUpdates } = updates as Partial<BarberWithPermissions>;
       const { data, error } = await supabase

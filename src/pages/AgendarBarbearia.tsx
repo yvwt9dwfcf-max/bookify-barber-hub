@@ -150,7 +150,7 @@ const AgendarBarbearia = () => {
                 <div className="w-16 h-16 rounded-2xl mx-auto flex items-center justify-center mb-4" style={{ background: 'var(--primary-gradient)', opacity: 0.15 }}>
                   <Building2 className="h-8 w-8 text-primary" />
                 </div>
-                <h1 className="text-xl font-bold mb-2">Barbearia não encontrada</h1>
+                <h1 className="text-xl font-bold mb-2">Negócio não encontrado</h1>
                 <p className="text-muted-foreground">
                   O link que você acessou não é válido ou a barbearia não está mais disponível.
                 </p>

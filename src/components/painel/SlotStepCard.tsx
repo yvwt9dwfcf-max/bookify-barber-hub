@@ -50,7 +50,7 @@ export function SlotStepCard({ barbershopId, canEdit }: { barbershopId?: string;
         </div>
         <p className="mt-3 text-[11px] text-muted-foreground">
           {step === 15 ? 'Use 15 minutos apenas se você tem serviços de 15 minutos.' : `Horários começam a cada ${step === 60 ? '1 hora' : `${step} minutos`} a partir da abertura.`}
-          {!canEdit && ' Somente o dono da barbearia pode alterar.'}
+          {!canEdit && ' Somente o dono do negócio pode alterar.'}
         </p>
       </CardContent>
     </Card>

@@ -115,7 +115,7 @@ export function BookingConfirmation({ appointment, onNewBooking, barbershopId, p
         className="p-5 space-y-3.5"
         style={{ background: '#101009', border: `1px solid ${LINE}`, borderRadius: 16 }}
       >
-        <Row label="Profissional" value={appointment.barber?.name || 'Barbeiro'} />
+        <Row label="Profissional" value={appointment.barber?.name || 'Profissional'} />
         <Row label="Serviço" value={appointment.service?.name || 'Serviço'} />
         <Row label="Data" value={dateLabel} />
         <Row label="Horário" value={timeLabel} />

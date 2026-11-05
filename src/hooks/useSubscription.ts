@@ -53,7 +53,7 @@ export function useSubscription() {
     
     const messages: Record<string, string> = {
       create_appointment: 'Seu período de teste expirou. Escolha um plano para continuar agendando.',
-      create_barber: 'Seu período de teste expirou. Escolha um plano para adicionar barbeiros.',
+      create_barber: 'Seu período de teste expirou. Escolha um plano para adicionar profissionais.',
       complete_appointment: 'Seu período de teste expirou. Escolha um plano para concluir atendimentos.',
     };
 
@@ -66,7 +66,7 @@ export function useSubscription() {
     if (!barbershop) return false;
     const limit = barbershop.max_barbers;
     if (currentCount >= limit) {
-      toast.error(`Seu plano permite até ${limit} barbeiro${limit > 1 ? 's' : ''}.`);
+      toast.error(`Seu plano permite até ${limit} profissional${limit > 1 ? 's' : ''}.`);
       navigate('/painel/assinatura');
       return false;
     }

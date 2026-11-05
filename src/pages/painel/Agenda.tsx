@@ -146,7 +146,7 @@ const Agenda = () => {
           onComplete={(id) => handleStatusChange(id, 'completed')}
           onDelete={handleDeleteAppointment}
           onOpenComanda={(apt) => {
-            if (!canCloseComanda(getOperationMode(barbershop as any), isMaster)) { toast.info('A recepção fecha as comandas nesta barbearia'); return; }
+            if (!canCloseComanda(getOperationMode(barbershop as any), isMaster)) { toast.info('A recepção fecha as comandas neste negócio'); return; }
             if (!canEditBarber(apt.barber_id) || !checkCanPerformAction('complete_appointment')) return;
             setComandaAppointment(apt);
             setShowComanda(true);

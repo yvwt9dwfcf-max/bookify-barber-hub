@@ -520,11 +520,11 @@ const Relatorios = () => {
   const updateGoalMutation = useMutation({
     mutationFn: async (newGoal: number | null) => {
       if (goalTarget === 'barber') {
-        if (!barber?.id) throw new Error('Barbeiro não encontrado');
+        if (!barber?.id) throw new Error('Profissional não encontrado');
         const { error } = await supabase.from('barbers').update({ monthly_goal: newGoal } as any).eq('id', barber.id);
         if (error) throw error;
       } else {
-        if (!barbershop?.id) throw new Error('Barbearia não encontrada');
+        if (!barbershop?.id) throw new Error('Negócio não encontrado');
         const { error } = await supabase.from('barbershops').update({ monthly_goal: newGoal }).eq('id', barbershop.id);
         if (error) throw error;
       }
@@ -556,7 +556,7 @@ const Relatorios = () => {
     return { start: startDate.toISOString(), end: endDate.toISOString(), startDate, endDate };
   }, [period]);
 
-  // All appointments for the barbershop (master uses for "Barbearia" tab)
+  // All appointments for the barbershop (master uses for "Negócio" tab)
   const { data: allShopAppointments, isLoading: shopLoading } = useQuery({
     queryKey: ['reports-all-appointments', barbershop?.id, dateRange],
     queryFn: async () => {
@@ -641,7 +641,7 @@ const Relatorios = () => {
       : period === '7days'
         ? `${format(dateRange.startDate, "dd/MM/yyyy", { locale: ptBR })} a ${format(dateRange.endDate, "dd/MM/yyyy", { locale: ptBR })}`
         : format(dateRange.startDate, "MMMM 'de' yyyy", { locale: ptBR });
-    doc.text(`${barbershop?.name || 'Barbearia'} — ${periodLabel} (${periodText})`, pageWidth / 2, y, { align: 'center' });
+    doc.text(`${barbershop?.name || 'Negócio'} — ${periodLabel} (${periodText})`, pageWidth / 2, y, { align: 'center' });
     y += 4;
     doc.setFontSize(8);
     doc.text(`Gerado em ${format(new Date(), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}`, pageWidth / 2, y, { align: 'center' });
@@ -699,7 +699,7 @@ const Relatorios = () => {
   }, [isMaster, masterTab, personalCompleted, shopCompleted, personalAllAppointments, allShopAppointments, period, dateRange, barbershop, periodLabel]);
 
   const pageTitle = isMaster ? 'Relatórios & Desempenho' : 'Meu Desempenho';
-  const pageSubtitle = isMaster ? 'Visualize o desempenho da sua barbearia' : 'Acompanhe seus resultados pessoais';
+  const pageSubtitle = isMaster ? 'Visualize o desempenho da seu negócio' : 'Acompanhe seus resultados pessoais';
 
   const periodButtons = (
     <div className="flex gap-1.5">
@@ -748,7 +748,7 @@ const Relatorios = () => {
       {isMaster ? (
         <Tabs value={masterTab} onValueChange={setMasterTab}>
           <TabsList className="grid w-full grid-cols-2 h-11 rounded-lg p-1">
-            <TabsTrigger value="barbearia" className="rounded-md h-full">Barbearia</TabsTrigger>
+            <TabsTrigger value="barbearia" className="rounded-md h-full">Negócio</TabsTrigger>
             <TabsTrigger value="meu-desempenho" className="rounded-md h-full">Meu Desempenho</TabsTrigger>
           </TabsList>
           <TabsContent value="barbearia">

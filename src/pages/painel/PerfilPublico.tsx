@@ -553,7 +553,7 @@ const PerfilPublico = () => {
           <Label className="text-xs text-muted-foreground mb-2 block">Foto de capa</Label>
           {(coverPreview || fotoCapa) ? (
             <div className="relative rounded-xl overflow-hidden group">
-              <StorageImg src={coverPreview || fotoCapa || ''} alt="Foto de capa do perfil da barbearia" className="w-full h-40 object-cover" />
+              <StorageImg src={coverPreview || fotoCapa || ''} alt="Foto de capa do perfil do negócio" className="w-full h-40 object-cover" />
               <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-2">
                 <Button size="sm" variant="secondary" className="h-8 text-xs" onClick={() => coverInputRef.current?.click()}>
                   <Upload className="h-3.5 w-3.5 mr-1" /> Trocar
@@ -579,7 +579,7 @@ const PerfilPublico = () => {
         <div className="flex items-center gap-4 pt-1">
           {(logoPreview || logoUrl) ? (
             <div className="relative group shrink-0">
-              <StorageImg src={logoPreview || logoUrl || ''} alt="Logo da barbearia" className="w-16 h-16 rounded-2xl object-cover ring-2 ring-border" />
+              <StorageImg src={logoPreview || logoUrl || ''} alt="Logo do negócio" className="w-16 h-16 rounded-2xl object-cover ring-2 ring-border" />
               <div className="absolute inset-0 bg-black/50 rounded-2xl opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-1">
                 <button className="h-7 w-7 rounded-lg bg-secondary flex items-center justify-center" onClick={() => logoInputRef.current?.click()}>
                   <Upload className="h-3 w-3" />
@@ -617,7 +617,7 @@ const PerfilPublico = () => {
               className={`overflow-hidden rounded-xl border text-left transition-colors ${themeStyle === 'editorial' ? 'border-primary' : 'border-border hover:border-muted-foreground/40'}`}
             >
               <div className="flex h-24 items-center justify-center bg-background p-3">
-                <span className="font-display text-xl text-[hsl(var(--paper))]">Barbearia</span>
+                <span className="font-display text-xl text-[hsl(var(--paper))]">Negócio</span>
               </div>
               <div className="border-t border-border bg-card px-3 py-2.5 text-sm font-medium">Editorial</div>
             </button>
@@ -645,7 +645,7 @@ const PerfilPublico = () => {
               className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left transition-colors ${fontStyle === 'playfair' ? 'border-primary bg-primary/5' : 'border-border'}`}
             >
               <div className="min-w-0 flex-1">
-                <p className="font-display text-lg text-foreground">Barbearia do João</p>
+                <p className="font-display text-lg text-foreground">Studio do João</p>
                 <p className="font-editorial-mono text-[10px] text-muted-foreground">Formal · Editorial</p>
               </div>
               <SelectionRadio selected={fontStyle === 'playfair'} />
@@ -713,7 +713,7 @@ const PerfilPublico = () => {
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             {gallery.map((photo) => (
               <div key={photo.id} className="group relative aspect-square overflow-hidden rounded-lg border border-border bg-muted">
-                <StorageImg src={photo.image_url} alt="Foto da galeria da barbearia" className="h-full w-full object-cover" />
+                <StorageImg src={photo.image_url} alt="Foto da galeria do negócio" className="h-full w-full object-cover" />
                 <Button
                   type="button"
                   variant="destructive"
@@ -834,11 +834,11 @@ const PerfilPublico = () => {
       {/* === SOBRE === */}
       <Section title="Sobre" icon={<span className="text-sm">📝</span>}>
         <div className="space-y-1.5">
-          <Label className="text-xs">Nome da barbearia</Label>
+          <Label className="text-xs">Nome do negócio</Label>
           <Input value={shopName} onChange={(e) => setShopName(e.target.value)} className="h-9 text-sm" />
         </div>
         <Textarea
-          placeholder="Descreva sua barbearia, serviços, diferenciais..."
+          placeholder="Descreva seu negócio, serviços, diferenciais..."
           value={descricao}
           onChange={(e) => setDescricao(e.target.value)}
           rows={3}
