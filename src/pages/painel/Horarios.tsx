@@ -292,8 +292,8 @@ const Horarios = () => {
 
       <SlotStepCard barbershopId={barbershop?.id} canEdit={isMaster} />
 
-      {/* Closing Time */}
-      <Card className="border-border/40 bg-card/60 backdrop-blur-sm">
+      {/* Closing Time — only without central reception; reception handles pendências */}
+      {(barbershop as any)?.operation_mode !== 'reception' && <Card className="border-border/40 bg-card/60 backdrop-blur-sm">
         <CardHeader className="py-3 px-4">
           <div className="flex items-center justify-between gap-2">
             <CardTitle className="flex items-center gap-2 text-sm font-semibold">
@@ -313,7 +313,7 @@ const Horarios = () => {
             className="h-10"
           />
         </CardContent>
-      </Card>
+      </Card>}
     </div>
   );
 };
