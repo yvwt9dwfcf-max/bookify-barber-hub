@@ -2,7 +2,7 @@ import StorageImg from '@/components/StorageImg';
 import { useState } from 'react';
 import { addDays, format, isToday, startOfWeek } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { CalendarDays, ChevronLeft, ChevronRight, RefreshCw, Menu, Plus } from 'lucide-react';
+import { CalendarDays, ChevronLeft, ChevronRight, RefreshCw, Menu, Plus, CalendarCheck } from 'lucide-react';
 import type { Barber } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -52,7 +52,7 @@ export default function AgendaToolbar(p: Props) {
           <PopoverContent align="start" className="w-auto p-0"><Calendar mode="single" selected={p.selectedDate} locale={ptBR} onSelect={date => { if (date) { p.onDateChange(date); setCalendarOpen(false); } }} /><Button variant="ghost" className="w-full border-t border-border" onClick={() => { p.onMonthView(); setCalendarOpen(false); }}>Visão mensal</Button></PopoverContent>
         </Popover>
         <Button variant="ghost" size="icon" className="agenda-icon" onClick={() => p.onDateChange(addDays(p.selectedDate, p.mode === 'week' ? 7 : 1))} aria-label={p.mode === 'week' ? 'Próxima semana' : 'Próximo dia'}><ChevronRight /></Button>
-        {!isToday(p.selectedDate) && <Button variant="ghost" className="agenda-today" onClick={() => p.onDateChange(new Date())}>Hoje</Button>}
+        {!isToday(p.selectedDate) && <Button variant="ghost" size="icon" className="agenda-icon" onClick={() => p.onDateChange(new Date())} aria-label="Voltar para hoje" title="Voltar para hoje"><CalendarCheck /></Button>}
       </div>
       <div className="agenda-selects">
         {p.mode !== 'team' && p.canViewOthers && p.barbers.length > 1 && <Select value={p.selectedBarber?.id} onValueChange={p.onBarberChange}><SelectTrigger className="agenda-select" aria-label="Profissional"><SelectValue placeholder="Profissional" /></SelectTrigger><SelectContent>{p.barbers.map(b => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}</SelectContent></Select>}

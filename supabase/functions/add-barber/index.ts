@@ -300,6 +300,18 @@ Deno.serve(async (req) => {
       console.error("Error creating permissions:", permError);
     }
 
+    // Expediente padrão: seg–sex 09–18, sáb 09–14, domingo fechado (só se ainda não houver horários)
+    const { count: hoursCount } = await supabaseAdmin.from("opening_hours")
+      .select("id", { count: "exact", head: true }).eq("barber_id", barberData.id);
+    if (!hoursCount) {
+      const rows = [0, 1, 2, 3, 4, 5, 6].map((d) => ({
+        barber_id: barberData.id, barbershop_id, day_of_week: d, is_open: d !== 0,
+        start_time: "09:00", end_time: d === 6 ? "14:00" : "18:00",
+      }));
+      const { error: hoursError } = await supabaseAdmin.from("opening_hours").insert(rows);
+      if (hoursError) console.error("Error creating default hours:", hoursError);
+    }
+
     // Vincular barbeiro a todos os serviços da barbearia
     await linkBarberToServices(supabaseAdmin, barberData.id, barbershop_id);
 

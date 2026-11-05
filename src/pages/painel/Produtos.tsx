@@ -14,6 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { PremiumSkeleton } from '@/components/ui/premium-skeleton';
+import { canCloseComanda, getOperationMode } from '@/lib/operationMode';
 import { ArrowLeft, Plus, Loader2, Trash2, Package, AlertTriangle, ImagePlus, ShoppingCart } from 'lucide-react';
 import { toast } from 'sonner';
 import MultiSaleSheet, { CartItem } from '@/components/painel/MultiSaleSheet';
@@ -229,7 +230,9 @@ const Produtos = () => {
     onError: () => toast.error('Erro ao remover'),
   });
 
+  const canSell = canCloseComanda(getOperationMode(barbershop as { operation_mode?: string | null } | null), isMaster);
   const addToCart = (p: Product) => {
+    if (!canSell) { toast.info('A recepção registra as vendas neste negócio'); return; }
     const existing = cart.find((i) => i.product_id === p.id);
     if (existing) {
       if (existing.quantity >= p.stock) {
@@ -358,7 +361,7 @@ const Produtos = () => {
                       <span className="text-[11px] text-muted-foreground">• {p.stock} em estoque</span>
                     </div>
                   </div>
-                  <Button
+                  {canSell && <Button
                     size="icon"
                     variant="default"
                     className="h-10 w-10 rounded-xl shrink-0 btn-primary-gradient"
@@ -367,7 +370,7 @@ const Produtos = () => {
                     title="Adicionar à comanda"
                   >
                     <Plus className="h-4 w-4" />
-                  </Button>
+                  </Button>}
                 </CardContent>
               </Card>
             );
@@ -552,7 +555,7 @@ const Produtos = () => {
       </Sheet>
 
       {/* Floating cart button */}
-      {cartCount > 0 && (
+      {canSell && cartCount > 0 && (
         <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-40 animate-in fade-in slide-in-from-bottom-4 duration-300">
           <Button
             onClick={() => setCartOpen(true)}
