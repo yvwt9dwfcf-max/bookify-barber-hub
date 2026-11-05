@@ -14,7 +14,6 @@ import { format, startOfMonth, endOfMonth, subMonths, getDate } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 import Caixa from './Caixa';
-import Produtos from './Produtos';
 import Despesas from './Despesas';
 import Relatorios from './Relatorios';
 import Comissoes from './Comissoes';
@@ -32,7 +31,6 @@ const formatCurrency = (v: number) =>
 const MASTER_TABS = [
   { value: 'resumo', label: 'Resumo', icon: TrendingUp },
   { value: 'caixa', label: 'Caixa', icon: Wallet },
-  { value: 'produtos', label: 'Produtos', icon: Package },
   { value: 'despesas', label: 'Despesas', icon: Receipt },
   { value: 'comissoes', label: 'Comissões', icon: Percent },
   { value: 'relatorios', label: 'Relatórios', icon: ChartPie },
@@ -43,7 +41,6 @@ const MASTER_TABS = [
 const BARBER_TABS = [
   { value: 'resumo', label: 'Meu Resumo', icon: TrendingUp },
   { value: 'caixa', label: 'Caixa', icon: Wallet },
-  { value: 'produtos', label: 'Produtos', icon: Package },
   { value: 'relatorios', label: 'Relatórios', icon: ChartPie },
 ];
 
@@ -637,8 +634,8 @@ const Financeiro = () => {
         </h1>
         <p className="text-sm text-muted-foreground">
           {ctx.isMaster
-            ? 'Caixa, produtos, despesas, relatórios e metas em um só lugar'
-            : 'Seu resumo, caixa, produtos e relatórios pessoais'}
+            ? 'Caixa, despesas, relatórios e metas em um só lugar'
+            : 'Seu resumo, caixa e relatórios pessoais'}
         </p>
       </div>
 
@@ -660,7 +657,6 @@ const Financeiro = () => {
             : <BarberResumoTab barber={ctx.barber} barbershop={ctx.barbershop} />}
         </TabsContent>
         <TabsContent value="caixa"><Caixa /></TabsContent>
-        <TabsContent value="produtos"><Produtos /></TabsContent>
         <TabsContent value="relatorios"><Relatorios /></TabsContent>
         {ctx.isMaster && <TabsContent value="despesas"><Despesas /></TabsContent>}
         {ctx.isMaster && <TabsContent value="comissoes"><Comissoes /></TabsContent>}

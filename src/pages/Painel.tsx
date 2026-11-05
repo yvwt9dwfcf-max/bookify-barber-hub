@@ -136,6 +136,7 @@ const Painel = () => {
     { icon: Sparkles, label: 'Serviços', path: '/painel/servicos', section: 'Operacional' },
     { icon: Timer, label: 'Horários', path: '/painel/horarios', section: 'Operacional' },
     { icon: CalendarX2, label: 'Bloqueios', path: '/painel/bloqueios', section: 'Operacional' },
+    { icon: Package, label: 'Produtos', path: '/painel/produtos', section: 'Operacional' },
     ...isOn(isMaster, { icon: Contact, label: 'Clientes', path: '/painel/clientes', section: 'Clientes & Retenção' }),
     ...isOn(isMaster, { icon: Crown, label: 'Clube de Assinaturas', path: '/painel/clube', section: 'Clientes & Retenção' }),
     { icon: MessageCircle, label: 'WhatsApp', path: '/painel/whatsapp', section: 'Clientes & Retenção' },
