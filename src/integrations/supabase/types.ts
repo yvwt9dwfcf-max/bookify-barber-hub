@@ -1281,6 +1281,54 @@ export type Database = {
           },
         ]
       }
+      subscription_payments: {
+        Row: {
+          amount: number
+          barbershop_id: string
+          created_at: string
+          customer_name: string
+          id: string
+          paid_at: string
+          payment_method: string
+          subscription_id: string | null
+        }
+        Insert: {
+          amount?: number
+          barbershop_id: string
+          created_at?: string
+          customer_name: string
+          id?: string
+          paid_at?: string
+          payment_method: string
+          subscription_id?: string | null
+        }
+        Update: {
+          amount?: number
+          barbershop_id?: string
+          created_at?: string
+          customer_name?: string
+          id?: string
+          paid_at?: string
+          payment_method?: string
+          subscription_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_payments_barbershop_id_fkey"
+            columns: ["barbershop_id"]
+            isOneToOne: false
+            referencedRelation: "barbershops"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_payments_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "client_subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           barbershop_id: string
