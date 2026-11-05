@@ -8,6 +8,7 @@ interface UseUserRoleReturn {
   loading: boolean;
   isMaster: boolean;
   isBarber: boolean;
+  isReceptionist: boolean;
   refetch: () => Promise<void>;
 }
 
@@ -54,6 +55,7 @@ export function useUserRole(): UseUserRoleReturn {
     loading: !!userId && isLoading,
     isMaster: userRole?.role === 'master',
     isBarber: userRole?.role === 'barber',
+    isReceptionist: (userRole?.role as string) === 'receptionist',
     refetch: async () => {
       await queryClient.invalidateQueries({ queryKey: ['user-role', userId] });
     },
