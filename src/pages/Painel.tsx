@@ -37,6 +37,7 @@ import { toast } from 'sonner';
 import { useDayClosing } from '@/hooks/useDayClosing';
 import DayClosingModal from '@/components/painel/DayClosingModal';
 import AppTutorial from '@/components/painel/AppTutorial';
+import { canReceptionOpen, getReceptionFinance } from '@/lib/receptionAccess';
 
 // Prefetch all panel sub-routes on mount to avoid stutter during animations
 const panelModules = [
@@ -63,7 +64,9 @@ const panelModules = [
 const Painel = () => {
   const { user, loading: authLoading, signOut } = useAuth();
   const { barber, loading: barberLoading } = useBarber();
-  const { barbershop, isMaster, loading: roleLoading, refetch: refetchRole } = useUserRole();
+  const { barbershop, isMaster, isReceptionist, loading: roleLoading, refetch: refetchRole } = useUserRole();
+  const receptionFinance = getReceptionFinance(barbershop as any);
+  const actsAsManager = isMaster || isReceptionist;
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -79,7 +82,7 @@ const Painel = () => {
 
   // Show tutorial for new accounts after onboarding
   useEffect(() => {
-    if (!roleLoading && barbershop?.onboarding_completed && !(barbershop as any).tutorial_completed) {
+    if (!roleLoading && !isReceptionist && barbershop?.onboarding_completed && !(barbershop as any).tutorial_completed) {
       setShowTutorial(true);
     }
   }, [roleLoading, barbershop]);
@@ -115,7 +118,17 @@ const Painel = () => {
   });
 
   // Build menu items based on role
-  const menuItems = [
+  const receptionMenu = [
+    { icon: Receipt, label: 'Recepção', path: '/painel/recepcao' },
+    { icon: CalendarDays, label: 'Agenda', path: '/painel' },
+    { icon: Contact, label: 'Clientes', path: '/painel/clientes' },
+    { icon: Crown, label: 'Clube de Assinaturas', path: '/painel/clube' },
+    { icon: Package, label: 'Produtos', path: '/painel/produtos' },
+    { icon: CalendarX2, label: 'Bloqueios', path: '/painel/bloqueios' },
+    ...(receptionFinance === 'day' ? [{ icon: Wallet, label: 'Caixa do dia', path: '/painel/caixa' }] : []),
+    ...(receptionFinance === 'full' ? [{ icon: Wallet, label: 'Financeiro', path: '/painel/financeiro' }] : []),
+  ];
+  const ownerMenu = [
     { icon: CalendarDays, label: 'Agenda', path: '/painel' },
     ...(isMaster && (barbershop as any)?.operation_mode === 'reception' ? [{ icon: Receipt, label: 'Recepção', path: '/painel/recepcao' }] : []),
     { icon: Sparkles, label: 'Serviços', path: '/painel/servicos' },
@@ -131,6 +144,14 @@ const Painel = () => {
     ...(isMaster ? [{ icon: Share2, label: 'Perfil Público', path: '/painel/perfil-publico' }] : []),
     { icon: SlidersHorizontal, label: 'Configurações', path: '/painel/configuracoes' },
   ];
+  const menuItems = isReceptionist ? receptionMenu : ownerMenu;
+
+  // Receptionists only reach operational screens; owner-only areas bounce to the counter.
+  useEffect(() => {
+    if (isReceptionist && !canReceptionOpen(location.pathname, receptionFinance)) {
+      navigate('/painel/recepcao', { replace: true });
+    }
+  }, [isReceptionist, receptionFinance, location.pathname, navigate]);
 
   // Check onboarding status using the flag without blocking signed-in users forever
   const isAuthResolved = !authLoading;
@@ -362,9 +383,9 @@ const Painel = () => {
                 </div>
               )}
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-sm truncate">{barber?.name || 'Barbeiro'}</p>
+                <p className="font-semibold text-sm truncate">{barber?.name || (user?.user_metadata as any)?.name || 'Equipe'}</p>
                 <p className="text-xs text-sidebar-foreground/60 truncate">
-                  {isMaster ? 'Administrador' : 'Barbeiro'}
+                  {isMaster ? 'Administrador' : isReceptionist ? 'Recepção' : 'Profissional'}
                 </p>
               </div>
             </div>
@@ -460,7 +481,7 @@ const Painel = () => {
               </div>
             </div>
           }>
-            <Outlet context={{ barber, barbershop, isMaster, refetchRole }} />
+            <Outlet context={{ barber, barbershop, isMaster: actsAsManager, isOwner: isMaster, isReceptionist, refetchRole }} />
           </Suspense>
         </div>
       </main>
