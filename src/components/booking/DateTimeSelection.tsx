@@ -225,7 +225,7 @@ export function DateTimeSelection({ barberId, serviceDuration, onSelect, appeara
             >
               <p className="font-display text-base">Todos os horários deste dia já foram reservados.</p>
               <p className="text-xs mt-2" style={{ color: '#8C887C' }}>
-                Tente selecionar outro dia ou fale com a barbearia.
+                Tente selecionar outro dia ou fale com o estabelecimento.
               </p>
             </div>
           ) : gridForPeriod.length === 0 ? (
