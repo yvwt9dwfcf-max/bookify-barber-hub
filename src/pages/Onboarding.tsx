@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 import { useBarber } from '@/hooks/useBarber';
 import { useUserRole } from '@/hooks/useUserRole';
@@ -8,241 +9,273 @@ import { Logo } from '@/components/ui/Logo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { TimeInput } from '@/components/ui/TimeInput';
-import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { 
-  Loader2, CircleCheck as CheckCircle, ArrowRight, ArrowLeft
+import {
+  Loader2, ArrowLeft, ArrowRight, Check, Scissors, Sparkles, Hand, Flower2, HeartPulse,
+  PenTool, PawPrint, Car, Briefcase, UserRound, ShieldCheck, Users, Headset, Plus, Trash2, PartyPopper,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { SEGMENTS, type BusinessSegment } from '@/lib/segments';
+import { getSteps, operationModeFor, type Management, type OnboardingStep } from '@/lib/onboardingFlow';
 import { cn } from '@/lib/utils';
 
-interface DayConfig {
-  day_of_week: number;
-  is_open: boolean;
-  start_time: string;
-  end_time: string;
-  break_start: string;
-  break_end: string;
+interface DayConfig { day_of_week: number; is_open: boolean; start_time: string; end_time: string }
+interface ServiceDraft { name: string; price: string; duration: string }
+interface PersonDraft { name: string; email: string; password: string }
+
+interface Draft {
+  ownerName: string; businessName: string; segment: BusinessSegment | null;
+  ownerAttends: boolean | null; management: Management | null;
+  receptionNow: boolean; reception: PersonDraft; team: PersonDraft[];
+  services: ServiceDraft[]; servicesSegment: BusinessSegment | null; days: DayConfig[];
+  stepId: OnboardingStep;
 }
 
-const defaultDays: DayConfig[] = [
-  { day_of_week: 0, is_open: false, start_time: '09:00', end_time: '18:00', break_start: '', break_end: '' },
-  { day_of_week: 1, is_open: true, start_time: '09:00', end_time: '18:00', break_start: '', break_end: '' },
-  { day_of_week: 2, is_open: true, start_time: '09:00', end_time: '18:00', break_start: '', break_end: '' },
-  { day_of_week: 3, is_open: true, start_time: '09:00', end_time: '18:00', break_start: '', break_end: '' },
-  { day_of_week: 4, is_open: true, start_time: '09:00', end_time: '18:00', break_start: '', break_end: '' },
-  { day_of_week: 5, is_open: true, start_time: '09:00', end_time: '18:00', break_start: '', break_end: '' },
-  { day_of_week: 6, is_open: true, start_time: '09:00', end_time: '14:00', break_start: '', break_end: '' },
-];
+const defaultDays: DayConfig[] = [0, 1, 2, 3, 4, 5, 6].map((d) => ({
+  day_of_week: d, is_open: d !== 0, start_time: '09:00', end_time: d === 6 ? '14:00' : '18:00',
+}));
 
-const TOTAL_STEPS = 4;
+const emptyPerson: PersonDraft = { name: '', email: '', password: '' };
 
-const stepTitles = ['Seus dados e negócio', 'Dias de Atendimento', 'Horários de Funcionamento', 'Intervalos / Almoço'];
-const stepDescriptions = [
-  'Informações básicas para começar',
-  'Selecione os dias em que você atende',
-  'Configure o horário de cada dia',
-  'Configure os intervalos de cada dia (opcional)',
-];
+const SEGMENT_META: Record<BusinessSegment, { icon: typeof Scissors; desc: string }> = {
+  barbershop: { icon: Scissors, desc: 'Cortes, barba e cuidados' },
+  salon: { icon: Sparkles, desc: 'Cabelo, escova e coloração' },
+  nails: { icon: Hand, desc: 'Mãos, pés e alongamento' },
+  aesthetics: { icon: Flower2, desc: 'Pele, sobrancelha e cílios' },
+  massage: { icon: HeartPulse, desc: 'Clínicas, terapias e saúde' },
+  tattoo: { icon: PenTool, desc: 'Sessões e piercing' },
+  petshop: { icon: PawPrint, desc: 'Banho e tosa' },
+  automotive: { icon: Car, desc: 'Lavagem, polimento e oficina' },
+  other: { icon: Briefcase, desc: 'Qualquer negócio com horário marcado' },
+};
+
+const STEP_TITLES: Record<OnboardingStep, { title: string; text?: string }> = {
+  business: { title: 'Vamos configurar seu negócio.', text: 'Responda algumas perguntas rápidas para preparar seu ambiente no Bookify.' },
+  segment: { title: 'Em qual segmento você atua?', text: 'Isso adapta os termos e as sugestões para o seu tipo de negócio.' },
+  owner: { title: 'Você também atende clientes?' },
+  management: { title: 'Quem cuida dos agendamentos?', text: 'Isso define como as comandas serão fechadas.' },
+  reception: { title: 'Vamos adicionar sua recepcionista?', text: 'Ela terá acesso próprio para organizar agenda, clientes e caixa do dia.' },
+  team: { title: 'Quer adicionar sua equipe?', text: 'Cada pessoa terá sua própria conta. Você pode fazer isso depois.' },
+  services: { title: 'Quais serviços você oferece?', text: 'Comece com o essencial. Você pode adicionar outros depois.' },
+  hours: { title: 'Qual é o horário de funcionamento?', text: 'Horário geral do negócio. A disponibilidade de cada pessoa é ajustada depois.' },
+  review: { title: 'Seu negócio está quase pronto!', text: 'Confira e toque em qualquer item para editar.' },
+};
+
+const fromSuggestions = (seg: BusinessSegment): ServiceDraft[] => {
+  const list = SEGMENTS[seg].suggestedServices;
+  return (list.length ? list : [{ name: '', duration: 30, price: 0 }]).map((s) => ({
+    name: s.name, price: s.price ? String(s.price) : '', duration: String(s.duration),
+  }));
+};
+
+const isEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
 
 const Onboarding = () => {
   const { user, loading: authLoading } = useAuth();
   const { barber, loading: barberLoading, refetch: refetchBarber } = useBarber();
   const { barbershop, loading: roleLoading, refetch: refetchRole } = useUserRole();
   const navigate = useNavigate();
+  const reduce = useReducedMotion();
 
-  const [step, setStep] = useState(1);
+  const storageKey = user ? `bookify-onboarding-${user.id}` : null;
+  const [draft, setDraft] = useState<Draft | null>(null);
+  const [dir, setDir] = useState(1);
   const [saving, setSaving] = useState(false);
+  const [done, setDone] = useState(false);
   const [setupAttempts, setSetupAttempts] = useState(0);
 
-  // Step 1: Personal info + Barbershop
-  const [barberName, setBarberName] = useState('');
-  const [barbershopName, setBarbershopName] = useState('');
-  const [barbershopPhone, setBarbershopPhone] = useState('');
-  const [segment, setSegment] = useState<BusinessSegment>('barbershop');
-  const [ownerAttends, setOwnerAttends] = useState(true);
-  const [hasReception, setHasReception] = useState(false);
-
-  // Step 2 & 3: Days and hours
-  const [days, setDays] = useState<DayConfig[]>(defaultDays);
-
-  // Step 4: Closing time
-  const [closingTime, setClosingTime] = useState<string>('');
-
-  // Redirect if not authenticated
-  useEffect(() => {
-    if (!authLoading && !user) {
-      navigate('/', { replace: true });
-    }
-  }, [user, authLoading, navigate]);
-
-  // Initialize with existing data
-  useEffect(() => {
-    if (barbershop) {
-      setBarbershopName(barbershop.name === 'Meu Negócio' ? '' : barbershop.name);
-      setBarbershopPhone(barbershop.phone || '');
-      const b = barbershop as any;
-      if (b.business_segment) setSegment(b.business_segment);
-      if (typeof b.owner_attends === 'boolean') setOwnerAttends(b.owner_attends);
-      setHasReception(b.operation_mode === 'reception');
-    }
-  }, [barbershop]);
+  useEffect(() => { if (!authLoading && !user) navigate('/', { replace: true }); }, [user, authLoading, navigate]);
 
   useEffect(() => {
-    if (barber) {
-      setBarberName(barber.name === 'Profissional' ? '' : barber.name);
+    if (!roleLoading && barbershop?.onboarding_completed && !done) {
+      sessionStorage.removeItem('bookify-auth-destination');
+      navigate('/painel', { replace: true });
     }
-  }, [barber]);
+  }, [barbershop, roleLoading, navigate, done]);
 
-  // Check if onboarding already completed
-  useEffect(() => {
-    if (!roleLoading && barbershop) {
-      if (barbershop.onboarding_completed) {
-        sessionStorage.removeItem('bookify-auth-destination');
-        navigate('/painel', { replace: true });
-      }
-    }
-  }, [barbershop, roleLoading, navigate]);
-
-  // The account trigger may finish a moment after Supabase returns the new session.
   useEffect(() => {
     if (authLoading || !user || barberLoading || roleLoading || (barber && barbershop) || setupAttempts >= 12) return;
-
-    const timer = window.setTimeout(async () => {
+    const t = window.setTimeout(async () => {
       await Promise.all([refetchBarber(), refetchRole()]);
-      setSetupAttempts((current) => current + 1);
+      setSetupAttempts((c) => c + 1);
     }, 500);
-
-    return () => window.clearTimeout(timer);
+    return () => window.clearTimeout(t);
   }, [authLoading, user, barberLoading, roleLoading, barber, barbershop, setupAttempts, refetchBarber, refetchRole]);
 
-  const updateDay = (dayOfWeek: number, field: keyof DayConfig, value: string | boolean) => {
-    setDays(prev => prev.map(d => 
-      d.day_of_week === dayOfWeek ? { ...d, [field]: value } : d
-    ));
+  // Restaura rascunho salvo + dados já gravados no negócio.
+  useEffect(() => {
+    if (draft || !storageKey || !barber || !barbershop) return;
+    let saved: Partial<Draft> = {};
+    try { saved = JSON.parse(localStorage.getItem(storageKey) || '{}'); } catch { /* rascunho inválido */ }
+    const b = barbershop as any;
+    setDraft({
+      ownerName: barber.name === 'Profissional' ? '' : barber.name,
+      businessName: b.name === 'Meu Negócio' ? '' : b.name,
+      segment: null, ownerAttends: null, management: null,
+      receptionNow: true, reception: { ...emptyPerson }, team: [],
+      services: [], servicesSegment: null, days: defaultDays, stepId: 'business',
+      ...saved,
+    } as Draft);
+  }, [draft, storageKey, barber, barbershop]);
+
+  useEffect(() => {
+    if (!draft || !storageKey) return;
+    // Senhas nunca ficam salvas no aparelho.
+    const safe = { ...draft, reception: { ...draft.reception, password: '' }, team: draft.team.map((p) => ({ ...p, password: '' })) };
+    try { localStorage.setItem(storageKey, JSON.stringify(safe)); } catch { /* armazenamento indisponível */ }
+  }, [draft, storageKey]);
+
+  const set = useCallback((patch: Partial<Draft>) => setDraft((d) => (d ? { ...d, ...patch } : d)), []);
+
+  const steps = useMemo(() => getSteps({ management: draft?.management ?? 'self' }), [draft?.management]);
+  const stepId = draft && steps.includes(draft.stepId) ? draft.stepId : 'business';
+  const index = steps.indexOf(stepId);
+
+  const persistShop = async (patch: Record<string, unknown>) => {
+    if (!barbershop) return;
+    await supabase.from('barbershops').update(patch as never).eq('id', barbershop.id);
   };
 
-  const handleNext = async () => {
-    if (step === 1) {
-      if (!barberName.trim()) {
-        toast.error('Digite seu nome');
-        return;
+  const validate = (): string | null => {
+    if (!draft) return 'Carregando';
+    switch (stepId) {
+      case 'business':
+        if (!draft.ownerName.trim()) return 'Digite seu nome';
+        if (!draft.businessName.trim()) return 'Digite o nome do negócio';
+        return null;
+      case 'segment': return draft.segment ? null : 'Escolha um segmento';
+      case 'owner': return draft.ownerAttends === null ? 'Escolha uma opção' : null;
+      case 'management': return draft.management ? null : 'Escolha uma opção';
+      case 'reception':
+        if (!draft.receptionNow) return null;
+        if (!draft.reception.name.trim() || !isEmail(draft.reception.email)) return 'Informe nome e email válidos';
+        if (draft.reception.password.length < 6) return 'A senha precisa de pelo menos 6 caracteres';
+        return null;
+      case 'team':
+        for (const p of draft.team) {
+          if (!p.name.trim() || !isEmail(p.email) || p.password.length < 6) return 'Complete nome, email e senha (6+) de cada pessoa ou remova';
+        }
+        if (draft.ownerAttends === false && draft.team.length === 0) return null;
+        return null;
+      case 'services': {
+        const valid = draft.services.filter((s) => s.name.trim());
+        if (!valid.length) return 'Adicione pelo menos um serviço';
+        if (valid.some((s) => !(Number(s.duration) >= 15))) return 'A duração mínima é de 15 minutos';
+        return null;
       }
-      if (!barbershopName.trim()) {
-        toast.error('Digite o nome do negócio');
-        return;
-      }
-
-      if (barber) {
-        const { error: barberError } = await supabase
-          .from('barbers')
-          .update({ name: barberName.trim() })
-          .eq('id', barber.id);
-        if (barberError) throw barberError;
-      }
-
-      if (barbershop) {
-        const { error: shopError } = await supabase
-          .from('barbershops')
-          .update({ 
-            name: barbershopName.trim(),
-            phone: barbershopPhone.trim() || null,
-            business_segment: segment,
-            owner_attends: ownerAttends,
-            operation_mode: hasReception ? 'reception' : 'individual',
-          } as never)
-          .eq('id', barbershop.id);
-        if (shopError) throw shopError;
-      }
-
-      setStep(2);
-    } else if (step === 2) {
-      const hasOpenDay = days.some(d => d.is_open);
-      if (!hasOpenDay) {
-        toast.error('Selecione pelo menos um dia de atendimento');
-        return;
-      }
-      setStep(3);
-    } else if (step === 3) {
-      setStep(4);
+      case 'hours':
+        if (!draft.days.some((d) => d.is_open)) return 'Abra pelo menos um dia';
+        if (draft.days.some((d) => d.is_open && d.end_time <= d.start_time)) return 'O fechamento deve ser depois da abertura';
+        return null;
+      default: return null;
     }
   };
 
-  const handleFinish = async () => {
-    if (!barber || !barbershop) return;
+  const goTo = (target: OnboardingStep, direction: number) => { setDir(direction); set({ stepId: target }); };
 
+  const next = async () => {
+    const err = validate();
+    if (err) { toast.error(err); return; }
+    if (!draft) return;
+    if (stepId === 'business') {
+      await persistShop({ name: draft.businessName.trim() });
+      if (barber) await supabase.from('barbers').update({ name: draft.ownerName.trim() }).eq('id', barber.id);
+    }
+    if (stepId === 'segment' && draft.segment) {
+      await persistShop({ business_segment: draft.segment });
+      if (draft.servicesSegment !== draft.segment) set({ services: fromSuggestions(draft.segment), servicesSegment: draft.segment });
+    }
+    if (stepId === 'owner') await persistShop({ owner_attends: draft.ownerAttends });
+    if (stepId === 'management' && draft.management) await persistShop({ operation_mode: operationModeFor(draft.management) });
+    goTo(steps[index + 1], 1);
+  };
+
+  const back = () => { if (index > 0) goTo(steps[index - 1], -1); };
+
+  const finish = async () => {
+    if (!draft || !barber || !barbershop) return;
     setSaving(true);
+    const warnings: string[] = [];
     try {
-      // Delete any existing opening_hours for this barber (in case of retry)
-      const { error: deleteHoursError } = await supabase
-        .from('opening_hours')
-        .delete()
-        .eq('barber_id', barber.id);
-      if (deleteHoursError) throw deleteHoursError;
+      const { error: hDel } = await supabase.from('opening_hours').delete().eq('barber_id', barber.id);
+      if (hDel) throw hDel;
+      const { error: hIns } = await supabase.from('opening_hours').insert(draft.days.map((d) => ({
+        barber_id: barber.id, barbershop_id: barbershop.id, day_of_week: d.day_of_week,
+        start_time: d.start_time, end_time: d.end_time, is_open: d.is_open,
+      })));
+      if (hIns) throw hIns;
 
-      const toInsert = days.map(d => ({
-        barber_id: barber.id,
-        barbershop_id: barbershop.id,
-        day_of_week: d.day_of_week,
-        start_time: d.start_time,
-        end_time: d.end_time,
-        is_open: d.is_open,
-        break_start: d.break_start || null,
-        break_end: d.break_end || null,
-      }));
+      const { data: existing } = await supabase.from('services').select('name').eq('barbershop_id', barbershop.id);
+      const have = new Set((existing ?? []).map((s) => s.name.trim().toLowerCase()));
+      const toAdd = draft.services.filter((s) => s.name.trim() && !have.has(s.name.trim().toLowerCase()));
+      if (toAdd.length) {
+        const { error } = await supabase.from('services').insert(toAdd.map((s) => ({
+          barber_id: barber.id, barbershop_id: barbershop.id, name: s.name.trim(),
+          price: Number(s.price) || 0, duration_minutes: Number(s.duration) || 30, active: true, is_global: true,
+        })));
+        if (error) throw error;
+      }
 
-      const { error: hoursError } = await supabase
-        .from('opening_hours')
-        .insert(toInsert);
+      // Dono gestor não aparece na agenda como profissional.
+      await supabase.from('barbers').update({ is_active: draft.ownerAttends !== false }).eq('id', barber.id);
 
-      if (hoursError) throw hoursError;
+      const { data: { session } } = await supabase.auth.getSession();
+      for (const p of draft.team) {
+        try {
+          const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/add-barber`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}`, apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
+            body: JSON.stringify({ name: p.name.trim(), email: p.email.trim(), password: p.password, barbershop_id: barbershop.id }),
+          });
+          const body = await res.json().catch(() => ({}));
+          if (!res.ok || body?.error) warnings.push(`${p.name}: ${body?.error ?? 'não foi possível criar'}`);
+        } catch { warnings.push(`${p.name}: não foi possível criar`); }
+      }
 
-      const { error: updateError } = await supabase
-        .from('barbershops')
-        .update({ onboarding_completed: true, closing_time: closingTime || null } as any)
-        .eq('id', barbershop.id);
+      if (draft.management === 'reception' && draft.receptionNow) {
+        const { data, error } = await supabase.functions.invoke('manage-receptionist', {
+          body: { action: 'create', barbershop_id: barbershop.id, name: draft.reception.name.trim(), email: draft.reception.email.trim(), password: draft.reception.password },
+        });
+        if (error || data?.error) warnings.push(`Recepção: ${data?.error ?? 'não foi possível criar'}`);
+      }
 
-      if (updateError) throw updateError;
+      const { error: fin } = await supabase.from('barbershops').update({
+        onboarding_completed: true, operation_mode: operationModeFor(draft.management ?? 'self'),
+        owner_attends: draft.ownerAttends !== false, business_segment: draft.segment ?? 'other',
+      } as never).eq('id', barbershop.id);
+      if (fin) throw fin;
 
-      await Promise.all([refetchBarber(), refetchRole()]);
+      if (storageKey) localStorage.removeItem(storageKey);
       sessionStorage.removeItem('bookify-auth-destination');
-      toast.success('Negócio configurado com sucesso! 🎉');
-      navigate('/painel', { replace: true });
-    } catch (error) {
-      console.error('Erro ao salvar configurações:', error);
-      toast.error('Erro ao salvar configurações');
+      warnings.forEach((w) => toast.error(`${w}. Você pode tentar de novo em Equipe ou Configurações.`));
+      setDone(true);
+      await Promise.all([refetchBarber(), refetchRole()]);
+      window.setTimeout(() => navigate('/painel', { replace: true }), 1600);
+    } catch (e) {
+      console.error('Erro ao concluir configuração:', e);
+      toast.error('Não foi possível concluir. Tente novamente.');
     } finally {
       setSaving(false);
     }
   };
 
   if (authLoading || barberLoading || roleLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <div className="flex min-h-[100dvh] items-center justify-center bg-background"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   }
-
   if (!user) return null;
-
-  if (!barber || !barbershop) {
+  if (!barber || !barbershop || !draft) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-6">
-        <div className="max-w-sm text-center space-y-4">
+      <div className="flex min-h-[100dvh] items-center justify-center bg-background p-6">
+        <div className="max-w-sm space-y-4 text-center">
           {setupAttempts < 12 ? (
             <>
               <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
-              <div>
-                <h1 className="font-semibold text-foreground">Preparando sua conta</h1>
-                <p className="mt-1 text-sm text-muted-foreground">Estamos configurando seu negócio. Isso leva só alguns segundos.</p>
-              </div>
+              <h1 className="font-semibold text-foreground">Preparando sua conta</h1>
+              <p className="text-sm text-muted-foreground">Isso leva só alguns segundos.</p>
             </>
           ) : (
             <>
               <h1 className="font-semibold text-foreground">Não foi possível preparar sua conta</h1>
-              <p className="text-sm text-muted-foreground">Tente novamente para concluir a configuração.</p>
               <Button onClick={() => setSetupAttempts(0)} className="w-full">Tentar novamente</Button>
             </>
           )}
@@ -251,247 +284,267 @@ const Onboarding = () => {
     );
   }
 
+  if (done) {
+    return (
+      <div className="flex min-h-[100dvh] items-center justify-center bg-background p-6">
+        <motion.div initial={{ opacity: 0, scale: 0.94 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.35 }} className="max-w-sm space-y-4 text-center">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/15 text-primary"><PartyPopper className="h-8 w-8" /></div>
+          <h1 className="text-2xl font-semibold text-foreground">Tudo pronto!</h1>
+          <p className="text-sm text-muted-foreground">Seu negócio já pode começar a usar o Bookify.</p>
+        </motion.div>
+      </div>
+    );
+  }
+
+  const meta = STEP_TITLES[stepId];
+  const variants = {
+    enter: (d: number) => ({ opacity: 0, x: reduce ? 0 : d * 28 }),
+    center: { opacity: 1, x: 0 },
+    exit: (d: number) => ({ opacity: 0, x: reduce ? 0 : d * -28 }),
+  };
+
   return (
-    <div className="relative flex min-h-screen flex-col overflow-x-hidden bg-background">
-      <main className="relative z-10 flex flex-1 items-center justify-center px-4 py-8 sm:py-12">
-        <div className="w-full max-w-lg space-y-7 animate-fade-in">
-          {/* Logo */}
-          <div className="text-center">
-            <div className="flex justify-center mb-4">
-              <Logo size="md" linkTo={undefined} />
-            </div>
-            <h1 className="font-display text-3xl font-semibold">Configure seu negócio</h1>
-            <p className="mt-2 font-editorial-mono text-[10px] uppercase text-muted-foreground">Uma configuração simples, passo a passo</p>
-          </div>
-
-          {/* Progress */}
-          <div className="flex gap-2" aria-label={`Passo ${step} de ${TOTAL_STEPS}`}>
-            {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
-              <div
-                key={i}
-                className={`h-0.5 flex-1 transition-colors duration-300 ${i < step ? 'bg-primary' : 'bg-border'}`}
-              >
-              </div>
-            ))}
-          </div>
-
-          {/* Step Card */}
-          <section className="animate-fade-in rounded-[14px] border border-border bg-[hsl(var(--editorial-surface))] p-5 sm:p-7" key={step}>
-            <header className="mb-7 space-y-2">
-              <p className="font-editorial-mono text-[11px] uppercase text-[hsl(var(--bordeaux))]">Passo {String(step).padStart(2, '0')}</p>
-              <h2 className="font-display text-2xl font-semibold text-foreground">{stepTitles[step - 1]}</h2>
-              <p className="text-sm text-muted-foreground">{stepDescriptions[step - 1]}</p>
-            </header>
-            <div className="space-y-5">
-              {/* Step 1: Personal Info + Barbershop */}
-              {step === 1 && (
-                <>
-                  <div className="space-y-2">
-                    <Label htmlFor="barber-name">Seu nome *</Label>
-                    <div>
-                      <Input
-                        id="barber-name"
-                        placeholder="Seu nome completo"
-                        value={barberName}
-                        onChange={(e) => setBarberName(e.target.value)}
-                        className="h-11 rounded-none border-x-0 border-t-0 border-b border-border bg-transparent px-0 shadow-none focus-visible:border-primary focus-visible:ring-0"
-                        autoFocus
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="barbershop-name">Nome do negócio *</Label>
-                    <div>
-                      <Input
-                        id="barbershop-name"
-                        placeholder="Ex: Studio da Ana"
-                        value={barbershopName}
-                        onChange={(e) => setBarbershopName(e.target.value)}
-                        className="h-11 rounded-none border-x-0 border-t-0 border-b border-border bg-transparent px-0 shadow-none focus-visible:border-primary focus-visible:ring-0"
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="barbershop-phone">Telefone do negócio</Label>
-                    <div>
-                      <Input
-                        id="barbershop-phone"
-                        type="tel"
-                        placeholder="(00) 00000-0000"
-                        value={barbershopPhone}
-                        onChange={(e) => {
-                          const numbers = e.target.value.replace(/\D/g, '');
-                          let formatted = numbers;
-                          if (numbers.length > 2) formatted = `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
-                          if (numbers.length > 7) formatted = `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
-                          setBarbershopPhone(formatted);
-                        }}
-                        className="h-11 rounded-none border-x-0 border-t-0 border-b border-border bg-transparent px-0 shadow-none focus-visible:border-primary focus-visible:ring-0"
-                        maxLength={15}
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Qual é o seu tipo de negócio?</Label>
-                    <div className="grid grid-cols-2 gap-2">
-                      {(Object.keys(SEGMENTS) as BusinessSegment[]).map(k => (
-                        <button key={k} type="button" onClick={() => setSegment(k)}
-                          className={cn('min-h-12 rounded-xl border px-3 py-2 text-left text-xs font-medium transition active:scale-[0.97]',
-                            segment === k ? 'border-primary bg-primary/10 text-foreground' : 'border-border/50 text-muted-foreground')}>
-                          {SEGMENTS[k].label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="space-y-3 rounded-2xl border border-border/50 p-4">
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <p className="text-sm font-medium">Você também atende clientes?</p>
-                        <p className="text-xs text-muted-foreground">Desligue se você só cuida da gestão.</p>
-                      </div>
-                      <Switch checked={ownerAttends} onCheckedChange={setOwnerAttends} />
-                    </div>
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <p className="text-sm font-medium flex items-center gap-2">Vai ter recepção? <span className="text-[10px] font-medium text-primary">Recomendado</span></p>
-                        <p className="text-xs text-muted-foreground">A recepção fecha as comandas. Sem recepção, cada profissional fecha a sua pelo celular.</p>
-                      </div>
-                      <Switch checked={hasReception} onCheckedChange={setHasReception} />
-                    </div>
-                  </div>
-                </>
-              )}
-
-              {/* Step 2: Working Days */}
-              {step === 2 && (
-                <div className="space-y-2">
-                  {days.map(day => (
-                    <div
-                      key={day.day_of_week}
-                       className={`flex items-center justify-between border-b py-3.5 transition-colors duration-200 ${
-                        day.is_open 
-                           ? 'border-primary/30' 
-                           : 'border-border'
-                      }`}
-                    >
-                      <span className="font-medium text-sm">{DAY_NAMES[day.day_of_week]}</span>
-                      <Switch
-                        checked={day.is_open}
-                        onCheckedChange={(checked) => updateDay(day.day_of_week, 'is_open', checked)}
-                        className="h-5 w-9 border-0 data-[state=unchecked]:bg-muted [&>span]:h-4 [&>span]:w-4 [&>span]:bg-foreground [&>span]:data-[state=checked]:translate-x-4"
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Step 3: Hours */}
-              {step === 3 && (
-                <div className="space-y-3">
-                  {days.filter(d => d.is_open).map(day => (
-                    <div key={day.day_of_week} className="space-y-3 border-b border-border py-3.5">
-                      <p className="font-medium text-sm">{DAY_NAMES[day.day_of_week]}</p>
-                      <div className="flex items-center gap-2">
-                         <div className="flex-1">
-                          <Label className="text-xs text-muted-foreground">Início</Label>
-                          <TimeInput
-                            value={day.start_time}
-                            onChange={(val) => updateDay(day.day_of_week, 'start_time', val)}
-                            className="h-11 w-full rounded-none border-x-0 border-t-0 border-b border-border bg-transparent font-editorial-mono text-lg tracking-normal shadow-none focus-visible:border-primary focus-visible:ring-0"
-                          />
-                        </div>
-                        <span className="text-muted-foreground mt-5">—</span>
-                        <div className="flex-1">
-                          <Label className="text-xs text-muted-foreground">Fim</Label>
-                          <TimeInput
-                            value={day.end_time}
-                            onChange={(val) => updateDay(day.day_of_week, 'end_time', val)}
-                            className="h-11 w-full rounded-none border-x-0 border-t-0 border-b border-border bg-transparent font-editorial-mono text-lg tracking-normal shadow-none focus-visible:border-primary focus-visible:ring-0"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Step 4: Breaks */}
-              {step === 4 && (
-                <div className="space-y-3">
-                  {days.filter(d => d.is_open).map(day => (
-                    <div key={day.day_of_week} className="space-y-3 border-b border-border py-3.5">
-                      <p className="font-medium text-sm">{DAY_NAMES[day.day_of_week]}</p>
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1">
-                          <Label className="text-xs text-muted-foreground">Intervalo início</Label>
-                          <TimeInput
-                            value={day.break_start}
-                            onChange={(val) => updateDay(day.day_of_week, 'break_start', val)}
-                            className="h-11 w-full rounded-none border-x-0 border-t-0 border-b border-border bg-transparent font-editorial-mono text-lg tracking-normal shadow-none focus-visible:border-primary focus-visible:ring-0"
-                          />
-                        </div>
-                        <span className="text-muted-foreground mt-5">—</span>
-                        <div className="flex-1">
-                          <Label className="text-xs text-muted-foreground">Intervalo fim</Label>
-                          <TimeInput
-                            value={day.break_end}
-                            onChange={(val) => updateDay(day.day_of_week, 'break_end', val)}
-                            className="h-11 w-full rounded-none border-x-0 border-t-0 border-b border-border bg-transparent font-editorial-mono text-lg tracking-normal shadow-none focus-visible:border-primary focus-visible:ring-0"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-
-                  <div className="space-y-2 border-t border-border pt-4">
-                    <Label className="text-sm font-medium">Encerramento do dia</Label>
-                    <p className="text-xs text-muted-foreground">
-                      Horário em que o sistema sugere fechar o caixa do dia (opcional).
-                    </p>
-                    <TimeInput
-                      value={closingTime}
-                      onChange={setClosingTime}
-                      className="h-11 w-full rounded-none border-x-0 border-t-0 border-b border-border bg-transparent font-editorial-mono text-lg tracking-normal shadow-none focus-visible:border-primary focus-visible:ring-0"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Navigation Buttons */}
-              <div className="flex gap-3 pt-2">
-                {step > 1 && (
-                  <Button variant="outline" onClick={() => setStep(step - 1)} className="h-12 flex-1 rounded-lg border-border bg-transparent font-editorial-mono text-xs uppercase">
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Voltar
-                  </Button>
-                )}
-                {step < TOTAL_STEPS ? (
-                  <Button onClick={handleNext} className="h-12 flex-1 rounded-lg btn-primary-gradient font-editorial-mono text-xs uppercase">
-                    Continuar
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                ) : (
-                  <Button onClick={handleFinish} disabled={saving} className="h-12 flex-1 rounded-lg btn-primary-gradient font-editorial-mono text-xs uppercase">
-                    {saving ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Finalizando...
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle className="mr-2 h-4 w-4" />
-                        Finalizar
-                      </>
-                    )}
-                  </Button>
-                )}
-              </div>
-            </div>
-          </section>
+    <div className="flex h-[100dvh] flex-col overflow-hidden bg-background">
+      <header className="mx-auto w-full max-w-lg shrink-0 px-5 pt-[max(env(safe-area-inset-top),16px)]">
+        <div className="flex h-12 items-center justify-between">
+          <button type="button" onClick={back} disabled={index === 0} aria-label="Voltar"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-secondary text-foreground transition active:scale-95 disabled:opacity-0">
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <Logo size="sm" linkTo={undefined} />
+          <span className="w-11 text-right text-xs tabular-nums text-muted-foreground">{index + 1}/{steps.length}</span>
         </div>
+        <div className="mt-3 h-1 overflow-hidden rounded-full bg-secondary" aria-label={`Etapa ${index + 1} de ${steps.length}`}>
+          <motion.div className="h-full rounded-full bg-primary" animate={{ width: `${((index + 1) / steps.length) * 100}%` }} transition={{ duration: reduce ? 0 : 0.3 }} />
+        </div>
+        <p className="mt-3 text-xs text-muted-foreground">Etapa {index + 1} de {steps.length}</p>
+      </header>
+
+      <main className="relative mx-auto w-full max-w-lg flex-1 overflow-y-auto overscroll-contain px-5">
+        <AnimatePresence mode="wait" custom={dir} initial={false}>
+          <motion.div key={stepId} custom={dir} variants={variants} initial="enter" animate="center" exit="exit"
+            transition={{ duration: reduce ? 0 : 0.24, ease: 'easeOut' }} className="pb-6 pt-4">
+            <h1 className="text-[26px] font-semibold leading-tight tracking-tight text-foreground">{meta.title}</h1>
+            {meta.text && <p className="mt-2 text-sm text-muted-foreground">{meta.text}</p>}
+            <div className="mt-6">{renderStep()}</div>
+          </motion.div>
+        </AnimatePresence>
       </main>
+
+      <footer className="mx-auto w-full max-w-lg shrink-0 px-5 pb-[max(env(safe-area-inset-bottom),16px)] pt-3">
+        {stepId === 'review' ? (
+          <Button onClick={finish} disabled={saving} className="btn-primary-solid h-[52px] w-full rounded-xl text-base">
+            {saving ? <><Loader2 className="mr-2 h-5 w-5 animate-spin" />Concluindo…</> : <><Check className="mr-2 h-5 w-5" />Concluir configuração</>}
+          </Button>
+        ) : (
+          <Button onClick={next} className="btn-primary-solid h-[52px] w-full rounded-xl text-base">
+            Continuar<ArrowRight className="ml-2 h-5 w-5" />
+          </Button>
+        )}
+      </footer>
     </div>
   );
+
+  function renderStep() {
+    const d = draft!;
+    switch (stepId) {
+      case 'business':
+        return (
+          <div className="space-y-5">
+            <Field label="Seu nome"><Input value={d.ownerName} onChange={(e) => set({ ownerName: e.target.value })} placeholder="Ex.: Ana Souza" className="h-12 rounded-xl" autoComplete="name" /></Field>
+            <Field label="Nome do negócio"><Input value={d.businessName} onChange={(e) => set({ businessName: e.target.value })} placeholder="Ex.: Studio Bella" className="h-12 rounded-xl" /></Field>
+          </div>
+        );
+      case 'segment':
+        return (
+          <div className="grid grid-cols-2 gap-3">
+            {(Object.keys(SEGMENTS) as BusinessSegment[]).map((key) => {
+              const M = SEGMENT_META[key];
+              return (
+                <ChoiceCard key={key} selected={d.segment === key} onClick={() => set({ segment: key })} compact>
+                  <M.icon className="h-6 w-6 text-primary" />
+                  <p className="mt-3 text-sm font-semibold leading-tight text-foreground">{SEGMENTS[key].label}</p>
+                  <p className="mt-1 text-xs leading-snug text-muted-foreground">{M.desc}</p>
+                </ChoiceCard>
+              );
+            })}
+          </div>
+        );
+      case 'owner':
+        return (
+          <div className="space-y-3">
+            <ChoiceCard selected={d.ownerAttends === true} onClick={() => set({ ownerAttends: true })}>
+              <Row icon={UserRound} title="Sim, eu também atendo" text="Você administra e aparece na agenda como profissional." />
+            </ChoiceCard>
+            <ChoiceCard selected={d.ownerAttends === false} onClick={() => set({ ownerAttends: false })}>
+              <Row icon={ShieldCheck} title="Não, apenas administro" text="Você gerencia tudo, sem ocupar horários na agenda nem vaga do plano." />
+            </ChoiceCard>
+          </div>
+        );
+      case 'management':
+        return (
+          <div className="space-y-3">
+            <ChoiceCard selected={d.management === 'reception'} onClick={() => set({ management: 'reception' })}>
+              <Row icon={Headset} title="Tenho recepcionista" badge="Recomendado" text="Ela organiza a agenda e fecha as comandas no caixa central." />
+            </ChoiceCard>
+            <ChoiceCard selected={d.management === 'self'} onClick={() => set({ management: 'self' })}>
+              <Row icon={UserRound} title="Eu mesmo administro" text="Cada profissional fecha a própria comanda pelo celular." />
+            </ChoiceCard>
+            <ChoiceCard selected={d.management === 'team'} onClick={() => set({ management: 'team' })}>
+              <Row icon={Users} title="A equipe também administra" text="Profissionais organizam os próprios horários e comandas." />
+            </ChoiceCard>
+          </div>
+        );
+      case 'reception':
+        return (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-2 rounded-xl bg-secondary p-1">
+              {[true, false].map((v) => (
+                <button key={String(v)} type="button" onClick={() => set({ receptionNow: v })}
+                  className={cn('h-11 rounded-lg text-sm font-medium transition', d.receptionNow === v ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground')}>
+                  {v ? 'Adicionar agora' : 'Fazer depois'}
+                </button>
+              ))}
+            </div>
+            {d.receptionNow ? (
+              <PersonFields person={d.reception} onChange={(p) => set({ reception: p })} />
+            ) : (
+              <p className="rounded-xl border border-border p-4 text-sm text-muted-foreground">Sem problema. Depois é só ir em <span className="font-medium text-foreground">Configurações → Recepção</span> e tocar em adicionar.</p>
+            )}
+            {d.receptionNow && <p className="text-xs text-muted-foreground">Ela entra com esse email e senha e pode trocar a senha depois. Não consome vaga de profissional.</p>}
+          </div>
+        );
+      case 'team':
+        return (
+          <div className="space-y-4">
+            {d.team.map((p, i) => (
+              <div key={i} className="space-y-3 rounded-2xl border border-border bg-card p-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-semibold">Profissional {i + 1}</p>
+                  <button type="button" aria-label="Remover" onClick={() => set({ team: d.team.filter((_, j) => j !== i) })} className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground active:scale-95"><Trash2 className="h-4 w-4" /></button>
+                </div>
+                <PersonFields person={p} onChange={(np) => set({ team: d.team.map((x, j) => (j === i ? np : x)) })} />
+              </div>
+            ))}
+            <Button type="button" variant="outline" onClick={() => set({ team: [...d.team, { ...emptyPerson }] })} className="h-12 w-full rounded-xl border-dashed">
+              <Plus className="mr-2 h-4 w-4" />Adicionar profissional
+            </Button>
+            {d.team.length === 0 && <p className="text-center text-xs text-muted-foreground">Opcional — toque em continuar para pular.</p>}
+          </div>
+        );
+      case 'services':
+        return (
+          <div className="space-y-3">
+            {d.services.map((s, i) => (
+              <div key={i} className="rounded-2xl border border-border bg-card p-4">
+                <div className="flex items-center gap-2">
+                  <Input value={s.name} onChange={(e) => set({ services: d.services.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)) })} placeholder="Nome do serviço" className="h-11 flex-1 rounded-xl" />
+                  <button type="button" aria-label="Remover serviço" onClick={() => set({ services: d.services.filter((_, j) => j !== i) })} className="flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground active:scale-95"><Trash2 className="h-4 w-4" /></button>
+                </div>
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  <Field label="Preço (R$)" small><Input inputMode="decimal" value={s.price} onChange={(e) => set({ services: d.services.map((x, j) => (j === i ? { ...x, price: e.target.value.replace(/[^\d.,]/g, '').replace(',', '.') } : x)) })} placeholder="0" className="h-11 rounded-xl" /></Field>
+                  <Field label="Duração (min)" small><Input inputMode="numeric" value={s.duration} onChange={(e) => set({ services: d.services.map((x, j) => (j === i ? { ...x, duration: e.target.value.replace(/\D/g, '') } : x)) })} placeholder="30" className="h-11 rounded-xl" /></Field>
+                </div>
+              </div>
+            ))}
+            <Button type="button" variant="outline" onClick={() => set({ services: [...d.services, { name: '', price: '', duration: '30' }] })} className="h-12 w-full rounded-xl border-dashed">
+              <Plus className="mr-2 h-4 w-4" />Adicionar serviço
+            </Button>
+          </div>
+        );
+      case 'hours':
+        return (
+          <div className="divide-y divide-border rounded-2xl border border-border bg-card">
+            {d.days.map((day) => {
+              const upd = (patch: Partial<DayConfig>) => set({ days: d.days.map((x) => (x.day_of_week === day.day_of_week ? { ...x, ...patch } : x)) });
+              return (
+                <div key={day.day_of_week} className="flex min-h-[56px] items-center gap-3 px-4 py-2">
+                  <Switch checked={day.is_open} onCheckedChange={(v) => upd({ is_open: v })} aria-label={DAY_NAMES[day.day_of_week]} />
+                  <span className="w-16 text-sm font-medium">{DAY_NAMES[day.day_of_week].slice(0, 3)}</span>
+                  {day.is_open ? (
+                    <div className="ml-auto flex items-center gap-1.5">
+                      <TimeInput value={day.start_time} onChange={(v) => upd({ start_time: v })} className="h-10 w-[72px] rounded-lg text-center tabular-nums" />
+                      <span className="text-muted-foreground">–</span>
+                      <TimeInput value={day.end_time} onChange={(v) => upd({ end_time: v })} className="h-10 w-[72px] rounded-lg text-center tabular-nums" />
+                    </div>
+                  ) : <span className="ml-auto text-sm text-muted-foreground">Fechado</span>}
+                </div>
+              );
+            })}
+          </div>
+        );
+      case 'review': {
+        const openDays = d.days.filter((x) => x.is_open);
+        const items: { label: string; value: string; step: OnboardingStep }[] = [
+          { label: 'Negócio', value: d.businessName, step: 'business' },
+          { label: 'Segmento', value: d.segment ? SEGMENTS[d.segment].label : '—', step: 'segment' },
+          { label: 'Você', value: d.ownerAttends ? 'Administra e atende' : 'Apenas administra', step: 'owner' },
+          { label: 'Operação', value: d.management === 'reception' ? 'Com recepção' : d.management === 'team' ? 'Equipe administra' : 'Você administra', step: 'management' },
+          ...(d.management === 'reception' ? [{ label: 'Recepcionista', value: d.receptionNow ? d.reception.name : 'Adicionar depois', step: 'reception' as OnboardingStep }] : []),
+          { label: 'Equipe', value: d.team.length ? d.team.map((p) => p.name).join(', ') : 'Nenhum por enquanto', step: 'team' },
+          { label: 'Serviços', value: d.services.filter((s) => s.name.trim()).map((s) => s.name).join(', '), step: 'services' },
+          { label: 'Horários', value: `${openDays.length} dias abertos`, step: 'hours' },
+        ];
+        return (
+          <div className="divide-y divide-border rounded-2xl border border-border bg-card">
+            {items.map((it) => (
+              <button key={it.label} type="button" onClick={() => goTo(it.step, -1)} className="flex min-h-[56px] w-full items-center gap-3 px-4 py-3 text-left transition active:bg-secondary">
+                <span className="w-24 shrink-0 text-xs text-muted-foreground">{it.label}</span>
+                <span className="flex-1 truncate text-sm font-medium text-foreground">{it.value}</span>
+                <span className="text-xs text-primary">Editar</span>
+              </button>
+            ))}
+          </div>
+        );
+      }
+    }
+  }
 };
+
+function Field({ label, children, small }: { label: string; children: React.ReactNode; small?: boolean }) {
+  return (
+    <label className="block space-y-1.5">
+      <span className={cn('font-medium text-muted-foreground', small ? 'text-[11px]' : 'text-xs')}>{label}</span>
+      {children}
+    </label>
+  );
+}
+
+function ChoiceCard({ selected, onClick, children, compact }: { selected: boolean; onClick: () => void; children: React.ReactNode; compact?: boolean }) {
+  return (
+    <motion.button type="button" onClick={onClick} whileTap={{ scale: 0.97 }} aria-pressed={selected}
+      className={cn('relative w-full rounded-2xl border bg-card text-left transition-colors', compact ? 'p-4' : 'p-4',
+        selected ? 'border-primary bg-primary/[0.08] ring-1 ring-primary' : 'border-border')}>
+      {selected && (
+        <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground">
+          <Check className="h-3 w-3" />
+        </motion.span>
+      )}
+      {children}
+    </motion.button>
+  );
+}
+
+function Row({ icon: Icon, title, text, badge }: { icon: typeof Scissors; title: string; text: string; badge?: string }) {
+  return (
+    <div className="flex items-start gap-3 pr-6">
+      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/12 text-primary"><Icon className="h-5 w-5" /></span>
+      <div>
+        <p className="flex flex-wrap items-center gap-2 text-[15px] font-semibold text-foreground">{title}{badge && <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-medium text-primary">{badge}</span>}</p>
+        <p className="mt-1 text-[13px] leading-snug text-muted-foreground">{text}</p>
+      </div>
+    </div>
+  );
+}
+
+function PersonFields({ person, onChange }: { person: PersonDraft; onChange: (p: PersonDraft) => void }) {
+  return (
+    <div className="space-y-3">
+      <Field label="Nome"><Input value={person.name} onChange={(e) => onChange({ ...person, name: e.target.value })} className="h-12 rounded-xl" /></Field>
+      <Field label="Email"><Input type="email" inputMode="email" autoCapitalize="none" value={person.email} onChange={(e) => onChange({ ...person, email: e.target.value })} className="h-12 rounded-xl" /></Field>
+      <Field label="Senha de acesso (mín. 6)"><Input type="password" autoComplete="new-password" value={person.password} onChange={(e) => onChange({ ...person, password: e.target.value })} className="h-12 rounded-xl" /></Field>
+    </div>
+  );
+}
 
 export default Onboarding;
