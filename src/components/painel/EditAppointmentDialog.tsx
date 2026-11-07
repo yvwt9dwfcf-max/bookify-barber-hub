@@ -77,6 +77,7 @@ const EditAppointmentDialog = ({
   const { checkSlotAvailability, getOpeningHoursForDay, slotStep, refetch: refetchAvailability } = useAvailability({
     barberId: selectedBarberId,
     selectedDate,
+    allowOngoing: true,
   });
 
   const form = useForm<AppointmentFormData>({
@@ -223,8 +224,16 @@ const EditAppointmentDialog = ({
       const startTime = setMinutes(setHours(selectedDate, hours), minutes);
       const endTime = addMinutes(startTime, durationMinutes);
 
+      // Correcting customer details on a booking that already started (e.g. encaixe)
+      // must not fail with "passado": skip the slot check when the time window is kept.
+      const originalStart = new Date(appointment.start_time);
+      const originalEnd = new Date(appointment.end_time);
+      const keepsWindow = data.barber_id === appointment.barber_id
+        && startTime.getTime() === originalStart.getTime()
+        && endTime.getTime() <= originalEnd.getTime();
+
       // Check for conflicts before submitting
-      const slotCheck = getSlotStatus(data.start_time, durationMinutes);
+      const slotCheck = keepsWindow ? { occupied: false, reason: undefined } : getSlotStatus(data.start_time, durationMinutes);
       if (slotCheck.occupied) {
         const reasonText = slotCheck.reason === 'intervalo' ? 'no intervalo' : slotCheck.reason;
         toast.error(`Horário indisponível (${reasonText}). Escolha outro horário.`);

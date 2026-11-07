@@ -3,24 +3,15 @@ import App from "./App.tsx";
 import "./index.css";
 import "./lib/silence-toasts";
 import { installStorageImageFallback } from "./lib/storageImages";
+import { isChunkLoadError, reloadOnce } from "./lib/chunkReload";
 
 installStorageImageFallback();
 
 // After a new deploy, stale tabs may request chunks that no longer exist.
 // Reload once (guarded) so the user gets the fresh build instead of a blank screen.
-const RELOAD_KEY = 'bookify-chunk-reload';
-const reloadOnce = () => {
-  try {
-    const last = Number(sessionStorage.getItem(RELOAD_KEY) || 0);
-    if (Date.now() - last < 10000) return;
-    sessionStorage.setItem(RELOAD_KEY, String(Date.now()));
-  } catch { /* storage unavailable */ }
-  window.location.reload();
-};
 window.addEventListener('vite:preloadError', (e) => { e.preventDefault(); reloadOnce(); });
 window.addEventListener('unhandledrejection', (e) => {
-  const msg = String((e.reason as Error)?.message || e.reason || '');
-  if (/Importing a module script failed|Failed to fetch dynamically imported module|error loading dynamically imported module/i.test(msg)) {
+  if (isChunkLoadError(e.reason)) {
     e.preventDefault();
     reloadOnce();
   }

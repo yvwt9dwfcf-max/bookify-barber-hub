@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
+import { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
+import { lazy } from '@/lib/chunkReload';
 import { useOutletContext } from 'react-router-dom';
 import { addDays, startOfDay, format } from 'date-fns';
 import { supabase, type Appointment } from '@/lib/supabase';
@@ -27,7 +28,7 @@ import { canCloseComanda, getOperationMode } from '@/lib/operationMode';
 const ComandaSheet = lazy(() => import('@/components/painel/ComandaSheet'));
 
 const Agenda = () => {
-  const { barber, barbershop, isMaster } = useOutletContext<AgendaContextType>();
+  const { barber, barbershop, isMaster, isReceptionist } = useOutletContext<AgendaContextType & { isReceptionist?: boolean }>();
   const { barbers } = useBarbershopBarbers();
   const { checkCanPerformAction } = useSubscription();
   const canViewOthers = isMaster || barber?.permissions?.can_view_others_schedule === true;
@@ -35,7 +36,9 @@ const Agenda = () => {
   const canEditBarber = (id: string) => canEditAgenda(id, barber, isMaster);
   const [selectedDate, setSelectedDate] = useState(getTodayLocalDate);
   const [selectedBarberId, setSelectedBarberId] = useState<string | null>(null);
-  const [mode, setMode] = useState<AgendaMode>('individual');
+  // Reception has no chair of its own, so it always opens on the whole team.
+  const [mode, setMode] = useState<AgendaMode>(() => (isReceptionist ? 'team' : 'individual'));
+  useEffect(() => { if (isReceptionist) setMode(m => (m === 'individual' ? 'team' : m)); }, [isReceptionist]);
   const [monthly, setMonthly] = useState(false);
   const [filter, setFilter] = useState<AgendaFilter>('active');
   const [preferences, setPreferences] = useState<AgendaPreferences>(DEFAULT_AGENDA_PREFERENCES);

@@ -1,4 +1,6 @@
-import { lazy, Suspense } from "react";
+import { Suspense } from "react";
+import { lazy } from "@/lib/chunkReload";
+import { AppErrorBoundary } from "@/components/AppErrorBoundary";
 
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -121,9 +123,11 @@ const App = () => (
         {/* Shadcn Toaster removed — only critical (error) sonner toasts remain */}
         <Sonner />
         <BrowserRouter>
-          <Suspense fallback={<div className="min-h-screen bg-background" />}>
-            <AnimatedRoutes />
-          </Suspense>
+          <AppErrorBoundary>
+            <Suspense fallback={<div className="min-h-screen bg-background" />}>
+              <AnimatedRoutes />
+            </Suspense>
+          </AppErrorBoundary>
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>
