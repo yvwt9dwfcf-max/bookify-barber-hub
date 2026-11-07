@@ -3,9 +3,6 @@ import App from "./App.tsx";
 import "./index.css";
 import "./lib/silence-toasts";
 import { installStorageImageFallback } from "./lib/storageImages";
-
-installStorageImageFallback();
-
 import { isChunkLoadError, reloadOnce } from "./lib/chunkReload";
 
 installStorageImageFallback();

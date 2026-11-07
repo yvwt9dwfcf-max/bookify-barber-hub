@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect, lazy, Suspense } from 'react';
+import { useState, useRef, useEffect, Suspense } from 'react';
+import { lazy } from '@/lib/chunkReload';
 import { supabase, Barber, Service, Appointment } from '@/lib/supabase';
 import { StepIndicator } from './StepIndicator';
 import { Card, CardContent } from '@/components/ui/card';

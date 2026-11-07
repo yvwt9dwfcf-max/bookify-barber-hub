@@ -1,5 +1,6 @@
 import StorageImg from '@/components/StorageImg';
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { lazy } from '@/lib/chunkReload';
 import { useParams } from 'react-router-dom';
 import { supabase, Barber } from '@/lib/supabase';
 import { Logo } from '@/components/ui/Logo';

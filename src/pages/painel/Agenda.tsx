@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
+import { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
+import { lazy } from '@/lib/chunkReload';
 import { useOutletContext } from 'react-router-dom';
 import { addDays, startOfDay, format } from 'date-fns';
 import { supabase, type Appointment } from '@/lib/supabase';
