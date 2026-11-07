@@ -14,7 +14,7 @@ interface LoginProps {
 const Login = ({ initialTab = 'login' }: LoginProps) => {
   const [activeTab, setActiveTab] = useState(initialTab);
   const { user, loading: authLoading } = useAuth();
-  const { barbershop, loading: roleLoading } = useUserRole();
+  const { barbershop, isReceptionist, loading: roleLoading } = useUserRole();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -26,10 +26,12 @@ const Login = ({ initialTab = 'login' }: LoginProps) => {
       }
 
       if (!roleLoading && barbershop) {
-        navigate(barbershop.onboarding_completed ? '/painel' : '/onboarding', { replace: true });
+        // Reception accounts never run onboarding and always start at the counter.
+        if (isReceptionist) navigate('/painel/recepcao', { replace: true });
+        else navigate(barbershop.onboarding_completed ? '/painel' : '/onboarding', { replace: true });
       }
     }
-  }, [user, authLoading, roleLoading, barbershop, navigate]);
+  }, [user, authLoading, roleLoading, barbershop, isReceptionist, navigate]);
 
   if (authLoading || (!!user && roleLoading)) {
     return (

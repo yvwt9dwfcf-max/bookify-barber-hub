@@ -675,12 +675,12 @@ const PerfilPublico = () => {
         <div className="space-y-3 border-t border-border pt-4">
           <p className="font-editorial-mono text-[10px] uppercase text-muted-foreground">Cor de destaque</p>
           {[ACCENT_ROW_1, ACCENT_ROW_2].map((row, ri) => (
-            <div key={ri} className="grid grid-cols-6 gap-3">
+            <div key={ri} className="grid grid-cols-6 justify-items-center gap-2 sm:gap-3">
               {row.map((color) => {
                 const selected = accentColor.toUpperCase() === color;
                 return (
                   <button key={color} type="button" onClick={() => setAccentColor(color)} aria-label={`Selecionar cor ${color}`} aria-pressed={selected}
-                    className={`flex h-10 w-10 items-center justify-center rounded-full border-2 transition-transform active:scale-95 ${selected ? 'scale-110 border-foreground' : 'border-border/40'}`}
+                    className={`flex aspect-square w-full max-w-10 items-center justify-center rounded-full border-2 transition-transform active:scale-95 ${selected ? 'scale-105 border-foreground' : 'border-border/40'}`}
                     style={{ backgroundColor: color }}>
                     {selected && <Check className="h-4 w-4" style={{ color: isLight(color) ? '#111' : '#fff' }} />}
                   </button>
@@ -690,7 +690,7 @@ const PerfilPublico = () => {
                 const custom = !ACCENT_COLORS.includes(accentColor.toUpperCase());
                 return (
                   <label aria-label="Mais cores" title="Mais cores"
-                    className={`relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border-2 transition-transform active:scale-95 ${custom ? 'scale-110 border-foreground' : 'border-border/40'}`}
+                    className={`relative flex aspect-square w-full max-w-10 cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 transition-transform active:scale-95 ${custom ? 'scale-105 border-foreground' : 'border-border/40'}`}
                     style={{ background: custom ? accentColor : 'conic-gradient(#ef4444,#f59e0b,#eab308,#22c55e,#06b6d4,#3b82f6,#a855f7,#ec4899,#ef4444)' }}>
                     {custom ? <Check className="h-4 w-4" style={{ color: isLight(accentColor) ? '#111' : '#fff' }} /> : <Plus className="h-4 w-4 text-white drop-shadow" />}
                     <input type="color" value={accentColor} onChange={(e) => setAccentColor(e.target.value.toUpperCase())} className="absolute inset-0 h-full w-full cursor-pointer opacity-0" />
