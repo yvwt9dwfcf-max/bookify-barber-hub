@@ -1,4 +1,5 @@
 import { useVocab } from '@/hooks/useVocab';
+import { publicBookingPath } from '@/lib/segments';
 import { OperationModeCard } from '@/components/painel/OperationModeCard';
 import { ReceptionTeamCard } from '@/components/painel/ReceptionTeamCard';
 import StorageImg from '@/components/StorageImg';
@@ -142,7 +143,7 @@ const Configuracoes = () => {
 
   const barbershopSlug = barbershop?.slug || barbershop?.id || '';
   const publicLinkReal = barbershop
-    ? `${window.location.origin}/barbearia/${barbershopSlug}`
+    ? `${window.location.origin}${publicBookingPath((barbershop as { business_segment?: string }).business_segment, barbershopSlug)}`
     : '';
   const publicLinkDisplay = barbershopSlug ? `bookify.app/${barbershopSlug}` : '';
 

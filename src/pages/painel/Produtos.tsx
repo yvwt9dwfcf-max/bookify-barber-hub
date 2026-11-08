@@ -465,7 +465,7 @@ const Produtos = () => {
 
             <div className="space-y-1.5">
               <Label className="text-xs">Nome do produto</Label>
-              <Input placeholder="Ex: Pomada modeladora" value={name} onChange={(e) => setName(e.target.value)} />
+              <Input placeholder="Ex: Água mineral" value={name} onChange={(e) => setName(e.target.value)} />
             </div>
 
             <div className="grid grid-cols-2 gap-3">

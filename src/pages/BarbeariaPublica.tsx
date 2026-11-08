@@ -405,7 +405,7 @@ const BarbeariaPublica = () => {
             <StorageImg
               src={publicProfile.foto_capa_url}
               onError={() => markImageUnavailable(publicProfile.foto_capa_url || '')}
-              alt={`Foto de capa da ${barbershop?.name ?? 'barbearia'}`}
+              alt={`Foto de capa da ${barbershop?.name ?? 'empresa'}`}
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
@@ -422,7 +422,7 @@ const BarbeariaPublica = () => {
             <StorageImg
               src={publicProfile.logo_url}
               onError={() => markImageUnavailable(publicProfile.logo_url || '')}
-              alt={`Logo da ${barbershop?.name ?? 'barbearia'}`}
+              alt={`Logo da ${barbershop?.name ?? 'empresa'}`}
               className={`w-20 h-20 mx-auto mb-4 object-cover ${isUrban ? 'rounded-2xl border-4 shadow-lg' : 'rounded-2xl'}`}
               style={isUrban ? { borderColor: accent } : undefined}
             />
@@ -632,7 +632,7 @@ const BarbeariaPublica = () => {
                   <StorageImg
                     src={img.image_url}
                     onError={() => markImageUnavailable(img.image_url)}
-                    alt={`Foto da ${barbershop?.name ?? 'barbearia'}`}
+                    alt={`Foto da ${barbershop?.name ?? 'empresa'}`}
                     className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                     loading="lazy"
                   />

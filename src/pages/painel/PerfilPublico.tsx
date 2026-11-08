@@ -1,6 +1,7 @@
 import StorageImg from '@/components/StorageImg';
 import { useState, useEffect, useRef } from 'react';
 import { useUserRole } from '@/hooks/useUserRole';
+import { publicBookingPath } from '@/lib/segments';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -420,8 +421,9 @@ const PerfilPublico = () => {
     }
   };
 
+  const segmentValue = (barbershop as { business_segment?: string } | null)?.business_segment;
   const publicSlug = slugPersonalizado || barbershop?.slug || '';
-  const publicLinkReal = publicSlug ? `${window.location.origin}/barbearia/${publicSlug}` : '';
+  const publicLinkReal = publicSlug ? `${window.location.origin}${publicBookingPath(segmentValue, publicSlug)}` : '';
   const publicLinkDisplay = publicSlug ? `bookify.app/${publicSlug}` : '';
 
   const handleCopyLink = async () => {
@@ -436,7 +438,7 @@ const PerfilPublico = () => {
 
   if (!isMaster) {
     const barberSlug = profile?.slug_personalizado || barbershop?.slug || '';
-    const barberLinkReal = barberSlug ? `${window.location.origin}/barbearia/${barberSlug}` : '';
+    const barberLinkReal = barberSlug ? `${window.location.origin}${publicBookingPath(segmentValue, barberSlug)}` : '';
     const barberLinkDisplay = barberSlug ? `bookify.app/${barberSlug}` : '';
 
     return (
@@ -664,7 +666,7 @@ const PerfilPublico = () => {
               className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left transition-colors ${fontStyle === 'luckiest_guy' ? 'border-primary bg-primary/5' : 'border-border'}`}
             >
               <div className="min-w-0 flex-1">
-                <p className="font-urban-preview text-lg text-foreground">BARBEARIA DO JOÃO</p>
+                <p className="font-urban-preview text-lg text-foreground">ESPAÇO DO JOÃO</p>
                 <p className="font-editorial-mono text-[10px] text-muted-foreground">Ousada · Rua</p>
               </div>
               <SelectionRadio selected={fontStyle === 'luckiest_guy'} />
@@ -934,14 +936,14 @@ const PerfilPublico = () => {
       {/* === LINK PERSONALIZADO === */}
       <Section title="Link personalizado" icon={<Link2 className="h-4 w-4" />}>
         <Input
-          placeholder="minha-barbearia"
+          placeholder="meu-negocio"
           value={slugPersonalizado}
           onChange={(e) => setSlugPersonalizado(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))}
           className="h-9 text-sm font-mono"
         />
         {slugPersonalizado && (
           <p className="text-[11px] text-muted-foreground/60 font-mono">
-            {window.location.origin}/barbearia/{slugPersonalizado}
+            {window.location.origin}{publicBookingPath(segmentValue, slugPersonalizado)}
           </p>
         )}
       </Section>

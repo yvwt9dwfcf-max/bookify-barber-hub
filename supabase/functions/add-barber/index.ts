@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
     // Validate required fields
     if (!name || !email || !barbershop_id) {
       return new Response(
-        JSON.stringify({ error: "Nome, email e barbearia são obrigatórios" }),
+        JSON.stringify({ error: "Nome, email e empresa são obrigatórios" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -75,7 +75,7 @@ Deno.serve(async (req) => {
 
     if (!isMaster) {
       return new Response(
-        JSON.stringify({ error: "Apenas o administrador pode adicionar barbeiros" }),
+        JSON.stringify({ error: "Apenas o administrador pode adicionar profissionais" }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -87,7 +87,7 @@ Deno.serve(async (req) => {
 
     if (!canAdd) {
       return new Response(
-        JSON.stringify({ error: "Limite de barbeiros atingido" }),
+        JSON.stringify({ error: "Limite de profissionais do plano atingido" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -113,14 +113,14 @@ Deno.serve(async (req) => {
       if (existingBarber) {
         if (existingBarber.barbershop_id === barbershop_id && existingBarber.is_active) {
           return new Response(
-            JSON.stringify({ error: "Este barbeiro já faz parte da sua equipe" }),
+            JSON.stringify({ error: "Este profissional já faz parte da sua equipe" }),
             { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
         }
 
         if (existingBarber.barbershop_id && existingBarber.barbershop_id !== barbershop_id && existingBarber.is_active) {
           return new Response(
-            JSON.stringify({ error: "Este barbeiro já pertence a outra barbearia" }),
+            JSON.stringify({ error: "Este profissional já pertence a outra empresa" }),
             { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
         }
@@ -150,7 +150,7 @@ Deno.serve(async (req) => {
           return new Response(
             JSON.stringify({ 
               success: true, 
-              message: "Barbeiro reativado com sucesso",
+              message: "Profissional reativado com sucesso",
               barber_id: existingBarber.id,
               is_new_user: false 
             }),
@@ -194,7 +194,7 @@ Deno.serve(async (req) => {
           return new Response(
             JSON.stringify({ 
               success: true, 
-              message: "Barbeiro vinculado com sucesso",
+              message: "Profissional vinculado com sucesso",
               barber_id: existingBarber.id,
               is_new_user: false 
             }),
@@ -257,7 +257,7 @@ Deno.serve(async (req) => {
         await supabaseAdmin.auth.admin.deleteUser(userId);
       }
       return new Response(
-        JSON.stringify({ error: "Erro ao criar perfil do barbeiro" }),
+        JSON.stringify({ error: "Erro ao criar perfil do profissional" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -318,7 +318,7 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        message: isNewUser ? "Barbeiro criado com sucesso" : "Barbeiro vinculado com sucesso",
+        message: isNewUser ? "Profissional criado com sucesso" : "Profissional vinculado com sucesso",
         barber_id: barberData.id,
         is_new_user: isNewUser,
       }),

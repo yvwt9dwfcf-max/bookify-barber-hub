@@ -172,7 +172,7 @@ const AgendarBarbearia = () => {
             {appearance.logoUrl ? (
               <StorageImg
                 src={appearance.logoUrl}
-                alt={`Logo da ${barbershop?.name ?? 'barbearia'}`}
+                alt={`Logo da ${barbershop?.name ?? 'empresa'}`}
                 className={`w-10 h-10 object-cover shrink-0 ${appearance.themeStyle === 'urbano' ? 'rounded-xl border-2' : 'rounded-lg'}`}
                 style={{ borderColor: appearance.themeStyle === 'urbano' ? appearance.accentColor : undefined }}
               />

@@ -7,3 +7,4 @@
 - Business segment vocabulary and seat rules live in src/lib/segments.ts so every screen shares one niche catalog.
 - Receptionist access: route allow-list lives in src/lib/receptionAccess.ts and Painel passes receptionists as managers only on those routes; accounts are managed by the manage-receptionist edge function so no seat is consumed and RLS stays the real guard.
 - Quick add-on services charged at checkout live in appointment_extras (not extra appointments) so they never occupy agenda slots.
+- Public booking links are built only through publicBookingPath in src/lib/segments.ts; /barbearia/:slug and /p/:slug render the same page so old shared links keep working.

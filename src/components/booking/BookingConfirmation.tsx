@@ -65,14 +65,14 @@ export function BookingConfirmation({ appointment, onNewBooking, barbershopId, p
   const handleBackToStart = () => {
     if (barbershopId) {
       const currentPath = window.location.pathname;
-      const slugMatch = currentPath.match(/^\/(?:agendar|barbearia|b)\/([^/?]+)/);
+      const slugMatch = currentPath.match(/^\/(agendar|barbearia|p|b)\/([^/?]+)/);
       if (slugMatch) {
-        window.location.href = `/barbearia/${slugMatch[1]}`;
+        window.location.href = `/${slugMatch[1]}/${slugMatch[2]}`;
       } else {
         window.location.href = `/barbearia/${barbershopId}`;
       }
     } else if (preselectedBarber) {
-      navigate(`/barbeiro/${preselectedBarber.id}`);
+      navigate(`/b/${preselectedBarber.id}`);
       window.location.reload();
     } else {
       navigate('/');

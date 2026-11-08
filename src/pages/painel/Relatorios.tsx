@@ -695,7 +695,7 @@ const Relatorios = () => {
       y += 5;
     }
 
-    const fileName = `relatorio-${isPersonalView ? 'pessoal' : 'barbearia'}-${period}-${format(new Date(), 'yyyy-MM-dd')}.pdf`;
+    const fileName = `relatorio-${isPersonalView ? 'pessoal' : 'negocio'}-${period}-${format(new Date(), 'yyyy-MM-dd')}.pdf`;
     doc.save(fileName);
     toast.success('PDF exportado com sucesso!');
   }, [isMaster, masterTab, personalCompleted, shopCompleted, personalAllAppointments, allShopAppointments, period, dateRange, barbershop, periodLabel]);

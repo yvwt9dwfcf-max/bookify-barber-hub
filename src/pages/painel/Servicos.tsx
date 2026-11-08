@@ -326,7 +326,7 @@ const Servicos = () => {
                   <Label htmlFor="name">Nome do serviço</Label>
                   <Input
                     id="name"
-                    placeholder="Ex: Corte masculino"
+                    placeholder={`Ex: ${v.segment.suggestedServices[0]?.name ?? 'Atendimento padrão'}`}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                   />

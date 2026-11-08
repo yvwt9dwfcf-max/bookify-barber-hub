@@ -17,7 +17,7 @@ export const PLANS: Plan[] = [
     label: '1 profissional',
     maxBarbers: 1,
     price: 29.9,
-    features: ['Agenda completa', 'Link de agendamento', 'Relatórios básicos', 'Programa de Fidelidade'],
+    features: ['Agenda completa', 'Link de agendamento', 'Relatórios básicos', 'Clube de Assinaturas'],
   },
   {
     id: 'plus',
