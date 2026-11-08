@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
+import { useVocab } from '@/hooks/useVocab';
 import { subscriptionStatus } from '@/lib/clube';
 import { PAYMENT_METHODS, type PaymentMethod } from '@/lib/operationMode';
 
@@ -33,6 +34,7 @@ const STATUS = {
 
 export default function Clube() {
   const { barbershop, isMaster } = useOutletContext<Ctx>();
+  const v = useVocab();
   const shopId = barbershop?.id;
   const qc = useQueryClient();
   const [tab, setTab] = useState<'subs' | 'plans'>('subs');
