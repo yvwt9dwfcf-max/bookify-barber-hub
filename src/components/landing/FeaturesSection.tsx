@@ -15,15 +15,15 @@ const features = [
   },
   {
     title: 'Financeiro completo',
-    description: 'Acompanhe entradas, despesas e comissões para entender o resultado da barbearia.',
+    description: 'Acompanhe entradas, despesas e comissões para entender o resultado do seu negócio.',
   },
   {
     title: 'Indicadores reais',
-    description: 'Ticket médio, taxa de retorno e desempenho por barbeiro e por serviço.',
+    description: 'Ticket médio, taxa de retorno e desempenho por profissional e por serviço.',
   },
   {
-    title: 'Fidelidade automática',
-    description: 'Configure pontos por serviço e acompanhe a fidelidade dos seus clientes.',
+    title: 'Clube de assinaturas',
+    description: 'Crie planos mensais, acompanhe usos e veja quem precisa renovar.',
   },
 ];
 

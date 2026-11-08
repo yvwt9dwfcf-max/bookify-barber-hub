@@ -27,7 +27,6 @@ const Relatorios = lazy(() => import("./pages/painel/Relatorios"));
 const Assinatura = lazy(() => import("./pages/painel/Assinatura"));
 const PerfilPublico = lazy(() => import("./pages/painel/PerfilPublico"));
 const Comissoes = lazy(() => import("./pages/painel/Comissoes"));
-const Fidelidade = lazy(() => import("./pages/painel/Fidelidade"));
 const Clube = lazy(() => import("./pages/painel/Clube"));
 const Clientes = lazy(() => import("./pages/painel/Clientes"));
 const Despesas = lazy(() => import("./pages/painel/Despesas"));
@@ -87,7 +86,6 @@ function AnimatedRoutes() {
             <Route path="assinatura" element={<Assinatura />} />
             <Route path="perfil-publico" element={<PerfilPublico />} />
             <Route path="comissoes" element={<Comissoes />} />
-            <Route path="fidelidade" element={<Fidelidade />} />
             <Route path="clube" element={<Clube />} />
             <Route path="clientes" element={<Clientes />} />
             <Route path="despesas" element={<Despesas />} />
@@ -104,6 +102,7 @@ function AnimatedRoutes() {
           <Route path="/agendar/:slugOrId" element={<AgendarBarbearia />} />
           <Route path="/b/:barberId" element={<AgendarBarbeiro />} />
           <Route path="/barbearia/:slug" element={<BarbeariaPublica />} />
+          <Route path="/p/:slug" element={<BarbeariaPublica />} />
 
           {/* Legal pages */}
           <Route path="/politica-de-privacidade" element={<PoliticaPrivacidade />} />
