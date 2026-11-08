@@ -74,8 +74,3 @@ export function publicBookingPath(segment: string | null | undefined, slug: stri
   return `${segment === "barbershop" ? "/barbearia" : "/p"}/${slug}`;
 }
 
-/** Exemplo de serviço para placeholders, conforme o segmento. */
-export function exampleServiceName(segment: string | null | undefined): string {
-  const s = segment && SEGMENTS[segment as BusinessSegment];
-  return s?.suggestedServices[0]?.name ?? "Atendimento padrão";
-}

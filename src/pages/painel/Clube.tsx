@@ -200,7 +200,7 @@ export default function Clube() {
         <DialogContent>
           <DialogHeader><DialogTitle>Novo plano</DialogTitle></DialogHeader>
           <div className="space-y-3">
-            <Input placeholder="Nome (ex.: Corte ilimitado)" value={pForm.name} onChange={(e) => setPForm({ ...pForm, name: e.target.value })} className="h-12" />
+            <Input placeholder={`Nome (ex.: ${v.segment.suggestedServices[0]?.name ?? 'Atendimento'} ilimitado)`} value={pForm.name} onChange={(e) => setPForm({ ...pForm, name: e.target.value })} className="h-12" />
             <Input inputMode="decimal" placeholder="Valor mensal (R$)" value={pForm.price} onChange={(e) => setPForm({ ...pForm, price: e.target.value })} className="h-12" />
             <Input inputMode="numeric" placeholder="Usos por mês (vazio = ilimitado)" value={pForm.limit} onChange={(e) => setPForm({ ...pForm, limit: e.target.value.replace(/\D/g, '') })} className="h-12" />
             <Button className="btn-primary-solid h-12 w-full" disabled={savePlan.isPending} onClick={() => savePlan.mutate()}>Salvar plano</Button>
