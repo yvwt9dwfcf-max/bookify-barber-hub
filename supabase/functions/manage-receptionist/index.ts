@@ -55,13 +55,33 @@ Deno.serve(async (req) => {
         email, password, email_confirm: true,
         user_metadata: { name, is_barber_invite: true, is_receptionist: true },
       });
-      if (error || !created.user) {
-        const msg = /already|registered|exists/i.test(error?.message ?? "") ? "Este email já tem uma conta" : "Não foi possível criar a conta";
-        return json({ error: msg }, 400);
+      let userId = created?.user?.id;
+      let reused = false;
+      if (error || !userId) {
+        if (!/already|registered|exists/i.test(error?.message ?? "")) return json({ error: "Não foi possível criar a conta" }, 400);
+        // Email already exists: reuse it only if it's an orphan (no role and no linked business).
+        let found: { id: string } | undefined;
+        for (let page = 1; page <= 20 && !found; page++) {
+          const { data } = await admin.auth.admin.listUsers({ page, perPage: 200 });
+          found = data?.users.find((u) => u.email?.toLowerCase() === email);
+          if (!data || data.users.length < 200) break;
+        }
+        if (!found) return json({ error: "Este email já tem uma conta" }, 400);
+        const { data: roles } = await admin.from("user_roles").select("id").eq("user_id", found.id);
+        const { data: linked } = await admin.from("barbers").select("id").eq("auth_id", found.id).not("barbershop_id", "is", null);
+        if ((roles?.length ?? 0) > 0 || (linked?.length ?? 0) > 0) return json({ error: "Este email já está em uso em outra conta" }, 400);
+        await admin.from("barbers").delete().eq("auth_id", found.id).is("barbershop_id", null);
+        const { error: upErr } = await admin.auth.admin.updateUserById(found.id, {
+          password, email_confirm: true,
+          user_metadata: { name, is_barber_invite: true, is_receptionist: true },
+        });
+        if (upErr) return json({ error: "Não foi possível liberar o acesso" }, 400);
+        userId = found.id;
+        reused = true;
       }
-      const { error: roleErr } = await admin.from("user_roles").insert({ user_id: created.user.id, role: "receptionist", barbershop_id });
+      const { error: roleErr } = await admin.from("user_roles").insert({ user_id: userId, role: "receptionist", barbershop_id });
       if (roleErr) {
-        await admin.auth.admin.deleteUser(created.user.id);
+        if (!reused) await admin.auth.admin.deleteUser(userId!);
         return json({ error: "Não foi possível liberar o acesso" }, 400);
       }
       return json({ success: true });
