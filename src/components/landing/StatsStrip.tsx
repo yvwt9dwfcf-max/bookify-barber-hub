@@ -2,7 +2,7 @@ const stats = [
   { value: 'Agenda', label: 'Agendamento pelo seu link' },
   { value: 'Equipe', label: 'Gestão por profissional' },
   { value: 'Financeiro', label: 'Comissões e caixa' },
-  { value: 'Clientes', label: 'Histórico e fidelidade' },
+  { value: 'Clientes', label: 'Histórico e retorno' },
 ];
 
 export function StatsStrip() {

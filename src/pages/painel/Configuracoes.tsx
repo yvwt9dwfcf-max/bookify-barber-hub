@@ -143,7 +143,7 @@ const Configuracoes = () => {
 
   const barbershopSlug = barbershop?.slug || barbershop?.id || '';
   const publicLinkReal = barbershop
-    ? `${window.location.origin}${publicBookingPath(v.segment === undefined ? null : (barbershop as { business_segment?: string }).business_segment, barbershopSlug)}`
+    ? `${window.location.origin}${publicBookingPath((barbershop as { business_segment?: string }).business_segment, barbershopSlug)}`
     : '';
   const publicLinkDisplay = barbershopSlug ? `bookify.app/${barbershopSlug}` : '';
 
