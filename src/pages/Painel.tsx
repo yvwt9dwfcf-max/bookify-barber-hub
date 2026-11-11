@@ -72,6 +72,15 @@ const Painel = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
 
+  // An owner who doesn't attend has no chair: deactivate their own professional row so it
+  // frees a plan seat and disappears from agenda/public booking. Re-activates if they attend again.
+  useEffect(() => {
+    if (!isMaster || !barber || !barbershop || barber.barbershop_id !== barbershop.id) return;
+    const attends = (barbershop as any).owner_attends !== false;
+    if (barber.is_active === attends) return;
+    void supabase.from('barbers').update({ is_active: attends }).eq('id', barber.id);
+  }, [isMaster, barber?.id, barber?.is_active, barbershop?.id, (barbershop as any)?.owner_attends]);
+
   // Prefetch panel sub-routes after initial render to eliminate navigation stutter
   useEffect(() => {
     const timer = setTimeout(() => {

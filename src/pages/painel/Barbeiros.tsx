@@ -1,3 +1,4 @@
+import { ReceptionTeamCard } from '@/components/painel/ReceptionTeamCard';
 import { useVocab } from '@/hooks/useVocab';
 import StorageImg from '@/components/StorageImg';
 import { useState, useEffect } from 'react';
@@ -43,7 +44,7 @@ interface BarberWithPermissions extends Barber {
 
 const Barbeiros = () => {
   const v = useVocab();
-  const { barbershop, isMaster } = useUserRole();
+  const { barbershop, isMaster, refetch: refetchRole } = useUserRole();
   const { barbers, loading, canAddMore, currentCount, maxBarbers, refetch } = useBarbershopBarbers();
   const { checkCanPerformAction, checkBarberLimit } = useSubscription();
   const navigate = useNavigate();
@@ -269,6 +270,8 @@ const Barbeiros = () => {
           </Badge>
         </div>
       </div>
+
+      {barbershop && <ReceptionTeamCard barbershop={barbershop as any} onSaved={() => refetchRole()} />}
 
       {/* Add Barber Button */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>

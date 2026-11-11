@@ -37,8 +37,10 @@ const Agenda = () => {
   const [selectedDate, setSelectedDate] = useState(getTodayLocalDate);
   const [selectedBarberId, setSelectedBarberId] = useState<string | null>(null);
   // Reception has no chair of its own, so it always opens on the whole team.
-  const [mode, setMode] = useState<AgendaMode>(() => (isReceptionist ? 'team' : 'individual'));
-  useEffect(() => { if (isReceptionist) setMode(m => (m === 'individual' ? 'team' : m)); }, [isReceptionist]);
+  // Reception and owners who don't attend have no chair of their own: no "Individual" tab.
+  const noOwnChair = Boolean(isReceptionist || (isMaster && (barbershop as any)?.owner_attends === false));
+  const [mode, setMode] = useState<AgendaMode>(() => (noOwnChair ? 'team' : 'individual'));
+  useEffect(() => { if (noOwnChair) setMode(m => (m === 'individual' ? 'team' : m)); }, [noOwnChair]);
   const [monthly, setMonthly] = useState(false);
   const [filter, setFilter] = useState<AgendaFilter>('active');
   const [preferences, setPreferences] = useState<AgendaPreferences>(DEFAULT_AGENDA_PREFERENCES);
@@ -126,7 +128,7 @@ const Agenda = () => {
   }, []);
   return <Suspense fallback={<div className="agenda-loading animate-pulse"><span /><span /><span /></div>}>
     <div className={`agenda-cockpit palette-${preferences.palette} pb-20`}>
-      <AgendaToolbar mode={effectiveMode} onModeChange={value => { setMode(value); setMonthly(false); }} selectedDate={selectedDate} onDateChange={date => setSelectedDate(toLocalDate(date))}
+      <AgendaToolbar hideIndividual={noOwnChair} mode={effectiveMode} onModeChange={value => { setMode(value); setMonthly(false); }} selectedDate={selectedDate} onDateChange={date => setSelectedDate(toLocalDate(date))}
         canViewOthers={canViewOthers} barbers={timeline.allowed} selectedBarber={selectedBarber} onBarberChange={setSelectedBarberId}
         filter={filter} onFilterChange={setFilter} preferences={preferences} onPreferencesChange={changePreferences}
         refreshing={refreshing || timeline.isFetching} onRefresh={handleManualRefresh} onNew={() => handleOpenManualDialog()} canCreate={Boolean(selectedBarber && canEditBarber(selectedBarber.id))} onMonthView={() => setMonthly(true)} />
