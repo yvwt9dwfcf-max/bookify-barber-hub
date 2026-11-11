@@ -168,6 +168,7 @@ const Onboarding = () => {
       case 'hours':
         if (!draft.days.some((d) => d.is_open)) return 'Abra pelo menos um dia';
         if (draft.days.some((d) => d.is_open && d.end_time <= d.start_time)) return 'O fechamento deve ser depois da abertura';
+        if (draft.lunchEnabled && (!draft.lunchStart || !draft.lunchEnd || draft.lunchEnd <= draft.lunchStart)) return 'O fim do intervalo deve ser depois do início';
         return null;
       default: return null;
     }
