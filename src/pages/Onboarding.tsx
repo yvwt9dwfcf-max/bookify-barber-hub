@@ -28,6 +28,7 @@ interface Draft {
   ownerAttends: boolean | null; management: Management | null;
   receptionNow: boolean; reception: PersonDraft; team: PersonDraft[];
   services: ServiceDraft[]; servicesSegment: BusinessSegment | null; days: DayConfig[];
+  lunchEnabled: boolean; lunchStart: string; lunchEnd: string;
   stepId: OnboardingStep;
 }
 
@@ -109,11 +110,12 @@ const Onboarding = () => {
     try { saved = JSON.parse(localStorage.getItem(storageKey) || '{}'); } catch { /* rascunho inválido */ }
     const b = barbershop as any;
     setDraft({
-      ownerName: barber.name === 'Profissional' ? '' : barber.name,
-      businessName: b.name === 'Meu Negócio' ? '' : b.name,
+      ownerName: '',
+      businessName: '',
       segment: null, ownerAttends: null, management: null,
       receptionNow: true, reception: { ...emptyPerson }, team: [],
       services: [], servicesSegment: null, days: defaultDays, stepId: 'business',
+      lunchEnabled: false, lunchStart: '12:00', lunchEnd: '13:00',
       ...saved,
     } as Draft);
   }, [draft, storageKey, barber, barbershop]);
@@ -202,6 +204,8 @@ const Onboarding = () => {
       const { error: hIns } = await supabase.from('opening_hours').insert(draft.days.map((d) => ({
         barber_id: barber.id, barbershop_id: barbershop.id, day_of_week: d.day_of_week,
         start_time: d.start_time, end_time: d.end_time, is_open: d.is_open,
+        break_start: draft.lunchEnabled && d.is_open ? draft.lunchStart : null,
+        break_end: draft.lunchEnabled && d.is_open ? draft.lunchEnd : null,
       })));
       if (hIns) throw hIns;
 
@@ -454,6 +458,7 @@ const Onboarding = () => {
         );
       case 'hours':
         return (
+          <div className="space-y-3">
           <div className="divide-y divide-border rounded-2xl border border-border bg-card">
             {d.days.map((day) => {
               const upd = (patch: Partial<DayConfig>) => set({ days: d.days.map((x) => (x.day_of_week === day.day_of_week ? { ...x, ...patch } : x)) });
@@ -472,6 +477,23 @@ const Onboarding = () => {
               );
             })}
           </div>
+          <div className="rounded-2xl border border-border bg-card px-4 py-3">
+            <div className="flex min-h-[48px] items-center gap-3">
+              <Switch checked={d.lunchEnabled} onCheckedChange={(v) => set({ lunchEnabled: v })} aria-label="Adicionar intervalo ou almoço" />
+              <div className="flex-1">
+                <p className="text-sm font-medium">Intervalo / almoço</p>
+                <p className="text-xs text-muted-foreground">Opcional · vale para todos os dias abertos</p>
+              </div>
+            </div>
+            {d.lunchEnabled && (
+              <div className="mt-2 flex items-center justify-end gap-1.5">
+                <TimeInput value={d.lunchStart} onChange={(v) => set({ lunchStart: v })} className="h-10 w-[72px] rounded-lg text-center tabular-nums" />
+                <span className="text-muted-foreground">–</span>
+                <TimeInput value={d.lunchEnd} onChange={(v) => set({ lunchEnd: v })} className="h-10 w-[72px] rounded-lg text-center tabular-nums" />
+              </div>
+            )}
+          </div>
+          </div>
         );
       case 'review': {
         const openDays = d.days.filter((x) => x.is_open);
@@ -483,7 +505,7 @@ const Onboarding = () => {
           ...(d.management === 'reception' ? [{ label: 'Recepcionista', value: d.receptionNow ? d.reception.name : 'Adicionar depois', step: 'reception' as OnboardingStep }] : []),
           { label: 'Equipe', value: d.team.length ? d.team.map((p) => p.name).join(', ') : 'Nenhum por enquanto', step: 'team' },
           { label: 'Serviços', value: d.services.filter((s) => s.name.trim()).map((s) => s.name).join(', '), step: 'services' },
-          { label: 'Horários', value: `${openDays.length} dias abertos`, step: 'hours' },
+          { label: 'Horários', value: `${openDays.length} dias abertos${d.lunchEnabled ? ` · intervalo ${d.lunchStart}–${d.lunchEnd}` : ''}`, step: 'hours' },
         ];
         return (
           <div className="divide-y divide-border rounded-2xl border border-border bg-card">
