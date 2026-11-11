@@ -44,7 +44,7 @@ interface BarberWithPermissions extends Barber {
 
 const Barbeiros = () => {
   const v = useVocab();
-  const { barbershop, isMaster } = useUserRole();
+  const { barbershop, isMaster, refetch: refetchRole } = useUserRole();
   const { barbers, loading, canAddMore, currentCount, maxBarbers, refetch } = useBarbershopBarbers();
   const { checkCanPerformAction, checkBarberLimit } = useSubscription();
   const navigate = useNavigate();
@@ -271,7 +271,7 @@ const Barbeiros = () => {
         </div>
       </div>
 
-      {barbershop && <ReceptionTeamCard barbershop={barbershop as any} onSaved={() => window.dispatchEvent(new Event('bookify-role-refresh'))} />}
+      {barbershop && <ReceptionTeamCard barbershop={barbershop as any} onSaved={() => refetchRole()} />}
 
       {/* Add Barber Button */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
