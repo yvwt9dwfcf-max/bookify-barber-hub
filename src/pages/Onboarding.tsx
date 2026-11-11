@@ -115,7 +115,6 @@ const Onboarding = () => {
     const barberName = typeof barber.name === 'string' && !placeholderNames.includes(barber.name.trim().toLowerCase()) ? barber.name : '';
     const signupName = String(meta.name || meta.full_name || barberName || '').trim();
     setDraft({
-      // ownerName definido abaixo
       businessName: '',
       segment: null, ownerAttends: null, management: null,
       receptionNow: true, reception: { ...emptyPerson }, team: [],
