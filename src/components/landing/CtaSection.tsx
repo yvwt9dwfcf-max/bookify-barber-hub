@@ -24,7 +24,7 @@ export function CtaSection() {
             to="/register"
             className="font-editorial-mono text-xs uppercase tracking-[0.12em] px-8 h-12 inline-flex items-center rounded-md font-medium transition-all"
             style={{
-              background: 'linear-gradient(135deg, #22C55E 0%, #16A34A 100%)',
+              background: 'linear-gradient(135deg, #10B981 0%, #0D6E48 100%)',
               color: '#0A0A08',
               boxShadow: '0 8px 28px -8px rgba(34, 197, 94, 0.5)',
             }}

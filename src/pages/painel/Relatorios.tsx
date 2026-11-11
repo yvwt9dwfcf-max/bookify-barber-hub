@@ -27,7 +27,7 @@ interface OutletContext {
   isMaster: boolean;
 }
 
-const PIE_COLORS = ['#22C55E', '#F59E0B', '#4ADE80', '#EF4444', '#A1A1A1'];
+const PIE_COLORS = ['#10B981', '#F59E0B', '#4ADE80', '#EF4444', '#A1A1A1'];
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
@@ -288,8 +288,8 @@ const ReportContent = ({
                       )}
                       <defs>
                         <linearGradient id="primaryGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#22C55E" />
-                          <stop offset="100%" stopColor="#16A34A" />
+                          <stop offset="0%" stopColor="#10B981" />
+                          <stop offset="100%" stopColor="#0D6E48" />
                         </linearGradient>
                       </defs>
                     </BarChart>

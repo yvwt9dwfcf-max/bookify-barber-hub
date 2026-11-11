@@ -90,7 +90,7 @@ const BarbersReport = ({ barbershopId }: Props) => {
     });
   }, [data, range, filterBarber]);
 
-  const colors = ['hsl(var(--primary))', '#F59E0B', '#3B82F6', '#A855F7', '#22C55E', '#EC4899', '#06B6D4'];
+  const colors = ['hsl(var(--primary))', '#F59E0B', '#3B82F6', '#A855F7', '#10B981', '#EC4899', '#06B6D4'];
 
   if (isLoading) {
     return (
