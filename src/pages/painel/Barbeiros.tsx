@@ -1,3 +1,4 @@
+import { ReceptionTeamCard } from '@/components/painel/ReceptionTeamCard';
 import { useVocab } from '@/hooks/useVocab';
 import StorageImg from '@/components/StorageImg';
 import { useState, useEffect } from 'react';
@@ -269,6 +270,8 @@ const Barbeiros = () => {
           </Badge>
         </div>
       </div>
+
+      {barbershop && <ReceptionTeamCard barbershop={barbershop as any} onSaved={() => window.dispatchEvent(new Event('bookify-role-refresh'))} />}
 
       {/* Add Barber Button */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>

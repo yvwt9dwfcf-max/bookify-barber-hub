@@ -1,7 +1,6 @@
 import { useVocab } from '@/hooks/useVocab';
 import { publicBookingPath } from '@/lib/segments';
 import { OperationModeCard } from '@/components/painel/OperationModeCard';
-import { ReceptionTeamCard } from '@/components/painel/ReceptionTeamCard';
 import StorageImg from '@/components/StorageImg';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useOutletContext, useNavigate } from 'react-router-dom';
@@ -311,7 +310,6 @@ const Configuracoes = () => {
       </div>
 
       {isMaster && barbershop && <OperationModeCard barbershop={barbershop as any} onSaved={() => refetchUserRole()} />}
-      {isMaster && barbershop && (barbershop as any).operation_mode === 'reception' && <ReceptionTeamCard barbershop={barbershop as any} onSaved={() => refetchUserRole()} />}
 
       {/* Seção Barbearia (Master) */}
       {isMaster && (

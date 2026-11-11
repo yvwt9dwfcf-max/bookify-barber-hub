@@ -24,7 +24,7 @@ interface Props {
   canViewOthers: boolean; barbers: Barber[]; selectedBarber?: Barber; onBarberChange: (id: string) => void;
   filter: AgendaFilter; onFilterChange: (filter: AgendaFilter) => void; preferences: AgendaPreferences;
   onPreferencesChange: (preferences: AgendaPreferences) => void; refreshing: boolean; onRefresh: () => void;
-  onNew: () => void; canCreate: boolean; onOpenMenu?: () => void; onMonthView: () => void;
+  onNew: () => void; canCreate: boolean; hideIndividual?: boolean; onOpenMenu?: () => void; onMonthView: () => void;
 }
 export default function AgendaToolbar(p: Props) {
   const [calendarOpen, setCalendarOpen] = useState(false);
@@ -38,11 +38,11 @@ export default function AgendaToolbar(p: Props) {
       <div className="flex shrink-0 items-center gap-1">
         <Button variant="ghost" size="icon" className="agenda-icon" onClick={p.onRefresh} disabled={p.refreshing} aria-label="Atualizar agenda" title="Atualizar agenda"><RefreshCw className={cn(p.refreshing && 'animate-spin')} /></Button>
         <AgendaAppearance preferences={p.preferences} onChange={p.onPreferencesChange} />
-        <AgendaAvatar key={p.selectedBarber?.id} barber={p.selectedBarber} />
+        {!p.hideIndividual && <AgendaAvatar key={p.selectedBarber?.id} barber={p.selectedBarber} />}
       </div>
     </div>
     <div className="agenda-tabs" role="tablist" aria-label="Visualização da agenda">
-      {([{ id: 'individual', label: 'Individual' }, ...(p.canViewOthers ? [{ id: 'team', label: 'Equipe' }] : []), { id: 'week', label: 'Semana' }] as { id: AgendaMode; label: string }[]).map(tab => <Button key={tab.id} variant="ghost" role="tab" aria-selected={p.mode === tab.id} className={cn('agenda-tab', p.mode === tab.id && 'is-active')} onClick={() => p.onModeChange(tab.id)}>{tab.label}</Button>)}
+      {([...(p.hideIndividual ? [] : [{ id: 'individual', label: 'Individual' }]), ...(p.canViewOthers ? [{ id: 'team', label: 'Equipe' }] : []), { id: 'week', label: 'Semana' }] as { id: AgendaMode; label: string }[]).map(tab => <Button key={tab.id} variant="ghost" role="tab" aria-selected={p.mode === tab.id} className={cn('agenda-tab', p.mode === tab.id && 'is-active')} onClick={() => p.onModeChange(tab.id)}>{tab.label}</Button>)}
     </div>
     <div className="agenda-controls">
       <div className="flex min-w-0 items-center gap-0.5">

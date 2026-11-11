@@ -59,7 +59,7 @@ export function ReceptionTeamCard({ barbershop, onSaved }: { barbershop: { id: s
       <div className="flex items-center gap-2">
         <Headset className="h-5 w-5 text-primary" />
         <div>
-          <p className="text-sm font-semibold">Conta da recepção</p>
+          <p className="text-sm font-semibold">Recepcionista</p>
           <p className="text-xs text-muted-foreground">Não ocupa vaga de profissional do seu plano.</p>
         </div>
       </div>
@@ -88,7 +88,7 @@ export function ReceptionTeamCard({ barbershop, onSaved }: { barbershop: { id: s
       </div>
 
       <div className="space-y-2 pt-1">
-        <p className="text-sm font-semibold">O que a recepção vê do financeiro?</p>
+        <p className="text-sm font-semibold">O que ela pode ver do financeiro?</p>
         {RECEPTION_FINANCE_OPTIONS.map(o => (
           <button key={o.value} type="button" onClick={() => chooseFinance(o.value)}
             className={cn('w-full text-left rounded-xl border p-3 transition active:scale-[0.98]',
