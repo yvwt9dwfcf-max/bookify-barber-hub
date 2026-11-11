@@ -25,7 +25,7 @@ const formatCurrency = (v: number) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
 
 const PAYMENT_LABELS: Record<string, { label: string; icon: any; color: string }> = {
-  dinheiro: { label: 'Dinheiro', icon: Banknote, color: '#22C55E' },
+  dinheiro: { label: 'Dinheiro', icon: Banknote, color: '#10B981' },
   pix: { label: 'Pix', icon: Smartphone, color: '#3B82F6' },
   debito: { label: 'Débito', icon: CreditCard, color: '#A855F7' },
   credito: { label: 'Crédito', icon: CreditCard, color: '#F59E0B' },

@@ -14,25 +14,25 @@ function RazorIllustration() {
         {/* Lâmina */}
         <path
           d="M40 70 L190 70 L190 100 L60 100 C45 100 38 88 40 70 Z"
-          stroke="#22C55E"
+          stroke="#10B981"
           strokeWidth="1.5"
           strokeLinejoin="round"
         />
-        <line x1="48" y1="78" x2="182" y2="78" stroke="#22C55E" strokeWidth="0.75" opacity="0.5" />
+        <line x1="48" y1="78" x2="182" y2="78" stroke="#10B981" strokeWidth="0.75" opacity="0.5" />
         {/* Fio de corte em bordô */}
         <path d="M190 70 L190 100 L182 100" stroke="#8B1E2B" strokeWidth="2" strokeLinecap="round" />
         {/* Pino de articulação */}
-        <circle cx="196" cy="85" r="4.5" stroke="#22C55E" strokeWidth="1.5" />
+        <circle cx="196" cy="85" r="4.5" stroke="#10B981" strokeWidth="1.5" />
         {/* Cabo */}
         <path
           d="M200 85 C230 85 255 92 282 104 C288 107 290 113 286 117 C282 121 274 120 268 117 C244 105 222 100 196 100"
-          stroke="#22C55E"
+          stroke="#10B981"
           strokeWidth="1.5"
           strokeLinecap="round"
         />
         <path
           d="M200 85 C232 90 256 97 280 110"
-          stroke="#22C55E"
+          stroke="#10B981"
           strokeWidth="0.75"
           opacity="0.45"
           strokeLinecap="round"
@@ -65,7 +65,7 @@ export function HeroSection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
             className="font-editorial-mono text-xs uppercase tracking-[0.22em] mb-7"
-            style={{ color: '#22C55E' }}
+            style={{ color: '#10B981' }}
           >
             — Gestão para barbearias
           </motion.p>
@@ -109,7 +109,7 @@ export function HeroSection() {
               to="/register"
               className="font-editorial-mono text-xs uppercase tracking-[0.12em] px-7 h-12 inline-flex items-center rounded-md font-medium transition-all"
               style={{
-                background: 'linear-gradient(135deg, #22C55E 0%, #16A34A 100%)',
+                background: 'linear-gradient(135deg, #10B981 0%, #0D6E48 100%)',
                 color: '#0A0A08',
                 boxShadow: '0 8px 28px -8px rgba(34, 197, 94, 0.5)',
               }}

@@ -23,9 +23,9 @@ export function LandingNav() {
           <Link
             to="/register"
             className="font-editorial-mono text-xs uppercase tracking-[0.12em] px-4 py-2.5 rounded-md font-medium transition-colors"
-            style={{ background: '#22C55E', color: '#0A0A08' }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = '#16A34A')}
-            onMouseLeave={(e) => (e.currentTarget.style.background = '#22C55E')}
+            style={{ background: '#10B981', color: '#0A0A08' }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = '#0D6E48')}
+            onMouseLeave={(e) => (e.currentTarget.style.background = '#10B981')}
           >
             Criar conta
           </Link>

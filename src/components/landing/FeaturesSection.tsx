@@ -47,7 +47,7 @@ export function FeaturesSection() {
         >
           <p
             className="font-editorial-mono text-xs uppercase tracking-[0.22em] mb-5"
-            style={{ color: '#22C55E' }}
+            style={{ color: '#10B981' }}
           >
             — Plataforma completa
           </p>
