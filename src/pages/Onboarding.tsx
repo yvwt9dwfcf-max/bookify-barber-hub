@@ -109,16 +109,21 @@ const Onboarding = () => {
     let saved: Partial<Draft> = {};
     try { saved = JSON.parse(localStorage.getItem(storageKey) || '{}'); } catch { /* rascunho inválido */ }
     const b = barbershop as any;
+    // Reaproveita o nome digitado no cadastro (ou vindo do Google/Apple).
+    const meta = (user?.user_metadata ?? {}) as Record<string, unknown>;
+    const placeholderNames = ['barbeiro', 'novo barbeiro'];
+    const barberName = typeof barber.name === 'string' && !placeholderNames.includes(barber.name.trim().toLowerCase()) ? barber.name : '';
+    const signupName = String(meta.name || meta.full_name || barberName || '').trim();
     setDraft({
-      ownerName: '',
       businessName: '',
       segment: null, ownerAttends: null, management: null,
       receptionNow: true, reception: { ...emptyPerson }, team: [],
       services: [], servicesSegment: null, days: defaultDays, stepId: 'business',
       lunchEnabled: false, lunchStart: '12:00', lunchEnd: '13:00',
       ...saved,
+      ownerName: (saved.ownerName ?? '').trim() || signupName,
     } as Draft);
-  }, [draft, storageKey, barber, barbershop]);
+  }, [draft, storageKey, barber, barbershop, user]);
 
   useEffect(() => {
     if (!draft || !storageKey) return;
